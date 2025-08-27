@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pronunciation Accuracy Validator - Kokoro TTS</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="/static/kokoro.svg">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .test-panel, .results-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .panel-title {
+            font-size: 1.5rem;
+            color: #2d3748;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .test-categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .category-button {
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            background: #f7fafc;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .category-button:hover, .category-button.active {
+            border-color: #4299e1;
+            background: #ebf8ff;
+            color: #2b6cb0;
+        }
+        
+        .word-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+        
+        .word-button {
+            padding: 10px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .word-button:hover {
+            background: #edf2f7;
+            border-color: #a0aec0;
+        }
+        
+        .word-button.tested {
+            background: #c6f6d5;
+            border-color: #38a169;
+        }
+        
+        .word-button.failed {
+            background: #fed7d7;
+            border-color: #e53e3e;
+        }
+        
+        .custom-test {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 10px;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        
+        .input-group textarea {
+            height: 80px;
+            resize: vertical;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #4299e1;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #3182ce;
+        }
+        
+        .btn-success {
+            background: #38a169;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #2f855a;
+        }
+        
+        .btn-warning {
+            background: #ed8936;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: #dd6b20;
+        }
+        
+        .results-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .result-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #cbd5e0;
+        }
+        
+        .result-item.success {
+            background: #f0fff4;
+            border-left-color: #38a169;
+        }
+        
+        .result-item.error {
+            background: #fffaf0;
+            border-left-color: #ed8936;
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .result-word {
+            font-weight: bold;
+            color: #2d3748;
+        }
+        
+        .result-status {
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            color: white;
+        }
+        
+        .result-status.pass {
+            background: #38a169;
+        }
+        
+        .result-status.fail {
+            background: #e53e3e;
+        }
+        
+        .result-details {
+            font-size: 0.9rem;
+            color: #4a5568;
+        }
+        
+        .stats-bar {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+        
+        .stat-item {
+            flex: 1;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4299e1;
+        }
+        
+        .stat-label {
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4299e1, #38a169);
+            transition: width 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .test-categories {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-bar {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Pronunciation Accuracy Validator</h1>
+            <p>Interactive testing interface for pronunciation accuracy validation</p>
+        </div>
+        
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-number" id="totalTests">0</div>
+                <div class="stat-label">Total Tests</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="passedTests">0</div>
+                <div class="stat-label">Passed</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="failedTests">0</div>
+                <div class="stat-label">Failed</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="accuracyRate">0%</div>
+                <div class="stat-label">Accuracy Rate</div>
+            </div>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+        
+        <div class="main-content">
+            <div class="test-panel">
+                <h2 class="panel-title">🎯 Test Categories</h2>
+                
+                <div class="test-categories">
+                    <div class="category-button active" data-category="critical">
+                        <strong>Critical Issues</strong><br>
+                        <small>Previously problematic words</small>
+                    </div>
+                    <div class="category-button" data-category="contractions">
+                        <strong>Contractions</strong><br>
+                        <small>What's, don't, won't, etc.</small>
+                    </div>
+                    <div class="category-button" data-category="technical">
+                        <strong>Technical Terms</strong><br>
+                        <small>API, algorithm, genome, etc.</small>
+                    </div>
+                    <div class="category-button" data-category="foreign">
+                        <strong>Foreign Words</strong><br>
+                        <small>Café, naïve, schadenfreude</small>
+                    </div>
+                </div>
+                
+                <div class="word-grid" id="wordGrid">
+                    <!-- Words will be populated by JavaScript -->
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="testCategory()">Test All in Category</button>
+                    <button class="btn btn-success" onclick="testAll()">Test All Words</button>
+                    <button class="btn btn-warning" onclick="clearResults()">Clear Results</button>
+                </div>
+                
+                <div class="custom-test">
+                    <h3>Custom Word Test</h3>
+                    <div class="input-group">
+                        <label for="customWord">Word or Phrase:</label>
+                        <input type="text" id="customWord" placeholder="Enter word or phrase to test">
+                    </div>
+                    <div class="input-group">
+                        <label for="expectedPronunciation">Expected Pronunciation (optional):</label>
+                        <input type="text" id="expectedPronunciation" placeholder="Expected pronunciation">
+                    </div>
+                    <div class="input-group">
+                        <label for="phoneticOverride">Phonetic Override (optional):</label>
+                        <textarea id="phoneticOverride" placeholder="Use {phonetic} or /IPA/ notation"></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="testCustomWord()">Test Custom Word</button>
+                </div>
+            </div>
+            
+            <div class="results-panel">
+                <h2 class="panel-title">📊 Test Results</h2>
+                <div class="results-list" id="resultsList">
+                    <p style="text-align: center; color: #a0aec0; padding: 40px;">
+                        No tests run yet. Select words from the left panel to begin testing.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Test word categories
+        const testWords = {
+            critical: [
+                "What's", "asterisk", "hedonism", "inherently", "e.g.", "Tom & Jerry",
+                "John's book", "50%", "A * B", "user@domain.com", "API", "USB", "WiFi"
+            ],
+            contractions: [
+                "What's", "It's", "don't", "won't", "I'll", "you're", "they've",
+                "can't", "shouldn't", "wouldn't", "haven't", "hasn't", "let's"
+            ],
+            technical: [
+                "algorithm", "nuclear", "library", "february", "often", "comfortable",
+                "boolean", "cache", "genome", "enzyme", "isotope", "molecule"
+            ],
+            foreign: [
+                "café", "naïve", "résumé", "jalapeño", "cappuccino", "schadenfreude",
+                "bourgeois", "entrepreneur", "renaissance", "croissant"
+            ]
+        };
+        
+        let currentCategory = 'critical';
+        let testResults = [];
+        let totalTests = 0;
+        let passedTests = 0;
+        let failedTests = 0;
+        
+        // Initialize the interface
+        document.addEventListener('DOMContentLoaded', function() {
+            setupCategoryButtons();
+            loadCategory('critical');
+        });
+        
+        function setupCategoryButtons() {
+            const buttons = document.querySelectorAll('.category-button');
+            buttons.forEach(button => {
+                button.addEventListener('click', function() {
+                    buttons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    const category = this.dataset.category;
+                    loadCategory(category);
+                });
+            });
+        }
+        
+        function loadCategory(category) {
+            currentCategory = category;
+            const wordGrid = document.getElementById('wordGrid');
+            wordGrid.innerHTML = '';
+            
+            testWords[category].forEach(word => {
+                const button = document.createElement('div');
+                button.className = 'word-button';
+                button.textContent = word;
+                button.onclick = () => testWord(word, button);
+                wordGrid.appendChild(button);
+            });
+        }
+        
+        async function testWord(word, buttonElement) {
+            try {
+                buttonElement.style.opacity = '0.5';
+                buttonElement.textContent = 'Testing...';
+                
+                const response = await fetch('/v1/audio/speech', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: 'kokoro',
+                        input: word,
+                        voice: 'af_heart',
+                        response_format: 'mp3',
+                        speed: 1.0
+                    })
+                });
+                
+                const success = response.ok;
+                const result = {
+                    word: word,
+                    success: success,
+                    timestamp: new Date().toLocaleTimeString(),
+                    details: success ? 'Pronunciation test passed' : `Error: ${response.status}`
+                };
+                
+                addTestResult(result);
+                updateWordButton(buttonElement, word, success);
+                updateStats();
+                
+                if (success) {
+                    const audioBlob = await response.blob();
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const audio = new Audio(audioUrl);
+                    audio.play();
+                }
+                
+            } catch (error) {
+                const result = {
+                    word: word,
+                    success: false,
+                    timestamp: new Date().toLocaleTimeString(),
+                    details: `Network error: ${error.message}`
+                };
+                
+                addTestResult(result);
+                updateWordButton(buttonElement, word, false);
+                updateStats();
+            }
+        }
+        
+        function updateWordButton(button, word, success) {
+            button.style.opacity = '1';
+            button.textContent = word;
+            button.classList.remove('tested', 'failed');
+            button.classList.add(success ? 'tested' : 'failed');
+        }
+        
+        function addTestResult(result) {
+            testResults.unshift(result);
+            const resultsList = document.getElementById('resultsList');
+            
+            if (testResults.length === 1) {
+                resultsList.innerHTML = '';
+            }
+            
+            const resultElement = document.createElement('div');
+            resultElement.className = `result-item ${result.success ? 'success' : 'error'}`;
+            resultElement.innerHTML = `
+                <div class="result-header">
+                    <span class="result-word">"${result.word}"</span>
+                    <span class="result-status ${result.success ? 'pass' : 'fail'}">
+                        ${result.success ? 'PASS' : 'FAIL'}
+                    </span>
+                </div>
+                <div class="result-details">
+                    ${result.details} - ${result.timestamp}
+                </div>
+            `;
+            
+            resultsList.insertBefore(resultElement, resultsList.firstChild);
+        }
+        
+        function updateStats() {
+            totalTests = testResults.length;
+            passedTests = testResults.filter(r => r.success).length;
+            failedTests = totalTests - passedTests;
+            const accuracy = totalTests > 0 ? Math.round((passedTests / totalTests) * 100) : 0;
+            
+            document.getElementById('totalTests').textContent = totalTests;
+            document.getElementById('passedTests').textContent = passedTests;
+            document.getElementById('failedTests').textContent = failedTests;
+            document.getElementById('accuracyRate').textContent = accuracy + '%';
+            
+            const progressFill = document.getElementById('progressFill');
+            progressFill.style.width = accuracy + '%';
+        }
+        
+        async function testCategory() {
+            const words = testWords[currentCategory];
+            for (let i = 0; i < words.length; i++) {
+                const word = words[i];
+                const button = document.querySelector(`[onclick*="${word}"]`);
+                if (button) {
+                    await testWord(word, button);
+                    await new Promise(resolve => setTimeout(resolve, 500)); // Small delay between tests
+                }
+            }
+        }
+        
+        async function testAll() {
+            for (const category in testWords) {
+                const categoryButton = document.querySelector(`[data-category="${category}"]`);
+                if (categoryButton) {
+                    categoryButton.click();
+                    await testCategory();
+                    await new Promise(resolve => setTimeout(resolve, 1000)); // Delay between categories
+                }
+            }
+        }
+        
+        function clearResults() {
+            testResults = [];
+            totalTests = 0;
+            passedTests = 0;
+            failedTests = 0;
+            
+            document.getElementById('resultsList').innerHTML = `
+                <p style="text-align: center; color: #a0aec0; padding: 40px;">
+                    No tests run yet. Select words from the left panel to begin testing.
+                </p>
+            `;
+            
+            document.querySelectorAll('.word-button').forEach(button => {
+                button.classList.remove('tested', 'failed');
+            });
+            
+            updateStats();
+        }
+        
+        async function testCustomWord() {
+            const word = document.getElementById('customWord').value.trim();
+            const expected = document.getElementById('expectedPronunciation').value.trim();
+            const phonetic = document.getElementById('phoneticOverride').value.trim();
+            
+            if (!word) {
+                alert('Please enter a word or phrase to test');
+                return;
+            }
+            
+            let testInput = word;
+            if (phonetic) {
+                testInput = phonetic;
+            }
+            
+            try {
+                const response = await fetch('/v1/audio/speech', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: 'kokoro',
+                        input: testInput,
+                        voice: 'af_heart',
+                        response_format: 'mp3',
+                        speed: 1.0
+                    })
+                });
+                
+                const success = response.ok;
+                let details = success ? 'Custom pronunciation test passed' : `Error: ${response.status}`;
+                if (expected) {
+                    details += ` (Expected: "${expected}")`;
+                }
+                if (phonetic) {
+                    details += ` (Used phonetic override: "${phonetic}")`;
+                }
+                
+                const result = {
+                    word: word,
+                    success: success,
+                    timestamp: new Date().toLocaleTimeString(),
+                    details: details
+                };
+                
+                addTestResult(result);
+                updateStats();
+                
+                if (success) {
+                    const audioBlob = await response.blob();
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const audio = new Audio(audioUrl);
+                    audio.play();
+                }
+                
+                // Clear the form
+                document.getElementById('customWord').value = '';
+                document.getElementById('expectedPronunciation').value = '';
+                document.getElementById('phoneticOverride').value = '';
+                
+            } catch (error) {
+                const result = {
+                    word: word,
+                    success: false,
+                    timestamp: new Date().toLocaleTimeString(),
+                    details: `Network error: ${error.message}`
+                };
+                
+                addTestResult(result);
+                updateStats();
+            }
+        }
+    </script>
+</body>
+</html>

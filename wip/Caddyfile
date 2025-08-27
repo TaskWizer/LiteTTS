@@ -1,0 +1,39 @@
+{
+    acme_ca off
+    auto_https off
+}
+
+console.cyopsys.com {
+    tls /etc/caddy/ssl/console.cyopsys.com/origin.crt /etc/caddy/ssl/console.cyopsys.com/origin.key
+
+    # Handle errors without the 'status' matcher
+    handle_errors {
+        respond "{ \"error\": \"Gateway Error: {err.status_code} - {err.status_text}\" }" {err.status_code}
+        header Content-Type application/json
+    }
+
+    reverse_proxy open-webui:8080 {
+        transport http {
+            read_timeout 60s
+            write_timeout 60s
+        }
+        header_up X-Forwarded-Host {host}
+    }
+}
+
+console.psyopsys.ai {
+    tls /etc/caddy/ssl/console.psyopsys.ai/origin.crt /etc/caddy/ssl/console.psyopsys.ai/origin.key
+
+    handle_errors {
+        respond "{ \"error\": \"Gateway Error: {err.status_code} - {err.status_text}\" }" {err.status_code}
+        header Content-Type application/json
+    }
+
+    reverse_proxy open-webui:8080 {
+        transport http {
+            read_timeout 60s
+            write_timeout 60s
+        }
+        header_up X-Forwarded-Host {host}
+    }
+}

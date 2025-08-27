@@ -1,0 +1,46 @@
+{
+  "_comment": "Example override configuration file",
+  "_instructions": [
+    "Copy this file to 'override.json' to customize your settings",
+    "Only include the settings you want to change from defaults",
+    "Remove this _comment and _instructions section when creating your override.json"
+  ],
+  
+  "server": {
+    "port": 9000,
+    "host": "127.0.0.1",
+    "workers": 2
+  },
+  
+  "voice": {
+    "default_voice": "af_bella",
+    "download_all_on_startup": false,
+    "default_voices": ["af_heart", "am_adam", "af_bella", "am_puck"],
+    "max_cache_size": 8
+  },
+  
+  "audio": {
+    "default_format": "wav",
+    "default_speed": 1.1,
+    "sample_rate": 22050
+  },
+  
+  "performance": {
+    "cache_enabled": true,
+    "chunk_size": 150,
+    "max_text_length": 8000,
+    "timeout_seconds": 45,
+    "preload_models": true
+  },
+  
+  "paths": {
+    "models_dir": "my_models",
+    "voices_dir": "my_voices",
+    "cache_dir": "my_cache"
+  },
+  
+  "application": {
+    "name": "My Custom TTS API",
+    "description": "Customized LiteTTS instance"
+  }
+}

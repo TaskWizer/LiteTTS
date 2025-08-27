@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kokoro ONNX TTS API Dashboard</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="/static/kokoro.svg">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            color: white;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .header-text {
+            text-align: left;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .connection-status {
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .connection-status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .connection-status.connected {
+            background: rgba(76, 175, 80, 0.3);
+        }
+
+        .connection-status.polling {
+            background: rgba(255, 193, 7, 0.3);
+        }
+
+        .status-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .status-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .status-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .status-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .status-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 15px;
+        }
+
+        .voice-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .voice-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .voice-item:hover {
+            background: #e9ecef;
+            transform: scale(1.02);
+        }
+
+        .voice-item.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .tts-controls {
+            margin-top: 15px;
+        }
+
+        .tts-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: #5a6fd8;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .config-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .config-table th,
+        .config-table td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .config-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .loading {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .success {
+            color: #155724;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .debug-panel {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .debug-section {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+
+        .debug-section h4 {
+            margin: 0 0 10px 0;
+            color: #667eea;
+            font-size: 14px;
+        }
+
+        .console-logs {
+            max-height: 150px;
+            overflow-y: auto;
+            background: #1a1a1a;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .log-entry {
+            margin: 2px 0;
+            color: #ccc;
+        }
+
+        .log-entry.error {
+            color: #ff6b6b;
+        }
+
+        .log-entry.success {
+            color: #51cf66;
+        }
+
+        .log-entry.warning {
+            color: #ffd43b;
+        }
+
+        #debug-api-response {
+            background: #1a1a1a;
+            color: #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            max-height: 150px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .tts-metrics {
+            display: flex;
+            gap: 15px;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+
+        .metric-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 5px;
+        }
+
+        .metric-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .tts-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: linear-gradient(135deg, #138496, #117a8b);
+        }
+
+        .refresh-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: all 0.2s;
+        }
+
+        .refresh-btn:hover {
+            background: #218838;
+            transform: scale(1.1);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .status-bar {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <div class="header-text">
+                    <h1>🎵 LiteTTS API Dashboard</h1>
+                    <p>Real-time monitoring and management interface</p>
+                </div>
+                <div class="header-nav">
+                    <a href="/examples" class="nav-link" target="_blank" title="View API Examples and Documentation">
+                        📚 Examples
+                    </a>
+                    <a href="/docs" class="nav-link" target="_blank" title="View Technical Documentation">
+                        📖 Docs
+                    </a>
+                </div>
+            </div>
+            <div class="connection-status">🔄 Connecting...</div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-card">
+                <div class="status-value" id="total-requests">-</div>
+                <div class="status-label">Total Requests</div>
+            </div>
+            <div class="status-card">
+                <div class="status-value" id="avg-rtf">-</div>
+                <div class="status-label">Avg RTF</div>
+            </div>
+            <div class="status-card">
+                <div class="status-value" id="cache-hit-rate">-</div>
+                <div class="status-label">Cache Hit Rate</div>
+            </div>
+            <div class="status-card">
+                <div class="status-value" id="uptime">-</div>
+                <div class="status-label">Uptime</div>
+            </div>
+            <div class="status-card">
+                <div class="status-value" id="voices-count">-</div>
+                <div class="status-label">Available Voices</div>
+            </div>
+            <div class="status-card">
+                <div class="status-value" id="avg-latency">-</div>
+                <div class="status-label">Avg Latency (ms)</div>
+            </div>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- Performance Chart -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon">📊</div>
+                    <div class="card-title">Performance Metrics</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="performance-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- Voice Management -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon">🎙️</div>
+                    <div class="card-title">Voice Management</div>
+                </div>
+                <div class="voice-grid" id="voice-grid">
+                    <div class="loading">Loading voices...</div>
+                </div>
+            </div>
+
+            <!-- Real-time TTS Testing -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon">🎤</div>
+                    <div class="card-title">Real-time TTS Testing</div>
+                </div>
+                <div class="tts-controls">
+                    <textarea class="tts-input" id="tts-text" placeholder="Enter text to synthesize..." rows="3">Hello! This is a test of the LiteTTS system.</textarea>
+                    <select class="tts-input" id="tts-voice">
+                        <option value="">Loading voices...</option>
+                    </select>
+                    <div class="tts-metrics" id="tts-metrics" style="display: none;">
+                        <div class="metric-item">
+                            <span class="metric-label">RTF:</span>
+                            <span class="metric-value" id="live-rtf">-</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Latency:</span>
+                            <span class="metric-value" id="live-latency">-</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Status:</span>
+                            <span class="metric-value" id="live-status">Ready</span>
+                        </div>
+                    </div>
+                    <div class="tts-buttons">
+                        <button class="btn" onclick="testTTS()">🎵 Generate Speech</button>
+                        <button class="btn btn-secondary" onclick="stopAudio()">⏹️ Stop</button>
+                        <button class="btn btn-info" onclick="validateVoice()">🔍 Test Voice</button>
+                    </div>
+                    <div id="tts-result"></div>
+                    <audio id="audio-player" controls style="width: 100%; margin-top: 10px; display: none;"></audio>
+                </div>
+            </div>
+
+            <!-- System Configuration -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon">⚙️</div>
+                    <div class="card-title">System Configuration</div>
+                </div>
+                <table class="config-table" id="config-table">
+                    <tr><td colspan="2" class="loading">Loading configuration...</td></tr>
+                </table>
+            </div>
+
+            <!-- API Usage Analytics -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon">📈</div>
+                    <div class="card-title">API Usage Analytics</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="usage-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- Error Rates -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon">⚠️</div>
+                    <div class="card-title">Error Monitoring</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="error-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- Debug Information Panel -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon">🔧</div>
+                    <div class="card-title">Debug Information</div>
+                </div>
+                <div class="debug-panel">
+                    <div class="debug-section">
+                        <h4>System Status</h4>
+                        <div id="debug-system-status">Loading...</div>
+                    </div>
+                    <div class="debug-section">
+                        <h4>Last API Response</h4>
+                        <pre id="debug-api-response">No data yet</pre>
+                    </div>
+                    <div class="debug-section">
+                        <h4>Console Logs</h4>
+                        <div id="debug-console-logs" class="console-logs">
+                            <div class="log-entry">Dashboard initialized</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Refresh Button -->
+    <button class="refresh-btn" onclick="refreshDashboard()" title="Refresh Dashboard">🔄</button>
+
+    <script>
+        // Global variables
+        let performanceChart, usageChart, errorChart;
+        let selectedVoice = 'af_heart';
+        let currentAudio = null;
+        let lastRequestTime = 0;
+        let lastTotalRequests = 0;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            loadDashboardData();
+            loadVoices();
+            
+            // Real-time updates with WebSocket fallback to polling
+            initializeRealTimeUpdates();
+        });
+
+        // Initialize charts
+        function initializeCharts() {
+            // Performance Chart
+            const perfCtx = document.getElementById('performance-chart').getContext('2d');
+            performanceChart = new Chart(perfCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'RTF',
+                        data: [],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Latency (ms)',
+                        data: [],
+                        borderColor: '#f093fb',
+                        backgroundColor: 'rgba(240, 147, 251, 0.1)',
+                        tension: 0.4,
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                        }
+                    }
+                }
+            });
+
+            // Usage Chart
+            const usageCtx = document.getElementById('usage-chart').getContext('2d');
+            usageChart = new Chart(usageCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Requests per Minute',
+                        data: [],
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: '#667eea',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Error Chart
+            const errorCtx = document.getElementById('error-chart').getContext('2d');
+            errorChart = new Chart(errorCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Success', 'Client Error', 'Server Error'],
+                    datasets: [{
+                        data: [95, 3, 2],
+                        backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                const response = await fetch('/dashboard/data');
+                const data = await response.json();
+
+                updateStatusCards(data);
+                updateCharts(data);
+                updateConfiguration(data);
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                showError('Failed to load dashboard data');
+            }
+        }
+
+        // Update status cards
+        function updateStatusCards(data) {
+            // Debug logging to understand data structure
+            console.log('Dashboard data received:', {
+                tts_stats: data.tts_stats,
+                system_status: data.system_status,
+                performance: data.performance?.summary,
+                analytics_requests: data.system_status?.total_requests_all_time
+            });
+
+            // Update debug panel
+            updateDebugPanel(data);
+
+            // Update main status cards with better fallback logic
+            const totalRequests = data.tts_stats?.total_requests ||
+                                data.system_status?.total_requests_all_time ||
+                                data.performance?.summary?.total_requests || 0;
+
+            // Check if system is idle (no new requests in last 5 seconds)
+            const currentTime = Date.now();
+            const isSystemIdle = (totalRequests === lastTotalRequests) &&
+                               (currentTime - lastRequestTime > 5000);
+
+            // Update request tracking
+            if (totalRequests > lastTotalRequests) {
+                lastRequestTime = currentTime;
+                lastTotalRequests = totalRequests;
+            }
+
+            document.getElementById('total-requests').textContent = totalRequests;
+
+            // Reset performance metrics to 0 when system is idle
+            const avgRtf = isSystemIdle ? 0 : (data.tts_stats?.avg_rtf || 0);
+            const avgLatency = isSystemIdle ? 0 : (data.tts_stats?.avg_latency_ms || 0);
+
+            document.getElementById('avg-rtf').textContent = avgRtf.toFixed(3);
+            document.getElementById('cache-hit-rate').textContent = (data.tts_stats?.cache_hit_rate || 0).toFixed(1) + '%';
+            document.getElementById('avg-latency').textContent = avgLatency.toFixed(0);
+
+            // Calculate uptime in HH:MM:SS format
+            const uptimeSeconds = data.system_status?.uptime_seconds || 0;
+            const hours = Math.floor(uptimeSeconds / 3600);
+            const minutes = Math.floor((uptimeSeconds % 3600) / 60);
+            const seconds = Math.floor(uptimeSeconds % 60);
+
+            // Format as HH:MM:SS with proper zero padding
+            const formattedUptime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('uptime').textContent = formattedUptime;
+        }
+
+        // Update charts with new data
+        function updateCharts(data) {
+            // Update performance chart
+            if (data.performance && performanceChart) {
+                const now = new Date().toLocaleTimeString();
+                performanceChart.data.labels.push(now);
+
+                // Check if system is idle and reset metrics accordingly
+                const totalRequests = data.tts_stats?.total_requests ||
+                                    data.system_status?.total_requests_all_time || 0;
+                const currentTime = Date.now();
+                const isSystemIdle = (totalRequests === lastTotalRequests) &&
+                                   (currentTime - lastRequestTime > 5000);
+
+                const rtfValue = isSystemIdle ? 0 : (data.tts_stats?.avg_rtf || 0);
+                const latencyValue = isSystemIdle ? 0 : (data.tts_stats?.avg_latency_ms || 0);
+
+                performanceChart.data.datasets[0].data.push(rtfValue);
+                performanceChart.data.datasets[1].data.push(latencyValue);
+
+                // Keep only last 20 data points
+                if (performanceChart.data.labels.length > 20) {
+                    performanceChart.data.labels.shift();
+                    performanceChart.data.datasets[0].data.shift();
+                    performanceChart.data.datasets[1].data.shift();
+                }
+                performanceChart.update();
+            }
+
+            // Update usage chart
+            if (data.requests_per_minute && usageChart) {
+                const minutes = Object.keys(data.requests_per_minute).slice(-10);
+                const requests = minutes.map(min => data.requests_per_minute[min]);
+
+                usageChart.data.labels = minutes;
+                usageChart.data.datasets[0].data = requests;
+                usageChart.update();
+            }
+
+            // Update error chart
+            if (data.error_rates && errorChart) {
+                const total = data.error_rates.total_requests || 1;
+                const errors = data.error_rates.error_requests || 0;
+                const success = total - errors;
+
+                errorChart.data.datasets[0].data = [success, Math.floor(errors * 0.7), Math.floor(errors * 0.3)];
+                errorChart.update();
+            }
+        }
+
+        // Update configuration table
+        function updateConfiguration(data) {
+            const configTable = document.getElementById('config-table');
+
+            // Get current voices count if already loaded, otherwise show loading
+            const currentVoicesCount = document.getElementById('voices-count-config')?.textContent || 'Loading...';
+
+            configTable.innerHTML = `
+                <tr><th>Setting</th><th>Value</th></tr>
+                <tr><td>Server Host</td><td>0.0.0.0</td></tr>
+                <tr><td>Server Port</td><td>8354</td></tr>
+                <tr><td>Workers</td><td>1</td></tr>
+                <tr><td>Environment</td><td>Production</td></tr>
+                <tr><td>Cache Enabled</td><td>Yes</td></tr>
+                <tr><td>Performance Monitoring</td><td>Enabled</td></tr>
+                <tr><td>Total Voices</td><td id="voices-count-config">${currentVoicesCount}</td></tr>
+                <tr><td>Total Requests</td><td>${data.tts_stats?.total_requests || data.system_status?.total_requests_all_time || 0}</td></tr>
+                <tr><td>Uptime</td><td>${document.getElementById('uptime')?.textContent || '00:00:00'}</td></tr>
+            `;
+        }
+
+        // Load available voices
+        async function loadVoices() {
+            try {
+                const response = await fetch('/v1/voices');
+                const voices = await response.json();
+
+                // Handle both array format (current) and nested data format (legacy)
+                const voiceList = Array.isArray(voices) ? voices : (voices.data || []);
+
+                updateVoiceGrid(voiceList);
+                updateVoiceSelect(voiceList);
+                document.getElementById('voices-count').textContent = voiceList.length;
+                document.getElementById('voices-count-config').textContent = voiceList.length;
+
+                // Log for debugging
+                console.log(`Loaded ${voiceList.length} voices:`, voiceList.map(v => v.id || v.name));
+            } catch (error) {
+                console.error('Error loading voices:', error);
+                showError('Failed to load voices');
+                // Set count to 0 on error
+                document.getElementById('voices-count').textContent = '0';
+                document.getElementById('voices-count-config').textContent = '0';
+            }
+        }
+
+        // Update voice grid
+        function updateVoiceGrid(voices) {
+            const voiceGrid = document.getElementById('voice-grid');
+            voiceGrid.innerHTML = '';
+
+            if (voices.length === 0) {
+                voiceGrid.innerHTML = '<div class="loading">No voices available</div>';
+                return;
+            }
+
+            voices.forEach(voice => {
+                const voiceItem = document.createElement('div');
+                voiceItem.className = 'voice-item';
+
+                // Handle both id and name fields, with fallback
+                const voiceId = voice.id || voice.name || voice;
+                const voiceName = voice.name || voice.id || voice;
+
+                voiceItem.textContent = voiceName;
+                voiceItem.title = `${voiceName} (${voice.gender || 'unknown'}, ${voice.region || 'unknown'})`;
+                voiceItem.onclick = () => selectVoice(voiceId, voiceItem);
+                voiceGrid.appendChild(voiceItem);
+            });
+        }
+
+        // Update voice select dropdown
+        function updateVoiceSelect(voices) {
+            const voiceSelect = document.getElementById('tts-voice');
+            voiceSelect.innerHTML = '';
+
+            if (voices.length === 0) {
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = 'No voices available';
+                voiceSelect.appendChild(option);
+                return;
+            }
+
+            voices.forEach(voice => {
+                const option = document.createElement('option');
+                // Handle both id and name fields, with fallback
+                const voiceId = voice.id || voice.name || voice;
+                const voiceName = voice.name || voice.id || voice;
+
+                option.value = voiceId;
+                option.textContent = voiceName;
+                voiceSelect.appendChild(option);
+            });
+
+            if (voices.length > 0) {
+                // Set to selectedVoice if it exists, otherwise first voice
+                const firstVoiceId = voices[0].id || voices[0].name || voices[0];
+                voiceSelect.value = selectedVoice || firstVoiceId;
+                selectedVoice = voiceSelect.value;
+            }
+        }
+
+        // Select voice
+        function selectVoice(voiceId, element) {
+            // Remove active class from all voice items
+            document.querySelectorAll('.voice-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Add active class to selected item
+            element.classList.add('active');
+            selectedVoice = voiceId;
+            document.getElementById('tts-voice').value = voiceId;
+        }
+
+        // Test TTS
+        async function testTTS() {
+            const text = document.getElementById('tts-text').value;
+            const voice = document.getElementById('tts-voice').value || selectedVoice;
+            const resultDiv = document.getElementById('tts-result');
+            const audioPlayer = document.getElementById('audio-player');
+            const metricsDiv = document.getElementById('tts-metrics');
+
+            if (!text.trim()) {
+                showError('Please enter some text to synthesize');
+                return;
+            }
+
+            // Show metrics and update status
+            metricsDiv.style.display = 'flex';
+            updateLiveMetrics('Generating...', '-', '-');
+            resultDiv.innerHTML = '<div class="loading">Generating speech...</div>';
+
+            const startTime = performance.now();
+
+            try {
+                const response = await fetch('/v1/audio/speech', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        input: text,
+                        voice: voice,
+                        response_format: 'mp3'
+                    })
+                });
+
+                const endTime = performance.now();
+                const latencyMs = endTime - startTime;
+
+                if (response.ok) {
+                    const audioBlob = await response.blob();
+                    const audioUrl = URL.createObjectURL(audioBlob);
+
+                    // Estimate audio duration (rough calculation)
+                    const estimatedWords = text.split(' ').length;
+                    const estimatedDurationSeconds = (estimatedWords / 150) * 60; // ~150 words per minute
+                    const rtf = (latencyMs / 1000) / estimatedDurationSeconds;
+
+                    // Update live metrics
+                    updateLiveMetrics('Complete', rtf.toFixed(3), latencyMs.toFixed(0) + 'ms');
+
+                    audioPlayer.src = audioUrl;
+                    audioPlayer.style.display = 'block';
+                    audioPlayer.play();
+
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            Speech generated successfully!<br>
+                            <small>RTF: ${rtf.toFixed(3)} | Latency: ${latencyMs.toFixed(0)}ms | Voice: ${voice}</small>
+                        </div>
+                    `;
+                    currentAudio = audioPlayer;
+
+                    // Log success
+                    addDebugLog(`TTS Success: ${text.substring(0, 50)}... | RTF: ${rtf.toFixed(3)} | Voice: ${voice}`, 'success');
+                } else {
+                    const error = await response.text();
+                    updateLiveMetrics('Error', '-', latencyMs.toFixed(0) + 'ms');
+                    showError(`TTS Error: ${error}`);
+                    addDebugLog(`TTS Error: ${error}`, 'error');
+                }
+            } catch (error) {
+                const endTime = performance.now();
+                const latencyMs = endTime - startTime;
+
+                console.error('TTS Error:', error);
+                updateLiveMetrics('Failed', '-', latencyMs.toFixed(0) + 'ms');
+                showError('Failed to generate speech');
+                addDebugLog(`TTS Failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Stop audio
+        function stopAudio() {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+        }
+
+        // Update live metrics
+        function updateLiveMetrics(status, rtf, latency) {
+            document.getElementById('live-status').textContent = status;
+            document.getElementById('live-rtf').textContent = rtf;
+            document.getElementById('live-latency').textContent = latency;
+        }
+
+        // Validate voice functionality
+        async function validateVoice() {
+            const voice = document.getElementById('tts-voice').value || selectedVoice;
+            const resultDiv = document.getElementById('tts-result');
+
+            if (!voice) {
+                showError('Please select a voice first');
+                return;
+            }
+
+            resultDiv.innerHTML = '<div class="loading">Testing voice...</div>';
+
+            try {
+                // Test with a short phrase
+                const testText = "Voice test.";
+                const startTime = performance.now();
+
+                const response = await fetch('/v1/audio/speech', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        input: testText,
+                        voice: voice,
+                        response_format: 'mp3'
+                    })
+                });
+
+                const endTime = performance.now();
+                const latencyMs = endTime - startTime;
+
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            Voice "${voice}" is working correctly!<br>
+                            <small>Test latency: ${latencyMs.toFixed(0)}ms</small>
+                        </div>
+                    `;
+                    addDebugLog(`Voice validation success: ${voice} (${latencyMs.toFixed(0)}ms)`, 'success');
+                } else {
+                    const error = await response.text();
+                    resultDiv.innerHTML = `<div class="error">Voice "${voice}" failed: ${error}</div>`;
+                    addDebugLog(`Voice validation failed: ${voice} - ${error}`, 'error');
+                }
+            } catch (error) {
+                console.error('Voice validation error:', error);
+                resultDiv.innerHTML = `<div class="error">Voice validation failed: ${error.message}</div>`;
+                addDebugLog(`Voice validation error: ${voice} - ${error.message}`, 'error');
+            }
+        }
+
+        // Show error message
+        function showError(message) {
+            const resultDiv = document.getElementById('tts-result');
+            resultDiv.innerHTML = `<div class="error">${message}</div>`;
+        }
+
+        // Refresh dashboard
+        function refreshDashboard() {
+            loadDashboardData();
+            loadVoices();
+
+            // Visual feedback
+            const refreshBtn = document.querySelector('.refresh-btn');
+            refreshBtn.style.transform = 'scale(1.2) rotate(180deg)';
+            setTimeout(() => {
+                refreshBtn.style.transform = 'scale(1) rotate(0deg)';
+            }, 300);
+        }
+
+        // Real-time updates with WebSocket fallback to polling
+        let wsConnection = null;
+        let isConnected = false;
+
+        function initializeRealTimeUpdates() {
+            // Try WebSocket first
+            try {
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${protocol}//${window.location.host}/dashboard/ws`;
+                wsConnection = new WebSocket(wsUrl);
+
+                wsConnection.onopen = function() {
+                    console.log('WebSocket connected for real-time updates');
+                    isConnected = true;
+                    updateConnectionStatus(true);
+                };
+
+                wsConnection.onmessage = function(event) {
+                    const data = JSON.parse(event.data);
+                    updateDashboardWithData(data);
+                };
+
+                wsConnection.onclose = function() {
+                    console.log('WebSocket disconnected, falling back to polling');
+                    isConnected = false;
+                    updateConnectionStatus(false);
+                    // Fallback to polling
+                    startPolling();
+                };
+
+                wsConnection.onerror = function() {
+                    console.log('WebSocket error, falling back to polling');
+                    isConnected = false;
+                    updateConnectionStatus(false);
+                    startPolling();
+                };
+            } catch (error) {
+                console.log('WebSocket not supported, using polling');
+                startPolling();
+            }
+        }
+
+        function startPolling() {
+            if (!isConnected) {
+                // Auto-refresh data every 2 seconds for real-time feel
+                setInterval(loadDashboardData, 2000);
+            }
+        }
+
+        function updateConnectionStatus(connected) {
+            const statusElement = document.querySelector('.connection-status');
+            if (statusElement) {
+                statusElement.textContent = connected ? '🟢 Real-time' : '🟡 Polling';
+                statusElement.className = `connection-status ${connected ? 'connected' : 'polling'}`;
+            }
+        }
+
+        function updateDashboardWithData(data) {
+            // Update dashboard with real-time data
+            if (data.performance) {
+                updatePerformanceData(data.performance);
+            }
+            if (data.system) {
+                updateSystemData(data.system);
+            }
+            if (data.analytics) {
+                updateAnalyticsData(data.analytics);
+            }
+        }
+
+        // Update debug panel
+        function updateDebugPanel(data) {
+            // Update system status
+            const systemStatus = document.getElementById('debug-system-status');
+            const totalRequests = data.tts_stats?.total_requests ||
+                                data.system_status?.total_requests_all_time || 0;
+            const uptime = data.system_status?.uptime_seconds || 0;
+
+            systemStatus.innerHTML = `
+                <div>Total Requests: ${totalRequests}</div>
+                <div>Uptime: ${Math.floor(uptime)}s</div>
+                <div>Avg RTF: ${(data.tts_stats?.avg_rtf || 0).toFixed(3)}</div>
+                <div>Cache Hit Rate: ${(data.tts_stats?.cache_hit_rate || 0).toFixed(1)}%</div>
+                <div>Last Update: ${new Date().toLocaleTimeString()}</div>
+            `;
+
+            // Update API response
+            const apiResponse = document.getElementById('debug-api-response');
+            apiResponse.textContent = JSON.stringify(data, null, 2);
+        }
+
+        // Add log entry to debug console
+        function addDebugLog(message, type = 'info') {
+            const consoleLogs = document.getElementById('debug-console-logs');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+
+            consoleLogs.appendChild(logEntry);
+
+            // Keep only last 50 log entries
+            while (consoleLogs.children.length > 50) {
+                consoleLogs.removeChild(consoleLogs.firstChild);
+            }
+
+            // Scroll to bottom
+            consoleLogs.scrollTop = consoleLogs.scrollHeight;
+        }
+
+        // Override console methods to capture logs
+        const originalConsoleLog = console.log;
+        const originalConsoleError = console.error;
+        const originalConsoleWarn = console.warn;
+
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            addDebugLog(args.join(' '), 'info');
+        };
+
+        console.error = function(...args) {
+            originalConsoleError.apply(console, args);
+            addDebugLog(args.join(' '), 'error');
+        };
+
+        console.warn = function(...args) {
+            originalConsoleWarn.apply(console, args);
+            addDebugLog(args.join(' '), 'warning');
+        };
+    </script>
+</body>
+</html>

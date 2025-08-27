@@ -1,0 +1,314 @@
+{
+  "kokoro": {
+    "phonetic": "koʊˈkoʊroʊ",
+    "confidence": 1.0,
+    "frequency": 0.1,
+    "accent_variant": "general",
+    "pos": "noun",
+    "note": "Japanese word meaning 'heart' or 'mind'"
+  },
+  "onnx": {
+    "phonetic": "ɒnks",
+    "confidence": 1.0,
+    "frequency": 0.1,
+    "accent_variant": "general",
+    "pos": "noun",
+    "note": "Open Neural Network Exchange format"
+  },
+  "tts": {
+    "phonetic": "tiː tiː ɛs",
+    "confidence": 1.0,
+    "frequency": 0.2,
+    "accent_variant": "general",
+    "pos": "noun",
+    "note": "Text-to-Speech"
+  },
+  "api": {
+    "phonetic": "eɪ piː aɪ",
+    "confidence": 1.0,
+    "frequency": 0.3,
+    "accent_variant": "general",
+    "pos": "noun",
+    "note": "Application Programming Interface"
+  },
+  "github": {
+    "phonetic": "ɡɪtˈhʌb",
+    "confidence": 0.95,
+    "frequency": 0.4,
+    "accent_variant": "general",
+    "pos": "noun",
+    "note": "Git repository hosting service"
+  },
+  "python": {
+    "phonetic": "ˈpaɪθən",
+    "confidence": 0.95,
+    "frequency": 0.5,
+    "accent_variant": "general",
+    "pos": "noun",
+    "note": "Programming language"
+  },
+  "neural": {
+    "phonetic": "ˈnjʊrəl",
+    "confidence": 0.9,
+    "frequency": 0.3,
+    "accent_variant": "general",
+    "pos": "adjective",
+    "note": "Related to neural networks"
+  },
+  "synthesis": {
+    "phonetic": "ˈsɪnθəsɪs",
+    "confidence": 0.9,
+    "frequency": 0.2,
+    "accent_variant": "general",
+    "pos": "noun",
+    "note": "The process of combining elements"
+  },
+  "hedonism": {
+    "phonetic": "ˈhɛdənɪzəm",
+    "confidence": 1.0,
+    "frequency": 0.1,
+    "accent_variant": "american",
+    "pos": "noun",
+    "note": "Corrected pronunciation: HED-uh-niz-uhm (not HEE-duh-niz-uhm)"
+  },
+  "prices": {
+    "phonetic": "ˈpraɪsəz",
+    "confidence": 1.0,
+    "frequency": 0.5,
+    "accent_variant": "american",
+    "pos": "noun",
+    "note": "Corrected pronunciation: PRAI-sez (not PRAI-siz)"
+  },
+  "website": {
+    "phonetic": "ˈwɛbˌsaɪt",
+    "confidence": 1.0,
+    "frequency": 0.7,
+    "accent_variant": "american",
+    "pos": "noun",
+    "note": "Standard pronunciation: WEB-site"
+  },
+  "hmm": {
+    "phonetic": "hm-m-m",
+    "confidence": 1.0,
+    "frequency": 0.3,
+    "accent_variant": "american",
+    "pos": "interjection",
+    "note": "Corrected pronunciation: hm-m-m (not hum)"
+  },
+  "wasn't": {
+    "phonetic": "wʌzənt",
+    "confidence": 1.0,
+    "frequency": 0.8,
+    "accent_variant": "american",
+    "pos": "contraction",
+    "note": "Natural contraction pronunciation: wʌzənt (not waaasant)"
+  },
+  "weren't": {
+    "phonetic": "wɜrənt",
+    "confidence": 1.0,
+    "frequency": 0.7,
+    "accent_variant": "american",
+    "pos": "contraction",
+    "note": "Natural contraction pronunciation: wɜrənt"
+  },
+  "couldn't": {
+    "phonetic": "kʊdənt",
+    "confidence": 1.0,
+    "frequency": 0.8,
+    "accent_variant": "american",
+    "pos": "contraction",
+    "note": "Natural contraction pronunciation: kʊdənt"
+  },
+  "wouldn't": {
+    "phonetic": "wʊdənt",
+    "confidence": 1.0,
+    "frequency": 0.8,
+    "accent_variant": "american",
+    "pos": "contraction",
+    "note": "Natural contraction pronunciation: wʊdənt"
+  },
+  "shouldn't": {
+    "phonetic": "ʃʊdənt",
+    "confidence": 1.0,
+    "frequency": 0.8,
+    "accent_variant": "american",
+    "pos": "contraction",
+    "note": "Natural contraction pronunciation: ʃʊdənt"
+  },
+  "he'd": {
+    "phonetic": "hid",
+    "confidence": 1.0,
+    "frequency": 0.9,
+    "accent_variant": "american",
+    "pos": "contraction",
+    "note": "Ambiguous contraction: 'he had' or 'he would' - context dependent"
+  },
+  "she'd": {
+    "phonetic": "ʃid",
+    "confidence": 1.0,
+    "frequency": 0.9,
+    "accent_variant": "american",
+    "pos": "contraction",
+    "note": "Ambiguous contraction: 'she had' or 'she would' - context dependent"
+  },
+  "they'd": {
+    "phonetic": "ðeɪd",
+    "confidence": 1.0,
+    "frequency": 0.8,
+    "accent_variant": "american",
+    "pos": "contraction",
+    "note": "Ambiguous contraction: 'they had' or 'they would' - context dependent"
+  },
+  "we'd": {
+    "phonetic": "wid",
+    "confidence": 1.0,
+    "frequency": 0.8,
+    "accent_variant": "american",
+    "pos": "contraction",
+    "note": "Ambiguous contraction: 'we had' or 'we would' - context dependent"
+  },
+  "you'd": {
+    "phonetic": "jud",
+    "confidence": 1.0,
+    "frequency": 0.9,
+    "accent_variant": "american",
+    "pos": "contraction",
+    "note": "Ambiguous contraction: 'you had' or 'you would' - context dependent"
+  },
+  "I'd": {
+    "phonetic": "aɪd",
+    "confidence": 1.0,
+    "frequency": 0.9,
+    "accent_variant": "american",
+    "pos": "contraction",
+    "note": "Ambiguous contraction: 'I had' or 'I would' - context dependent"
+  },
+  "joy": {
+    "phonetic": "dʒɔɪ",
+    "confidence": 1.0,
+    "frequency": 0.5,
+    "accent_variant": "american",
+    "pos": "noun",
+    "note": "Corrected pronunciation: JOY (not joie)"
+  },
+  "acquisition": {
+    "phonetic": "ˌækwɪˈzɪʃən",
+    "confidence": 1.0,
+    "frequency": 0.2,
+    "accent_variant": "american",
+    "pos": "noun",
+    "note": "Corrected pronunciation: a·kwuh·zi·shn (not ek-wah-zi·shn)"
+  },
+  "elon": {
+    "phonetic": "ˈiːlɒn",
+    "confidence": 1.0,
+    "frequency": 0.1,
+    "accent_variant": "american",
+    "pos": "proper_noun",
+    "note": "Corrected pronunciation: EE-lawn (not alon)"
+  },
+  "resume": {
+    "phonetic": "ˈrɛzʊˌmeɪ",
+    "confidence": 1.0,
+    "frequency": 0.4,
+    "accent_variant": "american",
+    "pos": "noun",
+    "note": "Corrected pronunciation for noun: REZ-oo-mey (not re-zoom)"
+  },
+  "tsla": {
+    "phonetic": "T-S-L-A",
+    "confidence": 1.0,
+    "frequency": 0.1,
+    "accent_variant": "american",
+    "pos": "acronym",
+    "note": "Stock ticker: spelled out T-S-L-A (not TEE-SLAW)"
+  },
+  "finance": {
+    "phonetic": "faɪˈnæns",
+    "confidence": 1.0,
+    "frequency": 0.8,
+    "accent_variant": "american",
+    "pos": "noun",
+    "note": "Corrected pronunciation: fye-NANS (not fih-nans)"
+  },
+  "Finance": {
+    "phonetic": "faɪˈnæns",
+    "confidence": 1.0,
+    "frequency": 0.8,
+    "accent_variant": "american",
+    "pos": "noun",
+    "note": "Corrected pronunciation: fye-NANS (not fih-nans)"
+  },
+  "automating": {
+    "phonetic": "ˈɔːtəmeɪtɪŋ",
+    "confidence": 1.0,
+    "frequency": 0.6,
+    "accent_variant": "american",
+    "pos": "verb",
+    "note": "Corrected pronunciation: AW-tuh-may-ting (not arrow-mating)"
+  },
+  "Automating": {
+    "phonetic": "ˈɔːtəmeɪtɪŋ",
+    "confidence": 1.0,
+    "frequency": 0.6,
+    "accent_variant": "american",
+    "pos": "verb",
+    "note": "Corrected pronunciation: AW-tuh-may-ting (not arrow-mating)"
+  },
+  "$": {
+    "phonetic": "ˈdɑlər",
+    "confidence": 1.0,
+    "frequency": 0.9,
+    "accent_variant": "american",
+    "pos": "symbol",
+    "note": "Currency symbol: dollar"
+  },
+  "€": {
+    "phonetic": "ˈjʊroʊ",
+    "confidence": 1.0,
+    "frequency": 0.5,
+    "accent_variant": "american",
+    "pos": "symbol",
+    "note": "Currency symbol: euro"
+  },
+  "£": {
+    "phonetic": "paʊnd",
+    "confidence": 1.0,
+    "frequency": 0.4,
+    "accent_variant": "american",
+    "pos": "symbol",
+    "note": "Currency symbol: pound sterling"
+  },
+  "¥": {
+    "phonetic": "jɛn",
+    "confidence": 1.0,
+    "frequency": 0.3,
+    "accent_variant": "american",
+    "pos": "symbol",
+    "note": "Currency symbol: yen"
+  },
+  "USD": {
+    "phonetic": "juː ɛs ˈdiː",
+    "confidence": 1.0,
+    "frequency": 0.7,
+    "accent_variant": "american",
+    "pos": "abbreviation",
+    "note": "United States Dollar"
+  },
+  "EUR": {
+    "phonetic": "ˈjʊroʊ",
+    "confidence": 1.0,
+    "frequency": 0.5,
+    "accent_variant": "american",
+    "pos": "abbreviation",
+    "note": "Euro currency"
+  },
+  "GBP": {
+    "phonetic": "dʒiː biː ˈpiː",
+    "confidence": 1.0,
+    "frequency": 0.4,
+    "accent_variant": "american",
+    "pos": "abbreviation",
+    "note": "Great British Pound"
+  }
+}

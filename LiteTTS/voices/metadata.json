@@ -1,0 +1,169 @@
+{
+  "voices": {
+    "af_heart": {
+      "name": "af_heart",
+      "gender": "female",
+      "accent": "american",
+      "voice_type": "neural",
+      "quality_rating": 4.5,
+      "language": "en-us",
+      "file_size": 0,
+      "description": "Warm, natural female voice with excellent clarity"
+    },
+    "af_bella": {
+      "name": "af_bella",
+      "gender": "female",
+      "accent": "american",
+      "voice_type": "neural",
+      "quality_rating": 4.3,
+      "language": "en-us",
+      "file_size": 0,
+      "description": "Clear, articulate female voice perfect for professional content"
+    },
+    "af_alloy": {
+      "name": "af_alloy",
+      "gender": "female",
+      "accent": "american",
+      "voice_type": "neural",
+      "quality_rating": 4.2,
+      "language": "en-us",
+      "file_size": 0,
+      "description": "Smooth, professional female voice with consistent tone"
+    },
+    "af_aoede": {
+      "name": "af_aoede",
+      "gender": "female",
+      "accent": "american",
+      "voice_type": "neural",
+      "quality_rating": 4.1,
+      "language": "en-us",
+      "file_size": 0,
+      "description": "Expressive female voice with dynamic range"
+    },
+    "af_jessica": {
+      "name": "af_jessica",
+      "gender": "female",
+      "accent": "american",
+      "voice_type": "neural",
+      "quality_rating": 4.0,
+      "language": "en-us",
+      "file_size": 0,
+      "description": "Friendly, approachable female voice"
+    },
+    "af_nicole": {
+      "name": "af_nicole",
+      "gender": "female",
+      "accent": "american",
+      "voice_type": "neural",
+      "quality_rating": 4.2,
+      "language": "en-us",
+      "file_size": 0,
+      "description": "Confident, authoritative female voice"
+    },
+    "af_sky": {
+      "name": "af_sky",
+      "gender": "female",
+      "accent": "american",
+      "voice_type": "neural",
+      "quality_rating": 3.9,
+      "language": "en-us",
+      "file_size": 0,
+      "description": "Light, airy female voice with youthful tone"
+    },
+    "am_puck": {
+      "name": "am_puck",
+      "gender": "male",
+      "accent": "american",
+      "voice_type": "neural",
+      "quality_rating": 4.4,
+      "language": "en-us",
+      "file_size": 0,
+      "description": "Natural, conversational male voice with warm tone"
+    },
+    "am_liam": {
+      "name": "am_liam",
+      "gender": "male",
+      "accent": "american",
+      "voice_type": "neural",
+      "quality_rating": 4.3,
+      "language": "en-us",
+      "file_size": 0,
+      "description": "Deep, authoritative male voice perfect for narration"
+    }
+  },
+  "stats": {
+    "af_heart": {
+      "total_requests": 8,
+      "total_duration": 0.0,
+      "average_request_length": 0.0,
+      "last_used": "2025-08-26T20:52:45.684969",
+      "error_count": 0,
+      "success_rate": 1.0
+    },
+    "af_bella": {
+      "total_requests": 0,
+      "total_duration": 0.0,
+      "average_request_length": 0.0,
+      "last_used": null,
+      "error_count": 0,
+      "success_rate": 1.0
+    },
+    "af_alloy": {
+      "total_requests": 0,
+      "total_duration": 0.0,
+      "average_request_length": 0.0,
+      "last_used": null,
+      "error_count": 0,
+      "success_rate": 1.0
+    },
+    "af_aoede": {
+      "total_requests": 0,
+      "total_duration": 0.0,
+      "average_request_length": 0.0,
+      "last_used": null,
+      "error_count": 0,
+      "success_rate": 1.0
+    },
+    "af_jessica": {
+      "total_requests": 0,
+      "total_duration": 0.0,
+      "average_request_length": 0.0,
+      "last_used": null,
+      "error_count": 0,
+      "success_rate": 1.0
+    },
+    "af_nicole": {
+      "total_requests": 0,
+      "total_duration": 0.0,
+      "average_request_length": 0.0,
+      "last_used": null,
+      "error_count": 0,
+      "success_rate": 1.0
+    },
+    "af_sky": {
+      "total_requests": 0,
+      "total_duration": 0.0,
+      "average_request_length": 0.0,
+      "last_used": null,
+      "error_count": 0,
+      "success_rate": 1.0
+    },
+    "am_puck": {
+      "total_requests": 0,
+      "total_duration": 0.0,
+      "average_request_length": 0.0,
+      "last_used": null,
+      "error_count": 0,
+      "success_rate": 1.0
+    },
+    "am_liam": {
+      "total_requests": 0,
+      "total_duration": 0.0,
+      "average_request_length": 0.0,
+      "last_used": null,
+      "error_count": 0,
+      "success_rate": 1.0
+    }
+  },
+  "last_updated": "2025-08-26T20:52:45.684971"
+}

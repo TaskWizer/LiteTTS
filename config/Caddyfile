@@ -1,0 +1,46 @@
+# If self-hosting and using a real domain, put your actual domain name here.
+# Caddy will automatically get a TLS certificate for it.
+
+# If you have a domain, use this format and comment out the localhost block below.
+# subdomain.yourdomain.com {
+
+# For local development, use localhost (host machine only).
+# localhost {
+
+# Accept HTTP connections on port 80 from any hostname or IP
+:80 {
+    # LiteTTS API endpoints
+    handle /api/* {
+        reverse_proxy litetts-api:8354
+    }
+
+    # LiteTTS Dashboard
+    handle /dashboard/* {
+        reverse_proxy litetts-api:8354
+    }
+
+    # LiteTTS v1 API (OpenAI-compatible)
+    handle /v1/* {
+        reverse_proxy litetts-api:8354
+    }
+
+    # Chroma vector database API
+    handle /chroma/* {
+        reverse_proxy chroma:8000
+    }
+
+    # Health check endpoint
+    handle /health {
+        respond "healthy" 200
+    }
+
+    # Primary Reverse Proxy to OpenWebUI (fallback for all other requests)
+    # This handles all remaining traffic, including websockets.
+    reverse_proxy openwebui:8080
+
+    # Optional but recommended: Add a global security header
+    header {
+        # Hides the Server header for a minor security improvement
+        -Server
+    }
+}

@@ -1,0 +1,52 @@
+{
+  "timestamp": 1755398097.8121896,
+  "total_tests": 4,
+  "successful_tests": 4,
+  "failed_tests": 0,
+  "results": [
+    {
+      "test_name": "Basic time-stretching",
+      "success": true,
+      "request_time": 0.8105898590292782,
+      "content_length": 29664,
+      "rtf": 1.3116340760991556,
+      "time_stretching_enabled": true,
+      "time_stretching_rate": 30,
+      "metadata_headers": {},
+      "audio_file": "samples/api-test/test_1_basic_time-stretching.mp3"
+    },
+    {
+      "test_name": "High compression rate",
+      "success": true,
+      "request_time": 0.9525168859981932,
+      "content_length": 32280,
+      "rtf": 1.4163819866144136,
+      "time_stretching_enabled": true,
+      "time_stretching_rate": 50,
+      "metadata_headers": {},
+      "audio_file": "samples/api-test/test_2_high_compression_rate.mp3"
+    },
+    {
+      "test_name": "Disabled time-stretching",
+      "success": true,
+      "request_time": 0.9767760980175808,
+      "content_length": 28704,
+      "rtf": 1.6334048461832456,
+      "time_stretching_enabled": false,
+      "time_stretching_rate": null,
+      "metadata_headers": {},
+      "audio_file": "samples/api-test/test_3_disabled_time-stretching.mp3"
+    },
+    {
+      "test_name": "Default behavior (config-based)",
+      "success": true,
+      "request_time": 0.9505181789863855,
+      "content_length": 31536,
+      "rtf": 1.4467552191573598,
+      "time_stretching_enabled": null,
+      "time_stretching_rate": null,
+      "metadata_headers": {},
+      "audio_file": "samples/api-test/test_4_default_behavior_(config-based).mp3"
+    }
+  ]
+}

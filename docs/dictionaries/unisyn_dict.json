@@ -1,0 +1,242 @@
+{
+  "hello": {
+    "phonetic": "h@'loU",
+    "confidence": 0.9,
+    "frequency": 0.16666666666666666,
+    "accent_variant": "general",
+    "pos": null,
+    "accent_variants": {
+      "american": "h@'loU",
+      "british": "h@'l@U",
+      "australian": "h@'loU"
+    }
+  },
+  "world": {
+    "phonetic": "w3:rld",
+    "confidence": 0.9,
+    "frequency": 0.16666666666666666,
+    "accent_variant": "general",
+    "pos": null,
+    "accent_variants": {
+      "american": "w3:rld",
+      "british": "w3:ld",
+      "australian": "w3:ld"
+    }
+  },
+  "water": {
+    "phonetic": "w'A:t@r",
+    "confidence": 0.9,
+    "frequency": 0.16666666666666666,
+    "accent_variant": "general",
+    "pos": null,
+    "accent_variants": {
+      "american": "w'A:t@r",
+      "british": "w'O:t@",
+      "australian": "w'O:t@"
+    }
+  },
+  "car": {
+    "phonetic": "k'A:r",
+    "confidence": 0.9,
+    "frequency": 0.25,
+    "accent_variant": "general",
+    "pos": null,
+    "accent_variants": {
+      "american": "k'A:r",
+      "british": "k'A:",
+      "australian": "k'A:"
+    }
+  },
+  "dance": {
+    "phonetic": "d'&ns",
+    "confidence": 0.9,
+    "frequency": 0.16666666666666666,
+    "accent_variant": "general",
+    "pos": null,
+    "accent_variants": {
+      "american": "d'&ns",
+      "british": "d'A:ns",
+      "australian": "d'A:ns"
+    }
+  },
+  "bath": {
+    "phonetic": "b'&T",
+    "confidence": 0.9,
+    "frequency": 0.2,
+    "accent_variant": "general",
+    "pos": null,
+    "accent_variants": {
+      "american": "b'&T",
+      "british": "b'A:T",
+      "australian": "b'A:T"
+    }
+  },
+  "ask": {
+    "phonetic": "'&sk",
+    "confidence": 0.9,
+    "frequency": 0.25,
+    "accent_variant": "general",
+    "pos": null,
+    "accent_variants": {
+      "american": "'&sk",
+      "british": "'A:sk",
+      "australian": "'A:sk"
+    }
+  },
+  "can't": {
+    "phonetic": "k'&nt",
+    "confidence": 0.9,
+    "frequency": 0.16666666666666666,
+    "accent_variant": "general",
+    "pos": null,
+    "accent_variants": {
+      "american": "k'&nt",
+      "british": "k'A:nt",
+      "australian": "k'A:nt"
+    }
+  },
+  "about": {
+    "phonetic": "@'baUt",
+    "confidence": 0.9,
+    "frequency": 0.16666666666666666,
+    "accent_variant": "general",
+    "pos": null,
+    "accent_variants": {
+      "american": "@'baUt",
+      "british": "@'baUt",
+      "australian": "@'b{Ut"
+    }
+  },
+  "house": {
+    "phonetic": "h'aUs",
+    "confidence": 0.9,
+    "frequency": 0.16666666666666666,
+    "accent_variant": "general",
+    "pos": null,
+    "accent_variants": {
+      "american": "h'aUs",
+      "british": "h'aUs",
+      "australian": "h'{Us"
+    }
+  },
+  "time": {
+    "phonetic": "t'aIm",
+    "confidence": 0.9,
+    "frequency": 0.2,
+    "accent_variant": "general",
+    "pos": null,
+    "accent_variants": {
+      "american": "t'aIm",
+      "british": "t'aIm",
+      "australian": "t'oIm"
+    }
+  },
+  "right": {
+    "phonetic": "r'aIt",
+    "confidence": 0.9,
+    "frequency": 0.16666666666666666,
+    "accent_variant": "general",
+    "pos": null,
+    "accent_variants": {
+      "american": "r'aIt",
+      "british": "r'aIt",
+      "australian": "r'oIt"
+    }
+  },
+  "pronunciation": {
+    "phonetic": "pr@,nVnsi'eIS@n",
+    "confidence": 0.9,
+    "frequency": 0.07142857142857142,
+    "accent_variant": "general",
+    "pos": null,
+    "accent_variants": {
+      "american": "pr@,nVnsi'eIS@n",
+      "british": "pr@,nVnsi'eIS@n",
+      "australian": "pr@,nVnsi'eIS@n"
+    }
+  },
+  "test": {
+    "phonetic": "t'Est",
+    "confidence": 0.9,
+    "frequency": 0.2,
+    "accent_variant": "general",
+    "pos": null,
+    "accent_variants": {
+      "american": "t'Est",
+      "british": "t'Est",
+      "australian": "t'Est"
+    }
+  },
+  "good": {
+    "phonetic": "g'Ud",
+    "confidence": 0.9,
+    "frequency": 0.2,
+    "accent_variant": "general",
+    "pos": null,
+    "accent_variants": {
+      "american": "g'Ud",
+      "british": "g'Ud",
+      "australian": "g'Ud"
+    }
+  },
+  "very": {
+    "phonetic": "v'Eri",
+    "confidence": 0.9,
+    "frequency": 0.2,
+    "accent_variant": "general",
+    "pos": null,
+    "accent_variants": {
+      "american": "v'Eri",
+      "british": "v'Eri",
+      "australian": "v'Eri"
+    }
+  },
+  "people": {
+    "phonetic": "p'i:p@l",
+    "confidence": 0.9,
+    "frequency": 0.14285714285714285,
+    "accent_variant": "general",
+    "pos": null,
+    "accent_variants": {
+      "american": "p'i:p@l",
+      "british": "p'i:p@l",
+      "australian": "p'i:p@l"
+    }
+  },
+  "work": {
+    "phonetic": "w'3:rk",
+    "confidence": 0.9,
+    "frequency": 0.2,
+    "accent_variant": "general",
+    "pos": null,
+    "accent_variants": {
+      "american": "w'3:rk",
+      "british": "w'3:k",
+      "australian": "w'3:k"
+    }
+  },
+  "first": {
+    "phonetic": "f'3:rst",
+    "confidence": 0.9,
+    "frequency": 0.16666666666666666,
+    "accent_variant": "general",
+    "pos": null,
+    "accent_variants": {
+      "american": "f'3:rst",
+      "british": "f'3:st",
+      "australian": "f'3:st"
+    }
+  },
+  "after": {
+    "phonetic": "'&ft@r",
+    "confidence": 0.9,
+    "frequency": 0.16666666666666666,
+    "accent_variant": "general",
+    "pos": null,
+    "accent_variants": {
+      "american": "'&ft@r",
+      "british": "'A:ft@",
+      "australian": "'A:ft@"
+    }
+  }
+}

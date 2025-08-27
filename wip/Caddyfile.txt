@@ -1,0 +1,10 @@
+{
+    # COMPLETELY disable automatic certificate management
+    acme_ca off
+    auto_https off
+}
+
+console.cyopsys.com {
+    tls /etc/caddy/ssl/origin.crt /etc/caddy/ssl/origin.key
+    reverse_proxy open-webui:8080
+}

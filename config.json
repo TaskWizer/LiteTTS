@@ -1,0 +1,477 @@
+{
+  "model": {
+    "name": "LiteTTS",
+    "type": "style_text_to_speech_2",
+    "version": "1.0.0",
+    "default_variant": "model_q4.onnx",
+    "auto_discovery": true,
+    "cache_models": true,
+    "owner": "TaskWizer",
+    "available_variants": [
+      "model.onnx",
+      "model_f16.onnx",
+      "model_q4.onnx",
+      "model_q4f16.onnx",
+      "model_q8f16.onnx",
+      "model_quantized.onnx",
+      "model_uint8.onnx",
+      "model_uint8f16.onnx"
+    ],
+    "performance_mode": "speed",
+    "preload_models": true
+  },
+  "voice": {
+    "default_voice": "af_heart",
+    "auto_discovery": true,
+    "download_all_on_startup": false,
+    "cache_discovery": true,
+    "discovery_cache_hours": 24,
+    "max_cache_size": 512,
+    "preload_default_voices": true,
+    "voice_blending": true,
+    "emotion_support": true,
+    "loading_strategy": "batch",
+    "cache_strategy": "aggressive",
+    "performance_monitoring": true,
+    "use_combined_file": false
+  },
+  "audio": {
+    "default_format": "mp3",
+    "default_speed": 1.0,
+    "default_language": "en-us",
+    "sample_rate": 24000,
+    "mp3_bitrate": 96,
+    "streaming_chunk_duration": 0.5,
+    "supported_formats": [
+      "mp3",
+      "wav",
+      "flac",
+      "opus"
+    ],
+    "watermarking_enabled": false,
+    "watermark_strength": 1.0,
+    "watermark_detection_enabled": true,
+    "use_dummy_watermarker": true,
+    "device": "cpu",
+    "quality_threshold": 0.6,
+    "chunked_generation": {
+      "enabled": true,
+      "strategy": "adaptive",
+      "max_chunk_size": 200,
+      "min_chunk_size": 50,
+      "overlap_size": 5,
+      "respect_sentence_boundaries": true,
+      "respect_paragraph_boundaries": true,
+      "preserve_punctuation": true,
+      "enable_for_streaming": true,
+      "min_text_length_for_chunking": 100
+    },
+    "max_processing_time_ms": 1000.0
+  },
+  "server": {
+    "port": 8354,
+    "host": "0.0.0.0",
+    "environment": "production",
+    "workers": 1,
+    "max_port_attempts": 5,
+    "cors_origins": [
+      "*"
+    ],
+    "request_timeout": 10
+  },
+  "performance": {
+    "cache_enabled": true,
+    "preload_models": true,
+    "max_text_length": 8192,
+    "max_retry_attempts": 3,
+    "retry_delay_seconds": 0.1,
+    "concurrent_requests": 12,
+    "memory_optimization": true,
+    "dynamic_cpu_allocation": {
+      "enabled": true,
+      "cpu_target": 95.0,
+      "aggressive_mode": true,
+      "thermal_protection": true,
+      "onnx_integration": true,
+      "update_environment": true
+    },
+    "onnx_runtime": {
+      "graph_optimization_level": "all",
+      "execution_mode": "parallel",
+      "enable_mem_pattern": true,
+      "enable_cpu_mem_arena": true,
+      "enable_mem_reuse": true,
+      "disable_memory_growth": false,
+      "use_env_allocators": true,
+      "use_deterministic_compute": false,
+      "disable_prepacking": false
+    }
+  },
+  "text_processing": {
+    "enabled": false,
+    "natural_speech": true,
+    "pronunciation_fixes": true,
+    "expand_contractions": false,
+    "preserve_word_count": true,
+    "aggressive_preprocessing": true,
+    "confidence_threshold": 0.7
+  },
+  "symbol_processing": {
+    "enabled": true,
+    "fix_asterisk_pronunciation": false,
+    "normalize_quotation_marks": true,
+    "fix_apostrophe_handling": true,
+    "natural_ampersand_pronunciation": true,
+    "fix_html_entities": true,
+    "handle_quotes_naturally": true,
+    "preserve_markdown": false,
+    "context_aware_symbols": true,
+    "unicode_normalization": true,
+    "espeak_enhanced_processing": {
+      "enabled": true,
+      "fix_question_mark_pronunciation": true,
+      "fix_asterisk_pronunciation": true,
+      "context_aware_processing": true,
+      "punctuation_mode": "some"
+    }
+  },
+  "espeak_integration": {
+    "enabled": true,
+    "voice": "en-us",
+    "phoneme_format": "ascii",
+    "punctuation_mode": "some",
+    "cache_enabled": true,
+    "cache_size": 10000,
+    "fallback_to_existing": true,
+    "timeout_seconds": 5.0,
+    "espeak_path": null
+  },
+  "punctuation_handling": {
+    "enabled": true,
+    "comma_pause_timing": "natural",
+    "question_intonation": true,
+    "exclamation_emphasis": true,
+    "parenthetical_voice_modulation": true,
+    "normalize_punctuation": true,
+    "ellipsis_handling": true,
+    "dash_processing": true
+  },
+  "interjection_handling": {
+    "enabled": true,
+    "fix_hmm_pronunciation": true,
+    "expand_short_interjections": false,
+    "preserve_compound_interjections": true,
+    "natural_filler_words": true,
+    "context_aware_interjections": false
+  },
+  "pronunciation_dictionary": {
+    "enabled": false,
+    "use_context_awareness": true,
+    "use_phonetic_spelling": true,
+    "ticker_symbol_processing": true,
+    "proper_name_pronunciation": true,
+    "technical_term_fixes": true,
+    "financial_term_fixes": true,
+    "custom_pronunciations": true,
+    "dynamic_learning": false
+  },
+  "currency_processing": {
+    "enabled": false,
+    "natural_currency_amounts": true,
+    "handle_large_amounts": true,
+    "approximate_amounts": true,
+    "decimal_precision": true,
+    "international_currencies": true,
+    "crypto_currencies": true,
+    "percentage_handling": true
+  },
+  "datetime_processing": {
+    "enabled": false,
+    "use_ordinal_dates": true,
+    "natural_time_format": true,
+    "iso_format_handling": true,
+    "slash_format_dates": true,
+    "short_year_formats": true,
+    "timezone_handling": true,
+    "relative_dates": true
+  },
+  "url_processing": {
+    "enabled": true,
+    "strip_protocols": true,
+    "natural_domain_pronunciation": true,
+    "handle_paths": true,
+    "email_processing": true,
+    "ip_address_handling": true,
+    "social_media_handles": true,
+    "file_extensions": true
+  },
+  "number_processing": {
+    "enabled": true,
+    "preserve_years": true,
+    "expand_percentages": true,
+    "decimal_handling": true,
+    "ordinal_numbers": true,
+    "fraction_processing": true,
+    "scientific_notation": true,
+    "phone_numbers": true
+  },
+  "voice_modulation": {
+    "enabled": true,
+    "parenthetical_whisper": false,
+    "emphasis_detection": true,
+    "default_whisper_voice": "af_nicole",
+    "dynamic_emotion": true,
+    "prosodic_enhancement": true,
+    "stress_patterns": true,
+    "intonation_control": true
+  },
+  "beta_features": {
+    "enabled": false,
+    "description": "Experimental features that may improve performance but require testing",
+    "time_stretching_optimization": {
+      "enabled": false,
+      "description": "Reduces generation time by synthesizing at faster speed then correcting duration",
+      "generation_speed_boost": 30,
+      "correction_quality": "medium",
+      "max_speed_boost": 100,
+      "min_speed_boost": 10,
+      "auto_enable_for_long_text": 50,
+      "quality_fallback": true,
+      "benchmark_mode": false
+    },
+    "voice_modulation": {
+      "enabled": false,
+      "description": "Advanced voice modulation and emotion detection",
+      "parenthetical_whisper": true,
+      "emphasis_detection": true,
+      "default_whisper_voice": "af_nicole",
+      "dynamic_emotion": true,
+      "prosodic_enhancement": true
+    },
+    "advanced_processing": {
+      "enabled": false,
+      "rime_ai_research_integration": true,
+      "performance_regression_testing": false,
+      "comprehensive_test_suite": true,
+      "phonetic_mapping_system": true,
+      "emotional_prosodic_engine": true,
+      "neural_voice_cloning": false,
+      "real_time_adaptation": false
+    },
+    "phonetic_processing": {
+      "enabled": true,
+      "description": "EXPERIMENTAL: Advanced phonetic processing system requiring significant development",
+      "development_status": "BETA - Needs audio feedback system, pronunciation accuracy analysis, and custom dictionaries",
+      "known_issues": [
+        "Symbols like '?' pronounced as 'up arrow' instead of 'question mark'",
+        "Requires audio output analysis for pronunciation validation",
+        "Custom phonetic dictionaries need creation based on actual speech output",
+        "No quality assurance mechanism for pronunciation accuracy"
+      ],
+      "required_development": [
+        "Implement audio feedback system to analyze generated speech",
+        "Create pronunciation accuracy validation system",
+        "Build custom phonetic dictionaries from real TTS output",
+        "Add quality assurance mechanisms for symbol pronunciation",
+        "Develop comprehensive testing framework for phonetic accuracy"
+      ],
+      "primary_notation": "custom",
+      "fallback_notations": [
+        "arpabet",
+        "ipa"
+      ],
+      "hybrid_mode": false,
+      "accent_variant": "american",
+      "custom_dictionary_path": "docs/dictionaries/custom_phonetic.json",
+      "cache_size": 10000,
+      "performance_monitoring": true,
+      "dictionary_sources": {
+        "arpabet": "docs/dictionaries/cmudict.dict",
+        "ipa": "docs/dictionaries/ipa_dict.json",
+        "unisyn": "docs/dictionaries/unisyn_dict.json"
+      },
+      "fallback_strategy": "grapheme_to_phoneme",
+      "unknown_word_handling": "passthrough",
+      "cache_persistence": true,
+      "cache_file": "cache/phonetic_cache.pkl",
+      "auto_load_dictionaries": true,
+      "enable_caching": true,
+      "confidence_threshold": 0.8,
+      "pronunciation_markers": {
+        "ipa_notation": true,
+        "arpabet_notation": true,
+        "nato_phonetic": true,
+        "custom_markers": true,
+        "rime_ai_style": true
+      },
+      "processing_options": {
+        "dictionary_phonetics": true,
+        "stress_prediction": true,
+        "context_rules": true,
+        "homograph_resolution": true,
+        "accent_adaptation": true,
+        "frequency_weighting": true
+      },
+      "performance_limits": {
+        "max_rtf_impact": 0.1,
+        "max_memory_mb": 256,
+        "cache_hit_rate_target": 0.8
+      }
+    }
+  },
+  "cache": {
+    "enabled": true,
+    "auto_optimize": true,
+    "max_size_mb": 512,
+    "ttl_seconds": 3600,
+    "cleanup_interval": 300
+  },
+  "caching": {
+    "enabled": true,
+    "components": {
+      "tts_synthesis": true,
+      "voice_embeddings": true,
+      "phonemization": true,
+      "audio_processing": true,
+      "time_stretching": true,
+      "text_preprocessing": true
+    },
+    "cache_sizes": {
+      "max_synthesis_cache": 200,
+      "max_voice_cache": 100,
+      "max_phoneme_cache": 500,
+      "max_preprocessing_cache": 1000
+    },
+    "testing_mode": false,
+    "persistence": true,
+    "compression": true
+  },
+  "monitoring": {
+    "enabled": false,
+    "log_level": "INFO",
+    "performance_tracking": true,
+    "error_tracking": true,
+    "system_metrics": true,
+    "detailed_logging": false,
+    "log_rotation": {
+      "max_size": "50MB",
+      "backup_count": 5
+    },
+    "metrics_export": {
+      "enabled": true,
+      "format": "json",
+      "interval_seconds": 60
+    }
+  },
+  "application": {
+    "name": "LiteTTS",
+    "description": "High-quality text-to-speech service with ONNX optimization and natural pronunciation (part of TaskWizer framework)",
+    "version": "1.0.0",
+    "author": "TaskWizer Team",
+    "license": "MIT",
+    "documentation_url": "https://github.com/aliasfoxkde/LiteTTS"
+  },
+  "endpoints": {
+    "tts": "/v1/audio/speech",
+    "voices": "/v1/voices",
+    "health": "/health",
+    "docs": "/docs",
+    "dashboard": "/dashboard",
+    "stream": "/v1/audio/stream"
+  },
+  "paths": {
+    "models_dir": "LiteTTS/models",
+    "voices_dir": "LiteTTS/voices",
+    "cache_dir": "cache",
+    "logs_dir": "docs/logs",
+    "temp_dir": "LiteTTS/temp"
+  },
+  "openwebui_compatibility": {
+    "enabled": true,
+    "strict_mode": false,
+    "response_headers": {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+      "Access-Control-Allow-Headers": "*"
+    },
+    "error_handling": "graceful",
+    "fallback_endpoints": true
+  },
+  "audio_quality_testing": {
+    "enabled": true,
+    "description": "Automated audio quality testing framework for TTS validation",
+    "api_base_url": "http://localhost:8354",
+    "api_timeout": 30,
+    "max_concurrent_tests": 3,
+    "cache_enabled": true,
+    "cache_dir": "cache/audio_quality",
+    "quality_thresholds": {
+      "min_mos_score": 3.0,
+      "max_wer": 0.1,
+      "min_pronunciation_accuracy": 0.9,
+      "max_rtf": 0.25,
+      "min_prosody_score": 0.7
+    },
+    "test_categories": {
+      "espeak_integration": {
+        "enabled": true,
+        "priority": "critical",
+        "description": "Validate eSpeak integration improvements (question mark, asterisk fixes)"
+      },
+      "symbol_processing": {
+        "enabled": true,
+        "priority": "high",
+        "description": "Test symbol processing accuracy and context awareness"
+      },
+      "performance_validation": {
+        "enabled": true,
+        "priority": "high",
+        "description": "Validate RTF performance and processing time targets"
+      },
+      "regression_testing": {
+        "enabled": true,
+        "priority": "critical",
+        "description": "Detect audio quality regressions from code changes"
+      }
+    },
+    "asr_services": {
+      "enabled": false,
+      "description": "External ASR services for transcription-based quality validation",
+      "fallback_to_heuristics": true,
+      "deepgram": {
+        "enabled": false,
+        "api_key": "",
+        "model": "nova-2",
+        "tier": "enhanced",
+        "language": "en-US",
+        "punctuate": true,
+        "smart_format": true
+      },
+      "azure_speech": {
+        "enabled": false,
+        "subscription_key": "",
+        "region": "eastus",
+        "language": "en-US"
+      },
+      "google_stt": {
+        "enabled": false,
+        "credentials_path": "",
+        "language": "en-US"
+      }
+    },
+    "reporting": {
+      "enabled": true,
+      "output_directory": "test_results/audio_quality",
+      "save_audio_samples": false,
+      "generate_detailed_reports": true,
+      "include_baseline_comparison": true,
+      "alert_on_regression": true
+    },
+    "integration": {
+      "ci_cd_enabled": true,
+      "fail_on_regression": true,
+      "baseline_update_threshold": 0.05,
+      "performance_monitoring": true
+    }
+  }
+}

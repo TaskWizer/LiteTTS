@@ -1,0 +1,136 @@
+{
+  "timestamp": 1755399027.0592508,
+  "total_tests": 9,
+  "successful_tests": 9,
+  "failed_tests": 0,
+  "results": [
+    {
+      "test_name": "Default behavior (config-based)",
+      "success": true,
+      "request_time": 1.8608364730025642,
+      "content_length": 74640,
+      "rtf": 0.11966794038601698,
+      "parameters": {
+        "input": "The asterisk symbol (*) represents multiplication, while hedonism is inherently complex. For example, I'll say that's interesting.",
+        "voice": "af_heart"
+      },
+      "filename": "test_01_default_behavior_config-based.mp3"
+    },
+    {
+      "test_name": "Time-stretching enabled with optimal rate",
+      "success": true,
+      "request_time": 0.04648847895441577,
+      "content_length": 74640,
+      "rtf": 0.0029896127944961906,
+      "parameters": {
+        "input": "The asterisk symbol (*) represents multiplication, while hedonism is inherently complex. For example, I'll say that's interesting.",
+        "voice": "af_heart",
+        "time_stretching_enabled": true,
+        "time_stretching_rate": 30,
+        "time_stretching_quality": "medium"
+      },
+      "filename": "test_02_time-stretching_enabled_with_optimal_rate.mp3"
+    },
+    {
+      "test_name": "Time-stretching disabled",
+      "success": true,
+      "request_time": 0.04586931300582364,
+      "content_length": 74640,
+      "rtf": 0.002949795048606022,
+      "parameters": {
+        "input": "The asterisk symbol (*) represents multiplication, while hedonism is inherently complex. For example, I'll say that's interesting.",
+        "voice": "af_heart",
+        "time_stretching_enabled": false
+      },
+      "filename": "test_03_time-stretching_disabled.mp3"
+    },
+    {
+      "test_name": "Conservative rate (20%)",
+      "success": true,
+      "request_time": 1.893997842038516,
+      "content_length": 67344,
+      "rtf": 0.1349962823976134,
+      "parameters": {
+        "input": "The asterisk symbol (*) represents multiplication, while hedonism is inherently complex. For example, I'll say that's interesting.",
+        "voice": "am_adam",
+        "time_stretching_enabled": true,
+        "time_stretching_rate": 20,
+        "time_stretching_quality": "medium"
+      },
+      "filename": "test_04_conservative_rate_20%.mp3"
+    },
+    {
+      "test_name": "Aggressive rate (50%)",
+      "success": true,
+      "request_time": 2.0476247890037484,
+      "content_length": 75840,
+      "rtf": 0.12959650563314862,
+      "parameters": {
+        "input": "The asterisk symbol (*) represents multiplication, while hedonism is inherently complex. For example, I'll say that's interesting.",
+        "voice": "af_bella",
+        "time_stretching_enabled": true,
+        "time_stretching_rate": 50,
+        "time_stretching_quality": "medium"
+      },
+      "filename": "test_05_aggressive_rate_50%.mp3"
+    },
+    {
+      "test_name": "High quality mode",
+      "success": true,
+      "request_time": 1.8661918030120432,
+      "content_length": 64968,
+      "rtf": 0.13787896586716242,
+      "parameters": {
+        "input": "The asterisk symbol (*) represents multiplication, while hedonism is inherently complex. For example, I'll say that's interesting.",
+        "voice": "am_onyx",
+        "time_stretching_enabled": true,
+        "time_stretching_rate": 30,
+        "time_stretching_quality": "high"
+      },
+      "filename": "test_06_high_quality_mode.mp3"
+    },
+    {
+      "test_name": "Low quality mode",
+      "success": true,
+      "request_time": 1.9471285039908253,
+      "content_length": 67608,
+      "rtf": 0.13824128533836175,
+      "parameters": {
+        "input": "The asterisk symbol (*) represents multiplication, while hedonism is inherently complex. For example, I'll say that's interesting.",
+        "voice": "af_nova",
+        "time_stretching_enabled": true,
+        "time_stretching_rate": 30,
+        "time_stretching_quality": "low"
+      },
+      "filename": "test_07_low_quality_mode.mp3"
+    },
+    {
+      "test_name": "Minimum rate (10%)",
+      "success": true,
+      "request_time": 0.2867353089968674,
+      "content_length": 7656,
+      "rtf": 0.17977135360305166,
+      "parameters": {
+        "input": "Short test.",
+        "voice": "af_heart",
+        "time_stretching_enabled": true,
+        "time_stretching_rate": 10
+      },
+      "filename": "test_08_minimum_rate_10%.mp3"
+    },
+    {
+      "test_name": "Maximum rate (100%)",
+      "success": true,
+      "request_time": 0.41331565502332523,
+      "content_length": 14280,
+      "rtf": 0.13892963194061353,
+      "parameters": {
+        "input": "Maximum compression test.",
+        "voice": "af_heart",
+        "time_stretching_enabled": true,
+        "time_stretching_rate": 100
+      },
+      "filename": "test_09_maximum_rate_100%.mp3"
+    }
+  ]
+}
