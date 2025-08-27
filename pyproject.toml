@@ -3,7 +3,7 @@ name = "kokoro-onnx-tts-api"
 version = "1.0.0"
 description = "Lightweight, real-time TTS API using Kokoro ONNX with OpenWebUI compatibility"
 readme = "README.md"
-# requires-python = ">=3.10"
+requires-python = ">=3.12"
 dependencies = [
     "aiohappyeyeballs==2.6.1",
     "aiohttp==3.12.15",
