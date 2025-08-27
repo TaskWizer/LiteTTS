@@ -1,10 +1,32 @@
-# <img src="static/kokoro.svg" alt="LiteTTS" width="32" height="32" style="vertical-align: middle;"> LiteTTS
+# <img src="static/LiteTTS.svg" alt="LiteTTS" width="32" height="32" style="vertical-align: middle; filter: invert(100%)"/> LiteTTS
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.116+-green.svg)](https://fastapi.tiangolo.com/)
 [![Performance](https://img.shields.io/badge/RTF-0.15-brightgreen.svg)](docs/PERFORMANCE.md)
 [![Quality](https://img.shields.io/badge/Quality-Production%20Ready-green.svg)](docs/development/audits/SYSTEM_IMPROVEMENTS_DOCUMENTATION.md)
+
+## ⚠️ **ALPHA SOFTWARE NOTICE**
+
+**LiteTTS is currently in alpha development.** Core TTS synthesis works reliably, but advanced features have known limitations.
+
+### 🚧 Work-in-Progress Features
+The following features are under active development and may have bugs or inconsistent behavior:
+- **Punctuation handling** - Some punctuation marks may not be processed naturally
+- **Contraction pronunciation** - Contractions like "he'd", "she'd" may be mispronounced
+- **Prosody control** - Sentence-level intonation and rhythm improvements ongoing
+- **Currency processing** - Financial amounts and currency symbols processing
+- **Emotional expression** - Voice emotion and style control features
+- **Voice fluidity** - Natural speech flow and stress pattern optimization
+- **Inflection rules** - Question vs statement intonation patterns
+
+### 📋 User Expectations
+- **Expect bugs and breaking changes** during alpha development
+- **Core functionality is stable** - basic text-to-speech works reliably
+- **Use in production at your own risk** - thorough testing recommended
+- **Active development** - regular updates and improvements being made
+
+---
 
 **The fastest, most efficient Text-to-Speech API with near-instant response times** ⚡
 
@@ -16,8 +38,8 @@
 
 **🎯 Goal**: Make enough money working on cool projects so I don't have to work a 9-to-5
 
-- **💝 Sponsor on GitHub**: [Become a sponsor](https://github.com/sponsors/aliasfoxkde) for recurring support
-- **☕ Buy me a coffee**: [One-time donation](https://ko-fi.com/aliasfoxkde) to fuel development
+- **💝 Sponsor on GitHub**: [Become a sponsor](https://github.com/sponsors/TaskWizer) for recurring support
+- **☕ Buy me a coffee**: [One-time donation](https://ko-fi.com/TaskWizer) to fuel development
 - **⭐ Star this repo**: Help others discover this project
 - **🐛 Report issues**: Help improve the software for everyone
 - **👊 Contribute**: Is there a feature you'd like to see? Submit a pull request!
@@ -27,7 +49,7 @@ Your support enables continued development of high-quality, open-source AI tools
 ## ✨ Key Features
 
 - **⚡ Lightning Fast**: 29ms cached responses, 0.15 RTF (6.7x faster than real-time)
-- **🌍 54+ Voices**: Multi-language support with [voice showcase](docs/voices/README.md)
+- **🌍 54+ Voices**: Multi-language support with [voice showcase](docs/VOICES.md)
 - **🔌 OpenAI Compatible**: Drop-in replacement for OpenAI TTS API
 - **🌐 OpenWebUI Compatible**: Works out-of-the-box with OpenWebUI without additional configuration
 - **🎛️ Advanced SSML**: Background noise synthesis and voice modulation
@@ -41,8 +63,8 @@ Your support enables continued development of high-quality, open-source AI tools
 Before getting started, ensure your system meets these requirements:
 
 **Hardware Requirements:**
-- **Memory**: 2GB RAM minimum (4GB+ recommended for high concurrency)
-- **Storage**: 1GB free space for model, voices, code, and cache
+- **Memory**: 4GB RAM minimum (8GB+ recommended for high concurrency)
+- **Storage**: 4GB free space for model, voices, code, and cache
 - **CPU**: Modern multi-core processor (ARM64 and x86_64 supported)
 - **GPU**: Any CUDA-enabled GPU for optimal performance (optional)
 - **Network**: Internet connection for initial model downloads
@@ -60,19 +82,20 @@ Before getting started, ensure your system meets these requirements:
 
 ```bash
 # Clone the repository
-git clone https://github.com/aliasfoxkde/LiteTTS.git
+git clone https://github.com/TaskWizer/LiteTTS.git
 cd LiteTTS
 
 # Option 1: Direct UV Python execution (recommended)
 uv run python app.py
 
-# Option 2: Docker container execution (sandboxed)
+# Option 2: Docker container execution (production-ready with TLS)
+cp .env.example .env  # Configure your deployment
 docker-compose up -d
 
 # Option 3: Manual installation with virtual environment (best practice)
 python -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
+uv pip install -r requirements.txt
 python app.py
 ```
 
@@ -80,7 +103,7 @@ python app.py
 
 ## 💪🏻 *Trust me bro*, oneliner
 ```bash
-git clone https://github.com/aliasfoxkde/LiteTTS.git && cd LiteTTS && uv run python app.py
+git clone https://github.com/TaskWizer/LiteTTS.git && cd LiteTTS && uv run python app.py
 ```
 
 ## 🚀 Getting Started Guides
@@ -98,7 +121,7 @@ git clone https://github.com/aliasfoxkde/LiteTTS.git && cd LiteTTS && uv run pyt
 
 ### 📖 Usage & API
 - **[API Documentation](docs/FEATURES.md)** - Complete endpoint reference and examples
-- **[Voice Showcase](docs/voices/README.md)** - Browse all 54+ voices with audio samples
+- **[Voice Showcase](docs/VOICES.md)** - Browse all 54+ voices with audio samples
 - **[SSML Guide](docs/usage/SSML-GUIDE.md)** - Advanced speech synthesis markup
 
 ### 🔧 Configuration & Optimization
@@ -106,6 +129,7 @@ git clone https://github.com/aliasfoxkde/LiteTTS.git && cd LiteTTS && uv run pyt
 - **[Watermarking Guide](docs/WATERMARKING.md)** - Perth watermarking system setup and usage
 - **[Monitoring & Observability](docs/MONITORING.md)** - Production monitoring and health checks
 - **[Performance Benchmarks](docs/PERFORMANCE.md)** - Optimization tips and metrics
+- **[Comprehensive Benchmarking](docs/BENCHMARKING.md)** - Model comparison and performance analysis
 - **[System Improvements](docs/development/audits/SYSTEM_IMPROVEMENTS_DOCUMENTATION.md)** - Latest enhancements and features
 
 ### 🛠️ Development & Troubleshooting
@@ -137,7 +161,7 @@ LiteTTS/
 - **[Development Roadmap](docs/ROADMAP.md)** - Future features and multi-language expansion plans
 - **[Changelog](docs/CHANGELOG.md)** - Version history and updates
 - **[Production Guide](docs/development/audits/PRODUCTION_MVP_SUMMARY.md)** - Deployment best practices
-- **[License](LICENSE)** - MIT License details
+- **[License](LICENSE)** - Apache 2.0 License details
 
 ---
 ### 📝 Server Startup Options
@@ -150,18 +174,18 @@ python app.py --host 0.0.0.0 --port 8354        # Override host and port
 python app.py --reload --workers 1              # Development with specific workers
 
 # Alternative startup methods
-python -m kokoro.start_server                   # Module execution
+python -m LiteTTS.start_server                   # Module execution
 uv run uvicorn app:app --port 8354              # Direct uvicorn (requires explicit port)
 ```
-**Note** You can also modify the core `config.json` file, but it's not recommended as it will be overwritten on updates. Instead, use the [`override.json` method](docs/CONFIGURATION.md) to customize settings.
+**Note** You can also modify the core `./config/settings.json` file directly, but it's not recommended as it will be overwritten on updates. Instead, use the [`override.json` method](docs/CONFIGURATION.md) to customize settings.
 
 ### 🔧 Configuration Hierarchy
 
 Configuration precedence (highest to lowest priority):
 1. **Command-line arguments** (`--port`, `--host`, `--workers`)
 2. **Environment variables** (`PORT`, `API_HOST`, `WORKERS`)
-3. **override.json** (user overrides)
-4. **config.json** (base defaults - port 8354)
+3. **./config/override.json** (rename override.json.example to override.json for custom settings)
+4. **./config/settings.json** (base defaults - port 8354)
 5. **Default values** (Port 8354 represents "TTS" in English Gematria (an arbitrary, unused port)
 
 ### 🔄 Development Mode
@@ -249,7 +273,7 @@ curl -X POST 'http://localhost:8354/v1/audio/speech' \
 In OpenWebUI Settings → Audio:
 - **TTS Engine**: `OpenAI`
 - **API Base URL**: `http://YOUR_IP:8354/v1`
-- **TTS Model**: `kokoro`
+- **TTS Model**: `litetts`
 - **TTS Voice**: `af_heart`
 
 **📖 See the complete [OpenWebUI Integration](docs/usage/OPENWEBUI-INTEGRATION.md) guide**
@@ -332,7 +356,7 @@ Contributions are welcome! Please see our [Contributing Guide](docs/CONTRIBUTION
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
 
 ## ⚠️ Ethical Use Disclaimer
 
@@ -365,5 +389,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Need help?** Check our [📚 Documentation](#-documentation) or [create an issue](https://github.com/aliasfoxkde/LiteTTS/issues)!
+**Need help?** Check our [📚 Documentation](#-documentation) or [create an issue](https://github.com/TaskWizer/LiteTTS/issues)!
 
