@@ -1,0 +1,33 @@
+[
+  {
+    "model_name": "model_q4",
+    "model_path": "LiteTTS/models/model_q4.onnx",
+    "model_size_mb": 291.07662773132324,
+    "avg_rtf": 0.20314146653706353,
+    "p95_rtf": 0.21009060729056972,
+    "p99_rtf": 0.22532958386045768,
+    "min_rtf": 0.20041630185883622,
+    "max_rtf": 0.2291393280029297,
+    "avg_latency_ms": 802.4486064910889,
+    "p95_latency_ms": 2067.7726507186885,
+    "p99_latency_ms": 2273.417811393738,
+    "min_latency_ms": 50.4755973815918,
+    "max_latency_ms": 2324.8291015625,
+    "baseline_memory_mb": 36.1484375,
+    "peak_memory_mb": 43.81640625,
+    "memory_overhead_mb": 7.66796875,
+    "audio_quality_score": 75.62302401555237,
+    "pronunciation_accuracy": 0.95,
+    "prosody_score": 0.8,
+    "total_tests": 15,
+    "successful_tests": 15,
+    "failed_tests": 0,
+    "success_rate": 1.0,
+    "short_text_rtf": 0.2072591816847938,
+    "medium_text_rtf": 0.20122879694237153,
+    "long_text_rtf": 0.2009364209840253,
+    "initialization_time_ms": 100.06928443908691,
+    "warmup_time_ms": 50.07362365722656,
+    "throughput_chars_per_sec": 99.44562100860995
+  }
+]

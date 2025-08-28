@@ -179,3 +179,5 @@ Caching and Computation Reuse:
 * Precomputed Feature Storage (we are already doing this to a degree)
 
 Pipelined Execution: Breaking the TTS pipeline into independent stages (text normalization, phonemization, acoustic model, vocoder) allows each component to process different requests simultaneously, improving overall throughput through pipeline parallelism
+
+A/B Testing Framework: Implement a robust testing framework that can simultaneously run original and optimized versions on the same hardware with identical inputs. This allows for precise measurement of optimization impact and quick detection of any quality regressions
