@@ -1,0 +1,50 @@
+{
+  "health": {
+    "test_name": "Health Endpoint",
+    "avg_latency_ms": 1.2860810500569642,
+    "p95_latency_ms": 3.144905250610467,
+    "p99_latency_ms": 7.006362650154181,
+    "min_latency_ms": 0.5517249992408324,
+    "max_latency_ms": 7.971727000040119,
+    "success_rate": 1.0,
+    "throughput_rps": 2508.866648330951,
+    "cold_start_latency_ms": null,
+    "warm_latency_ms": null
+  },
+  "cold_start": {
+    "test_name": "TTS Cold Start",
+    "avg_latency_ms": 562.1938730000693,
+    "p95_latency_ms": 562.1938730000693,
+    "p99_latency_ms": 562.1938730000693,
+    "min_latency_ms": 562.1938730000693,
+    "max_latency_ms": 562.1938730000693,
+    "success_rate": 1.0,
+    "throughput_rps": 1.7787458171033408,
+    "cold_start_latency_ms": 562.1938730000693,
+    "warm_latency_ms": null
+  },
+  "warm_requests": {
+    "test_name": "TTS Warm Requests",
+    "avg_latency_ms": 303.9732004999678,
+    "p95_latency_ms": 823.3251269000898,
+    "p99_latency_ms": 977.2517949798931,
+    "min_latency_ms": 25.764836000234936,
+    "max_latency_ms": 1015.7334619998437,
+    "success_rate": 1.0,
+    "throughput_rps": 3.2897636974418276,
+    "cold_start_latency_ms": null,
+    "warm_latency_ms": 303.9732004999678
+  },
+  "concurrent": {
+    "test_name": "Concurrent Requests",
+    "avg_latency_ms": 132.87964000046486,
+    "p95_latency_ms": 138.0899033996684,
+    "p99_latency_ms": 138.72178547942895,
+    "min_latency_ms": 129.85068300076819,
+    "max_latency_ms": 138.87975599936908,
+    "success_rate": 1.0,
+    "throughput_rps": 36.00236740063624,
+    "cold_start_latency_ms": null,
+    "warm_latency_ms": null
+  }
+}

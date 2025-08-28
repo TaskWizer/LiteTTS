@@ -111,12 +111,14 @@ class LiteTTSApplication:
         from LiteTTS.performance.integrated_optimizer import IntegratedPerformanceOptimizer
         from LiteTTS.performance.simd_optimizer import get_simd_optimizer
         from LiteTTS.performance.batch_optimizer import get_batch_optimizer
+        from LiteTTS.performance.cold_start_optimizer import get_cold_start_optimizer
         from LiteTTS.cache.preloader import IntelligentPreloader
 
         self.performance_monitor = PerformanceMonitor(max_history=1000, enable_system_monitoring=True)
         self.performance_optimizer = IntegratedPerformanceOptimizer()
         self.simd_optimizer = get_simd_optimizer()
         self.batch_optimizer = get_batch_optimizer()
+        self.cold_start_optimizer = get_cold_start_optimizer()
         self.preloader: Optional[IntelligentPreloader] = None
 
         # FastAPI app and routers
@@ -192,6 +194,13 @@ class LiteTTSApplication:
             # Log batch optimizer status
             batch_status = self.batch_optimizer.get_status()
             self.logger.info(f"📦 Batch optimizer ready: {batch_status['current_batch_sizes']}")
+
+            # Apply cold start optimizations
+            self.logger.info("❄️ Applying cold start optimizations...")
+            cold_start_results = self.cold_start_optimizer.run_comprehensive_cold_start_optimization()
+            if cold_start_results.get("target_achieved", False):
+                improvement = cold_start_results.get("improvement_results", {})
+                self.logger.info(f"✅ Cold start optimized: {improvement.get('baseline_ms', 0):.1f}ms → {improvement.get('optimized_ms', 0):.1f}ms")
 
         except Exception as e:
             self.logger.warning(f"⚠️ Performance optimization failed: {e}")
