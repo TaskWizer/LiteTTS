@@ -46,43 +46,65 @@ class VoiceValidator:
             warnings=[],
             metadata={}
         )
-        
+
         # Check if file exists
         if not file_path.exists():
             result.errors.append(f"Voice file does not exist: {file_path}")
             return result
-        
+
         # Get file size
         result.file_size = file_path.stat().st_size
-        
-        # Check file size
-        if result.file_size < self.expected_properties['min_file_size']:
+
+        # Check file size - adjust for .bin files (smaller than .pt files)
+        min_size = 100 * 1024 if file_path.suffix == '.bin' else self.expected_properties['min_file_size']  # 100KB for .bin files
+        if result.file_size < min_size:
             result.errors.append(f"File too small: {result.file_size} bytes")
-        
+
         if result.file_size > self.expected_properties['max_file_size']:
             result.warnings.append(f"File very large: {result.file_size} bytes")
-        
-        # Try to load the model
+
+        # Try to load the model based on file type
         try:
-            model_data = torch.load(file_path, map_location='cpu')
-            result.metadata['loaded_successfully'] = True
-            
-            # Validate model structure
-            self._validate_model_structure(model_data, result)
-            
-            # Validate embedding data
-            self._validate_embedding_data(model_data, result)
-            
-            # Additional checks
-            self._perform_additional_checks(model_data, result)
-            
+            if file_path.suffix == '.bin':
+                # Handle .bin files (numpy arrays)
+                import numpy as np
+                voice_data = np.fromfile(file_path, dtype=np.float32)
+
+                # Validate .bin file structure
+                if len(voice_data) % 256 == 0:
+                    voice_data = voice_data.reshape(-1, 256)
+                    result.metadata['embedding_shape'] = voice_data.shape
+                    result.metadata['embedding_dim'] = 256
+                    result.metadata['loaded_successfully'] = True
+                else:
+                    result.warnings.append(f"Unexpected voice data size: {len(voice_data)} (not divisible by 256)")
+                    result.metadata['loaded_successfully'] = True  # Still valid, just unusual
+
+                result.metadata['file_type'] = 'binary'
+                result.metadata['data_type'] = str(voice_data.dtype)
+
+            else:
+                # Handle .pt files (PyTorch tensors)
+                model_data = torch.load(file_path, map_location='cpu')
+                result.metadata['loaded_successfully'] = True
+                result.metadata['file_type'] = 'pytorch'
+
+                # Validate model structure
+                self._validate_model_structure(model_data, result)
+
+                # Validate embedding data
+                self._validate_embedding_data(model_data, result)
+
+                # Additional checks
+                self._perform_additional_checks(model_data, result)
+
         except Exception as e:
             result.errors.append(f"Failed to load model: {str(e)}")
             result.metadata['loaded_successfully'] = False
-        
+
         # Set overall validity
         result.is_valid = len(result.errors) == 0
-        
+
         return result
     
     def _validate_model_structure(self, model_data: Any, result: ValidationResult):
@@ -196,13 +218,19 @@ class VoiceValidator:
     def validate_all_voices(self, voices_dir: Path) -> Dict[str, ValidationResult]:
         """Validate all voice files in a directory"""
         results = {}
-        
+
         # Look for .pt files
         for voice_file in voices_dir.glob("*.pt"):
             voice_name = voice_file.stem
             logger.info(f"Validating voice: {voice_name}")
             results[voice_name] = self.validate_voice(voice_name, voice_file)
-        
+
+        # Look for .bin files
+        for voice_file in voices_dir.glob("*.bin"):
+            voice_name = voice_file.stem
+            logger.info(f"Validating voice: {voice_name}")
+            results[voice_name] = self.validate_voice(voice_name, voice_file)
+
         return results
     
     def get_validation_summary(self, results: Dict[str, ValidationResult]) -> Dict[str, Any]:

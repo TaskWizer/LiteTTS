@@ -3,6 +3,8 @@ import io
 import time
 import socket
 import asyncio
+import json
+import math
 import numpy as np
 import soundfile as sf
 from pathlib import Path
@@ -20,6 +22,29 @@ from LiteTTS.config import config
 from LiteTTS.exceptions import ModelError
 from LiteTTS.logging_config import setup_logging
 from LiteTTS.cache import cache_manager
+
+
+def json_safe_dumps(data: Any) -> str:
+    """
+    JSON serialization with safety checks for infinite float values.
+    Replaces inf, -inf, and NaN values with JSON-compliant alternatives.
+    """
+    def sanitize_value(obj):
+        if isinstance(obj, float):
+            if math.isinf(obj):
+                return 999999.0 if obj > 0 else -999999.0  # Replace inf with large finite number
+            elif math.isnan(obj):
+                return 0.0  # Replace NaN with 0
+        elif isinstance(obj, dict):
+            return {k: sanitize_value(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [sanitize_value(item) for item in obj]
+        elif isinstance(obj, tuple):
+            return tuple(sanitize_value(item) for item in obj)
+        return obj
+
+    sanitized_data = sanitize_value(data)
+    return json.dumps(sanitized_data)
 from LiteTTS.text.phonemizer_preprocessor import phonemizer_preprocessor
 # Import advanced text processing directly
 try:
@@ -56,9 +81,9 @@ class TTSRequest(BaseModel):
     model: Optional[str] = None  # OpenWebUI compatibility - ignored but accepted
 
 
-class KokoroTTSApplication:
+class LiteTTSApplication:
     """
-    Main application class for Kokoro ONNX TTS API.
+    Main application class for LiteTTS API (based on Kokoro ONNX).
     Encapsulates all application state and provides clean architecture.
     """
 
@@ -121,7 +146,7 @@ class KokoroTTSApplication:
     async def lifespan(self, app: FastAPI):
         """Modern FastAPI lifespan event handler"""
         # Startup
-        self.logger.info("Starting Kokoro ONNX TTS API...")
+        self.logger.info("Starting LiteTTS API...")
 
         # Start performance monitoring
         self.performance_monitor.start_monitoring()
@@ -510,7 +535,7 @@ class KokoroTTSApplication:
                 self.logger.info("📋 Using dynamic voices as fallback")
 
             self.logger.info(f"🎭 Final available voices count: {len(self.available_voices)}")
-            self.logger.info("🎉 Kokoro ONNX TTS API ready!")
+            self.logger.info("🎉 LiteTTS API ready!")
 
         except Exception as e:
             self.logger.error(f"❌ Failed to initialize model: {e}")
@@ -2248,7 +2273,7 @@ with open("hello.mp3", "wb") as f:
                     }
 
                     # Send data to client
-                    await websocket.send_text(json.dumps(real_time_data))
+                    await websocket.send_text(json_safe_dumps(real_time_data))
 
                     # Wait 1 second before next update
                     await asyncio.sleep(1)
@@ -2363,7 +2388,7 @@ def _configure_uvicorn_early():
 _configure_uvicorn_early()
 
 # Create application instance
-tts_app = KokoroTTSApplication()
+tts_app = LiteTTSApplication()
 app = tts_app.create_app()
 
 # Configuration is available via tts_app.config for external scripts
@@ -2518,7 +2543,7 @@ def run_server():
     default_port = int(os.getenv("PORT", tts_app.config.server.port))
     available_port = tts_app.find_available_port(default_port)
 
-    print(f"Starting Kokoro ONNX TTS API on {tts_app.config.server.host}:{available_port}")
+    print(f"Starting LiteTTS API on {tts_app.config.server.host}:{available_port}")
     print(f"Configuration loaded from config.json")
     if available_port != default_port:
         print(f"Port {default_port} was unavailable, using {available_port}")
@@ -2594,7 +2619,7 @@ def main():
     import uvicorn
 
     parser = argparse.ArgumentParser(
-        description="Kokoro ONNX TTS API Server",
+        description="LiteTTS API Server",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -2688,7 +2713,7 @@ Examples:
         print(f"Using exact port {configured_port} as specified")
 
     # Display startup information
-    print(f"Starting Kokoro ONNX TTS API on {configured_host}:{configured_port}")
+    print(f"Starting LiteTTS API on {configured_host}:{configured_port}")
     print(f"Configuration loaded from config.json")
     if args.reload:
         print("Hot reload enabled for development")

@@ -36,6 +36,20 @@ Deep Research:
 - RIME AI, ElevenLabs, etc.
 - https://www.reddit.com/r/LocalLLaMA/comments/1f0awd6/best_local_open_source_texttospeech_and/
 
+
+TTS:
+"won't we" sounds like "want we"
+"we'll" sounds like "wehl" (should be more like "wh-eel"
+"a.m" sounds like "a (pause) m" and should just be "A-M"
+"beautiful" sounds like ...
+"happiness"
+
+Gets currency and date formats wrong:
+05/15/2018
+$123.45 + 67.89 = ??
+
+
+
 When I test the "Real-time TTS Testing" feature on the dashboard, aka. "http://localhost:8354/dashboard", some of the voices have an error:
 TTS Error: {"detail":"Generation failed: Voice am_liam not found in available voices"}
 
@@ -43,7 +57,7 @@ On the current hardware with CPU only, we have a RTF of ~0.20 to ~0.25 which is 
 This latency is almost certainly due to the initial model loading and computation setup, not the actual inference speed. Warm up and prime the model on startup from storage (disk, cache, or network) into memory, set up the computation graph, and load weights into memory also. The First-Token Computation: The first inference run has additional overhead as everything is primed. Look into ways to improve the latency.
 
 Tasks:
-- Fix TTS Voice dropdown in OpenWebUI
+- Fix TTS Voice dropdown in OpenWebUI (if doable with API compatability)
 - Audit contractions, porosity, tone, intanation, etc.
 - Move "config.json" to `./config/settings.json` (review and merge and update references)
 - Systematically go through each option in `./config/settings.json` and make sure all the features are implimented and can be modified with the settings.
@@ -56,17 +70,6 @@ Tasks:
 - Build a plan of action along with a comprehensive task list and work through it systematically until all tasks are completed.
 - There are still old references to "kokoro" before the renaming of the project, audit and update any old references (but leave attribution, etc.)
 - Audit and run end-to-end tests and validate everything is working reliably.
-
-TTS:
-"won't we" sounds like "want we"
-"we'll" sounds like "wehl" (should be more like "wh-eel"
-"a.m" sounds like "a (pause) m" and should just be "A-M"
-"beautiful" sounds like ...
-"happiness"
-
-Gets currency and date formats wrong:
-05/15/2018
-$123.45 + 67.89 = ??
 
 Get Warning when running:
 Failed to load configuration: ModelConfig.__init__() got an unexpected keyword argument 'preload_models'
@@ -162,3 +165,5 @@ ERROR:    Exception in ASGI application
     |            ^^^^^^^^^^^^^^^^^
     | ValueError: Out of range float values are not JSON compliant: inf
     +------------------------------------
+
+Do a systematic audit of the entire system, evaluate for gaps with a gap analysis, validate the quality of the code and work through enhancing and improving the code and features step by step until complete. Create a comprehensive task list to follow and work through it until all tasks are completed.

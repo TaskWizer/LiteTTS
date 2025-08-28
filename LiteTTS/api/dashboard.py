@@ -177,13 +177,19 @@ class DashboardAnalytics:
             response_times.sort()
             count = len(response_times)
             
+            # Calculate statistics with safety checks for infinite values
+            avg_time = sum(response_times) / count if count > 0 else 0.0
+
+            # Ensure all values are finite
+            import math
+
             return {
-                'avg': sum(response_times) / count,
-                'min': response_times[0],
-                'max': response_times[-1],
-                'p50': response_times[int(count * 0.5)],
-                'p95': response_times[int(count * 0.95)],
-                'p99': response_times[int(count * 0.99)]
+                'avg': avg_time if math.isfinite(avg_time) else 0.0,
+                'min': response_times[0] if math.isfinite(response_times[0]) else 0.0,
+                'max': response_times[-1] if math.isfinite(response_times[-1]) else 0.0,
+                'p50': response_times[int(count * 0.5)] if math.isfinite(response_times[int(count * 0.5)]) else 0.0,
+                'p95': response_times[int(count * 0.95)] if math.isfinite(response_times[int(count * 0.95)]) else 0.0,
+                'p99': response_times[int(count * 0.99)] if math.isfinite(response_times[int(count * 0.99)]) else 0.0
             }
     
     def get_error_rates(self, minutes: int = 60) -> Dict[str, Any]:
@@ -205,7 +211,12 @@ class DashboardAnalytics:
                         error_requests += 1
             
             error_rate = (error_requests / total_requests * 100) if total_requests > 0 else 0
-            
+
+            # Ensure error rate is finite
+            import math
+            if not math.isfinite(error_rate):
+                error_rate = 0.0
+
             return {
                 'total_requests': total_requests,
                 'error_requests': error_requests,

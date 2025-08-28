@@ -258,9 +258,7 @@
       "performance_regression_testing": false,
       "comprehensive_test_suite": true,
       "phonetic_mapping_system": true,
-      "emotional_prosodic_engine": true,
-      "neural_voice_cloning": false,
-      "real_time_adaptation": false
+      "emotional_prosodic_engine": true
     },
     "phonetic_processing": {
       "enabled": true,
@@ -321,16 +319,6 @@
         "max_memory_mb": 256,
         "cache_hit_rate_target": 0.8
       }
-    },
-    "watermarking": {
-      "watermarking_enabled": false,
-      "watermark_strength": 1.0,
-      "watermark_detection_enabled": true,
-      "use_dummy_watermarker": true,
-      "digital_signature_enabled": false,
-      "signature_algorithm": "sha256",
-      "watermark_frequency_range": [8000, 12000],
-      "detection_threshold": 0.5
     }
   },
   "cache": {
@@ -453,28 +441,8 @@
     },
     "asr_services": {
       "enabled": false,
-      "description": "External ASR services for transcription-based quality validation",
-      "fallback_to_heuristics": true,
-      "deepgram": {
-        "enabled": false,
-        "api_key": "",
-        "model": "nova-2",
-        "tier": "enhanced",
-        "language": "en-US",
-        "punctuate": true,
-        "smart_format": true
-      },
-      "azure_speech": {
-        "enabled": false,
-        "subscription_key": "",
-        "region": "eastus",
-        "language": "en-US"
-      },
-      "google_stt": {
-        "enabled": false,
-        "credentials_path": "",
-        "language": "en-US"
-      }
+      "description": "External ASR services for transcription-based quality validation - requires API keys",
+      "fallback_to_heuristics": true
     },
     "reporting": {
       "enabled": true,

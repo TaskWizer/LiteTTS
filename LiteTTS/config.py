@@ -24,6 +24,7 @@ class ModelConfig:
     cache_models: bool = True
     owner: str = "TaskWizer"
     performance_mode: str = "balanced"
+    preload_models: bool = True  # Enable model preloading for faster startup
 
     def __post_init__(self):
         if self.available_variants is None:
@@ -310,15 +311,18 @@ class ConfigManager:
     def __init__(self, config_file: str = None):
         # Determine config file location with backward compatibility
         if config_file is None:
-            # Check root location first (new preferred location)
-            if Path("config.json").exists():
+            # Check for new comprehensive settings file first (preferred)
+            if Path("config/settings.json").exists():
+                config_file = "config/settings.json"
+            # Fall back to root config.json for backward compatibility
+            elif Path("config.json").exists():
                 config_file = "config.json"
             # Fall back to old location for backward compatibility
             elif Path("LiteTTS/config.json").exists():
                 config_file = "LiteTTS/config.json"
             else:
-                # Default to new location
-                config_file = "config.json"
+                # Default to new comprehensive settings location
+                config_file = "config/settings.json"
 
         # Load from JSON config file first
         self.config_file = Path(config_file)
@@ -774,7 +778,7 @@ class ConfigManager:
             logger.error(f"Failed to save configuration to {filepath}: {e}")
             return False
 
-# Global configuration instance
+# Global configuration instance - prioritize comprehensive settings file
 config = ConfigManager()
 
 # Alias for backward compatibility

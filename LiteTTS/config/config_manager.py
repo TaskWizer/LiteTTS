@@ -24,7 +24,15 @@ logger = logging.getLogger(__name__)
 class ConfigManager:
     """Manages both user-facing and internal configuration"""
     
-    def __init__(self, config_path: str = "config.json"):
+    def __init__(self, config_path: str = None):
+        # Determine config file location with preference for comprehensive settings
+        if config_path is None:
+            from pathlib import Path
+            if Path("config/settings.json").exists():
+                config_path = "config/settings.json"
+            else:
+                config_path = "config.json"  # Fallback for backward compatibility
+
         self.config_path = config_path
         self.user_config = self._load_user_config()
         self.internal_config = get_internal_config()
@@ -283,7 +291,7 @@ class ConfigManager:
 # Global instance
 _config_manager = None
 
-def get_config_manager(config_path: str = "config.json") -> ConfigManager:
+def get_config_manager(config_path: str = None) -> ConfigManager:
     """Get the global configuration manager instance"""
     global _config_manager
     if _config_manager is None:
