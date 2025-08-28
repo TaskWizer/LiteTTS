@@ -1,46 +1,228 @@
-# If self-hosting and using a real domain, put your actual domain name here.
-# Caddy will automatically get a TLS certificate for it.
+# LiteTTS OpenWebUI Integration - Caddyfile Configuration
+#
+# This configuration sets up reverse proxy routing for:
+# - OpenWebUI main application (web interface + API endpoints)
+# - LiteTTS API endpoints (TTS-specific routes)
+# - Dashboard and examples
+#
+# DEPLOYMENT MODES:
+# 1. Local Development: Uses HTTP only on localhost (current config)
+# 2. Production VPS: Replace "localhost" with your domain for automatic HTTPS
+#
+# To deploy to production VPS:
+# 1. Replace "localhost {" with "yourdomain.com {"
+# 2. Uncomment port 443 in docker-compose.yml
+# 3. Caddy will automatically handle HTTPS with Let's Encrypt
 
-# If you have a domain, use this format and comment out the localhost block below.
-# subdomain.yourdomain.com {
+# For production with domain: replace the line below with your domain
+# yourdomain.com {
+#    # Alternatively, use your own certificates (not recommended)
+#    # tls /etc/caddy/ssl/origin.crt /etc/caddy/ssl/origin.key
+#
+#    # Caddy will automatically handle HTTPS with Let's Encrypt 
+#    tls {
+#        # For production, use the commented line below for passing certificates to Cloudflare for proxy
+#        # dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+#
+#        # For testing, use the commented line below for staging Let's Encrypt server (easiest)
+#        ca https://acme-staging-v02.api.letsencrypt.org/directory  # Comment this line for production
+#    }
 
-# For local development, use localhost (host machine only).
-# localhost {
+# For local development: HTTP only (no TLS/HTTPS) for host machine.
+# localhost:80 {
 
-# Accept HTTP connections on port 80 from any hostname or IP
-:80 {
-    # LiteTTS API endpoints
-    handle /api/* {
-        reverse_proxy litetts-api:8354
+# Recommended for local development across all local network interfaces
+localhost, 127.0.0.1, ::1, *.local, 192.168.1.* {
+    tls internal  # Enables self-signed certs for development, comment out for HTTP only or remove for production
+
+    # LiteTTS TTS API endpoints - specific paths only
+    handle /api/v1/audio/* {
+        reverse_proxy litetts-api:8354 {
+            # Audio streaming optimizations
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+
+            # Timeout settings for TTS generation (minimum 30 seconds)
+            transport http {
+                dial_timeout 10s
+                response_header_timeout 60s
+                read_timeout 60s
+                write_timeout 60s
+            }
+        }
     }
 
-    # LiteTTS Dashboard
-    handle /dashboard/* {
-        reverse_proxy litetts-api:8354
+    handle /api/v1/voices* {
+        reverse_proxy litetts-api:8354 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            transport http {
+                dial_timeout 10s
+                response_header_timeout 60s
+                read_timeout 60s
+                write_timeout 60s
+            }
+        }
     }
 
-    # LiteTTS v1 API (OpenAI-compatible)
-    handle /v1/* {
-        reverse_proxy litetts-api:8354
+    handle /api/v1/models* {
+        reverse_proxy litetts-api:8354 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            transport http {
+                dial_timeout 10s
+                response_header_timeout 60s
+                read_timeout 60s
+                write_timeout 60s
+            }
+        }
     }
 
-    # Chroma vector database API
-    handle /chroma/* {
-        reverse_proxy chroma:8000
+    handle /api/v1/health* {
+        reverse_proxy litetts-api:8354 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            transport http {
+                dial_timeout 10s
+                response_header_timeout 60s
+                read_timeout 60s
+                write_timeout 60s
+            }
+        }
     }
 
-    # Health check endpoint
-    handle /health {
-        respond "healthy" 200
+    # LiteTTS Dashboard and Examples (MUST be before OpenWebUI catch-all)
+    handle /api/dashboard* {
+        reverse_proxy litetts-api:8354 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            transport http {
+                dial_timeout 10s
+                response_header_timeout 60s
+                read_timeout 60s
+                write_timeout 60s
+            }
+        }
     }
 
-    # Primary Reverse Proxy to OpenWebUI (fallback for all other requests)
-    # This handles all remaining traffic, including websockets.
-    reverse_proxy openwebui:8080
+    handle /dashboard* {
+        redir /api/dashboard permanent
+    }
 
-    # Optional but recommended: Add a global security header
+    handle /examples* {
+        reverse_proxy litetts-api:8354 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            transport http {
+                dial_timeout 10s
+                response_header_timeout 60s
+                read_timeout 60s
+                write_timeout 60s
+            }
+        }
+    }
+
+    handle /static/* {
+        reverse_proxy litetts-api:8354 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            transport http {
+                dial_timeout 10s
+                response_header_timeout 60s
+                read_timeout 60s
+                write_timeout 60s
+            }
+        }
+    }
+
+    # Legacy compatibility endpoints (maintain backward compatibility)
+    handle_path /v1/* {
+        reverse_proxy litetts-api:8354 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+
+            transport http {
+                dial_timeout 10s
+                response_header_timeout 60s
+                read_timeout 60s
+                write_timeout 60s
+            }
+        }
+    }
+
+    handle_path /tts/* {
+        reverse_proxy litetts-api:8354 {
+            transport http {
+                dial_timeout 10s
+                response_header_timeout 60s
+                read_timeout 60s
+                write_timeout 60s
+            }
+        }
+    }
+
+    # Legacy health endpoint redirect
+    handle_path /health {
+        redir /api/health permanent
+    }
+
+    # Main OpenWebUI application - this will handle all other routes including OpenWebUI's /api/* endpoints
+    # IMPORTANT: This MUST be last as it's a catch-all
+    reverse_proxy openwebui:8080 {
+        transport http {
+            versions 1.1 2
+        }
+    }
+
+    # Audio streaming and CORS headers for TTS endpoints
+    @audio_endpoints {
+        path /api/v1/audio/* /api/v1/audio/speech* /v1/audio/*
+    }
+
+    header @audio_endpoints {
+        # CORS headers for cross-origin requests
+        Access-Control-Allow-Origin "*"
+        Access-Control-Allow-Methods "POST, GET, OPTIONS"
+        Access-Control-Allow-Headers "Content-Type, Authorization, Range"
+        Access-Control-Expose-Headers "Content-Length, Content-Type, Accept-Ranges, X-Audio-Duration, X-Audio-Sample-Rate, X-Audio-Format, X-Processing-Time"
+
+        # Audio content headers
+        Accept-Ranges "bytes"
+        Cache-Control "no-cache, no-store, must-revalidate"
+        Pragma "no-cache"
+        Expires "0"
+
+        # Content type options for audio
+        X-Content-Type-Options "nosniff"
+    }
+
+    # Handle OPTIONS requests for CORS preflight
+    @options {
+        method OPTIONS
+        path /api/* /v1/*
+    }
+
+    header @options {
+        Access-Control-Allow-Origin "*"
+        Access-Control-Allow-Methods "POST, GET, OPTIONS"
+        Access-Control-Allow-Headers "Content-Type, Authorization, Range"
+        Access-Control-Max-Age "86400"
+    }
+
+    respond @options 204
+
+    # Security headers for non-audio endpoints
     header {
-        # Hides the Server header for a minor security improvement
         -Server
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        X-XSS-Protection "1; mode=block"
+    }
+
+    # Simple error handling without 'file' directive
+    handle_errors {
+        @5xx expression `{err.status_code} >= 500`
+        rewrite @5xx /error.html
+        respond "Server error occurred" 500
     }
 }
