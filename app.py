@@ -8,7 +8,7 @@ import math
 import numpy as np
 import soundfile as sf
 from pathlib import Path
-from fastapi import FastAPI, HTTPException, APIRouter
+from fastapi import FastAPI, HTTPException, APIRouter, WebSocket
 from fastapi.responses import StreamingResponse, Response
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
@@ -108,9 +108,15 @@ class LiteTTSApplication:
 
         # Performance monitoring and optimization
         from LiteTTS.performance import PerformanceMonitor
+        from LiteTTS.performance.integrated_optimizer import IntegratedPerformanceOptimizer
+        from LiteTTS.performance.simd_optimizer import get_simd_optimizer
+        from LiteTTS.performance.batch_optimizer import get_batch_optimizer
         from LiteTTS.cache.preloader import IntelligentPreloader
 
         self.performance_monitor = PerformanceMonitor(max_history=1000, enable_system_monitoring=True)
+        self.performance_optimizer = IntegratedPerformanceOptimizer()
+        self.simd_optimizer = get_simd_optimizer()
+        self.batch_optimizer = get_batch_optimizer()
         self.preloader: Optional[IntelligentPreloader] = None
 
         # FastAPI app and routers
@@ -157,13 +163,38 @@ class LiteTTSApplication:
             from LiteTTS.cache.preloader import IntelligentPreloader, CacheWarmingConfig
             preloader_config = CacheWarmingConfig(
                 primary_voices=["af_heart", "am_puck"],
-                warm_on_startup=False,  # DISABLED: Stop all cache warming for performance
-                warm_during_idle=False,  # DISABLED: No idle warming
+                warm_on_startup=True,  # ENABLED: Warm cache on startup to eliminate cold start latency
+                warm_during_idle=True,  # ENABLED: Continue warming during idle periods
                 idle_threshold_seconds=30.0
             )
             self.preloader = IntelligentPreloader(self, preloader_config)
             self.preloader.start()
             self.logger.info("🚀 Intelligent preloader started")
+
+        # Run comprehensive performance optimization
+        self.logger.info("⚡ Running performance optimization...")
+        try:
+            optimization_results = self.performance_optimizer.run_comprehensive_optimization()
+            if optimization_results.memory_optimized:
+                self.logger.info(f"✅ Memory optimized: {optimization_results.memory_reduction_mb:.1f}MB saved ({optimization_results.memory_reduction_percent:.1f}%)")
+            if optimization_results.cpu_optimized:
+                self.logger.info("✅ CPU optimization applied")
+            if optimization_results.cache_optimized:
+                self.logger.info("✅ Cache optimization applied")
+
+            self.logger.info(f"🎯 Performance optimization completed in {optimization_results.optimization_time:.2f}s")
+
+            # Apply SIMD optimizations
+            simd_env_vars = self.simd_optimizer.apply_environment_optimizations()
+            if simd_env_vars:
+                self.logger.info(f"⚡ SIMD optimizations applied: {self.simd_optimizer.capabilities.optimal_instruction_set}")
+
+            # Log batch optimizer status
+            batch_status = self.batch_optimizer.get_status()
+            self.logger.info(f"📦 Batch optimizer ready: {batch_status['current_batch_sizes']}")
+
+        except Exception as e:
+            self.logger.warning(f"⚠️ Performance optimization failed: {e}")
 
         # Initialize configuration hot reload
         self.config_hot_reload_manager = None
@@ -428,9 +459,20 @@ class LiteTTSApplication:
                 with warnings.catch_warnings():
                     warnings.filterwarnings("ignore", category=DeprecationWarning)
                     warnings.filterwarnings("ignore", message="SimplifiedVoiceCombiner is deprecated*")
-                    from LiteTTS.voice.simple_combiner import SimplifiedVoiceCombiner
-                    self.voice_combiner = SimplifiedVoiceCombiner(self.config.tts.voices_path)
-                    voices_file = self.voice_combiner.ensure_combined_file()
+                    warnings.filterwarnings("ignore", message=".*deprecated.*")
+                    # Also suppress logger warnings from the SimplifiedVoiceCombiner
+                    import logging
+                    combiner_logger = logging.getLogger('LiteTTS.voice.simple_combiner')
+                    original_level = combiner_logger.level
+                    combiner_logger.setLevel(logging.ERROR)  # Suppress WARNING level messages
+
+                    try:
+                        from LiteTTS.voice.simple_combiner import SimplifiedVoiceCombiner
+                        self.voice_combiner = SimplifiedVoiceCombiner(self.config.tts.voices_path)
+                        voices_file = self.voice_combiner.ensure_combined_file()
+                    finally:
+                        # Restore original logging level
+                        combiner_logger.setLevel(original_level)
 
                 self.logger.info(f"🚀 Using individual voice loading with compatibility bridge")
                 self.logger.info(f"   Voice manager: Individual loading strategy")
@@ -1487,6 +1529,27 @@ with open("hello.mp3", "wb") as f:
                         }
 
                         region_info = region_mapping.get(region_char, {"region": "unknown", "language": "en-us", "flag": "🌍"})
+
+                        # Fix region classification for voices with unknown regions
+                        if region_info["region"] == "unknown" and len(prefix) >= 2:
+                            # Use prefix-based region mapping for better classification
+                            prefix_region_map = {
+                                "af": {"region": "american", "language": "en-us", "flag": "🇺🇸"},
+                                "am": {"region": "american", "language": "en-us", "flag": "🇺🇸"},
+                                "bf": {"region": "british", "language": "en-gb", "flag": "🇬🇧"},
+                                "bm": {"region": "british", "language": "en-gb", "flag": "🇬🇧"},
+                                "ef": {"region": "european", "language": "en-eu", "flag": "🇪🇺"},
+                                "em": {"region": "european", "language": "en-eu", "flag": "🇪🇺"},
+                                "if": {"region": "international", "language": "it-it", "flag": "🇮🇹"},
+                                "im": {"region": "international", "language": "it-it", "flag": "🇮🇹"},
+                                "ff": {"region": "international", "language": "fr-fr", "flag": "🇫🇷"},
+                                "fm": {"region": "international", "language": "fr-fr", "flag": "🇫🇷"},
+                                "jf": {"region": "international", "language": "ja-jp", "flag": "🇯🇵"},
+                                "jm": {"region": "international", "language": "ja-jp", "flag": "🇯🇵"},
+                                "zf": {"region": "international", "language": "zh-cn", "flag": "🇨🇳"},
+                                "zm": {"region": "international", "language": "zh-cn", "flag": "🇨🇳"}
+                            }
+                            region_info = prefix_region_map.get(prefix, region_info)
                     else:
                         gender = "unknown"
                         region_info = {"region": "unknown", "language": "en-us", "flag": "🌍"}
@@ -1494,9 +1557,24 @@ with open("hello.mp3", "wb") as f:
                     gender = "unknown"
                     region_info = {"region": "unknown", "language": "en-us", "flag": "🌍"}
 
+                # Improve voice display names for better UX
+                display_name = voice.replace("_", " ").title()
+
+                # Special handling for short voice codes
+                if len(voice) <= 3 and not '_' in voice:
+                    name_improvements = {
+                        "af": "American Female",
+                        "am": "American Male",
+                        "bf": "British Female",
+                        "bm": "British Male",
+                        "ef": "European Female",
+                        "em": "European Male"
+                    }
+                    display_name = name_improvements.get(voice, display_name)
+
                 voice_list.append({
                     "id": voice,
-                    "name": voice.replace("_", " ").title(),
+                    "name": display_name,
                     "gender": gender,
                     "language": region_info["language"],
                     "region": region_info["region"],
@@ -2255,8 +2333,10 @@ with open("hello.mp3", "wb") as f:
             import asyncio
             import time
 
-            await websocket.accept()
             try:
+                await websocket.accept()
+                self.logger.info("WebSocket connection established for dashboard")
+
                 while True:
                     # Get real-time data
                     performance_data = self.performance_monitor.get_performance_summary()
@@ -2281,7 +2361,10 @@ with open("hello.mp3", "wb") as f:
             except Exception as e:
                 self.logger.debug(f"WebSocket connection closed: {e}")
             finally:
-                await websocket.close()
+                try:
+                    await websocket.close()
+                except:
+                    pass
 
         @self.app.get("/dashboard/data")
         async def dashboard_data():

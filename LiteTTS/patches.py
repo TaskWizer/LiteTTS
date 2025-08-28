@@ -72,8 +72,15 @@ def patch_kokoro_onnx():
 
                     # Enable additional optimizations for Intel CPUs
                     if "Intel" in cpu_optimizer.cpu_info.model_name:
-                        session_options.add_session_config_entry("session.use_env_allocators", "1")
-                        session_options.add_session_config_entry("session.use_deterministic_compute", "0")
+                        # Check if entries already exist to avoid overwrite warnings
+                        try:
+                            session_options.add_session_config_entry("session.use_env_allocators", "1")
+                        except Exception:
+                            pass  # Entry already exists
+                        try:
+                            session_options.add_session_config_entry("session.use_deterministic_compute", "0")
+                        except Exception:
+                            pass  # Entry already exists
 
                     mode = "aggressive" if enable_aggressive else "conservative"
                     temp = thermal_status.get("temperature", 0)

@@ -17,6 +17,7 @@ from .naturalness_enhancer import NaturalnessEnhancer, NaturalnessProfile
 from ..text.phonemizer_preprocessor import phonemizer_preprocessor
 from .unified_pronunciation_fix import unified_pronunciation_fix
 from .audio_quality_enhancer import audio_quality_enhancer, AudioQualityProfile
+from .interjection_processor import InterjectionProcessor
 from typing import Dict, Any, Optional, List
 from dataclasses import dataclass, field
 

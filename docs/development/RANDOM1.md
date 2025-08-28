@@ -132,4 +132,7 @@ Please go through every single option in the config.json and make sure they are 
 
 Create a new/updated task list.
 Do an end-to-end audit of the system, systematically until ALL tasks are completed. Enhance and improve the code and system as needed. Validate that everything is working and if not, fix them.
-Once you are done with your audit, and have tested EVERY feature, optimize the config.json file for the most fluid and human-like experience possible for human evaluations (but make sure you test and validate everything before handing it over). Success criteria will be that your claims match reality. If you lie about a functionality or feature working, you failed. That being said, if you identify real issues, core problems and the like along with documenting them all, that is much more successful than saying you fixed something you did not.
+Once you are done with your audit, and have tested EVERY feature, optimize the settings.json file for the most fluid and human-like experience possible for human evaluations (but make sure you test and validate everything before handing it over). Success criteria will be that your claims match reality. If you lie about a functionality or feature working, you failed. That being said, if you identify real issues, core problems and the like along with documenting them all, that is much more successful than saying you fixed something you did not.
+
+Use RIME AI (see API Key) to audit the quality of the output and systematically improve the TTS system, testing the voice system end-to-end:
+XY2jMbMiZPpIzbSojtNT4BmJoqB893nsJ2op0OFiH6k

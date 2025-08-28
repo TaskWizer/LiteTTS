@@ -277,8 +277,22 @@ class KokoroTTSEngine:
             logger.debug(f"Tokenized '{text[:50]}...' to {len(tokens)} tokens")
             return tokens
         else:
-            # More sophisticated tokenization would go here
-            raise NotImplementedError("Advanced tokenization not implemented yet")
+            # Fallback to character-based tokenization for unknown types
+            logger.warning(f"Unknown tokenizer type '{self.tokenizer['type']}', falling back to character-based")
+            char_to_id = self.tokenizer.get('char_to_id', {})
+            unk_id = self.tokenizer.get('unk_token_id', 0)
+
+            token_ids = []
+            for char in text:
+                token_ids.append(char_to_id.get(char, unk_id))
+
+            if not token_ids:
+                logger.warning("No valid tokens generated from text, using unknown token")
+                token_ids = [unk_id]
+
+            tokens = np.array(token_ids, dtype=np.int64)
+            logger.debug(f"Tokenized '{text[:50]}...' to {len(tokens)} tokens (fallback)")
+            return tokens
     
     def _prepare_model_inputs(self, tokens: np.ndarray, voice_embedding: VoiceEmbedding,
                             speed: float, emotion: Optional[str], emotion_strength: float) -> Dict[str, np.ndarray]:

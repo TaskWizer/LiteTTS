@@ -144,10 +144,10 @@ class PerformanceConfig:
     concurrent_requests: int = 10
     memory_optimization: bool = True
 
-    # Text preprocessing configuration - FIXED for pronunciation issues
-    expand_contractions: bool = True  # FIXED: expand contractions to fix pronunciation issues
+    # Text preprocessing configuration - Use settings.json as source of truth
+    expand_contractions: bool = False  # Default: preserve natural speech, expand only problematic contractions
     expand_problematic_contractions_only: bool = True  # Only expand problematic contractions by default
-    preserve_natural_speech: bool = False  # FIXED: prioritize pronunciation accuracy over naturalness
+    preserve_natural_speech: bool = True  # Preserve natural speech patterns while fixing pronunciation issues
 
     # Emoji and symbol handling configuration
     filter_emojis: bool = True  # Default: remove emojis to prevent verbalization

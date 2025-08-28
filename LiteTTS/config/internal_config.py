@@ -25,7 +25,7 @@ class InternalConfig:
         return {
             "contraction_handling": {
                 "expand_contractions": False,
-                "expand_problematic_contractions_only": False,
+                "expand_problematic_contractions_only": True,
                 "preserve_natural_speech": True,
                 "use_pronunciation_rules": True,
                 "pronunciation_rules": {

@@ -76,10 +76,12 @@ class EnhancedContractionProcessor:
     def _load_problematic_contractions(self) -> Dict[str, str]:
         """Load contractions that cause TTS pronunciation issues"""
         return {
-            # These contractions cause specific pronunciation problems
-            "I'll": "I will",  # Pronounced as "ill" instead of "I'll"
-            "you'll": "you will",  # Pronounced as "yaw-wl" instead of "you'll"
-            "I'd": "I would",  # Pronounced as "I-D" instead of "I'd"
+            # Critical pronunciation issues identified by user feedback
+            "wasn't": "was not",    # User reported: "waaasant" pronunciation
+            "I'll": "I will",       # User reported: sounds like "ill"
+            "you'll": "you will",   # User reported: sounds like "yaw-wl"
+            "I'd": "I would",       # User reported: sounds like "I-D"
+            "that's": "that is",    # User reported: becomes "hit that"
             "he'll": "he will",  # Similar issues
             "she'll": "she will",  # Similar issues
             "it'll": "it will",  # Similar issues
@@ -221,12 +223,13 @@ class EnhancedContractionProcessor:
     
     def _process_hybrid_mode(self, text: str) -> str:
         """Hybrid approach: expand problematic contractions, keep natural ones"""
-        # Check if contraction expansion is disabled in config
-        if not self._should_expand_contractions():
-            # If expansion is disabled, just normalize apostrophes and return
-            return self._normalize_apostrophes(text)
+        # In hybrid mode, always expand problematic contractions for pronunciation quality
+        # regardless of global expand_contractions setting
 
-        # First, expand only the problematic contractions
+        # First, normalize apostrophes
+        text = self._normalize_apostrophes(text)
+
+        # Expand only the problematic contractions that cause pronunciation issues
         for contraction, expansion in self.problematic_contractions.items():
             pattern = r'\b' + re.escape(contraction) + r'\b'
             text = re.sub(pattern, expansion, text, flags=re.IGNORECASE)

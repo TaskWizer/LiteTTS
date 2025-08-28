@@ -68,10 +68,19 @@ class ModelOptimizer:
             session_options.enable_cpu_mem_arena = True
             session_options.enable_mem_reuse = True
             
-            # Aggressive performance settings
-            session_options.add_session_config_entry("session.use_env_allocators", "1")
-            session_options.add_session_config_entry("session.use_deterministic_compute", "0")
-            session_options.add_session_config_entry("session.disable_prepacking", "0")
+            # Aggressive performance settings - check for existing entries to avoid warnings
+            try:
+                session_options.add_session_config_entry("session.use_env_allocators", "1")
+            except Exception:
+                pass  # Entry already exists
+            try:
+                session_options.add_session_config_entry("session.use_deterministic_compute", "0")
+            except Exception:
+                pass  # Entry already exists
+            try:
+                session_options.add_session_config_entry("session.disable_prepacking", "0")
+            except Exception:
+                pass  # Entry already exists
             
             # Intel-specific optimizations
             try:
@@ -79,11 +88,17 @@ class ModelOptimizer:
                 cpu_optimizer = get_cpu_optimizer()
                 
                 if "Intel" in cpu_optimizer.cpu_info.model_name:
-                    session_options.add_session_config_entry("session.use_intel_optimizations", "1")
-                    
+                    try:
+                        session_options.add_session_config_entry("session.use_intel_optimizations", "1")
+                    except Exception:
+                        pass  # Entry already exists
+
                     # AVX optimizations
                     if cpu_optimizer.cpu_info.supports_avx2:
-                        session_options.add_session_config_entry("session.use_avx2", "1")
+                        try:
+                            session_options.add_session_config_entry("session.use_avx2", "1")
+                        except Exception:
+                            pass  # Entry already exists
                         
             except ImportError:
                 pass

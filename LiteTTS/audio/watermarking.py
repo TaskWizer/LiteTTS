@@ -34,32 +34,9 @@ except ImportError:
     _PERTH_IMPLICIT_AVAILABLE = False
     logger.warning("Perth watermarking library not available. Install with: pip install resemble-perth")
 
-    # Create mock classes for testing
-    class DummyWatermarker:
-        """Mock dummy watermarker for testing"""
-        def __init__(self):
-            pass
-
-        def apply_watermark(self, audio, watermark=None, sample_rate=None):
-            # Return audio with slight modification to simulate watermarking
-            return audio + np.random.normal(0, 0.001, audio.shape).astype(audio.dtype)
-
-        def get_watermark(self, audio, sample_rate=None):
-            # Always return a mock watermark ID
-            return "mock_watermark_id"
-
-    class PerthImplicitWatermarker:
-        """Mock Perth implicit watermarker for testing"""
-        def __init__(self, device="cpu"):
-            self.device = device
-
-        def apply_watermark(self, audio, watermark=None, sample_rate=None):
-            # Return audio with slight modification to simulate watermarking
-            return audio + np.random.normal(0, 0.001, audio.shape).astype(audio.dtype)
-
-        def get_watermark(self, audio, sample_rate=None):
-            # Always return a mock watermark ID
-            return "mock_perth_watermark_id"
+    # Watermarking not available - functionality disabled
+    DummyWatermarker = None
+    PerthImplicitWatermarker = None
 
 @dataclass
 class WatermarkResult:
