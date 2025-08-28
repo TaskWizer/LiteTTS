@@ -26,10 +26,20 @@ RUN uv pip install --no-cache-dir --upgrade pip setuptools wheel
 RUN uv pip install --no-cache-dir -r requirements.txt
 
 # Production stage
-FROM python:3.12-slim
+FROM python:3.12-slim AS production
 
 # Build arguments
 ARG ENVIRONMENT=production
+
+# Set production environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    ENVIRONMENT=production \
+    MAX_MEMORY_MB=150 \
+    TARGET_RTF=0.25 \
+    ENABLE_PERFORMANCE_OPTIMIZATION=true
 
 # Security and performance environment variables
 ENV PYTHONUNBUFFERED=1 \

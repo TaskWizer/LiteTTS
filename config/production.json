@@ -1,0 +1,246 @@
+{
+  "environment": "production",
+  "server": {
+    "host": "0.0.0.0",
+    "port": 8355,
+    "workers": 1,
+    "max_concurrent_requests": 10,
+    "request_timeout": 30,
+    "keepalive_timeout": 5,
+    "graceful_shutdown_timeout": 30
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "json",
+    "file": "/app/logs/litetts.log",
+    "max_file_size": "100MB",
+    "backup_count": 5,
+    "enable_access_log": true,
+    "enable_error_log": true,
+    "log_requests": true,
+    "log_responses": false,
+    "sensitive_fields": ["api_key", "token", "password"]
+  },
+  "performance": {
+    "max_memory_mb": 150,
+    "target_rtf": 0.25,
+    "max_cpu_usage": 85.0,
+    "enable_optimization": true,
+    "enable_monitoring": true,
+    "monitoring_interval": 30,
+    "performance_window": 100
+  },
+  "memory_optimization": {
+    "enabled": true,
+    "max_memory_mb": 150,
+    "memory_check_interval": 10,
+    "gc_threshold": 0.8,
+    "enable_memory_profiling": false,
+    "memory_limit_enforcement": true,
+    "oom_prevention": true
+  },
+  "cpu_optimization": {
+    "enabled": true,
+    "simd_optimization": {
+      "enabled": true,
+      "auto_detect": true,
+      "force_instruction_set": null,
+      "enable_audio_vectorization": true,
+      "enable_phoneme_vectorization": true,
+      "enable_mel_spectrogram_acceleration": true,
+      "vector_chunk_size": 1024,
+      "alignment_bytes": 32
+    },
+    "batch_processing": {
+      "enabled": true,
+      "short_text_threshold": 20,
+      "medium_text_threshold": 100,
+      "long_text_threshold": 300,
+      "short_text_batch_size": 16,
+      "medium_text_batch_size": 8,
+      "long_text_batch_size": 4,
+      "short_text_timeout": 50.0,
+      "medium_text_timeout": 100.0,
+      "long_text_timeout": 200.0,
+      "enable_auto_tuning": true,
+      "tuning_interval": 30.0,
+      "max_latency_ms": 2000.0
+    },
+    "threading": {
+      "onnx_inter_op_threads": 2,
+      "onnx_intra_op_threads": 4,
+      "enable_cpu_affinity": true,
+      "cpu_affinity_cores": null,
+      "thread_pool_size": 4
+    }
+  },
+  "cache": {
+    "enabled": true,
+    "total_cache_mb": 64,
+    "voice_cache_mb": 32,
+    "audio_cache_mb": 16,
+    "text_cache_mb": 8,
+    "model_cache_mb": 8,
+    "cache_ttl": 3600,
+    "max_cache_entries": 1000,
+    "enable_persistent_cache": true,
+    "cache_directory": "/app/cache",
+    "cache_compression": true,
+    "cache_encryption": false
+  },
+  "models": {
+    "directory": "/app/LiteTTS/models",
+    "auto_download": true,
+    "download_timeout": 300,
+    "verify_checksums": true,
+    "enable_model_caching": true,
+    "model_cache_size": 3,
+    "preload_models": ["af_heart", "af_bella", "am_adam"],
+    "model_warm_up": true,
+    "warm_up_text": "Hello world, this is a test.",
+    "quantization": {
+      "enabled": true,
+      "prefer_quantized": true,
+      "fallback_to_fp16": true
+    }
+  },
+  "voices": {
+    "directory": "/app/data/voices",
+    "default_voice": "af_heart",
+    "voice_selection_strategy": "quality",
+    "enable_voice_validation": true,
+    "voice_metadata_cache": true,
+    "supported_formats": ["onnx"],
+    "voice_loading": {
+      "lazy_loading": true,
+      "preload_popular": true,
+      "unload_unused": true,
+      "unload_timeout": 1800
+    }
+  },
+  "text_processing": {
+    "expand_contractions": false,
+    "expand_problematic_contractions_only": true,
+    "preserve_natural_speech": true,
+    "contraction_mode": "hybrid",
+    "enable_interjection_processing": true,
+    "enable_prosody_analysis": true,
+    "enable_phonetic_processing": true,
+    "text_normalization": {
+      "normalize_unicode": true,
+      "handle_html_entities": true,
+      "expand_abbreviations": false,
+      "number_processing": "individual_digits",
+      "symbol_processing": true
+    }
+  },
+  "audio_processing": {
+    "sample_rate": 22050,
+    "bit_depth": 16,
+    "channels": 1,
+    "format": "wav",
+    "enable_audio_optimization": true,
+    "enable_noise_reduction": false,
+    "enable_normalization": true,
+    "target_loudness": -23.0,
+    "enable_compression": false
+  },
+  "api": {
+    "enable_cors": true,
+    "cors_origins": ["*"],
+    "cors_methods": ["GET", "POST", "OPTIONS"],
+    "cors_headers": ["*"],
+    "enable_rate_limiting": true,
+    "rate_limit": {
+      "requests_per_minute": 60,
+      "requests_per_hour": 1000,
+      "burst_size": 10
+    },
+    "enable_authentication": false,
+    "api_key_header": "X-API-Key",
+    "enable_request_validation": true,
+    "max_text_length": 5000,
+    "supported_voices": null,
+    "supported_formats": ["mp3", "wav", "ogg"],
+    "default_format": "mp3"
+  },
+  "security": {
+    "enable_security_headers": true,
+    "content_security_policy": "default-src 'self'",
+    "x_frame_options": "DENY",
+    "x_content_type_options": "nosniff",
+    "x_xss_protection": "1; mode=block",
+    "strict_transport_security": "max-age=31536000; includeSubDomains",
+    "enable_input_sanitization": true,
+    "max_request_size": "10MB",
+    "enable_path_traversal_protection": true
+  },
+  "monitoring": {
+    "enabled": true,
+    "metrics_endpoint": "/metrics",
+    "health_endpoint": "/health",
+    "performance_endpoint": "/performance",
+    "enable_prometheus": false,
+    "prometheus_port": 9090,
+    "enable_detailed_metrics": true,
+    "metrics_retention": 86400,
+    "alert_thresholds": {
+      "memory_usage": 0.9,
+      "cpu_usage": 0.9,
+      "rtf_threshold": 0.3,
+      "error_rate": 0.05,
+      "response_time": 5.0
+    }
+  },
+  "quality_assurance": {
+    "enabled": true,
+    "audio_quality_testing": {
+      "enabled": true,
+      "quality_thresholds": {
+        "min_mos_score": 3.0,
+        "max_wer": 0.1,
+        "min_pronunciation_accuracy": 0.9,
+        "max_rtf": 0.25,
+        "min_prosody_score": 0.7
+      },
+      "test_categories": {
+        "contractions": true,
+        "interjections": true,
+        "prosody": true,
+        "performance": true,
+        "symbols": true,
+        "voice_quality": true
+      },
+      "reporting": {
+        "enabled": true,
+        "output_directory": "/app/logs/quality_reports",
+        "generate_html_reports": true,
+        "generate_json_reports": true,
+        "report_retention_days": 30
+      }
+    }
+  },
+  "integration": {
+    "openwebui_compatibility": {
+      "enabled": true,
+      "voice_dropdown_optimization": true,
+      "enhanced_voice_metadata": true,
+      "region_classification": true,
+      "voice_categorization": true
+    },
+    "ci_cd": {
+      "enabled": false,
+      "fail_on_regression": true,
+      "min_pass_rate": 0.9,
+      "baseline_update_threshold": 0.05
+    }
+  },
+  "development": {
+    "debug_mode": false,
+    "enable_hot_reload": false,
+    "enable_profiling": false,
+    "profiling_output": "/app/logs/profiling",
+    "enable_memory_debugging": false,
+    "enable_performance_debugging": false
+  }
+}
