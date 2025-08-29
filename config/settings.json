@@ -19,6 +19,11 @@
     ],
     "performance_mode": "balanced"
   },
+  "repository": {
+    "huggingface_repo": "TaskWizer/LiteTTS",
+    "model_branch": "main",
+    "cache_dir": "models"
+  },
   "voice": {
     "default_voice": "af_heart",
     "auto_discovery": true,
@@ -64,7 +69,7 @@
   },
   "tts": {
     "device": "cpu",
-    "model_path": "auto",
+    "model_path": "LiteTTS/models/model_q4.onnx",
     "voices_path": "LiteTTS/voices",
     "default_voice": "af_heart",
     "sample_rate": 24000,
@@ -367,6 +372,10 @@
       "format": "json",
       "interval_seconds": 60
     }
+  },
+  "logging": {
+    "level": "INFO",
+    "file_path": null
   },
   "application": {
     "name": "LiteTTS",

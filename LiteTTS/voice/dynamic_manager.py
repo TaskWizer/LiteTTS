@@ -33,8 +33,14 @@ class DynamicVoiceManager:
         if voices_dir is None:
             try:
                 from ..config import config
-                voices_dir = config.paths.voices_dir
-            except ImportError:
+                # Handle both object-style and dictionary-style config
+                if hasattr(config, 'paths'):
+                    voices_dir = config.paths.voices_dir
+                elif isinstance(config, dict):
+                    voices_dir = config.get('paths', {}).get('voices_dir', "LiteTTS/voices")
+                else:
+                    voices_dir = "LiteTTS/voices"  # Fallback
+            except (ImportError, AttributeError):
                 voices_dir = "LiteTTS/voices"  # Fallback
 
         self.voices_dir = Path(voices_dir)

@@ -22,6 +22,7 @@ from LiteTTS.config import config
 from LiteTTS.exceptions import ModelError
 from LiteTTS.logging_config import setup_logging
 from LiteTTS.cache import cache_manager
+from LiteTTS.websocket import setup_websocket_endpoints
 
 
 def json_safe_dumps(data: Any) -> str:
@@ -216,6 +217,7 @@ class LiteTTSApplication:
             if hot_reload_enabled:
                 self.config_hot_reload_manager = initialize_config_hot_reload(
                     config_files=['config.json', 'override.json'],
+                    reload_callback=None,  # Use default callback
                     enabled=True
                 )
                 self.logger.info("🔄 Configuration hot reload enabled")
@@ -263,10 +265,13 @@ class LiteTTSApplication:
         self.setup_routers()
         self.setup_endpoints()
         self.initialize_model()
-        
+
         # Include routers AFTER endpoints are defined
         self._include_routers()
-        
+
+        # Setup WebSocket endpoints
+        self.setup_websocket_infrastructure()
+
         return self.app
     
     def setup_middleware(self):
@@ -406,7 +411,22 @@ class LiteTTSApplication:
 
         # Note: Utility/Debug endpoints are defined directly on main app
         # and don't require separate router inclusion
-    
+
+    def setup_websocket_infrastructure(self):
+        """Setup WebSocket infrastructure for real-time communication."""
+        try:
+            self.logger.info("Setting up WebSocket infrastructure...")
+
+            # Setup WebSocket endpoints
+            self.websocket_endpoints = setup_websocket_endpoints(self.app, self)
+
+            self.logger.info("✅ WebSocket infrastructure configured")
+
+        except Exception as e:
+            self.logger.error(f"Failed to setup WebSocket infrastructure: {e}")
+            # Don't fail startup if WebSocket setup fails
+            self.logger.warning("Continuing without WebSocket functionality")
+
     def initialize_model(self):
         """Initialize the TTS model and download required files if needed"""
         try:
@@ -2335,45 +2355,9 @@ with open("hello.mp3", "wb") as f:
             except FileNotFoundError:
                 return HTMLResponse(content="<h1>Dashboard not found</h1><p>Dashboard file missing at static/dashboard/index.html</p>", status_code=404)
 
-        @self.app.websocket("/dashboard/ws")
-        async def dashboard_websocket(websocket):
-            """WebSocket endpoint for real-time dashboard updates"""
-            import json
-            import asyncio
-            import time
-
-            try:
-                await websocket.accept()
-                self.logger.info("WebSocket connection established for dashboard")
-
-                while True:
-                    # Get real-time data
-                    performance_data = self.performance_monitor.get_performance_summary()
-                    dashboard_data = dashboard_analytics.get_analytics_data()
-
-                    # Combine data
-                    real_time_data = {
-                        "performance": performance_data,
-                        "analytics": dashboard_data,
-                        "system": {
-                            "voices_available": len(self.available_voices),
-                            "timestamp": time.time()
-                        }
-                    }
-
-                    # Send data to client
-                    await websocket.send_text(json_safe_dumps(real_time_data))
-
-                    # Wait 1 second before next update
-                    await asyncio.sleep(1)
-
-            except Exception as e:
-                self.logger.debug(f"WebSocket connection closed: {e}")
-            finally:
-                try:
-                    await websocket.close()
-                except:
-                    pass
+        # WebSocket endpoints are now handled by the WebSocket infrastructure
+        # See setup_websocket_endpoints() in LiteTTS.websocket.endpoints
+        # New endpoint: /ws/dashboard
 
         @self.app.get("/dashboard/data")
         async def dashboard_data():

@@ -325,12 +325,12 @@ class IntegratedPerformanceOptimizer:
     def validate_performance_targets(self) -> Dict[str, bool]:
         """Validate that performance targets are being met"""
         current_memory = self._get_current_memory_usage()
-        
+
         # Get performance stats
         stats = self.performance_monitor.get_stats() if self.monitoring_active else {}
         current_rtf = stats.get("avg_rtf", 0.0)
         cache_hit_rate = stats.get("cache_hit_rate", 0.0)
-        
+
         return {
             "memory_target_met": current_memory <= self.targets.max_memory_mb,
             "rtf_target_met": current_rtf <= self.targets.target_rtf,
@@ -339,6 +339,111 @@ class IntegratedPerformanceOptimizer:
             "current_rtf": current_rtf,
             "current_cache_hit_rate": cache_hit_rate
         }
+
+    def optimize_for_request(self, text: str = None, voice: str = None, **kwargs) -> Dict[str, Any]:
+        """
+        Apply request-level optimizations for TTS processing.
+
+        Args:
+            text: Input text for TTS (optional, used for optimization hints)
+            voice: Voice name (optional, used for voice-specific optimizations)
+            **kwargs: Additional request parameters
+
+        Returns:
+            Dict[str, Any]: Optimization results and applied settings
+        """
+        try:
+            optimization_start = time.time()
+
+            # Initialize result structure
+            result = {
+                "status": "success",
+                "optimizations_applied": [],
+                "performance_hints": {},
+                "environment_adjustments": {},
+                "timing": {}
+            }
+
+            # Text-based optimizations
+            if text:
+                text_length = len(text)
+                result["performance_hints"]["text_length"] = text_length
+
+                # Adjust batch size based on text length
+                if text_length > 500:
+                    # Long text - use smaller batch size to reduce memory pressure
+                    result["performance_hints"]["recommended_batch_size"] = 1
+                    result["optimizations_applied"].append("long_text_batch_optimization")
+                elif text_length < 50:
+                    # Short text - can use larger batch size
+                    result["performance_hints"]["recommended_batch_size"] = 4
+                    result["optimizations_applied"].append("short_text_batch_optimization")
+                else:
+                    # Medium text - standard batch size
+                    result["performance_hints"]["recommended_batch_size"] = 2
+
+            # Voice-specific optimizations
+            if voice:
+                result["performance_hints"]["voice"] = voice
+
+                # Apply voice-specific CPU affinity if available
+                if hasattr(self.cpu_optimizer, 'set_hybrid_cpu_affinity'):
+                    # For high-quality voices, use more aggressive CPU settings
+                    if any(quality in voice.lower() for quality in ['heart', 'soul', 'premium']):
+                        self.cpu_optimizer.set_hybrid_cpu_affinity(enable_aggressive=True)
+                        result["optimizations_applied"].append("aggressive_cpu_affinity_for_quality_voice")
+                    else:
+                        self.cpu_optimizer.set_hybrid_cpu_affinity(enable_aggressive=False)
+                        result["optimizations_applied"].append("standard_cpu_affinity")
+
+            # Apply dynamic memory optimizations based on current usage
+            current_memory = self._get_current_memory_usage()
+            if current_memory > self.targets.max_memory_mb * 0.8:  # 80% of target
+                # High memory usage - apply aggressive memory optimizations
+                memory_result = self.system_optimizer.apply_memory_optimizations()
+                result["environment_adjustments"]["memory_optimization"] = memory_result
+                result["optimizations_applied"].append("aggressive_memory_optimization")
+
+            # Apply request-level ONNX optimizations
+            import os
+            request_env_vars = {}
+
+            # Optimize ONNX thread count based on request characteristics
+            if text and len(text) > 200:
+                # Long text - use more threads
+                request_env_vars["ORT_INTRA_OP_NUM_THREADS"] = str(min(8, self.cpu_optimizer.cpu_info.total_cores))
+            else:
+                # Short text - use fewer threads to reduce overhead
+                request_env_vars["ORT_INTRA_OP_NUM_THREADS"] = str(min(4, self.cpu_optimizer.cpu_info.total_cores))
+
+            # Apply environment variables
+            for var, value in request_env_vars.items():
+                if var not in os.environ or os.environ[var] != value:
+                    os.environ[var] = value
+                    result["environment_adjustments"][var] = value
+
+            # Record timing
+            optimization_time = time.time() - optimization_start
+            result["timing"]["optimization_duration_ms"] = optimization_time * 1000
+            result["timing"]["optimization_overhead"] = optimization_time
+
+            # Add performance recommendations
+            result["performance_hints"]["recommended_rtf_target"] = self.targets.target_rtf
+            result["performance_hints"]["memory_budget_mb"] = self.targets.max_memory_mb
+
+            logger.debug(f"Request optimization completed in {optimization_time*1000:.1f}ms: {len(result['optimizations_applied'])} optimizations applied")
+
+            return result
+
+        except Exception as e:
+            logger.error(f"Request optimization failed: {e}")
+            return {
+                "status": "failed",
+                "error": str(e),
+                "optimizations_applied": [],
+                "performance_hints": {},
+                "environment_adjustments": {}
+            }
 
 # Global optimizer instance
 _global_optimizer: Optional[IntegratedPerformanceOptimizer] = None

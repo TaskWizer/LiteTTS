@@ -232,15 +232,15 @@ def initialize_config_hot_reload(config_files: list = None, reload_callback: Cal
                 import importlib
                 import sys
 
-                # Check if kokoro.config is already imported
-                if 'kokoro.config' in sys.modules:
-                    config_module = sys.modules['kokoro.config']
+                # Check if LiteTTS.config is already imported
+                if 'LiteTTS.config' in sys.modules:
+                    config_module = sys.modules['LiteTTS.config']
                     importlib.reload(config_module)
                     logger.info("✅ Configuration module reloaded successfully")
                 else:
                     # Import and reload
                     import LiteTTS.config
-                    importlib.reload(kokoro.config)
+                    importlib.reload(LiteTTS.config)
                     logger.info("✅ Configuration imported and reloaded successfully")
 
             except Exception as e:

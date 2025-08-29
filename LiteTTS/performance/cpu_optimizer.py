@@ -469,6 +469,61 @@ class CPUOptimizer:
             logger.error(f"Failed to set hybrid CPU affinity: {e}")
             return False
 
+    def get_cpu_info(self) -> CPUInfo:
+        """
+        Get CPU information and capabilities.
+
+        Returns:
+            CPUInfo: Dataclass containing CPU information including core counts,
+                    architecture details, and performance capabilities.
+        """
+        return self.cpu_info
+
+    def get_aggressive_performance_config(self) -> Dict[str, Any]:
+        """
+        Get aggressive performance configuration for maximum CPU utilization.
+
+        Returns:
+            Dict[str, Any]: Configuration dictionary with aggressive settings for
+                          maximum performance including thread counts, affinity,
+                          and optimization flags.
+        """
+        thermal_status = self.get_thermal_status()
+
+        # Base aggressive configuration
+        config = {
+            "cpu_utilization_target": 0.95,  # 95% CPU utilization
+            "enable_cpu_affinity": True,
+            "enable_hybrid_optimization": self.cpu_info.has_hybrid_architecture,
+            "thermal_safe": thermal_status["safe_for_aggressive"],
+            "environment_variables": self.optimize_environment_variables(aggressive=True),
+            "recommended_settings": self.get_recommended_settings(aggressive=True)
+        }
+
+        # Add thermal-aware adjustments
+        if not thermal_status["safe_for_aggressive"]:
+            config["cpu_utilization_target"] = 0.80  # Reduce to 80% if thermal issues
+            config["thermal_throttling_detected"] = thermal_status["throttling"]
+            config["current_temperature"] = thermal_status["temperature"]
+
+        # Add core-specific configuration
+        if self.cpu_info.has_hybrid_architecture:
+            config["hybrid_architecture"] = {
+                "performance_cores": self.cpu_info.performance_cores,
+                "efficiency_cores": self.cpu_info.efficiency_cores,
+                "use_all_p_cores": True,
+                "use_most_e_cores": thermal_status["safe_for_aggressive"]
+            }
+
+        # Add SIMD optimization flags
+        config["simd_optimizations"] = {
+            "avx2_enabled": self.cpu_info.supports_avx2,
+            "avx512_enabled": self.cpu_info.supports_avx512,
+            "vectorization_level": "aggressive" if thermal_status["safe_for_aggressive"] else "conservative"
+        }
+
+        return config
+
 # Global CPU optimizer instance
 _cpu_optimizer = None
 

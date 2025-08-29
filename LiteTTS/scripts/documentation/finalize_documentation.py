@@ -1136,7 +1136,7 @@ logging.basicConfig(level=logging.DEBUG)
 grep -i error logs/app.log
 
 # Check performance issues
-grep -i "slow\|timeout\|rtf" logs/app.log
+grep -i "slow\\|timeout\\|rtf" logs/app.log
 
 # Monitor cache activity
 grep -i cache logs/app.log

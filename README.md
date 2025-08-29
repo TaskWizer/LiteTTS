@@ -28,9 +28,7 @@ The following features are under active development and may have bugs or inconsi
 
 ---
 
-**The fastest, most efficient Text-to-Speech API with near-instant response times** ⚡
-
-*Built on the powerful Kokoro ONNX model - part of the TaskWizer framework*
+**The fastest, most efficient Text-to-Speech API with near-instant response times even on CPU-only systems.** ⚡
 
 ## 💖 Support This Project
 

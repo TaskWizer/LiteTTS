@@ -50,6 +50,7 @@ dependencies = [
     "pydantic==2.11.7",
     "pydantic-core==2.33.2",
     "pyparsing==3.2.3",
+    "pytest>=8.4.1",
     "python-dateutil==2.9.0.post0",
     "rdflib==7.1.4",
     "referencing==0.36.2",
@@ -68,8 +69,9 @@ dependencies = [
     "typing-inspection==0.4.1",
     "uritemplate==4.2.0",
     "urllib3==2.5.0",
-    "uvicorn==0.35.0",
+    "uvicorn[standard]==0.35.0",
     "watchdog==6.0.0",
+    "websockets>=15.0.1",
     "yarl==1.20.1",
 ]
 

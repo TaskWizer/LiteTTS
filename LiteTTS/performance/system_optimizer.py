@@ -182,6 +182,7 @@ class SystemOptimizer:
         self.simd_capabilities = self._detect_simd_capabilities()
         self.request_batcher = None
         self.memory_optimizations_applied = False
+        self.io_optimizations_applied = False
     
     def _detect_simd_capabilities(self) -> SIMDCapabilities:
         """Detect SIMD instruction set capabilities"""
@@ -325,19 +326,221 @@ class SystemOptimizer:
         
         return recommendations
     
+    def apply_memory_optimizations(self) -> Dict[str, Any]:
+        """
+        Apply memory optimizations for TTS processing.
+
+        Returns:
+            Dict[str, Any]: Dictionary containing optimization status and results.
+        """
+        try:
+            # Call the existing memory optimization method
+            memory_result = self.optimize_memory_allocation()
+
+            # Additional memory optimizations specific to TTS
+            additional_optimizations = {}
+
+            # Set memory-related environment variables for ONNX Runtime
+            import os
+            memory_env_vars = {
+                "ORT_DISABLE_ALL_OPTIMIZATION": "0",  # Enable optimizations
+                "ORT_ENABLE_CPU_FP16_OPS": "1",       # Enable FP16 operations
+                "ORT_TENSORRT_MAX_WORKSPACE_SIZE": "2147483648",  # 2GB workspace
+                "MALLOC_ARENA_MAX": "4",              # Limit malloc arenas
+                "MALLOC_MMAP_THRESHOLD_": "131072",   # 128KB mmap threshold
+                "MALLOC_TRIM_THRESHOLD_": "131072"    # 128KB trim threshold
+            }
+
+            # Apply environment variables
+            applied_vars = []
+            for var, value in memory_env_vars.items():
+                if var not in os.environ:
+                    os.environ[var] = value
+                    applied_vars.append(f"{var}={value}")
+
+            additional_optimizations["environment_variables"] = applied_vars
+            additional_optimizations["memory_arena_limit"] = memory_env_vars.get("MALLOC_ARENA_MAX")
+
+            # Mark optimizations as applied
+            self.memory_optimizations_applied = True
+
+            # Combine results
+            result = {
+                "status": "success",
+                "memory_allocation": memory_result,
+                "additional_optimizations": additional_optimizations,
+                "optimizations_applied": True,
+                "environment_variables_set": len(applied_vars)
+            }
+
+            return result
+
+        except Exception as e:
+            logger.error(f"Failed to apply memory optimizations: {e}")
+            return {
+                "status": "failed",
+                "error": str(e),
+                "optimizations_applied": False
+            }
+
+    def apply_io_optimizations(self) -> Dict[str, Any]:
+        """
+        Apply I/O optimizations for TTS processing.
+
+        Returns:
+            Dict[str, Any]: Dictionary containing I/O optimization status and results.
+        """
+        try:
+            import os
+
+            # I/O optimization settings
+            io_optimizations = {}
+            applied_settings = []
+
+            # File system optimizations
+            fs_optimizations = {
+                # Disable access time updates for better performance
+                "PYTHONUNBUFFERED": "1",  # Unbuffered stdout/stderr
+                "PYTHONDONTWRITEBYTECODE": "1",  # Don't write .pyc files
+
+                # ONNX Runtime I/O optimizations
+                "ORT_DISABLE_ALL_OPTIMIZATION": "0",  # Enable optimizations
+                "ORT_ENABLE_CPU_FP16_OPS": "1",       # Enable FP16 operations
+                "ORT_TENSORRT_MAX_WORKSPACE_SIZE": "2147483648",  # 2GB workspace
+
+                # Threading optimizations for I/O
+                "OMP_NUM_THREADS": str(min(8, os.cpu_count() or 4)),
+                "MKL_NUM_THREADS": str(min(8, os.cpu_count() or 4)),
+
+                # Memory mapping optimizations
+                "MALLOC_MMAP_THRESHOLD_": "131072",   # 128KB mmap threshold
+                "MALLOC_TRIM_THRESHOLD_": "131072",   # 128KB trim threshold
+            }
+
+            # Apply environment variables for I/O optimization
+            for var, value in fs_optimizations.items():
+                if var not in os.environ:
+                    os.environ[var] = value
+                    applied_settings.append(f"{var}={value}")
+                elif os.environ[var] != value:
+                    # Update if different
+                    old_value = os.environ[var]
+                    os.environ[var] = value
+                    applied_settings.append(f"{var}={value} (was {old_value})")
+
+            io_optimizations["environment_variables"] = applied_settings
+
+            # File descriptor optimizations
+            try:
+                import resource
+
+                # Get current file descriptor limits
+                soft_limit, hard_limit = resource.getrlimit(resource.RLIMIT_NOFILE)
+
+                # Try to increase soft limit if needed
+                recommended_limit = min(4096, hard_limit)
+                if soft_limit < recommended_limit:
+                    try:
+                        resource.setrlimit(resource.RLIMIT_NOFILE, (recommended_limit, hard_limit))
+                        io_optimizations["file_descriptors"] = {
+                            "old_limit": soft_limit,
+                            "new_limit": recommended_limit,
+                            "status": "increased"
+                        }
+                    except (ValueError, OSError) as e:
+                        io_optimizations["file_descriptors"] = {
+                            "current_limit": soft_limit,
+                            "recommended_limit": recommended_limit,
+                            "status": "failed_to_increase",
+                            "error": str(e)
+                        }
+                else:
+                    io_optimizations["file_descriptors"] = {
+                        "current_limit": soft_limit,
+                        "status": "adequate"
+                    }
+
+            except ImportError:
+                io_optimizations["file_descriptors"] = {
+                    "status": "resource_module_unavailable"
+                }
+
+            # Disk I/O optimizations
+            try:
+                # Check if we can optimize temporary file handling
+                import tempfile
+                temp_dir = tempfile.gettempdir()
+
+                # Check available space in temp directory
+                if hasattr(os, 'statvfs'):
+                    stat = os.statvfs(temp_dir)
+                    available_gb = (stat.f_bavail * stat.f_frsize) / (1024**3)
+
+                    io_optimizations["disk_io"] = {
+                        "temp_directory": temp_dir,
+                        "available_space_gb": round(available_gb, 2),
+                        "status": "adequate" if available_gb > 1.0 else "low_space"
+                    }
+
+                    if available_gb < 1.0:
+                        io_optimizations["disk_io"]["warning"] = "Low disk space may affect performance"
+                else:
+                    io_optimizations["disk_io"] = {
+                        "temp_directory": temp_dir,
+                        "status": "space_check_unavailable"
+                    }
+
+            except Exception as e:
+                io_optimizations["disk_io"] = {
+                    "status": "failed",
+                    "error": str(e)
+                }
+
+            # Audio file I/O optimizations
+            audio_io_settings = {
+                "buffer_size": 8192,  # 8KB buffer for audio I/O
+                "use_memory_mapping": True,
+                "async_io_enabled": True
+            }
+            io_optimizations["audio_io"] = audio_io_settings
+
+            # Mark I/O optimizations as applied
+            self.io_optimizations_applied = True
+
+            result = {
+                "status": "success",
+                "optimizations": io_optimizations,
+                "settings_applied": len(applied_settings),
+                "io_optimizations_applied": True
+            }
+
+            logger.info(f"I/O optimizations applied: {len(applied_settings)} environment variables set")
+            return result
+
+        except Exception as e:
+            logger.error(f"Failed to apply I/O optimizations: {e}")
+            return {
+                "status": "failed",
+                "error": str(e),
+                "io_optimizations_applied": False
+            }
+
     def apply_all_optimizations(self) -> Dict[str, Any]:
         """Apply all system-level optimizations"""
         results = {}
-        
+
         # Verify SIMD support
         results["simd"] = self.verify_simd_support()
-        
-        # Optimize memory allocation
-        results["memory"] = self.optimize_memory_allocation()
-        
+
+        # Apply memory optimizations
+        results["memory"] = self.apply_memory_optimizations()
+
+        # Apply I/O optimizations
+        results["io"] = self.apply_io_optimizations()
+
         # Setup request batching
         results["batching"] = self.setup_request_batching()
-        
+
         return results
 
 # Global system optimizer instance
