@@ -174,8 +174,8 @@ python app.py --host 0.0.0.0 --port 8354        # Override host and port
 python app.py --reload --workers 1              # Development with specific workers
 
 # Alternative startup methods
-python -m LiteTTS.start_server                   # Module execution
-uv run uvicorn app:app --port 8354              # Direct uvicorn (requires explicit port)
+python -m LiteTTS.start_server                  # Module execution
+uvicorn app:app --host 0.0.0.0 --port 8354      # Direct uvicorn (requires explicit port)
 ```
 **Note** You can also modify the core `./config/settings.json` file directly, but it's not recommended as it will be overwritten on updates. Instead, use the [`override.json` method](docs/CONFIGURATION.md) to customize settings.
 
