@@ -293,21 +293,29 @@ class CPUOptimizer:
 
         return env_vars
     
+    def get_cpu_info(self) -> CPUInfo:
+        """Get CPU information - compatibility method for integrated optimizer"""
+        return self.cpu_info
+
+    def get_aggressive_performance_config(self) -> Dict[str, Any]:
+        """Get aggressive performance configuration - compatibility method for integrated optimizer"""
+        return self.get_recommended_settings(aggressive=True)
+
     def apply_optimizations(self, enable_affinity: bool = False) -> bool:
         """Apply all CPU optimizations"""
         success = True
-        
+
         # Set environment variables
         env_vars = self.optimize_environment_variables()
         for key, value in env_vars.items():
             os.environ.setdefault(key, value)
-        
+
         logger.info(f"Applied CPU environment optimizations: {env_vars}")
-        
+
         # Set CPU affinity if requested
         if enable_affinity:
             success &= self.set_cpu_affinity()
-        
+
         return success
     
     def get_recommended_settings(self, aggressive: bool = False) -> Dict[str, Any]:

@@ -93,12 +93,12 @@
   },
   "stats": {
     "af_heart": {
-      "total_requests": 37,
-      "total_duration": 0.0,
-      "average_request_length": 0.0,
-      "last_used": "2025-08-28T07:20:02.215696",
-      "error_count": 0,
-      "success_rate": 1.0
+      "total_requests": 107,
+      "total_duration": 43.2,
+      "average_request_length": 0.40373831775700936,
+      "last_used": "2025-08-28T20:58:55.328983",
+      "error_count": 2,
+      "success_rate": 0.9813084112149533
     },
     "af_bella": {
       "total_requests": 0,
@@ -117,18 +117,18 @@
       "success_rate": 1.0
     },
     "af_aoede": {
-      "total_requests": 0,
-      "total_duration": 0.0,
-      "average_request_length": 0.0,
-      "last_used": null,
+      "total_requests": 3,
+      "total_duration": 5.8,
+      "average_request_length": 1.9333333333333333,
+      "last_used": "2025-08-28T20:51:59.577360",
       "error_count": 0,
       "success_rate": 1.0
     },
     "af_jessica": {
-      "total_requests": 0,
-      "total_duration": 0.0,
-      "average_request_length": 0.0,
-      "last_used": null,
+      "total_requests": 3,
+      "total_duration": 2.2,
+      "average_request_length": 0.7333333333333334,
+      "last_used": "2025-08-28T20:41:24.849764",
       "error_count": 0,
       "success_rate": 1.0
     },
@@ -163,7 +163,23 @@
       "last_used": null,
       "error_count": 0,
       "success_rate": 1.0
+    },
+    "bf_emma": {
+      "total_requests": 3,
+      "total_duration": 2.2,
+      "average_request_length": 0.7333333333333334,
+      "last_used": "2025-08-28T20:42:43.605526",
+      "error_count": 0,
+      "success_rate": 1.0
+    },
+    "bf_lily": {
+      "total_requests": 9,
+      "total_duration": 6.675000000000001,
+      "average_request_length": 0.7416666666666667,
+      "last_used": "2025-08-28T20:51:49.957417",
+      "error_count": 0,
+      "success_rate": 1.0
     }
   },
-  "last_updated": "2025-08-28T07:20:02.215702"
+  "last_updated": "2025-08-28T20:58:55.328986"
 }

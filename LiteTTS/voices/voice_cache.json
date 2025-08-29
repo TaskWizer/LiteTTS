@@ -658,17 +658,5 @@
     "gender": null,
     "nationality": null,
     "discovered_at": "2025-08-26T22:18:55.144091"
-  },
-  "voices-v1.0": {
-    "name": "voices-v1.0",
-    "file_path": "LiteTTS/voices/voices-v1.0.bin",
-    "file_size": 28214398,
-    "checksum": "bca610b8308e8d99f32e6fe4197e7ec01679264efed0cac9140fe9c29f1fbf7d",
-    "last_modified": 1755540594.9310198,
-    "source": "custom",
-    "language": null,
-    "gender": null,
-    "nationality": null,
-    "discovered_at": "2025-08-18T13:19:54.959053"
   }
 }

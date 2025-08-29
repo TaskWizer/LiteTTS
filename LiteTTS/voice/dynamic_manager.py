@@ -115,13 +115,13 @@ class DynamicVoiceManager:
             logger.error(f"Failed to save voice mappings cache: {e}")
     
     def get_available_voices(self) -> List[str]:
-        """Get list of all available voice names (both full and short names)"""
+        """Get list of available voice names - returns only actual voice files to prevent count duplication"""
         discovered_voices = self.discovery.get_available_voices()
-        short_names = list(self.voice_mappings.keys())
-        
-        # Combine and deduplicate
-        all_voices = list(set(discovered_voices + short_names))
-        return sorted(all_voices)
+
+        # Return only the discovered voices (actual files), not short name mappings
+        # This prevents the voice count discrepancy (105 vs 55 issue)
+        # Short name resolution is handled at synthesis time, not discovery time
+        return sorted(list(set(discovered_voices)))
     
     def resolve_voice_name(self, voice_name: str) -> str:
         """Resolve a voice name (short or full) to the full voice name"""

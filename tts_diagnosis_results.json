@@ -1,0 +1,462 @@
+{
+  "pronunciation_tests": [
+    {
+      "success": true,
+      "request_time": 0.045805931091308594,
+      "filename": "diagnosis_af_heart_mp3_1756431375.mp3",
+      "audio_analysis": {
+        "file_size_bytes": 5976,
+        "duration_seconds": 0.768,
+        "format": "mp3_actual",
+        "bitrate": 56706
+      },
+      "actual_duration": 0.768,
+      "expected_min_duration": 0.3,
+      "is_truncated": false,
+      "is_silent": false,
+      "failure_detected": false,
+      "test_case": {
+        "text": "Okay",
+        "voice": "af_heart",
+        "issue": "Should be 'Oh-kay' not 'Awk-key'"
+      }
+    },
+    {
+      "success": true,
+      "request_time": 0.04720354080200195,
+      "filename": "diagnosis_af_heart_mp3_1756431375.mp3",
+      "audio_analysis": {
+        "file_size_bytes": 5496,
+        "duration_seconds": 0.7466666666666667,
+        "format": "mp3_actual",
+        "bitrate": 52000
+      },
+      "actual_duration": 0.7466666666666667,
+      "expected_min_duration": 0.3,
+      "is_truncated": false,
+      "is_silent": false,
+      "failure_detected": false,
+      "test_case": {
+        "text": "boy",
+        "voice": "af_heart",
+        "issue": "Should be 'boy' not 'bow'"
+      }
+    },
+    {
+      "success": true,
+      "request_time": 0.0472559928894043,
+      "filename": "diagnosis_af_heart_mp3_1756431375.mp3",
+      "audio_analysis": {
+        "file_size_bytes": 5496,
+        "duration_seconds": 0.7466666666666667,
+        "format": "mp3_actual",
+        "bitrate": 52000
+      },
+      "actual_duration": 0.7466666666666667,
+      "expected_min_duration": 0.3,
+      "is_truncated": false,
+      "is_silent": false,
+      "failure_detected": false,
+      "test_case": {
+        "text": "Boy",
+        "voice": "af_heart",
+        "issue": "Uppercase version - should work correctly"
+      }
+    },
+    {
+      "success": true,
+      "request_time": 0.05163717269897461,
+      "filename": "diagnosis_af_heart_mp3_1756431375.mp3",
+      "audio_analysis": {
+        "file_size_bytes": 7584,
+        "duration_seconds": 0.9813333333333333,
+        "format": "mp3_actual",
+        "bitrate": 57302
+      },
+      "actual_duration": 0.9813333333333333,
+      "expected_min_duration": 0.3,
+      "is_truncated": false,
+      "is_silent": false,
+      "failure_detected": false,
+      "test_case": {
+        "text": "Okay, boy",
+        "voice": "af_heart",
+        "issue": "Combined regression test"
+      }
+    },
+    {
+      "success": true,
+      "request_time": 0.04747653007507324,
+      "filename": "diagnosis_af_heart_mp3_1756431375.mp3",
+      "audio_analysis": {
+        "file_size_bytes": 5808,
+        "duration_seconds": 0.7466666666666667,
+        "format": "mp3_actual",
+        "bitrate": 55059
+      },
+      "actual_duration": 0.7466666666666667,
+      "expected_min_duration": 0.3,
+      "is_truncated": false,
+      "is_silent": false,
+      "failure_detected": false,
+      "test_case": {
+        "text": "June",
+        "voice": "af_heart",
+        "issue": "Should preserve final consonant"
+      }
+    },
+    {
+      "success": true,
+      "request_time": 0.04810523986816406,
+      "filename": "diagnosis_af_heart_mp3_1756431375.mp3",
+      "audio_analysis": {
+        "file_size_bytes": 5784,
+        "duration_seconds": 0.7466666666666667,
+        "format": "mp3_actual",
+        "bitrate": 54824
+      },
+      "actual_duration": 0.7466666666666667,
+      "expected_min_duration": 0.3,
+      "is_truncated": false,
+      "is_silent": false,
+      "failure_detected": false,
+      "test_case": {
+        "text": "Jan",
+        "voice": "af_heart",
+        "issue": "Should preserve final consonant"
+      }
+    },
+    {
+      "success": true,
+      "request_time": 0.04946589469909668,
+      "filename": "diagnosis_af_heart_mp3_1756431376.mp3",
+      "audio_analysis": {
+        "file_size_bytes": 5592,
+        "duration_seconds": 0.7466666666666667,
+        "format": "mp3_actual",
+        "bitrate": 52941
+      },
+      "actual_duration": 0.7466666666666667,
+      "expected_min_duration": 0.3,
+      "is_truncated": false,
+      "is_silent": false,
+      "failure_detected": false,
+      "test_case": {
+        "text": "Joy",
+        "voice": "af_heart",
+        "issue": "Similar to 'boy' - test for consistency"
+      }
+    },
+    {
+      "success": true,
+      "request_time": 0.05157828330993652,
+      "filename": "diagnosis_af_heart_mp3_1756431376.mp3",
+      "audio_analysis": {
+        "file_size_bytes": 5112,
+        "duration_seconds": 0.704,
+        "format": "mp3_actual",
+        "bitrate": 51250
+      },
+      "actual_duration": 0.704,
+      "expected_min_duration": 0.3,
+      "is_truncated": false,
+      "is_silent": false,
+      "failure_detected": false,
+      "test_case": {
+        "text": "Toy",
+        "voice": "af_heart",
+        "issue": "Similar to 'boy' - test for consistency"
+      }
+    }
+  ],
+  "duration_tests": [
+    {
+      "success": true,
+      "request_time": 0.055870771408081055,
+      "filename": "diagnosis_af_heart_mp3_1756431376.mp3",
+      "audio_analysis": {
+        "file_size_bytes": 8544,
+        "duration_seconds": 1.0453333333333332,
+        "format": "mp3_actual",
+        "bitrate": 60522
+      },
+      "actual_duration": 1.0453333333333332,
+      "expected_min_duration": 0.8,
+      "is_truncated": false,
+      "is_silent": false,
+      "failure_detected": false,
+      "test_case": {
+        "text": "Hello world",
+        "expected_min_duration": 0.8,
+        "description": "Simple two-word test"
+      }
+    },
+    {
+      "success": true,
+      "request_time": 0.049230337142944336,
+      "filename": "diagnosis_af_heart_mp3_1756431376.mp3",
+      "audio_analysis": {
+        "file_size_bytes": 20640,
+        "duration_seconds": 2.4106666666666667,
+        "format": "mp3_actual",
+        "bitrate": 66175
+      },
+      "actual_duration": 2.4106666666666667,
+      "expected_min_duration": 2.5,
+      "is_truncated": true,
+      "is_silent": false,
+      "failure_detected": true,
+      "test_case": {
+        "text": "This is a test of the text-to-speech system",
+        "expected_min_duration": 2.5,
+        "description": "Medium sentence"
+      }
+    },
+    {
+      "success": true,
+      "request_time": 0.07534313201904297,
+      "filename": "diagnosis_af_heart_mp3_1756431376.mp3",
+      "audio_analysis": {
+        "file_size_bytes": 66072,
+        "duration_seconds": 8.149333333333333,
+        "format": "mp3_actual",
+        "bitrate": 64211
+      },
+      "actual_duration": 8.149333333333333,
+      "expected_min_duration": 6.0,
+      "is_truncated": false,
+      "is_silent": false,
+      "failure_detected": false,
+      "test_case": {
+        "text": "The quick brown fox jumps over the lazy dog. This sentence contains multiple clauses and should generate several seconds of audio.",
+        "expected_min_duration": 6.0,
+        "description": "Long complex sentence"
+      }
+    },
+    {
+      "success": true,
+      "request_time": 0.06769967079162598,
+      "filename": "diagnosis_af_heart_mp3_1756431376.mp3",
+      "audio_analysis": {
+        "file_size_bytes": 23472,
+        "duration_seconds": 2.8373333333333335,
+        "format": "mp3_actual",
+        "bitrate": 64132
+      },
+      "actual_duration": 2.8373333333333335,
+      "expected_min_duration": 2.0,
+      "is_truncated": false,
+      "is_silent": false,
+      "failure_detected": false,
+      "test_case": {
+        "text": "(silence, then attempting to read) ... Okay, I...",
+        "expected_min_duration": 2.0,
+        "description": "Text from server logs that caused word count mismatch"
+      }
+    }
+  ],
+  "voice_format_tests": [
+    {
+      "success": true,
+      "request_time": 0.05256509780883789,
+      "filename": "diagnosis_af_heart_mp3_1756431376.mp3",
+      "audio_analysis": {
+        "file_size_bytes": 15072,
+        "duration_seconds": 1.728,
+        "format": "mp3_actual",
+        "bitrate": 67027
+      },
+      "actual_duration": 1.728,
+      "expected_min_duration": 1.5,
+      "is_truncated": false,
+      "is_silent": false,
+      "failure_detected": false,
+      "voice": "af_heart",
+      "format": "mp3"
+    },
+    {
+      "success": true,
+      "request_time": 0.12852716445922852,
+      "filename": "diagnosis_af_heart_wav_1756431376.wav",
+      "audio_analysis": {
+        "file_size_bytes": 82988,
+        "duration_seconds": 1.728,
+        "sample_rate": 24000,
+        "frames": 41472,
+        "channels": 1,
+        "sample_width": 2
+      },
+      "actual_duration": 1.728,
+      "expected_min_duration": 1.5,
+      "is_truncated": false,
+      "is_silent": false,
+      "failure_detected": false,
+      "voice": "af_heart",
+      "format": "wav"
+    },
+    {
+      "success": true,
+      "request_time": 0.06155991554260254,
+      "filename": "diagnosis_af_sky_mp3_1756431376.mp3",
+      "audio_analysis": {
+        "file_size_bytes": 15240,
+        "duration_seconds": 1.856,
+        "format": "mp3_actual",
+        "bitrate": 62700
+      },
+      "actual_duration": 1.856,
+      "expected_min_duration": 1.5,
+      "is_truncated": false,
+      "is_silent": false,
+      "failure_detected": false,
+      "voice": "af_sky",
+      "format": "mp3"
+    },
+    {
+      "success": true,
+      "request_time": 0.11433553695678711,
+      "filename": "diagnosis_af_sky_wav_1756431376.wav",
+      "audio_analysis": {
+        "file_size_bytes": 89132,
+        "duration_seconds": 1.856,
+        "sample_rate": 24000,
+        "frames": 44544,
+        "channels": 1,
+        "sample_width": 2
+      },
+      "actual_duration": 1.856,
+      "expected_min_duration": 1.5,
+      "is_truncated": false,
+      "is_silent": false,
+      "failure_detected": false,
+      "voice": "af_sky",
+      "format": "wav"
+    },
+    {
+      "success": true,
+      "request_time": 0.05192232131958008,
+      "filename": "diagnosis_af_bella_mp3_1756431376.mp3",
+      "audio_analysis": {
+        "file_size_bytes": 14064,
+        "duration_seconds": 1.728,
+        "format": "mp3_actual",
+        "bitrate": 62486
+      },
+      "actual_duration": 1.728,
+      "expected_min_duration": 1.5,
+      "is_truncated": false,
+      "is_silent": false,
+      "failure_detected": false,
+      "voice": "af_bella",
+      "format": "mp3"
+    },
+    {
+      "success": true,
+      "request_time": 0.11416864395141602,
+      "filename": "diagnosis_af_bella_wav_1756431376.wav",
+      "audio_analysis": {
+        "file_size_bytes": 82988,
+        "duration_seconds": 1.728,
+        "sample_rate": 24000,
+        "frames": 41472,
+        "channels": 1,
+        "sample_width": 2
+      },
+      "actual_duration": 1.728,
+      "expected_min_duration": 1.5,
+      "is_truncated": false,
+      "is_silent": false,
+      "failure_detected": false,
+      "voice": "af_bella",
+      "format": "wav"
+    },
+    {
+      "success": true,
+      "request_time": 0.051825761795043945,
+      "filename": "diagnosis_af_sarah_mp3_1756431376.mp3",
+      "audio_analysis": {
+        "file_size_bytes": 14136,
+        "duration_seconds": 1.6213333333333333,
+        "format": "mp3_actual",
+        "bitrate": 66400
+      },
+      "actual_duration": 1.6213333333333333,
+      "expected_min_duration": 1.5,
+      "is_truncated": false,
+      "is_silent": false,
+      "failure_detected": false,
+      "voice": "af_sarah",
+      "format": "mp3"
+    },
+    {
+      "success": true,
+      "request_time": 0.1172325611114502,
+      "filename": "diagnosis_af_sarah_wav_1756431377.wav",
+      "audio_analysis": {
+        "file_size_bytes": 77868,
+        "duration_seconds": 1.6213333333333333,
+        "sample_rate": 24000,
+        "frames": 38912,
+        "channels": 1,
+        "sample_width": 2
+      },
+      "actual_duration": 1.6213333333333333,
+      "expected_min_duration": 1.5,
+      "is_truncated": false,
+      "is_silent": false,
+      "failure_detected": false,
+      "voice": "af_sarah",
+      "format": "wav"
+    }
+  ],
+  "preprocessing_tests": [
+    {
+      "original_text": "Okay, boy",
+      "preprocessed_text": "Okay, boy.",
+      "nlp_text": "oh-KAY, b-oy-.",
+      "original_word_count": 2,
+      "preprocessed_word_count": 2,
+      "nlp_word_count": 2,
+      "word_count_issue": false,
+      "changes_made": [
+        "Added terminal punctuation"
+      ]
+    },
+    {
+      "original_text": "(silence, then attempting to read) ... Okay, I...",
+      "preprocessed_text": "(silence, then attempting to read) . Okay, I.",
+      "nlp_text": "(silence, then attempting to reed) . oh-KAY, I.",
+      "original_word_count": 8,
+      "preprocessed_word_count": 8,
+      "nlp_word_count": 8,
+      "word_count_issue": false,
+      "changes_made": [
+        "Fixed problematic excessive dots"
+      ]
+    },
+    {
+      "original_text": "Hello world",
+      "preprocessed_text": "Hello world.",
+      "nlp_text": "Hello world.",
+      "original_word_count": 2,
+      "preprocessed_word_count": 2,
+      "nlp_word_count": 2,
+      "word_count_issue": false,
+      "changes_made": [
+        "Added terminal punctuation"
+      ]
+    },
+    {
+      "original_text": "The quick brown fox jumps over the lazy dog",
+      "preprocessed_text": "The quick brown fox jumps over the lazy dog.",
+      "nlp_text": "The quick brown fox jumps over the lazy dog.",
+      "original_word_count": 9,
+      "preprocessed_word_count": 9,
+      "nlp_word_count": 9,
+      "word_count_issue": false,
+      "changes_made": [
+        "Added terminal punctuation"
+      ]
+    }
+  ]
+}

@@ -938,7 +938,8 @@
             const startTime = performance.now();
 
             try {
-                const response = await fetch('/v1/audio/speech', {
+                // Use the optimized dashboard TTS endpoint for better performance
+                const response = await fetch('/dashboard/tts/optimized', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -957,13 +958,18 @@
                     const audioBlob = await response.blob();
                     const audioUrl = URL.createObjectURL(audioBlob);
 
-                    // Estimate audio duration (rough calculation)
-                    const estimatedWords = text.split(' ').length;
-                    const estimatedDurationSeconds = (estimatedWords / 150) * 60; // ~150 words per minute
-                    const rtf = (latencyMs / 1000) / estimatedDurationSeconds;
+                    // Extract performance metrics from optimized endpoint headers
+                    const serverResponseTime = response.headers.get('X-Response-Time');
+                    const serverRTF = response.headers.get('X-RTF');
+                    const optimizationApplied = response.headers.get('X-Optimization-Applied');
 
-                    // Update live metrics
-                    updateLiveMetrics('Complete', rtf.toFixed(3), latencyMs.toFixed(0) + 'ms');
+                    // Use server metrics if available, otherwise calculate client-side
+                    const actualLatencyMs = serverResponseTime ? parseFloat(serverResponseTime) : latencyMs;
+                    const actualRTF = serverRTF ? parseFloat(serverRTF) : ((latencyMs / 1000) / ((text.split(' ').length / 150) * 60));
+
+                    // Update live metrics with actual server performance
+                    const optimizationStatus = optimizationApplied === 'true' ? ' (Optimized)' : '';
+                    updateLiveMetrics('Complete' + optimizationStatus, actualRTF.toFixed(3), actualLatencyMs.toFixed(0) + 'ms');
 
                     audioPlayer.src = audioUrl;
                     audioPlayer.style.display = 'block';
@@ -972,13 +978,14 @@
                     resultDiv.innerHTML = `
                         <div class="success">
                             Speech generated successfully!<br>
-                            <small>RTF: ${rtf.toFixed(3)} | Latency: ${latencyMs.toFixed(0)}ms | Voice: ${voice}</small>
+                            <small>RTF: ${actualRTF.toFixed(3)} | Latency: ${actualLatencyMs.toFixed(0)}ms | Voice: ${voice}${optimizationStatus}</small>
                         </div>
                     `;
                     currentAudio = audioPlayer;
 
-                    // Log success
-                    addDebugLog(`TTS Success: ${text.substring(0, 50)}... | RTF: ${rtf.toFixed(3)} | Voice: ${voice}`, 'success');
+                    // Log success with optimization status
+                    const logMessage = `TTS Success: ${text.substring(0, 50)}... | RTF: ${actualRTF.toFixed(3)} | Latency: ${actualLatencyMs.toFixed(0)}ms | Voice: ${voice}${optimizationStatus}`;
+                    addDebugLog(logMessage, 'success');
                 } else {
                     const error = await response.text();
                     updateLiveMetrics('Error', '-', latencyMs.toFixed(0) + 'ms');

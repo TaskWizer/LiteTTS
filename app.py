@@ -19,6 +19,7 @@ from typing import Optional, List, Any, Union
 # Import our modules
 from LiteTTS.downloader import ensure_model_files
 from LiteTTS.config import config
+from LiteTTS.config.integrated_config_system import get_integrated_config_manager
 from LiteTTS.exceptions import ModelError
 from LiteTTS.logging_config import setup_logging
 from LiteTTS.cache import cache_manager
@@ -45,31 +46,57 @@ def json_safe_dumps(data: Any) -> str:
 
     sanitized_data = sanitize_value(data)
     return json.dumps(sanitized_data)
-from LiteTTS.text.phonemizer_preprocessor import phonemizer_preprocessor
-# Import advanced text processing directly
-try:
-    from LiteTTS.nlp.unified_text_processor import UnifiedTextProcessor, ProcessingOptions, ProcessingMode
-    ADVANCED_TEXT_PROCESSING_AVAILABLE = True
-except ImportError as e:
-    logger = logging.getLogger(__name__)
-    logger.warning(f"Advanced text processing not available: {e}")
-    ADVANCED_TEXT_PROCESSING_AVAILABLE = False
-    UnifiedTextProcessor = None
-    ProcessingOptions = None
-    ProcessingMode = None
+# Lazy imports - these will be imported only when needed to save memory
+phonemizer_preprocessor = None
+ADVANCED_TEXT_PROCESSING_AVAILABLE = None
+UnifiedTextProcessor = None
+ProcessingOptions = None
+ProcessingMode = None
 
-# Import dynamic CPU allocation
-try:
-    from LiteTTS.performance.dynamic_allocator import initialize_dynamic_allocation, DynamicAllocationConfig
-    from LiteTTS.performance.cpu_monitor import CPUThresholds
-    DYNAMIC_CPU_ALLOCATION_AVAILABLE = True
-except ImportError as e:
-    logger = logging.getLogger(__name__)
-    logger.warning(f"Dynamic CPU allocation not available: {e}")
-    DYNAMIC_CPU_ALLOCATION_AVAILABLE = False
-    initialize_dynamic_allocation = None
-    DynamicAllocationConfig = None
-    CPUThresholds = None
+def _lazy_import_text_processing():
+    """Lazy import text processing modules to save memory during startup"""
+    global phonemizer_preprocessor, ADVANCED_TEXT_PROCESSING_AVAILABLE
+    global UnifiedTextProcessor, ProcessingOptions, ProcessingMode
+
+    if phonemizer_preprocessor is None:
+        from LiteTTS.text.phonemizer_preprocessor import phonemizer_preprocessor as _phonemizer_preprocessor
+        phonemizer_preprocessor = _phonemizer_preprocessor
+
+    if ADVANCED_TEXT_PROCESSING_AVAILABLE is None:
+        try:
+            from LiteTTS.nlp.unified_text_processor import UnifiedTextProcessor as _UTP, ProcessingOptions as _PO, ProcessingMode as _PM
+            UnifiedTextProcessor = _UTP
+            ProcessingOptions = _PO
+            ProcessingMode = _PM
+            ADVANCED_TEXT_PROCESSING_AVAILABLE = True
+        except ImportError as e:
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Advanced text processing not available: {e}")
+            ADVANCED_TEXT_PROCESSING_AVAILABLE = False
+
+# Lazy imports for dynamic CPU allocation
+DYNAMIC_CPU_ALLOCATION_AVAILABLE = None
+initialize_dynamic_allocation = None
+DynamicAllocationConfig = None
+CPUThresholds = None
+
+def _lazy_import_cpu_allocation():
+    """Lazy import CPU allocation modules to save memory during startup"""
+    global DYNAMIC_CPU_ALLOCATION_AVAILABLE, initialize_dynamic_allocation
+    global DynamicAllocationConfig, CPUThresholds
+
+    if DYNAMIC_CPU_ALLOCATION_AVAILABLE is None:
+        try:
+            from LiteTTS.performance.dynamic_allocator import initialize_dynamic_allocation as _ida, DynamicAllocationConfig as _dac
+            from LiteTTS.performance.cpu_monitor import CPUThresholds as _ct
+            initialize_dynamic_allocation = _ida
+            DynamicAllocationConfig = _dac
+            CPUThresholds = _ct
+            DYNAMIC_CPU_ALLOCATION_AVAILABLE = True
+        except ImportError as e:
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Dynamic CPU allocation not available: {e}")
+            DYNAMIC_CPU_ALLOCATION_AVAILABLE = False
 
 
 class TTSRequest(BaseModel):
@@ -89,12 +116,32 @@ class LiteTTSApplication:
 
     def __init__(self):
         """Initialize the application with configuration and logging."""
+        # Initialize robust configuration system FIRST
+        self.integrated_config = get_integrated_config_manager()
+
         # Set up logging
         setup_logging(level=config.logging.level, file_path=config.logging.file_path)
         self.logger = logging.getLogger(__name__)
 
-        # Configuration - use new enhanced config
+        # Configuration - use both legacy and new enhanced config
         self.config = config
+
+        # Log configuration system status
+        config_summary = self.integrated_config.get_configuration_summary()
+        self.logger.info(f"🔧 Robust Configuration System: {config_summary['total_settings']} settings loaded")
+        self.logger.info(f"   Critical settings found: {config_summary['critical_settings_found']}/6")
+        self.logger.info(f"   Sources: {', '.join([Path(s).name for s in config_summary['sources']])}")
+
+        # Validate configuration
+        validation = self.integrated_config.validate_configuration()
+        if validation['valid']:
+            self.logger.info("✅ Configuration validation: PASSED")
+        else:
+            self.logger.error("❌ Configuration validation: FAILED")
+            for issue in validation['issues']:
+                self.logger.error(f"   - {issue}")
+            for missing in validation['critical_missing']:
+                self.logger.error(f"   - Missing: {missing}")
 
         # Dynamic voice management
         from LiteTTS.voice import get_voice_manager, get_available_voices, resolve_voice_name
@@ -113,12 +160,14 @@ class LiteTTSApplication:
         from LiteTTS.performance.batch_optimizer import get_batch_optimizer
         from LiteTTS.performance.cold_start_optimizer import get_cold_start_optimizer
         from LiteTTS.cache.preloader import IntelligentPreloader
+        from LiteTTS.api.dashboard_tts_optimizer import get_dashboard_tts_optimizer
 
         self.performance_monitor = PerformanceMonitor(max_history=1000, enable_system_monitoring=True)
         self.performance_optimizer = IntegratedPerformanceOptimizer()
         self.simd_optimizer = get_simd_optimizer()
         self.batch_optimizer = get_batch_optimizer()
         self.cold_start_optimizer = get_cold_start_optimizer()
+        self.dashboard_tts_optimizer = get_dashboard_tts_optimizer(self)
         self.preloader: Optional[IntelligentPreloader] = None
 
         # FastAPI app and routers
@@ -173,9 +222,23 @@ class LiteTTSApplication:
             self.preloader.start()
             self.logger.info("🚀 Intelligent preloader started")
 
-        # Run comprehensive performance optimization
-        self.logger.info("⚡ Running performance optimization...")
+        # Run comprehensive performance optimization with robust configuration
+        self.logger.info("⚡ Running performance optimization with robust configuration...")
         try:
+            # Apply robust configuration to performance components FIRST
+            self.logger.info("🔧 Applying robust configuration to performance components...")
+            self.integrated_config.apply_to_performance_components(
+                performance_monitor=self.performance_monitor,
+                cpu_monitor=getattr(self, 'dynamic_allocator', None),
+                memory_optimizer=self.performance_optimizer
+            )
+
+            # Apply robust configuration to cache components
+            self.integrated_config.apply_to_cache_components(
+                cache_manager=cache_manager,
+                intelligent_cache=getattr(self, 'preloader', None)
+            )
+
             optimization_results = self.performance_optimizer.run_comprehensive_optimization()
             if optimization_results.memory_optimized:
                 self.logger.info(f"✅ Memory optimized: {optimization_results.memory_reduction_mb:.1f}MB saved ({optimization_results.memory_reduction_percent:.1f}%)")
@@ -202,6 +265,25 @@ class LiteTTSApplication:
                 improvement = cold_start_results.get("improvement_results", {})
                 self.logger.info(f"✅ Cold start optimized: {improvement.get('baseline_ms', 0):.1f}ms → {improvement.get('optimized_ms', 0):.1f}ms")
 
+            # Log final configuration status to verify settings are applied
+            self.logger.info("📋 Configuration Application Status:")
+            critical_settings = [
+                ("performance.dynamic_cpu_allocation.cpu_target", "CPU Target"),
+                ("performance.max_memory_mb", "Max Memory"),
+                ("cache.max_size_mb", "Cache Size"),
+                ("performance.memory_optimization", "Memory Optimization"),
+                ("performance.dynamic_cpu_allocation.enabled", "Dynamic CPU Allocation"),
+            ]
+
+            for setting_key, display_name in critical_settings:
+                value = self.integrated_config.get_setting(setting_key)
+                source = self.integrated_config.get_setting_source(setting_key)
+                if value is not None and source:
+                    source_file = Path(source.file_path).name
+                    self.logger.info(f"   ✅ {display_name}: {value} (from {source_file})")
+                else:
+                    self.logger.warning(f"   ❌ {display_name}: NOT APPLIED")
+
         except Exception as e:
             self.logger.warning(f"⚠️ Performance optimization failed: {e}")
 
@@ -215,7 +297,7 @@ class LiteTTSApplication:
 
             if hot_reload_enabled:
                 self.config_hot_reload_manager = initialize_config_hot_reload(
-                    config_files=['config.json', 'override.json'],
+                    config_files=['config/settings.json', 'config/override.json'],
                     enabled=True
                 )
                 self.logger.info("🔄 Configuration hot reload enabled")
@@ -494,7 +576,8 @@ class LiteTTSApplication:
 
             self.logger.info("✅ Model loaded successfully")
 
-            # Initialize advanced text processing
+            # Initialize advanced text processing (lazy import)
+            _lazy_import_text_processing()
             if ADVANCED_TEXT_PROCESSING_AVAILABLE:
                 try:
                     self.unified_processor = UnifiedTextProcessor()
@@ -518,7 +601,8 @@ class LiteTTSApplication:
                 self.logger.warning("⚠️ Advanced text processing not available - using basic preprocessing")
                 self.unified_processor = None
 
-            # Initialize dynamic CPU allocation
+            # Initialize dynamic CPU allocation (lazy import)
+            _lazy_import_cpu_allocation()
             if DYNAMIC_CPU_ALLOCATION_AVAILABLE:
                 try:
                     # Get dynamic CPU allocation config from main config
@@ -841,6 +925,7 @@ with open("hello.mp3", "wb") as f:
 
             # Enhanced text preprocessing to prevent phonemizer issues (CONSERVATIVE MODE)
             # Use conservative mode by default to preserve word count and avoid phonemizer mismatches
+            _lazy_import_text_processing()  # Ensure phonemizer_preprocessor is loaded
             preprocessing_result = phonemizer_preprocessor.preprocess_text(
                 request.input,
                 aggressive=False,
@@ -2419,6 +2504,84 @@ with open("hello.mp3", "wb") as f:
                     "system_status": {"uptime_seconds": 0, "total_requests_all_time": 0, "total_errors_all_time": 0}
                 }
 
+        @self.app.post("/dashboard/tts/optimized")
+        async def dashboard_tts_optimized(request: dict):
+            """
+            Optimized TTS endpoint specifically for dashboard requests
+            Uses the same performance pipeline as API endpoints to resolve 2000ms+ latency issue
+            """
+            start_time = time.time()
+
+            try:
+                # Extract request parameters
+                text = request.get("input", "")
+                voice = request.get("voice", "af_heart")
+                response_format = request.get("response_format", "mp3")
+
+                if not text.strip():
+                    raise ValueError("Text input is required")
+
+                self.logger.info(f"🎯 Processing optimized dashboard TTS: '{text[:50]}...' with voice '{voice}'")
+
+                # Use the dashboard TTS optimizer with full performance pipeline
+                audio_data, metrics = self.dashboard_tts_optimizer.optimize_dashboard_tts_request(
+                    text=text,
+                    voice=voice,
+                    response_format=response_format
+                )
+
+                # Record analytics
+                end_time = time.time()
+                response_time = (end_time - start_time) * 1000
+
+                dashboard_analytics.record_request(
+                    method="POST",
+                    path="/dashboard/tts/optimized",
+                    status_code=200,
+                    response_time=response_time,
+                    client_ip="dashboard",
+                    user_agent="dashboard",
+                    voice=voice,
+                    text_length=len(text),
+                    cache_hit=False
+                )
+
+                # Log performance
+                status = "✅ MEETS TARGET" if response_time < 500 else "⚠️ EXCEEDS TARGET"
+                self.logger.info(f"🎯 Dashboard TTS completed: {response_time:.1f}ms, RTF: {metrics.rtf:.3f} {status}")
+
+                # Return audio with performance metrics
+                return Response(
+                    content=audio_data,
+                    media_type=f"audio/{response_format}",
+                    headers={
+                        "X-Response-Time": str(response_time),
+                        "X-RTF": str(metrics.rtf),
+                        "X-Optimization-Applied": str(metrics.optimization_applied),
+                        "X-Voice": voice
+                    }
+                )
+
+            except Exception as e:
+                end_time = time.time()
+                response_time = (end_time - start_time) * 1000
+
+                # Record error analytics
+                dashboard_analytics.record_request(
+                    method="POST",
+                    path="/dashboard/tts/optimized",
+                    status_code=500,
+                    response_time=response_time,
+                    client_ip="dashboard",
+                    user_agent="dashboard",
+                    voice=request.get("voice", "unknown"),
+                    text_length=len(request.get("input", "")),
+                    cache_hit=False
+                )
+
+                self.logger.error(f"❌ Dashboard TTS failed: {e}")
+                raise HTTPException(status_code=500, detail=str(e))
+
 
 # Auto-configure uvicorn when imported directly
 import os
@@ -2609,10 +2772,6 @@ if 'uvicorn' in ' '.join(sys.argv) and __name__ != "__main__":
 def get_configured_port():
     """Get the configured port for uvicorn"""
     return tts_app.config.server.port
-
-def get_configured_host():
-    """Get the configured host for uvicorn"""
-    return tts_app.config.server.host
 
 def get_configured_host():
     """Get the configured host for uvicorn"""

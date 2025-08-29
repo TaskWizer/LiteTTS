@@ -12,7 +12,8 @@ from datetime import datetime, timedelta
 from dataclasses import dataclass, field
 import logging
 
-from ..models import AudioSegment, VoiceEmbedding
+from ..audio.audio_segment import AudioSegment
+from ..models import VoiceEmbedding
 
 logger = logging.getLogger(__name__)
 

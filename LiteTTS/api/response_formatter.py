@@ -8,7 +8,7 @@ from typing import Dict, Any, Iterator, AsyncIterator
 import io
 import logging
 
-from LiteTTS.models import AudioSegment
+from LiteTTS.audio.audio_segment import AudioSegment
 from ..audio.processor import AudioProcessor
 from ..audio.streaming import AudioStreamer
 

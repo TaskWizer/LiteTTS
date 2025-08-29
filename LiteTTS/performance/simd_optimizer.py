@@ -137,7 +137,6 @@ class SIMDOptimizer:
                             break
             elif platform.system() == "Windows":
                 # Basic Windows detection using platform
-                import platform
                 if 'AMD64' in platform.machine() or 'x86_64' in platform.machine():
                     # Assume modern x64 CPU has at least SSE2
                     flags = ['sse', 'sse2']

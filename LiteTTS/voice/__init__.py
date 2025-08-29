@@ -87,7 +87,7 @@ def get_available_voices(voices_dir: str = "LiteTTS/voices") -> List[str]:
     return _fallback_voice_discovery(voices_dir)
 
 def _fallback_voice_discovery(voices_dir: str) -> List[str]:
-    """Fallback voice discovery for local files only"""
+    """Fallback voice discovery for local files only - returns only actual voice files"""
     try:
         voices_path = Path(voices_dir)
         if not voices_path.exists():
@@ -96,18 +96,16 @@ def _fallback_voice_discovery(voices_dir: str) -> List[str]:
         voice_files = list(voices_path.glob("*.pt")) + list(voices_path.glob("*.bin"))
         voices = [f.stem for f in voice_files]
 
-        # Add common short name mappings
-        short_mappings = {}
+        # Filter out combined voice files and metadata files
+        filtered_voices = []
         for voice in voices:
-            if '_' in voice:
-                parts = voice.split('_', 1)
-                if len(parts) == 2:
-                    prefix, short_name = parts
-                    if short_name not in short_mappings:
-                        short_mappings[short_name] = voice
+            # Skip combined voice files and metadata files
+            if voice.startswith('voices-v') or voice.startswith('combined_') or voice.endswith('_metadata'):
+                continue
+            filtered_voices.append(voice)
 
-        all_voices = voices + list(short_mappings.keys())
-        return sorted(list(set(all_voices)))
+        # Return only the actual individual voice files
+        return sorted(list(set(filtered_voices)))
 
     except Exception as e:
         logger.error(f"Fallback voice discovery failed: {e}")

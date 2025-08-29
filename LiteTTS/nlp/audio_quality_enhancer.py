@@ -197,83 +197,37 @@ class AudioQualityEnhancer:
         return text
     
     def _add_natural_pauses(self, text: str) -> str:
-        """Add natural pauses for better speech flow"""
-        naturalness = self.profile.naturalness_level
-        
-        # Add pauses after conjunctions in longer sentences
-        if len(text.split()) > 10:
-            text = re.sub(r'\b(and|but|or|so|yet|for|nor)\b', r'<break time="0.1s"/>\1<break time="0.1s"/>', text)
-        
-        # Add pauses before important transitions
-        text = re.sub(r'\b(however|therefore|moreover|furthermore|nevertheless|consequently)\b', 
-                     r'<break time="0.2s"/>\1<break time="0.2s"/>', text)
-        
-        # Add breathing pauses in very long sentences
-        if len(text) > 100:
-            # Add subtle pauses every 15-20 words
-            words = text.split()
-            if len(words) > 15:
-                for i in range(15, len(words), 20):
-                    words[i] = f'<break time="{0.1*naturalness:.1f}s"/>{words[i]}'
-                text = ' '.join(words)
-        
+        """Add natural pauses for better speech flow - DISABLED to prevent SSML corruption"""
+        # CRITICAL FIX: Disable SSML generation that was causing malformed output
+        # The system was generating nested and broken SSML tags that corrupted text processing
+        # This was causing the word count mismatches and garbled audio output
+
+        # For now, return text unchanged to fix the core processing issues
+        # TODO: Implement proper pause handling without SSML corruption
+        logger.debug("Natural pauses disabled to prevent SSML corruption")
         return text
     
     def _apply_context_adaptation(self, text: str) -> str:
-        """Apply context-aware speech adaptations"""
-        for context_type, context_config in self.context_patterns.items():
-            pattern = context_config['pattern']
-            matches = list(re.finditer(pattern, text))
-            
-            for match in reversed(matches):
-                matched_text = match.group()
-                start, end = match.span()
-                
-                # Build enhanced text with context adaptations
-                enhanced_text = matched_text
-                
-                if 'pitch_shift' in context_config:
-                    pitch = context_config['pitch_shift']
-                    if pitch > 0:
-                        enhanced_text = f'<prosody pitch="+{pitch:.1f}st">{enhanced_text}</prosody>'
-                    elif pitch < 0:
-                        enhanced_text = f'<prosody pitch="{pitch:.1f}st">{enhanced_text}</prosody>'
-                
-                if 'speed_factor' in context_config:
-                    speed = context_config['speed_factor']
-                    if speed != 1.0:
-                        rate_change = (speed - 1.0) * 100
-                        if rate_change > 0:
-                            enhanced_text = f'<prosody rate="+{rate_change:.0f}%">{enhanced_text}</prosody>'
-                        else:
-                            enhanced_text = f'<prosody rate="{rate_change:.0f}%">{enhanced_text}</prosody>'
-                
-                if 'pause_before' in context_config and context_config['pause_before'] > 0:
-                    enhanced_text = f'<break time="{context_config["pause_before"]:.1f}s"/>{enhanced_text}'
-                
-                if 'pause_after' in context_config and context_config['pause_after'] > 0:
-                    enhanced_text = f'{enhanced_text}<break time="{context_config["pause_after"]:.1f}s"/>'
-                
-                text = text[:start] + enhanced_text + text[end:]
-        
+        """Apply context-aware speech adaptations - DISABLED to prevent SSML corruption"""
+        # CRITICAL FIX: Disable SSML generation that was causing malformed output
+        # The system was generating nested prosody tags and malformed SSML like:
+        # <prosody pitch="+1.0st"><prosody rate="-5%">text</prosody></prosody>
+        # This was causing massive text processing corruption and word count mismatches
+
+        # For now, return text unchanged to fix the core processing issues
+        # TODO: Implement proper context adaptation without SSML corruption
+        logger.debug("Context adaptation disabled to prevent SSML corruption")
         return text
     
     def _apply_dynamic_intonation(self, text: str) -> str:
-        """Apply dynamic intonation patterns"""
-        # Enhanced question intonation
-        text = re.sub(r'(\w+)\?', r'<prosody pitch="+15%">\1</prosody>?', text)
-        
-        # Enhanced exclamation intonation
-        text = re.sub(r'(\w+)!', r'<prosody pitch="+10%" volume="+10%">\1</prosody>!', text)
-        
-        # List intonation (rising pitch for items except the last)
-        list_pattern = r'(\w+),\s*(\w+),\s*and\s+(\w+)'
-        def list_replacer(match):
-            item1, item2, item3 = match.groups()
-            return f'<prosody pitch="+5%">{item1}</prosody>, <prosody pitch="+3%">{item2}</prosody>, and <prosody pitch="-2%">{item3}</prosody>'
-        
-        text = re.sub(list_pattern, list_replacer, text)
-        
+        """Apply dynamic intonation patterns - DISABLED to prevent SSML corruption"""
+        # CRITICAL FIX: Disable SSML generation that was causing malformed output
+        # The system was generating complex nested SSML tags that were corrupting text processing
+        # This was a major source of the word count mismatches and garbled audio
+
+        # For now, return text unchanged to fix the core processing issues
+        # TODO: Implement proper intonation handling without SSML corruption
+        logger.debug("Dynamic intonation disabled to prevent SSML corruption")
         return text
     
     def analyze_quality_potential(self, text: str) -> Dict[str, any]:

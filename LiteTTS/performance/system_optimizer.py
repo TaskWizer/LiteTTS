@@ -325,19 +325,31 @@ class SystemOptimizer:
         
         return recommendations
     
+    def apply_memory_optimizations(self) -> Dict[str, Any]:
+        """Apply memory optimizations - compatibility method for integrated optimizer"""
+        return self.optimize_memory_allocation()
+
+    def apply_io_optimizations(self) -> Dict[str, Any]:
+        """Apply I/O optimizations - placeholder for integrated optimizer"""
+        return {"status": "not_implemented", "message": "I/O optimizations not yet implemented"}
+
+    def apply_network_optimizations(self) -> Dict[str, Any]:
+        """Apply network optimizations - placeholder for integrated optimizer"""
+        return {"status": "not_implemented", "message": "Network optimizations not yet implemented"}
+
     def apply_all_optimizations(self) -> Dict[str, Any]:
         """Apply all system-level optimizations"""
         results = {}
-        
+
         # Verify SIMD support
         results["simd"] = self.verify_simd_support()
-        
+
         # Optimize memory allocation
         results["memory"] = self.optimize_memory_allocation()
-        
+
         # Setup request batching
         results["batching"] = self.setup_request_batching()
-        
+
         return results
 
 # Global system optimizer instance

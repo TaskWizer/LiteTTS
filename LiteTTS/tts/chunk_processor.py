@@ -8,7 +8,7 @@ from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass
 import logging
 
-from ..models import AudioSegment
+from ..audio.audio_segment import AudioSegment
 from ..audio.processor import AudioProcessor
 
 logger = logging.getLogger(__name__)

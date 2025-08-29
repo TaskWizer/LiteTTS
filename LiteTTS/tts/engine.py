@@ -7,14 +7,15 @@ import torch
 import onnxruntime as ort
 import numpy as np
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Union
+from typing import Dict, List, Optional, Any, Union, Tuple
 import logging
 import threading
 import queue
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from ..models import VoiceEmbedding, AudioSegment, TTSConfiguration
+from ..models import VoiceEmbedding, TTSConfiguration
+from ..audio.audio_segment import AudioSegment
 from ..voice.manager import VoiceManager
 from ..voice.blender import VoiceBlender, BlendConfig
 from ..audio.processor import AudioProcessor

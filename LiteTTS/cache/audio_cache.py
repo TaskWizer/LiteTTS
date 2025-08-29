@@ -8,7 +8,8 @@ from typing import Dict, List, Optional, Any
 import logging
 
 from .manager import EnhancedCacheManager
-from ..models import AudioSegment, generate_cache_key
+from ..audio.audio_segment import AudioSegment
+from ..models import generate_cache_key
 from .cache_utils import CacheKeyGenerator, cache_metrics
 
 logger = logging.getLogger(__name__)

@@ -263,6 +263,16 @@ class MonitoringConfig:
     monitoring_interval: float = 1.0  # seconds
     join_timeout: float = 5.0  # seconds
 
+    # Endpoint configuration (from settings.json)
+    metrics_endpoint: str = "/metrics"
+    health_endpoint: str = "/health"
+    performance_endpoint: str = "/performance"
+
+    # Additional monitoring features
+    request_tracking: bool = True
+    performance_logging: bool = True
+    metrics_retention_days: int = 7
+
 @dataclass
 class TestingConfig:
     """Testing configuration"""
@@ -529,6 +539,14 @@ class ConfigManager:
             self.monitoring.system_monitoring = os.getenv("SYSTEM_MONITORING", str(self.monitoring.system_monitoring)).lower() == "true"
             self.monitoring.monitoring_interval = float(os.getenv("MONITORING_INTERVAL", str(self.monitoring.monitoring_interval)))
             self.monitoring.join_timeout = float(os.getenv("MONITORING_JOIN_TIMEOUT", str(self.monitoring.join_timeout)))
+
+            # Monitoring endpoint configuration
+            self.monitoring.metrics_endpoint = os.getenv("METRICS_ENDPOINT", self.monitoring.metrics_endpoint)
+            self.monitoring.health_endpoint = os.getenv("HEALTH_ENDPOINT", self.monitoring.health_endpoint)
+            self.monitoring.performance_endpoint = os.getenv("PERFORMANCE_ENDPOINT", self.monitoring.performance_endpoint)
+            self.monitoring.request_tracking = os.getenv("REQUEST_TRACKING", str(self.monitoring.request_tracking)).lower() == "true"
+            self.monitoring.performance_logging = os.getenv("PERFORMANCE_LOGGING", str(self.monitoring.performance_logging)).lower() == "true"
+            self.monitoring.metrics_retention_days = int(os.getenv("METRICS_RETENTION_DAYS", str(self.monitoring.metrics_retention_days)))
 
             # Metrics Configuration
             self.metrics.enabled = os.getenv("METRICS_ENABLED", str(self.metrics.enabled)).lower() == "true"

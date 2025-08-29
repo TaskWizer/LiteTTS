@@ -340,6 +340,100 @@ class IntegratedPerformanceOptimizer:
             "current_cache_hit_rate": cache_hit_rate
         }
 
+    def optimize_for_request(self) -> bool:
+        """
+        Apply lightweight optimizations for individual requests.
+        This method is called by dashboard_tts_optimizer and other request handlers.
+        Returns True if optimizations were applied successfully.
+        """
+        try:
+            # If comprehensive optimization hasn't been run yet, run it once
+            if not self.optimization_applied:
+                logger.info("🚀 Running comprehensive optimization for first request")
+                results = self.run_comprehensive_optimization()
+                return results.memory_optimized or results.cpu_optimized or results.cache_optimized
+
+            # For subsequent requests, apply lightweight per-request optimizations
+            logger.debug("⚡ Applying lightweight per-request optimizations")
+
+            # Quick memory cleanup
+            import gc
+            collected = gc.collect()
+            if collected > 0:
+                logger.debug(f"Collected {collected} objects during request optimization")
+
+            # Ensure ONNX environment variables are still set
+            self._ensure_onnx_optimization_env()
+
+            # Validate current performance is within targets
+            targets_met = self.validate_performance_targets()
+            if not all(targets_met.values()):
+                logger.debug("Performance targets not met, applying additional optimizations")
+                # Apply quick CPU optimizations if needed
+                if not targets_met.get("cpu_target_met", True):
+                    self._apply_quick_cpu_optimization()
+
+                # Apply quick memory optimization if needed
+                if not targets_met.get("memory_target_met", True):
+                    self._apply_quick_memory_optimization()
+
+            return True
+
+        except Exception as e:
+            logger.error(f"Request optimization failed: {e}")
+            return False
+
+    def _ensure_onnx_optimization_env(self):
+        """Ensure ONNX optimization environment variables are set"""
+        import os
+
+        # Ensure key ONNX optimization environment variables are set
+        onnx_env_vars = {
+            "ORT_INTER_OP_NUM_THREADS": os.environ.get("ORT_INTER_OP_NUM_THREADS", "4"),
+            "ORT_INTRA_OP_NUM_THREADS": os.environ.get("ORT_INTRA_OP_NUM_THREADS", "4"),
+            "ORT_ENABLE_CPU_FP16_OPS": os.environ.get("ORT_ENABLE_CPU_FP16_OPS", "1"),
+            "ORT_DISABLE_ALL_OPTIMIZATION": os.environ.get("ORT_DISABLE_ALL_OPTIMIZATION", "0")
+        }
+
+        for key, value in onnx_env_vars.items():
+            if key not in os.environ:
+                os.environ[key] = value
+
+    def _apply_quick_cpu_optimization(self):
+        """Apply quick CPU optimizations for individual requests"""
+        try:
+            # Get current CPU configuration
+            perf_config = self.cpu_optimizer.get_aggressive_performance_config()
+
+            # Apply only the most critical settings
+            critical_config = {
+                "onnx_inter_op_threads": perf_config.get("onnx_inter_op_threads", 4),
+                "onnx_intra_op_threads": perf_config.get("onnx_intra_op_threads", 4)
+            }
+
+            self._apply_performance_config(critical_config)
+            logger.debug("Quick CPU optimization applied")
+
+        except Exception as e:
+            logger.debug(f"Quick CPU optimization failed: {e}")
+
+    def _apply_quick_memory_optimization(self):
+        """Apply quick memory optimizations for individual requests"""
+        try:
+            # Force garbage collection
+            import gc
+            collected = gc.collect()
+
+            # Clear any temporary caches if memory is tight
+            current_memory = self._get_current_memory_usage()
+            if current_memory > self.targets.max_memory_mb * 0.8:  # 80% of target
+                # Apply more aggressive memory cleanup
+                gc.collect()
+                logger.debug(f"Quick memory optimization applied, freed {collected} objects")
+
+        except Exception as e:
+            logger.debug(f"Quick memory optimization failed: {e}")
+
 # Global optimizer instance
 _global_optimizer: Optional[IntegratedPerformanceOptimizer] = None
 

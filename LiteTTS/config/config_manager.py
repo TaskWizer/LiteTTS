@@ -233,8 +233,13 @@ class ConfigManager:
             'monitoring': self.get('monitoring.enabled', True),
             'streaming': self.get('audio.streaming.enabled', True)
         }
-        
+
         return feature_map.get(feature, False)
+
+    @property
+    def device(self) -> str:
+        """Get the device configuration for TTS processing"""
+        return self.get('tts.device', 'cpu')
     
     def get_processing_options(self) -> Dict[str, bool]:
         """Get processing options for the unified text processor"""

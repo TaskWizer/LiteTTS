@@ -174,8 +174,10 @@ class TextNormalizer:
         """Main text normalization function with RIME AI integration"""
         logger.debug(f"Normalizing text: {text[:100]}...")
 
-        # Step 1: Apply RIME AI phonetic processing if available
-        if RIME_AI_AVAILABLE:
+        # Step 1: RIME AI phonetic processing (DISABLED due to text truncation bug)
+        # CRITICAL FIX: RIME AI was truncating "test" to "tes" causing garbled audio
+        # Disabling until the RIME AI truncation issue is resolved
+        if False:  # RIME_AI_AVAILABLE:
             try:
                 rime_analysis = rime_ai_processor.process_text_with_rime_ai(text)
                 if rime_analysis.confidence_score > 0.7:

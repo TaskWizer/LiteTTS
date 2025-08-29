@@ -25,12 +25,12 @@
     "download_all_on_startup": true,
     "cache_discovery": true,
     "discovery_cache_hours": 24,
-    "max_cache_size": 512,
-    "preload_default_voices": true,
+    "max_cache_size": 64,
+    "preload_default_voices": false,
     "voice_blending": true,
     "emotion_support": true,
     "loading_strategy": "batch",
-    "cache_strategy": "aggressive",
+    "cache_strategy": "minimal",
     "performance_monitoring": true,
     "use_combined_file": false
   },
@@ -40,7 +40,7 @@
     "default_language": "en-us",
     "sample_rate": 24000,
     "mp3_bitrate": 96,
-    "streaming_chunk_duration": 0.5,
+    "streaming_chunk_duration": 0.1,
     "supported_formats": [
       "mp3",
       "wav",
@@ -285,7 +285,7 @@
       "hybrid_mode": false,
       "accent_variant": "american",
       "custom_dictionary_path": "docs/dictionaries/custom_phonetic.json",
-      "cache_size": 10000,
+      "cache_size": 1000,
       "performance_monitoring": true,
       "dictionary_sources": {
         "arpabet": "docs/dictionaries/cmudict.dict",
@@ -296,7 +296,7 @@
       "unknown_word_handling": "passthrough",
       "cache_persistence": true,
       "cache_file": "cache/phonetic_cache.pkl",
-      "auto_load_dictionaries": true,
+      "auto_load_dictionaries": false,
       "enable_caching": true,
       "confidence_threshold": 0.8,
       "pronunciation_markers": {
@@ -328,8 +328,8 @@
     "ttl_seconds": 7200,
     "cleanup_interval": 180,
     "disable_for_benchmarking": false,
-    "warm_cache_on_startup": true,
-    "preload_common_phrases": true
+    "warm_cache_on_startup": false,
+    "preload_common_phrases": false
   },
   "caching": {
     "enabled": true,
@@ -338,14 +338,14 @@
       "voice_embeddings": true,
       "phonemization": true,
       "audio_processing": true,
-      "time_stretching": true,
+      "time_stretching": false,
       "text_preprocessing": true
     },
     "cache_sizes": {
-      "max_synthesis_cache": 200,
-      "max_voice_cache": 100,
-      "max_phoneme_cache": 500,
-      "max_preprocessing_cache": 1000
+      "max_synthesis_cache": 50,
+      "max_voice_cache": 10,
+      "max_phoneme_cache": 100,
+      "max_preprocessing_cache": 200
     },
     "testing_mode": false,
     "persistence": true,
@@ -358,6 +358,16 @@
     "error_tracking": true,
     "system_metrics": true,
     "detailed_logging": false,
+    "max_history": 1000,
+    "system_monitoring": true,
+    "monitoring_interval": 1.0,
+    "join_timeout": 5.0,
+    "metrics_endpoint": "/metrics",
+    "health_endpoint": "/health",
+    "performance_endpoint": "/performance",
+    "request_tracking": true,
+    "performance_logging": true,
+    "metrics_retention_days": 7,
     "log_rotation": {
       "max_size": "50MB",
       "backup_count": 5

@@ -142,7 +142,11 @@ class VoiceDiscovery:
         
         for voice_file in self.voices_dir.glob("*.bin"):
             voice_name = voice_file.stem
-            
+
+            # Skip combined voice files and metadata files - these shouldn't be counted as individual voices
+            if voice_name.startswith('voices-v') or voice_name.startswith('combined_') or voice_name.endswith('_metadata'):
+                continue
+
             # Get file stats
             stat = voice_file.stat()
             file_size = stat.st_size

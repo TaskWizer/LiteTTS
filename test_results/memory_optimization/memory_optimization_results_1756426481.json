@@ -1,0 +1,204 @@
+{
+  "optimization_timestamp": 1756426481.658223,
+  "target_memory_mb": 150,
+  "optimization_config": {
+    "enable_pre_allocation": true,
+    "pre_allocation_size_mb": 32,
+    "enable_memory_pooling": true,
+    "pool_size_mb": 16,
+    "enable_aggressive_gc": true,
+    "gc_threshold_mb": 15,
+    "enable_memory_mapping": true,
+    "cache_size_limit_mb": 64,
+    "enable_lazy_loading": true,
+    "memory_monitoring_interval": 1.0
+  },
+  "baseline_profile": {
+    "total_memory_mb": 31852.31640625,
+    "available_memory_mb": 15261.16015625,
+    "used_memory_mb": 14873.4140625,
+    "process_memory_mb": 1540.3671875,
+    "process_memory_percent": 4.835965987069475,
+    "peak_memory_mb": 1540.3671875,
+    "memory_growth_mb": 136.23828125,
+    "gc_collections": {
+      "generation_0": 16,
+      "generation_1": 8,
+      "generation_2": 3
+    },
+    "largest_objects": [
+      {
+        "size_mb": 27.527429580688477,
+        "count": 619840,
+        "filename": "    obj, end = self.scan_once(s, idx)"
+      },
+      {
+        "size_mb": 25.833632469177246,
+        "count": 377955,
+        "filename": "    entries[word.lower()] = DictionaryEntry("
+      },
+      {
+        "size_mb": 20.01732635498047,
+        "count": 252105,
+        "filename": "    entries[word] = DictionaryEntry("
+      },
+      {
+        "size_mb": 6.959711074829102,
+        "count": 126007,
+        "filename": "    phonemes = ' '.join(parts[1:])"
+      },
+      {
+        "size_mb": 6.106496810913086,
+        "count": 54179,
+        "filename": "  File \"<frozen importlib._bootstrap_external>\", line 757"
+      },
+      {
+        "size_mb": 5.82902717590332,
+        "count": 126052,
+        "filename": "    word = parts[0].lower()"
+      },
+      {
+        "size_mb": 5.825743675231934,
+        "count": 125984,
+        "filename": "    word=word.lower(),"
+      },
+      {
+        "size_mb": 2.88482666015625,
+        "count": 126040,
+        "filename": "    base_freq = 1.0 / (len(word) + 1)"
+      },
+      {
+        "size_mb": 0.9963645935058594,
+        "count": 6,
+        "filename": "    voice_data = np.fromfile(voice_file, dtype=np.float32)"
+      },
+      {
+        "size_mb": 0.3948535919189453,
+        "count": 8446,
+        "filename": "    word = word.split('(')[0]"
+      }
+    ]
+  },
+  "final_profile": {
+    "total_memory_mb": 31852.31640625,
+    "available_memory_mb": 15116.921875,
+    "used_memory_mb": 14904.16796875,
+    "process_memory_mb": 1792.05859375,
+    "process_memory_percent": 5.626148412234049,
+    "peak_memory_mb": 1792.05859375,
+    "memory_growth_mb": 387.9296875,
+    "gc_collections": {
+      "generation_0": 48,
+      "generation_1": 0,
+      "generation_2": 6
+    },
+    "largest_objects": [
+      {
+        "size_mb": 27.527429580688477,
+        "count": 619840,
+        "filename": "    obj, end = self.scan_once(s, idx)"
+      },
+      {
+        "size_mb": 25.833632469177246,
+        "count": 377955,
+        "filename": "    entries[word.lower()] = DictionaryEntry("
+      },
+      {
+        "size_mb": 21.000163078308105,
+        "count": 6,
+        "filename": "    buffer = bytearray(size)"
+      },
+      {
+        "size_mb": 20.01732635498047,
+        "count": 252105,
+        "filename": "    entries[word] = DictionaryEntry("
+      },
+      {
+        "size_mb": 6.959711074829102,
+        "count": 126007,
+        "filename": "    phonemes = ' '.join(parts[1:])"
+      },
+      {
+        "size_mb": 6.106496810913086,
+        "count": 54179,
+        "filename": "  File \"<frozen importlib._bootstrap_external>\", line 757"
+      },
+      {
+        "size_mb": 5.82902717590332,
+        "count": 126052,
+        "filename": "    word = parts[0].lower()"
+      },
+      {
+        "size_mb": 5.825743675231934,
+        "count": 125984,
+        "filename": "    word=word.lower(),"
+      },
+      {
+        "size_mb": 2.88482666015625,
+        "count": 126040,
+        "filename": "    base_freq = 1.0 / (len(word) + 1)"
+      },
+      {
+        "size_mb": 0.9963645935058594,
+        "count": 6,
+        "filename": "    voice_data = np.fromfile(voice_file, dtype=np.float32)"
+      }
+    ]
+  },
+  "memory_improvement": {
+    "baseline_memory_mb": 1540.3671875,
+    "final_memory_mb": 1792.05859375,
+    "memory_change_mb": 251.69140625,
+    "target_achieved": false
+  },
+  "pre_allocation_success": true,
+  "cache_configuration": {
+    "voice_cache": {
+      "enabled": true,
+      "max_size_mb": 16,
+      "ttl_seconds": 3600,
+      "eviction_policy": "lru"
+    },
+    "model_cache": {
+      "enabled": true,
+      "max_size_mb": 32,
+      "ttl_seconds": 7200,
+      "eviction_policy": "lru"
+    },
+    "text_processing_cache": {
+      "enabled": true,
+      "max_size_mb": 8,
+      "ttl_seconds": 1800,
+      "eviction_policy": "lru"
+    },
+    "audio_cache": {
+      "enabled": true,
+      "max_size_mb": 8,
+      "ttl_seconds": 900,
+      "eviction_policy": "lru"
+    }
+  },
+  "monitoring_statistics": {
+    "duration_seconds": 30.012025356292725,
+    "samples_collected": 9,
+    "min_memory_mb": 1572.87890625,
+    "max_memory_mb": 1790.36328125,
+    "avg_memory_mb": 1739.7513020833333,
+    "memory_variance": 3622.3045315212676,
+    "peak_growth_mb": 217.484375
+  },
+  "leak_analysis": {
+    "memory_growth_mb": 191.515625,
+    "monitoring_duration": 30,
+    "potential_leaks": [
+      "Significant memory growth detected"
+    ],
+    "top_memory_increases": []
+  },
+  "recommendations": [
+    "Memory usage exceeded target by 101.7MB",
+    "Consider reducing cache sizes or implementing more aggressive optimization",
+    "High memory growth detected - investigate potential memory leaks",
+    "High GC activity - consider optimizing object allocation patterns"
+  ]
+}

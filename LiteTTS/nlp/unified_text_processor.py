@@ -135,16 +135,21 @@ class UnifiedTextProcessor:
         logger.info("Unified Text Processor initialized")
 
     def _load_config(self) -> Dict[str, Any]:
-        """Load configuration from config.json"""
+        """Load configuration from config/settings.json"""
         try:
             import json
             from pathlib import Path
+            config_path = Path("config/settings.json")
+            if config_path.exists():
+                with open(config_path) as f:
+                    return json.load(f)
+            # Fallback to config.json for backward compatibility
             config_path = Path("config.json")
             if config_path.exists():
                 with open(config_path) as f:
                     return json.load(f)
         except Exception as e:
-            logger.warning(f"Failed to load config.json: {e}")
+            logger.warning(f"Failed to load configuration: {e}")
         return {}
 
     def _is_section_enabled(self, section_name: str) -> bool:

@@ -1,0 +1,87 @@
+{
+  "test_summary": {
+    "timestamp": "2025-08-28_20-52-39",
+    "total_test_phrases": 5,
+    "successful_generations": 5,
+    "failed_generations": 0,
+    "success_rate_percent": 100.0,
+    "average_file_size_bytes": 115244.0,
+    "average_duration_seconds": 2.4,
+    "average_rtf": 0.2181354179496749
+  },
+  "test_phrases": [
+    "Hello world",
+    "This is a test",
+    "The quick brown fox jumps over the lazy dog",
+    "Testing audio quality",
+    "LiteTTS verification"
+  ],
+  "detailed_results": [
+    {
+      "phrase_id": 1,
+      "phrase": "Hello world",
+      "file_path": "/home/mkinney/Repos/LiteTTS-Fix/test_audio_output/test_audio_2025-08-28_20-52-39_01_Hello_world.wav",
+      "filename": "test_audio_2025-08-28_20-52-39_01_Hello_world.wav",
+      "file_size_bytes": 76844,
+      "duration_seconds": 1.6,
+      "generation_time_seconds": 0.38919997215270996,
+      "rtf": 0.24324998259544373,
+      "voice": "af_heart",
+      "success": true,
+      "timestamp": "2025-08-28T20:52:41.792587"
+    },
+    {
+      "phrase_id": 2,
+      "phrase": "This is a test",
+      "file_path": "/home/mkinney/Repos/LiteTTS-Fix/test_audio_output/test_audio_2025-08-28_20-52-39_02_This_is_a_test.wav",
+      "filename": "test_audio_2025-08-28_20-52-39_02_This_is_a_test.wav",
+      "file_size_bytes": 94844,
+      "duration_seconds": 1.975,
+      "generation_time_seconds": 0.3737814426422119,
+      "rtf": 0.1892564266542845,
+      "voice": "af_heart",
+      "success": true,
+      "timestamp": "2025-08-28T20:52:42.166715"
+    },
+    {
+      "phrase_id": 3,
+      "phrase": "The quick brown fox jumps over the lazy dog",
+      "file_path": "/home/mkinney/Repos/LiteTTS-Fix/test_audio_output/test_audio_2025-08-28_20-52-39_03_The_quick_brown_fox_.wav",
+      "filename": "test_audio_2025-08-28_20-52-39_03_The_quick_brown_fox_.wav",
+      "file_size_bytes": 168044,
+      "duration_seconds": 3.5,
+      "generation_time_seconds": 0.772911787033081,
+      "rtf": 0.22083193915230886,
+      "voice": "af_heart",
+      "success": true,
+      "timestamp": "2025-08-28T20:52:42.940288"
+    },
+    {
+      "phrase_id": 4,
+      "phrase": "Testing audio quality",
+      "file_path": "/home/mkinney/Repos/LiteTTS-Fix/test_audio_output/test_audio_2025-08-28_20-52-39_04_Testing_audio_qualit.wav",
+      "filename": "test_audio_2025-08-28_20-52-39_04_Testing_audio_qualit.wav",
+      "file_size_bytes": 132044,
+      "duration_seconds": 2.75,
+      "generation_time_seconds": 0.6994984149932861,
+      "rtf": 0.2543630599975586,
+      "voice": "af_heart",
+      "success": true,
+      "timestamp": "2025-08-28T20:52:43.640889"
+    },
+    {
+      "phrase_id": 5,
+      "phrase": "LiteTTS verification",
+      "file_path": "/home/mkinney/Repos/LiteTTS-Fix/test_audio_output/test_audio_2025-08-28_20-52-39_05_LiteTTS_verification.wav",
+      "filename": "test_audio_2025-08-28_20-52-39_05_LiteTTS_verification.wav",
+      "file_size_bytes": 104444,
+      "duration_seconds": 2.175,
+      "generation_time_seconds": 0.39797210693359375,
+      "rtf": 0.18297568134877876,
+      "voice": "af_heart",
+      "success": true,
+      "timestamp": "2025-08-28T20:52:44.039614"
+    }
+  ],
+  "output_directory": "/home/mkinney/Repos/LiteTTS-Fix/test_audio_output"
+}

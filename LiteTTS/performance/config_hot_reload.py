@@ -39,7 +39,7 @@ class ConfigReloadHandler(FileSystemEventHandler):
         file_path = Path(event.src_path)
         
         # Only reload for configuration files
-        if file_path.suffix in ['.json'] and file_path.name in ['config.json', 'override.json']:
+        if file_path.suffix in ['.json'] and file_path.name in ['settings.json', 'override.json']:
             current_time = time.time()
             
             # Debounce rapid file changes
@@ -220,7 +220,7 @@ def initialize_config_hot_reload(config_files: list = None, reload_callback: Cal
     
     # Default configuration files
     if config_files is None:
-        config_files = ['config.json', 'override.json']
+        config_files = ['config/settings.json', 'config/override.json']
     
     # Default reload callback
     if reload_callback is None:
@@ -266,7 +266,7 @@ if __name__ == "__main__":
     
     # Initialize with test callback
     manager = initialize_config_hot_reload(
-        config_files=['config.json', 'override.json'],
+        config_files=['config/settings.json', 'config/override.json'],
         reload_callback=test_callback,
         enabled=True
     )
@@ -281,7 +281,7 @@ if __name__ == "__main__":
     
     if status['enabled']:
         print("\n✅ Configuration hot reload is active!")
-        print("💡 Try editing config.json or override.json to see hot reload in action")
+        print("💡 Try editing config/settings.json or config/override.json to see hot reload in action")
         
         # Keep running for testing
         try:

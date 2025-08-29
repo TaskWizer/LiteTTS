@@ -64,6 +64,7 @@ dependencies = [
     "soundfile==0.13.1",
     "starlette==0.47.2",
     "sympy==1.14.0",
+    "torch>=2.8.0",
     "typing-extensions==4.14.1",
     "typing-inspection==0.4.1",
     "uritemplate==4.2.0",

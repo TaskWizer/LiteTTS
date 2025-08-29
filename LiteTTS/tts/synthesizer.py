@@ -10,7 +10,8 @@ import time
 from .engine import KokoroTTSEngine
 from .emotion_controller import EmotionController
 from .chunk_processor import ChunkProcessor
-from ..models import AudioSegment, TTSConfiguration, TTSRequest
+from ..audio.audio_segment import AudioSegment
+from ..models import TTSConfiguration, TTSRequest
 from ..nlp.processor import NLPProcessor
 from ..nlp.unified_text_processor import UnifiedTextProcessor, ProcessingOptions, ProcessingMode
 from ..audio.processor import AudioProcessor
@@ -37,10 +38,10 @@ class TTSSynthesizer:
             from ..config import config as global_config
             config_dict = global_config.to_dict() if hasattr(global_config, 'to_dict') else {}
         except ImportError:
-            # Fallback to loading config.json directly
+            # Fallback to loading config/settings.json directly
             import json
             try:
-                with open('config.json', 'r') as f:
+                with open('config/settings.json', 'r') as f:
                     config_dict = json.load(f)
             except Exception:
                 config_dict = {}

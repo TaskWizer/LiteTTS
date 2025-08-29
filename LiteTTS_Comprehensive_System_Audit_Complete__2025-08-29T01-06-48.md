@@ -1,0 +1,76 @@
+[ ] NAME:Current Task List DESCRIPTION:Root task for conversation __NEW_AGENT__
+-[x] NAME:Fix ModelConfig preload_models Parameter Error DESCRIPTION:Add missing preload_models field to ModelConfig dataclass in LiteTTS/config.py to resolve startup warning. Update ModelConfig.__init__ to handle the preload_models parameter from config.json.
+-[x] NAME:Fix Dashboard Voice Availability Error DESCRIPTION:Debug and fix voice discovery system to ensure dashboard TTS testing shows correct available voices. Investigate voice manager's get_available_voices() method and dashboard voice loading.
+-[x] NAME:Fix JSON Serialization Infinite Float Error DESCRIPTION:Add JSON serialization safety checks in dashboard data endpoints to handle infinite float values. Implement proper float validation and fallback values in DashboardAnalytics.get_dashboard_data().
+-[x] NAME:Enable Model Warm-up on Startup DESCRIPTION:Re-enable model warm-up in app.py by setting warm_on_startup=True in preloader config. Ensure ModelOptimizer.warm_up_model() is called during initialization to eliminate cold start latency.
+-[x] NAME:Consolidate Configuration System DESCRIPTION:Move config.json to ./config/settings.json and update all references. Ensure ConfigManager properly loads from the new location and handles both user and internal configurations.
+-[x] NAME:Audit Configuration Options Implementation DESCRIPTION:Systematically verify each setting in settings.json is properly implemented in the codebase. Test configuration loading, validation, and application of each option.
+-[x] NAME:Remove Non-functional Configuration Settings DESCRIPTION:Identify and remove placeholder or non-functional configuration options from settings.json. Ensure all remaining settings have corresponding implementation in the codebase.
+-[x] NAME:Remove Kokoro References While Preserving Attribution DESCRIPTION:Replace 'Kokoro' references with 'LiteTTS' throughout codebase while maintaining proper attribution in comments and documentation. Update package descriptions and metadata.
+-[x] NAME:Remove Junk Code and Unused Tests DESCRIPTION:Identify and remove placeholder code, unused test files, and dead code paths. Clean up imports and remove deprecated functionality while preserving working features.
+-[x] NAME:Audit Contractions and Prosody Handling DESCRIPTION:Review and improve text processing for natural contractions (wasn't vs waaasant), prosody, and intonation. Test current implementation and identify improvement opportunities.
+-[x] NAME:Investigate OpenWebUI TTS Voice Dropdown Compatibility DESCRIPTION:Analyze OpenWebUI TTS integration requirements and test voice dropdown compatibility. Ensure API endpoints match expected OpenWebUI interface specifications.
+-[x] NAME:Evaluate eSpeak Library Integration DESCRIPTION:Research and evaluate potential eSpeak library integration for enhanced pronunciation. Assess performance impact, memory usage, and compatibility with current RTF targets.
+-[x] NAME:Conduct End-to-End Performance Audit DESCRIPTION:Perform comprehensive performance testing across all system components. Measure current RTF, memory usage, and identify bottlenecks while maintaining <0.25 RTF target.
+-[x] NAME:Implement Systematic Performance Optimizations DESCRIPTION:Apply identified performance optimizations incrementally with testing after each change. Focus on maintaining RTF <0.25 and memory overhead <150MB targets.
+-[x] NAME:Optimize Memory Usage and Caching DESCRIPTION:Review and optimize memory allocation, caching strategies, and garbage collection. Ensure memory overhead stays under 150MB while maintaining performance.
+-[x] NAME:Implement Comprehensive End-to-End Testing DESCRIPTION:Create automated test suite covering all major functionality with programmatic validation. Include audio quality metrics, performance benchmarks, and regression testing.
+-[x] NAME:Achieve Complete Test Coverage DESCRIPTION:Expand test coverage to include all critical code paths, error handling, and edge cases. Implement unit tests, integration tests, and system tests with measurable coverage metrics.
+-[x] NAME:Validate System Reliability Through Automated Testing DESCRIPTION:Run comprehensive automated testing to validate system reliability, performance targets, and backward compatibility. Generate test reports with objective metrics.
+-[x] NAME:Fix WebSocket Infrastructure Issues DESCRIPTION:Resolve WebSocket-related warnings, fix /dashboard/ws 404 errors, and install proper WebSocket dependencies for real-time dashboard updates
+--[x] NAME:Install WebSocket Dependencies DESCRIPTION:Install uvicorn[standard] or websockets/wsproto packages to resolve WebSocket library detection warnings
+--[x] NAME:Fix Dashboard WebSocket Endpoint DESCRIPTION:Resolve 404 error for /dashboard/ws endpoint to enable real-time dashboard monitoring
+-[x] NAME:Clean Up ONNX Runtime Configuration DESCRIPTION:Eliminate duplicate config entries and overwrite warnings in ONNX runtime initialization
+-[x] NAME:Complete Voice Loading Strategy Migration DESCRIPTION:Address SimplifiedVoiceCombiner deprecation warning and complete migration to individual voice loading strategy
+-[x] NAME:Comprehensive Model Performance Benchmark DESCRIPTION:Systematic performance analysis of all 8 available model variants with RTF, memory, quality, and latency metrics
+--[x] NAME:Benchmark Model Variants DESCRIPTION:Test all 8 model variants (model.onnx, model_f16.onnx, model_q4.onnx, etc.) with consistent methodology
+--[x] NAME:Generate Performance Report DESCRIPTION:Create markdown report with comparison tables, rankings, and recommendations for different use cases
+-[x] NAME:Final System Validation DESCRIPTION:Comprehensive system health check with validation checklist and documentation updates
+-[x] NAME:Configuration System Analysis DESCRIPTION:Trace configuration loading code path from startup to runtime and document current configuration file precedence
+-[x] NAME:Configuration Loader Implementation DESCRIPTION:Create robust configuration loader with proper hierarchy: override.json > settings.json > config.json > defaults
+-[x] NAME:Setting Implementation Verification DESCRIPTION:Verify each setting in config/settings.json is applied to actual runtime behavior
+-[x] NAME:Web Dashboard Latency Investigation DESCRIPTION:Profile dashboard TTS processing to identify why it shows 2000ms+ vs 304ms API latency
+-[x] NAME:Configuration Integration Testing DESCRIPTION:Test that all configuration changes take effect and produce expected behavior
+-[x] NAME:Complete Remaining Project Tasks DESCRIPTION:Ensure all systematic improvement project tasks are completed with proper configuration integration
+-[x] NAME:Investigate Dynamic Voice System Architecture DESCRIPTION:Analyze the voice management system to understand the 105 voices, 49 mappings, and cache relationships through codebase examination
+-[x] NAME:Examine Voice Discovery and Caching Logic DESCRIPTION:Investigate the relationship between downloader cache (55 voices) and discovery cache (56 voices) and how they integrate
+-[x] NAME:Analyze PyTorch Dependency Requirements DESCRIPTION:Examine LiteTTS/tts/engine.py and related files to determine exact PyTorch functionality needed by KokoroTTSEngine
+-[x] NAME:Install PyTorch with UV Package Manager DESCRIPTION:Install PyTorch using uv with correct version and CUDA/CPU configuration based on codebase requirements
+-[x] NAME:Verify PyTorch Ecosystem Dependencies DESCRIPTION:Check and install any additional torch-related packages (torchvision, torchaudio) if required by the codebase
+-[x] NAME:Test Application Startup and Voice System DESCRIPTION:Run application startup sequence to verify PyTorch fix and validate dynamic voice manager functionality
+-[x] NAME:Fix Configuration Hot Reload Paths DESCRIPTION:Update LiteTTS.performance.config_hot_reload to use config/settings.json and config/override.json instead of root config.json
+-[x] NAME:Fix ConfigManager Device Attribute DESCRIPTION:Add device property to ConfigManager to access tts.device configuration for dashboard TTS optimizer
+-[x] NAME:Test Configuration Hot Reload DESCRIPTION:Verify that configuration hot reload works with the correct config directory structure
+-[ ] NAME:Test Dashboard Audio Rendering DESCRIPTION:Verify that dashboard TTS optimization works without falling back to basic processing
+-[x] NAME:Audit Dashboard TTS Optimizer Critical Failures DESCRIPTION:Investigate the dashboard TTS optimizer's _process_with_optimizations method which is calling synthesizer.synthesize with incorrect parameters (text, voice, response_format) instead of a TTSRequest object, causing synthesis failures that fall back to placeholder audio data.
+-[x] NAME:Fix Dashboard TTS Synthesizer Method Call DESCRIPTION:Correct the synthesizer.synthesize call in dashboard_tts_optimizer.py to use proper TTSRequest object instead of individual parameters, ensuring actual audio generation instead of fallback placeholder data.
+-[x] NAME:Investigate Voice Count Discrepancy (105 vs 55) DESCRIPTION:Analyze the /v1/voices endpoint and voice discovery system to determine why dashboard reports 105 voices when only 55 are actually available, checking for duplicate counting or stale cache data.
+-[x] NAME:Implement Comprehensive Error Handling DESCRIPTION:Add proper error detection and reporting in dashboard TTS optimizer to prevent false success metrics when audio generation fails, ensuring errors are properly propagated to the dashboard UI.
+-[x] NAME:Add Audio Data Validation DESCRIPTION:Implement audio data size and format validation in dashboard TTS optimizer to detect when placeholder data is returned instead of actual audio, preventing false success reporting.
+-[x] NAME:Test Dashboard Audio Generation End-to-End DESCRIPTION:Validate that dashboard TTS requests generate actual playable audio files through the web interface, testing multiple voices and confirming audio playback functionality works correctly.
+-[x] NAME:Verify Voice Count Accuracy DESCRIPTION:Confirm that dashboard displays the correct number of available voices (55) and that all displayed voices can successfully generate audio through the dashboard interface.
+-[x] NAME:Validate Performance Metrics Accuracy DESCRIPTION:Ensure RTF and latency metrics reported by dashboard reflect actual audio generation performance, not just placeholder processing time, maintaining RTF < 0.25 targets.
+-[x] NAME:Diagnose ConfigManager Device Attribute Issue DESCRIPTION:Investigate the ConfigManager class structure to understand why 'device' attribute is missing and how device configuration should be accessed from settings.json
+-[x] NAME:Fix ConfigManager Device Access DESCRIPTION:Implement proper device attribute access in ConfigManager, ensuring backward compatibility with dashboard TTS optimizer and other components
+-[x] NAME:Audit and Fix CPUOptimizer Missing Methods DESCRIPTION:Examine CPUOptimizer class for missing 'get_cpu_info' method and implement or update calling code to use correct method signatures
+-[ ] NAME:Audit and Fix SystemOptimizer Missing Methods DESCRIPTION:Examine SystemOptimizer class for missing 'apply_memory_optimizations' method and implement or update calling code to use correct method signatures
+-[ ] NAME:Install and Configure WebSocket Dependencies DESCRIPTION:Install uvicorn[standard] and configure WebSocket support for real-time dashboard updates and live metrics
+-[ ] NAME:Validate Configuration Loading Pipeline DESCRIPTION:Test that settings.json device configuration is properly loaded and accessible, and that hot reload functionality works correctly
+-[ ] NAME:End-to-End Configuration Testing DESCRIPTION:Perform comprehensive testing of dashboard TTS generation with all configuration fixes applied, ensuring no configuration-related errors remain
+-[x] NAME:Fix MonitoringConfig Missing metrics_endpoint Attribute DESCRIPTION:Investigate MonitoringConfig class and fix the missing 'metrics_endpoint' attribute that's causing HTTP 500 errors in dashboard TTS optimizer. Check settings.json structure and ensure proper attribute mapping.
+-[x] NAME:Fix CPUOptimizer Missing get_aggressive_performance_config Method DESCRIPTION:Implement the missing get_aggressive_performance_config() method in CPUOptimizer class or update calling code in integrated_optimizer.py to use existing methods for aggressive CPU optimization.
+-[x] NAME:Fix SIMD Optimizer Platform Variable Scope Error DESCRIPTION:Resolve the variable scope issue in SIMD optimizer's CPU flag detection where 'platform' variable is not properly defined, causing SIMD optimizations to fail.
+-[x] NAME:Validate settings.json Configuration Structure DESCRIPTION:Review and validate the settings.json file structure to ensure all required configuration sections (monitoring, performance, etc.) are properly defined and mapped to configuration classes.
+-[x] NAME:End-to-End Dashboard TTS Validation DESCRIPTION:Perform comprehensive testing of dashboard TTS audio generation through both optimized and fallback paths, ensuring all configuration errors are resolved and performance optimizations work correctly.
+-[x] NAME:Immediate Test Fix Resolution DESCRIPTION:Fix the missing get_performance_summary() method in DashboardTTSOptimizer class to resolve test failure
+-[x] NAME:Code Quality Assessment DESCRIPTION:Review all Python modules for consistency, error handling, best practices, deprecated dependencies, and security vulnerabilities
+-[/] NAME:Performance Optimization Validation DESCRIPTION:Validate RTF targets < 0.25, memory usage < 150MB overhead, CPU optimization and threading configurations
+-[x] NAME:System Integration Testing DESCRIPTION:Test Docker deployment configurations, API endpoints, WebSocket functionality, and dashboard real-time updates
+-[x] NAME:Quality Assurance Validation DESCRIPTION:Run comprehensive test suite, validate audio quality through actual TTS generation, test end-to-end workflows
+-[x] NAME:Production Deployment Audit DESCRIPTION:Ensure production-ready deployment with zero warnings, complete system validation, and documentation updates
+-[x] NAME:IMMEDIATE: Fix AudioSegment Critical Bug DESCRIPTION:Fix AudioSegment.__init__() missing duration argument error causing synthesis failures and HTTP 500 errors
+-[ ] NAME:PRIORITY 1: Memory Optimization Analysis DESCRIPTION:Analyze model loading process and reduce memory usage from 1717MB to <150MB through cache optimization and lazy loading
+-[ ] NAME:PRIORITY 1: Debug Memory Optimization Failure DESCRIPTION:Debug why integrated optimizer memory optimization reports 'Failed' status and implement memory leak detection
+-[ ] NAME:PRIORITY 2: RTF Performance Optimization DESCRIPTION:Optimize text preprocessing and ONNX runtime settings to reduce RTF from 0.385 to <0.25
+-[ ] NAME:PRIORITY 2: Synthesis Pipeline Profiling DESCRIPTION:Profile synthesis pipeline to identify bottlenecks and implement batch processing optimizations
+-[ ] NAME:PRIORITY 3: Missing Files and Documentation DESCRIPTION:Create startup.sh script and docs/DEPLOYMENT.md, fix config.json warnings
