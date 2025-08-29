@@ -329,7 +329,25 @@ class SIMDOptimizer:
         normalized_sequence = sequence / sequence_norm
         
         return normalized_sequence
-    
+
+    def apply_optimizations(self) -> bool:
+        """
+        Apply SIMD optimizations for the current request.
+        This is the method called by dashboard_tts_optimizer.
+        Returns True if optimizations were applied successfully.
+        """
+        try:
+            # Apply environment optimizations
+            env_vars = self.apply_environment_optimizations()
+
+            # Log successful optimization application
+            logger.debug(f"SIMD optimizations applied successfully with {self.capabilities.optimal_instruction_set}")
+            return True
+
+        except Exception as e:
+            logger.warning(f"Failed to apply SIMD optimizations: {e}")
+            return False
+
     def apply_environment_optimizations(self) -> Dict[str, str]:
         """Apply SIMD-related environment variable optimizations"""
         env_vars = {}

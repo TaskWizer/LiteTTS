@@ -45,6 +45,32 @@ class VoiceEmbedding:
     metadata: Optional[VoiceMetadata] = None
     loaded_at: Optional[datetime] = None
     file_hash: str = ""
+    
+    @property
+    def shape(self):
+        """Compatibility property for accessing embedding data shape"""
+        if self.embedding_data is not None:
+            return self.embedding_data.shape
+        return None
+    
+    @property
+    def dtype(self):
+        """Compatibility property for accessing embedding data dtype"""
+        if self.embedding_data is not None:
+            return self.embedding_data.dtype
+        return None
+    
+    def __array__(self):
+        """Allow numpy operations directly on VoiceEmbedding object"""
+        if self.embedding_data is not None:
+            return self.embedding_data
+        raise ValueError("No embedding data available")
+    
+    def numpy(self):
+        """Return numpy array of embedding data"""
+        if self.embedding_data is not None:
+            return self.embedding_data
+        raise ValueError("No embedding data available")
 
 @dataclass
 class AudioSegment:

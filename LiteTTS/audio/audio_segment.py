@@ -46,13 +46,44 @@ class AudioSegment:
         """Convert audio data to bytes"""
         if format is None:
             format = self.format
-            
+
         # Convert float32 to int16 for most formats
         if format.lower() in ['wav', 'mp3', 'ogg']:
             audio_int16 = (self.audio_data * 32767).astype(np.int16)
             return audio_int16.tobytes()
         else:
             return self.audio_data.tobytes()
+
+    def to_wav_bytes(self, bit_depth: int = 16) -> bytes:
+        """Convert audio data to WAV format bytes"""
+        import wave
+
+        try:
+            # Convert to appropriate bit depth
+            if bit_depth == 16:
+                audio_int = (self.audio_data * 32767).astype(np.int16)
+            elif bit_depth == 24:
+                audio_int = (self.audio_data * 8388607).astype(np.int32)
+            elif bit_depth == 32:
+                audio_int = (self.audio_data * 2147483647).astype(np.int32)
+            else:
+                raise ValueError(f"Unsupported bit depth: {bit_depth}")
+
+            # Create WAV file in memory
+            wav_buffer = io.BytesIO()
+
+            with wave.open(wav_buffer, 'wb') as wav_file:
+                wav_file.setnchannels(1)  # Mono
+                wav_file.setsampwidth(bit_depth // 8)
+                wav_file.setframerate(self.sample_rate)
+                wav_file.writeframes(audio_int.tobytes())
+
+            wav_buffer.seek(0)
+            return wav_buffer.getvalue()
+
+        except Exception as e:
+            logger.error(f"WAV conversion failed: {e}")
+            raise
     
     def concatenate(self, other: 'AudioSegment') -> 'AudioSegment':
         """Concatenate with another audio segment"""

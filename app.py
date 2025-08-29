@@ -2434,7 +2434,7 @@ with open("hello.mp3", "wb") as f:
                 while True:
                     # Get real-time data
                     performance_data = self.performance_monitor.get_performance_summary()
-                    dashboard_data = dashboard_analytics.get_analytics_data()
+                    dashboard_data = dashboard_analytics.get_dashboard_data()
 
                     # Combine data
                     real_time_data = {

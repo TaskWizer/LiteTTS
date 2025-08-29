@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Configuration hot reload system for Kokoro TTS
+Configuration hot reload system for LiteTTS
 Automatically reloads configuration files when they change
 """
 
@@ -123,8 +123,8 @@ class ConfigHotReloadManager:
             observer.start()
             logger.info(f"🔄 Hot reload enabled for config directory: {config_dir}")
         
-        # Register the callback for this specific file
-        self.reload_callbacks[str(config_file)] = reload_callback
+        # Register the callback for this specific file (use resolved path for consistency)
+        self.reload_callbacks[str(config_file.resolve())] = reload_callback
         logger.info(f"🔄 Registered hot reload for: {config_file.name}")
     
     def manual_reload(self, file_path: str) -> bool:
@@ -228,19 +228,19 @@ def initialize_config_hot_reload(config_files: list = None, reload_callback: Cal
             logger.info(f"🔄 Configuration file changed: {Path(file_path).name}")
             # Import here to avoid circular imports
             try:
-                # Use the correct import path - kokoro.config is the main config module
+                # Use the correct import path - LiteTTS.config is the main config module
                 import importlib
                 import sys
 
-                # Check if kokoro.config is already imported
-                if 'kokoro.config' in sys.modules:
-                    config_module = sys.modules['kokoro.config']
+                # Check if LiteTTS.config is already imported
+                if 'LiteTTS.config' in sys.modules:
+                    config_module = sys.modules['LiteTTS.config']
                     importlib.reload(config_module)
                     logger.info("✅ Configuration module reloaded successfully")
                 else:
                     # Import and reload
                     import LiteTTS.config
-                    importlib.reload(kokoro.config)
+                    importlib.reload(LiteTTS.config)
                     logger.info("✅ Configuration imported and reloaded successfully")
 
             except Exception as e:

@@ -154,29 +154,15 @@ class DashboardTTSOptimizer:
         if not self.app_instance:
             raise ValueError("App instance not available for optimization")
 
-        # Use the app's optimized TTS processing
+        # CRITICAL FIX: Always use the app's main synthesizer, never create a separate one
         try:
             # Access the app's TTS synthesizer with all optimizations
             if hasattr(self.app_instance, 'synthesizer'):
                 synthesizer = self.app_instance.synthesizer
+                logger.debug("Using main app synthesizer (optimized path)")
             else:
-                # Fallback: create optimized synthesizer with proper TTSConfiguration
-                from LiteTTS.tts import TTSSynthesizer
-                from LiteTTS.config import config
-                from LiteTTS.models import TTSConfiguration
-
-                # Create proper TTSConfiguration from ConfigManager
-                tts_config = TTSConfiguration(
-                    model_path=config.tts.model_path,
-                    voices_path=config.tts.voices_path,
-                    device=config.tts.device,  # This is the correct way to access device
-                    sample_rate=config.tts.sample_rate,
-                    chunk_size=getattr(config.tts, 'chunk_size', 100),
-                    cache_size=getattr(config.cache, 'max_size', 1000),
-                    max_text_length=getattr(config.tts, 'max_text_length', 1000),
-                    default_voice=config.tts.default_voice
-                )
-                synthesizer = TTSSynthesizer(tts_config)
+                # This should never happen in normal operation
+                raise ValueError("Main app synthesizer not available - this indicates a serious initialization problem")
 
             # Apply performance optimizations
             if hasattr(self.app_instance, 'performance_optimizer'):
@@ -224,28 +210,22 @@ class DashboardTTSOptimizer:
     
     def _basic_tts_processing(self, text: str, voice: str, response_format: str) -> bytes:
         """
-        Fallback basic TTS processing - should not return placeholder data!
+        Fallback basic TTS processing - CRITICAL FIX: Use main app synthesizer
         """
         logger.warning("Using fallback basic TTS processing")
 
         try:
-            # Create a basic synthesizer without optimizations
-            from LiteTTS.tts import TTSSynthesizer
-            from LiteTTS.config import config
-            from LiteTTS.models import TTSRequest, TTSConfiguration
+            # CRITICAL FIX: Use the main app's synthesizer instead of creating a separate one
+            # This ensures we use the same optimized, patched synthesizer as the main API
+            if self.app_instance and hasattr(self.app_instance, 'synthesizer'):
+                synthesizer = self.app_instance.synthesizer
+                logger.info("Using main app synthesizer (fallback path)")
+            else:
+                # This should be extremely rare - only if app_instance is not available
+                logger.error("Main app synthesizer not available in fallback - this indicates a serious problem")
+                raise ValueError("Cannot access main app synthesizer for fallback processing")
 
-            # Create proper TTSConfiguration from ConfigManager for fallback
-            tts_config = TTSConfiguration(
-                model_path=config.tts.model_path,
-                voices_path=config.tts.voices_path,
-                device=config.tts.device,  # Correct device access
-                sample_rate=config.tts.sample_rate,
-                chunk_size=getattr(config.tts, 'chunk_size', 100),
-                cache_size=getattr(config.cache, 'max_size', 1000),
-                max_text_length=getattr(config.tts, 'max_text_length', 1000),
-                default_voice=config.tts.default_voice
-            )
-            synthesizer = TTSSynthesizer(tts_config)
+            from LiteTTS.models import TTSRequest
 
             # Create proper TTSRequest object for fallback too
             request = TTSRequest(

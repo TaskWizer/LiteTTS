@@ -1,0 +1,60 @@
+{
+  "timestamp": "2025-08-28 21:34:53",
+  "validation_results": {
+    "test_audio_output/diagnosis_test_1.wav": {
+      "success": true,
+      "expected": "Hello world",
+      "transcribed": "Angie.",
+      "confidence": 0.8587813675403595,
+      "wer": 1.0,
+      "accuracy": 0.0,
+      "transcription_time": 0.33907151222229004,
+      "is_acceptable": false,
+      "description": "Simple greeting"
+    },
+    "test_audio_output/diagnosis_test_2.wav": {
+      "success": true,
+      "expected": "The quick brown fox jumps over the lazy dog",
+      "transcribed": "That's it. And peace.",
+      "confidence": 0.7443060576915741,
+      "wer": 1.0,
+      "accuracy": 0.0,
+      "transcription_time": 0.37316226959228516,
+      "is_acceptable": false,
+      "description": "Pangram sentence"
+    },
+    "test_audio_output/diagnosis_test_3.wav": {
+      "success": true,
+      "expected": "Testing one two three",
+      "transcribed": "See, I...est chance.",
+      "confidence": 0.9541884250938892,
+      "wer": 1.0,
+      "accuracy": 0.0,
+      "transcription_time": 0.3118770122528076,
+      "is_acceptable": false,
+      "description": "Number sequence"
+    },
+    "_summary": {
+      "total_tests": 3,
+      "successful_transcriptions": 3,
+      "average_wer": 1.0,
+      "average_accuracy": 0.0,
+      "system_acceptable": false,
+      "threshold": 80.0
+    }
+  },
+  "pattern_analysis": {
+    "chinese_characters": 0,
+    "gibberish_words": 3,
+    "missing_words": 0,
+    "extra_words": 0,
+    "pronunciation_errors": 0
+  },
+  "recommendations": [
+    "Audio quality below acceptable threshold (80%)",
+    "Check model loading and voice file integrity",
+    "Verify text processing pipeline is not corrupting input",
+    "Test with different voices to isolate voice-specific issues",
+    "Compare against known working baseline commit"
+  ]
+}

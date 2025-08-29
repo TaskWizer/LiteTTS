@@ -174,7 +174,11 @@ class TextNormalizer:
         """Main text normalization function with RIME AI integration"""
         logger.debug(f"Normalizing text: {text[:100]}...")
 
-        # Step 1: RIME AI phonetic processing (DISABLED due to text truncation bug)
+        # Step 1: Basic text cleaning (RIME AI disabled due to truncation issues)
+        # Apply basic text normalization without RIME AI to prevent truncation
+        text = self._apply_basic_normalization(text)
+        
+        # RIME AI phonetic processing (DISABLED due to text truncation bug)
         # CRITICAL FIX: RIME AI was truncating "test" to "tes" causing garbled audio
         # Disabling until the RIME AI truncation issue is resolved
         if False:  # RIME_AI_AVAILABLE:
@@ -623,3 +627,19 @@ class TextNormalizer:
         domain = domain.replace('.nl', ' dot nl')
 
         return domain
+
+    def _apply_basic_normalization(self, text: str) -> str:
+        """Apply basic text normalization without RIME AI"""
+        import re
+
+        # Basic cleaning to ensure text is properly formatted for TTS
+        text = text.strip()
+
+        # Remove excessive whitespace
+        text = re.sub(r'\s+', ' ', text)
+
+        # Ensure proper sentence ending
+        if text and not text.endswith(('.', '!', '?')):
+            text += '.'
+
+        return text

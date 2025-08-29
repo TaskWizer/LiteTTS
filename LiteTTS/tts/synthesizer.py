@@ -118,17 +118,24 @@ class TTSSynthesizer:
             if not stretch_config:
                 try:
                     from ..config import config as global_config
-                    stretch_config = global_config.get('time_stretching', {})
-                except ImportError:
+                    # Use proper attribute access instead of .get() method
+                    if hasattr(global_config, 'performance') and hasattr(global_config.performance, 'time_stretching'):
+                        stretch_config = global_config.performance.time_stretching.__dict__
+                    else:
+                        stretch_config = {}
+                except (ImportError, AttributeError):
                     stretch_config = {}
 
             # Also check text_processing.time_stretching_optimization
             if not stretch_config:
                 try:
                     from ..config import config as global_config
-                    text_processing = global_config.get('text_processing', {})
-                    stretch_config = text_processing.get('time_stretching_optimization', {})
-                except ImportError:
+                    # Use proper attribute access instead of .get() method
+                    if hasattr(global_config, 'text_processing') and hasattr(global_config.text_processing, 'time_stretching_optimization'):
+                        stretch_config = global_config.text_processing.time_stretching_optimization.__dict__
+                    else:
+                        stretch_config = {}
+                except (ImportError, AttributeError):
                     stretch_config = {}
 
             # Create time-stretch configuration with all new options

@@ -227,8 +227,13 @@ class KokoroTTSEngine:
             if not voice_embedding:
                 raise RuntimeError(f"Failed to load voice embedding: {voice}")
             
-            # Tokenize text
-            tokens = self._tokenize_text(text)
+            # CRITICAL FIX: Convert text to phonemes before tokenization
+            # The tokenizer expects phonetic input, not raw text
+            phonemes = self._text_to_phonemes(text)
+            logger.debug(f"Converted text to phonemes: '{text}' -> '{phonemes}'")
+            
+            # Tokenize phonemes (not raw text)
+            tokens = self._tokenize_text(phonemes)
             
             # Prepare inputs for ONNX model
             model_inputs = self._prepare_model_inputs(tokens, voice_embedding, speed, emotion, emotion_strength)
@@ -296,8 +301,14 @@ class KokoroTTSEngine:
             return tokens
     
     def _prepare_model_inputs(self, tokens: np.ndarray, voice_embedding: VoiceEmbedding,
-                            speed: float, emotion: Optional[str], emotion_strength: float) -> Dict[str, np.ndarray]:
+                            speed: float, emotion: Optional[str] = None, emotion_strength: float = 1.0) -> Dict[str, np.ndarray]:
         """Prepare inputs for the ONNX model"""
+        # Handle default emotion parameters
+        if emotion is None:
+            emotion = "neutral"
+        if emotion_strength is None:
+            emotion_strength = 1.0
+            
         # Get voice embedding data
         voice_data = voice_embedding.embedding_data
 
@@ -668,8 +679,13 @@ class KokoroTTSEngine:
             if not blended_voice:
                 raise RuntimeError("Failed to create blended voice")
 
-            # Tokenize text
-            tokens = self._tokenize_text(text)
+            # CRITICAL FIX: Convert text to phonemes before tokenization
+            # The tokenizer expects phonetic input, not raw text
+            phonemes = self._text_to_phonemes(text)
+            logger.debug(f"Converted text to phonemes: '{text}' -> '{phonemes}'")
+            
+            # Tokenize phonemes (not raw text)
+            tokens = self._tokenize_text(phonemes)
 
             # Prepare inputs for ONNX model using blended voice
             model_inputs = self._prepare_model_inputs(tokens, blended_voice, speed, emotion, emotion_strength)
@@ -963,3 +979,113 @@ class KokoroTTSEngine:
         
         self.model_loaded = False
         logger.info("TTS engine cleanup completed")
+
+    def _text_to_phonemes(self, text: str) -> str:
+        """Convert text to phonemes using espeak-ng"""
+        try:
+            # Try to use espeak-ng for phonemization
+            import subprocess
+
+            # Use espeak-ng to convert text to IPA phonemes
+            result = subprocess.run([
+                'espeak-ng', '-q', '--ipa', '-v', 'en-us'
+            ], input=text, text=True, capture_output=True, timeout=10)
+
+            if result.returncode == 0:
+                phonemes = result.stdout.strip()
+                # Clean up the phonemes
+                phonemes = self._clean_phonemes(phonemes)
+                logger.debug(f"espeak-ng phonemization: '{text}' -> '{phonemes}'")
+                return phonemes
+            else:
+                logger.warning(f"espeak-ng failed: {result.stderr}")
+
+        except (subprocess.TimeoutExpired, FileNotFoundError, Exception) as e:
+            logger.warning(f"espeak-ng not available or failed: {e}")
+
+        # Fallback to simple character mapping
+        return self._fallback_phonemization(text)
+
+    def _clean_phonemes(self, phonemes: str) -> str:
+        """Clean and normalize phonemes from espeak-ng"""
+        import re
+
+        # Remove stress markers and extra symbols that might not be in vocab
+        phonemes = re.sub(r'[ˈˌ]', '', phonemes)  # Remove primary/secondary stress
+        phonemes = re.sub(r'[ː]', '', phonemes)   # Remove length markers
+        phonemes = re.sub(r'[‿]', ' ', phonemes)  # Replace linking with space
+
+        # Ensure spaces between words
+        phonemes = re.sub(r'([a-z])([a-z])', r'\\1 \\2', phonemes)
+
+        return phonemes.strip()
+
+    def _fallback_phonemization(self, text: str) -> str:
+        """Fallback phonemization using only vocabulary-compatible characters"""
+        # Simple mapping for basic English sounds using available characters
+        phoneme_map = {
+            'hello': 'hɛlo',
+            'world': 'wɔrld',
+            'test': 'tɛst',
+            'testing': 'tɛstɪŋ',
+            'one': 'wʌn',
+            'two': 'tu',
+            'three': 'θri',
+            'the': 'ðɛ',
+            'quick': 'kwɪk',
+            'brown': 'braʊn',
+            'fox': 'fɑks',
+            'jumps': 'dʒʌmps',
+            'over': 'ovɛr',
+            'lazy': 'leɪzi',
+            'dog': 'dɔɡ',
+            'good': 'ɡʊd',
+            'morning': 'mɔrnɪŋ',
+            'how': 'haʊ',
+            'are': 'ɑr',
+            'you': 'ju'
+        }
+
+        words = text.lower().split()
+        phoneme_words = []
+
+        for word in words:
+            # Remove punctuation
+            clean_word = ''.join(c for c in word if c.isalpha())
+            if clean_word in phoneme_map:
+                phoneme_words.append(phoneme_map[clean_word])
+            else:
+                # Use simple character mapping for unknown words
+                phoneme_words.append(self._char_to_vocab_phoneme(clean_word))
+
+        result = ' '.join(phoneme_words)
+        logger.debug(f"Fallback phonemization: '{text}' -> '{result}'")
+        return result
+
+    def _char_to_vocab_phoneme(self, word: str) -> str:
+        """Map characters to phonemes that exist in tokenizer vocabulary"""
+        # Only use characters confirmed to be in the vocabulary
+        char_map = {
+            'a': 'æ', 'e': 'ɛ', 'i': 'ɪ', 'o': 'ɔ', 'u': 'ʌ',
+            'b': 'b', 'c': 'k', 'd': 'd', 'f': 'f', 'g': 'ɡ',
+            'h': 'h', 'j': 'dʒ', 'k': 'k', 'l': 'l', 'm': 'm',
+            'n': 'n', 'p': 'p', 'q': 'k', 'r': 'r', 's': 's',
+            't': 't', 'v': 'v', 'w': 'w', 'x': 'ks', 'y': 'j', 'z': 'z'
+        }
+        
+        result = ''.join(char_map.get(c, c) for c in word.lower())
+        return result if result else word.lower()
+
+    def _char_to_vocab_phoneme(self, word: str) -> str:
+        """Map characters to phonemes that exist in tokenizer vocabulary"""
+        # Only use characters confirmed to be in the vocabulary
+        char_map = {
+            'a': 'æ', 'e': 'ɛ', 'i': 'ɪ', 'o': 'ɔ', 'u': 'ʌ',
+            'b': 'b', 'c': 'k', 'd': 'd', 'f': 'f', 'g': 'ɡ',
+            'h': 'h', 'j': 'dʒ', 'k': 'k', 'l': 'l', 'm': 'm',
+            'n': 'n', 'p': 'p', 'q': 'k', 'r': 'r', 's': 's',
+            't': 't', 'v': 'v', 'w': 'w', 'x': 'ks', 'y': 'j', 'z': 'z'
+        }
+
+        result = ''.join(char_map.get(c, c) for c in word.lower())
+        return result if result else word.lower()

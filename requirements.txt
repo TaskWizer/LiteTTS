@@ -20,6 +20,7 @@ csvw==3.5.1
 dlinfo==2.0.0
 espeakng-loader==0.2.4
 fastapi==0.116.1
+faster-whisper==1.1.0
 flatbuffers==25.2.10
 frozenlist==1.7.0
 h11==0.16.0

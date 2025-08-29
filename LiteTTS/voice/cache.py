@@ -157,6 +157,20 @@ class VoiceCache:
             if embedding_data is None:
                 logger.error(f"No embedding data loaded for voice: {voice_name}")
                 return None
+            
+            # Ensure embedding_data is a numpy array
+            if not isinstance(embedding_data, np.ndarray):
+                try:
+                    embedding_data = np.array(embedding_data, dtype=np.float32)
+                    logger.debug(f"Converted embedding data to numpy array for voice: {voice_name}")
+                except Exception as e:
+                    logger.error(f"Failed to convert embedding data to numpy array: {e}")
+                    return None
+            
+            # Validate embedding shape
+            if embedding_data.size == 0:
+                logger.error(f"Empty embedding data for voice: {voice_name}")
+                return None
 
             # Ensure embedding data is numpy array
             if not isinstance(embedding_data, np.ndarray):

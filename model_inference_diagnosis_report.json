@@ -1,0 +1,241 @@
+{
+  "input_analysis": null,
+  "voice_analysis": {
+    "af_heart": {
+      "error": "'VoiceEmbedding' object has no attribute 'shape'"
+    },
+    "am_puck": {
+      "error": "'VoiceEmbedding' object has no attribute 'shape'"
+    },
+    "af_bella": {
+      "error": "'VoiceEmbedding' object has no attribute 'shape'"
+    }
+  },
+  "known_good_test": {
+    "simple_a": {
+      "phonemes": "a",
+      "error": "KokoroTTSEngine._prepare_model_inputs() missing 2 required positional arguments: 'emotion' and 'emotion_strength'",
+      "success": false
+    },
+    "simple_hello": {
+      "phonemes": "h\u025blo\u028a",
+      "error": "KokoroTTSEngine._prepare_model_inputs() missing 2 required positional arguments: 'emotion' and 'emotion_strength'",
+      "success": false
+    },
+    "silence": {
+      "phonemes": " ",
+      "error": "KokoroTTSEngine._prepare_model_inputs() missing 2 required positional arguments: 'emotion' and 'emotion_strength'",
+      "success": false
+    }
+  },
+  "tokenizer_analysis": {
+    "hello": {
+      "shape": [
+        5
+      ],
+      "tokens": [
+        8,
+        5,
+        12,
+        12,
+        15
+      ],
+      "unique_tokens": [
+        5,
+        8,
+        12,
+        15
+      ],
+      "num_unique": 4,
+      "has_unknown": false,
+      "max_token": 15,
+      "min_token": 5
+    },
+    "Hello": {
+      "shape": [
+        5
+      ],
+      "tokens": [
+        34,
+        5,
+        12,
+        12,
+        15
+      ],
+      "unique_tokens": [
+        5,
+        12,
+        15,
+        34
+      ],
+      "num_unique": 4,
+      "has_unknown": false,
+      "max_token": 34,
+      "min_token": 5
+    },
+    "h\u025blo\u028a": {
+      "shape": [
+        5
+      ],
+      "tokens": [
+        8,
+        0,
+        12,
+        15,
+        0
+      ],
+      "unique_tokens": [
+        0,
+        8,
+        12,
+        15
+      ],
+      "num_unique": 4,
+      "has_unknown": true,
+      "max_token": 15,
+      "min_token": 0
+    },
+    "a": {
+      "shape": [
+        1
+      ],
+      "tokens": [
+        1
+      ],
+      "unique_tokens": [
+        1
+      ],
+      "num_unique": 1,
+      "has_unknown": false,
+      "max_token": 1,
+      "min_token": 1
+    },
+    "\u00e6": {
+      "shape": [
+        1
+      ],
+      "tokens": [
+        0
+      ],
+      "unique_tokens": [
+        0
+      ],
+      "num_unique": 1,
+      "has_unknown": true,
+      "max_token": 0,
+      "min_token": 0
+    },
+    " ": {
+      "shape": [
+        1
+      ],
+      "tokens": [
+        0
+      ],
+      "unique_tokens": [
+        0
+      ],
+      "num_unique": 1,
+      "has_unknown": true,
+      "max_token": 0,
+      "min_token": 0
+    },
+    "": {
+      "shape": [
+        1
+      ],
+      "tokens": [
+        0
+      ],
+      "unique_tokens": [
+        0
+      ],
+      "num_unique": 1,
+      "has_unknown": true,
+      "max_token": 0,
+      "min_token": 0
+    },
+    "123": {
+      "shape": [
+        3
+      ],
+      "tokens": [
+        54,
+        55,
+        56
+      ],
+      "unique_tokens": [
+        54,
+        55,
+        56
+      ],
+      "num_unique": 3,
+      "has_unknown": false,
+      "max_token": 56,
+      "min_token": 54
+    },
+    "hello world": {
+      "shape": [
+        11
+      ],
+      "tokens": [
+        8,
+        5,
+        12,
+        12,
+        15,
+        0,
+        23,
+        15,
+        18,
+        12,
+        4
+      ],
+      "unique_tokens": [
+        0,
+        4,
+        5,
+        8,
+        12,
+        15,
+        18,
+        23
+      ],
+      "num_unique": 8,
+      "has_unknown": true,
+      "max_token": 23,
+      "min_token": 0
+    },
+    "h\u025blo\u028a w\u0254rld": {
+      "shape": [
+        11
+      ],
+      "tokens": [
+        8,
+        0,
+        12,
+        15,
+        0,
+        0,
+        23,
+        0,
+        18,
+        12,
+        4
+      ],
+      "unique_tokens": [
+        0,
+        4,
+        8,
+        12,
+        15,
+        18,
+        23
+      ],
+      "num_unique": 7,
+      "has_unknown": true,
+      "max_token": 23,
+      "min_token": 0
+    }
+  }
+}

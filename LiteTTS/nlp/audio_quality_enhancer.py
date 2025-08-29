@@ -197,14 +197,20 @@ class AudioQualityEnhancer:
         return text
     
     def _add_natural_pauses(self, text: str) -> str:
-        """Add natural pauses for better speech flow - DISABLED to prevent SSML corruption"""
-        # CRITICAL FIX: Disable SSML generation that was causing malformed output
-        # The system was generating nested and broken SSML tags that corrupted text processing
-        # This was causing the word count mismatches and garbled audio output
-
-        # For now, return text unchanged to fix the core processing issues
-        # TODO: Implement proper pause handling without SSML corruption
-        logger.debug("Natural pauses disabled to prevent SSML corruption")
+        """Add natural pauses for better speech flow - BASIC VERSION without SSML"""
+        # Apply basic punctuation improvements without SSML to prevent corruption
+        import re
+        
+        # Add pauses after sentences (simple approach)
+        text = re.sub(r'([.!?])\s*', r'\1 ', text)
+        
+        # Add slight pauses after commas
+        text = re.sub(r'(,)\s*', r'\1 ', text)
+        
+        # Ensure proper spacing
+        text = re.sub(r'\s+', ' ', text).strip()
+        
+        logger.debug("Basic natural pauses applied (no SSML)")
         return text
     
     def _apply_context_adaptation(self, text: str) -> str:
