@@ -21,8 +21,9 @@
 *.log.*
 *.m4a
 *.model
-# *.mp3
-*.ogg
+ .mp3
+*
+.ogg
 *.old
 .opus
 *.pem
@@ -38,6 +39,7 @@
 *.temp
 *.tmp
 *.wav
+*.lock
 *$py.class
 */.ipynb_checkpoints/*
 *~
@@ -97,6 +99,10 @@ downloads/
 eggs/
 env/
 htmlcov/
+LiteTTS/models/model_discovery_cache.json
+LiteTTS/voices/discovery_cache.json
+LiteTTS/voices/metadata.json
+LiteTTS/voices/voice_index.json
 LiteTTS/cache/cache_data/
 LiteTTS/cache/*.cache
 LiteTTS/models/*.bin
