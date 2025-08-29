@@ -2363,6 +2363,9 @@ with open("hello.mp3", "wb") as f:
         async def dashboard_data():
             """Dashboard data API endpoint (fallback for non-WebSocket clients)"""
             try:
+                # Import JSON sanitization utilities
+                from LiteTTS.utils.json_sanitizer import sanitize_dashboard_data, validate_json_serializable
+
                 # Get performance data from existing monitor
                 performance_data = self.performance_monitor.get_performance_summary()
 
@@ -2388,7 +2391,15 @@ with open("hello.mp3", "wb") as f:
                     }
                 }
 
-                return combined_data
+                # Sanitize data to ensure JSON compatibility
+                sanitized_data = sanitize_dashboard_data(combined_data)
+
+                # Validate JSON serializability before returning
+                if not validate_json_serializable(sanitized_data):
+                    self.logger.error("Dashboard data contains non-JSON-serializable values after sanitization")
+                    raise ValueError("Data sanitization failed")
+
+                return sanitized_data
 
             except Exception as e:
                 self.logger.error(f"Dashboard data error: {e}")

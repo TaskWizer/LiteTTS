@@ -81,10 +81,10 @@ class PerformanceMonitor:
             'total_generation_time': 0.0,
             'total_audio_duration': 0.0,
             'avg_rtf': 0.0,
-            'min_rtf': float('inf'),
+            'min_rtf': None,  # Use None instead of inf for uninitialized values
             'max_rtf': 0.0,
             'avg_latency': 0.0,
-            'min_latency': float('inf'),
+            'min_latency': None,  # Use None instead of inf for uninitialized values
             'max_latency': 0.0
         }
         
@@ -181,43 +181,68 @@ class PerformanceMonitor:
             self._update_length_analysis(tts_data)
     
     def _update_rtf_stats(self, rtf: float):
-        """Update RTF statistics"""
-        self.stats['min_rtf'] = min(self.stats['min_rtf'], rtf)
+        """Update RTF statistics with safe calculations"""
+        # Import safe division utility
+        from LiteTTS.utils.json_sanitizer import safe_division, sanitize_float
+
+        # Sanitize input RTF value
+        rtf = sanitize_float(rtf, 0.0)
+
+        # Update min/max RTF with proper None handling
+        if self.stats['min_rtf'] is None:
+            self.stats['min_rtf'] = rtf
+        else:
+            self.stats['min_rtf'] = min(self.stats['min_rtf'], rtf)
+
         self.stats['max_rtf'] = max(self.stats['max_rtf'], rtf)
-        
-        # Calculate running average RTF
+
+        # Calculate running average RTF with safe division
         non_cached_requests = self.stats['cache_misses']
         if non_cached_requests > 0:
             total_rtf = self.stats['avg_rtf'] * (non_cached_requests - 1) + rtf
-            self.stats['avg_rtf'] = total_rtf / non_cached_requests
+            self.stats['avg_rtf'] = safe_division(total_rtf, non_cached_requests, 0.0)
     
     def _update_latency_stats(self, latency: float):
-        """Update latency statistics"""
-        self.stats['min_latency'] = min(self.stats['min_latency'], latency)
+        """Update latency statistics with safe calculations"""
+        # Import safe division utility
+        from LiteTTS.utils.json_sanitizer import safe_division, sanitize_float
+
+        # Sanitize input latency value
+        latency = sanitize_float(latency, 0.0)
+
+        # Update min/max latency with proper None handling
+        if self.stats['min_latency'] is None:
+            self.stats['min_latency'] = latency
+        else:
+            self.stats['min_latency'] = min(self.stats['min_latency'], latency)
+
         self.stats['max_latency'] = max(self.stats['max_latency'], latency)
-        
-        # Calculate running average latency
+
+        # Calculate running average latency with safe division
         non_cached_requests = self.stats['cache_misses']
         if non_cached_requests > 0:
             total_latency = self.stats['avg_latency'] * (non_cached_requests - 1) + latency
-            self.stats['avg_latency'] = total_latency / non_cached_requests
+            self.stats['avg_latency'] = safe_division(total_latency, non_cached_requests, 0.0)
     
     def _update_voice_stats(self, tts_data: TTSPerformanceData):
-        """Update voice-specific statistics"""
+        """Update voice-specific statistics with safe calculations"""
+        # Import safe division utility
+        from LiteTTS.utils.json_sanitizer import safe_division, sanitize_float
+
         voice_stat = self.voice_stats[tts_data.voice]
         voice_stat['requests'] += 1
-        
+
         if tts_data.cache_hit:
             voice_stat['cache_hits'] += 1
         else:
-            voice_stat['total_generation_time'] += tts_data.generation_time
-            voice_stat['total_audio_duration'] += tts_data.audio_duration
-            
-            # Update voice RTF
+            voice_stat['total_generation_time'] += sanitize_float(tts_data.generation_time, 0.0)
+            voice_stat['total_audio_duration'] += sanitize_float(tts_data.audio_duration, 0.0)
+
+            # Update voice RTF with safe division
             non_cached = voice_stat['requests'] - voice_stat['cache_hits']
             if non_cached > 0:
-                total_rtf = voice_stat['avg_rtf'] * (non_cached - 1) + tts_data.rtf
-                voice_stat['avg_rtf'] = total_rtf / non_cached
+                total_rtf = voice_stat['avg_rtf'] * (non_cached - 1) + sanitize_float(tts_data.rtf, 0.0)
+                voice_stat['avg_rtf'] = safe_division(total_rtf, non_cached, 0.0)
     
     def _update_length_analysis(self, tts_data: TTSPerformanceData):
         """Update text length analysis"""
@@ -268,16 +293,19 @@ class PerformanceMonitor:
         logger.info("System monitoring worker stopped")
     
     def get_performance_summary(self) -> Dict[str, Any]:
-        """Get comprehensive performance summary"""
+        """Get comprehensive performance summary with safe calculations"""
+        # Import safe division utilities
+        from LiteTTS.utils.json_sanitizer import safe_percentage, safe_division, sanitize_float
+
         with self.stats_lock:
-            # Calculate cache hit rate
+            # Calculate cache hit rate with safe percentage calculation
             total_requests = self.stats['total_requests']
-            cache_hit_rate = (self.stats['cache_hits'] / total_requests * 100) if total_requests > 0 else 0
-            
-            # Calculate average generation time per second of audio
+            cache_hit_rate = safe_percentage(self.stats['cache_hits'], total_requests, 0.0)
+
+            # Calculate average generation time per second of audio with safe division
             total_audio = self.stats['total_audio_duration']
             total_gen_time = self.stats['total_generation_time']
-            efficiency = (total_audio / total_gen_time) if total_gen_time > 0 else 0
+            efficiency = safe_division(total_audio, total_gen_time, 0.0)
             
             # Get recent system metrics
             recent_system = None
@@ -288,11 +316,11 @@ class PerformanceMonitor:
                     'memory_used_mb': self.system_metrics[-1].memory_used_mb
                 }
             
-            # Text length analysis
+            # Text length analysis with safe division
             length_analysis = {}
             for bucket_name, bucket_data in self.length_buckets.items():
                 if bucket_data['count'] > 0:
-                    avg_time = bucket_data['total_time'] / bucket_data['count']
+                    avg_time = safe_division(bucket_data['total_time'], bucket_data['count'], 0.0)
                     length_analysis[bucket_name] = {
                         'range': bucket_data['range'],
                         'count': bucket_data['count'],
@@ -302,20 +330,20 @@ class PerformanceMonitor:
             return {
                 'summary': {
                     'total_requests': total_requests,
-                    'cache_hit_rate_percent': round(cache_hit_rate, 2),
-                    'avg_rtf': round(self.stats['avg_rtf'], 3),
-                    'min_rtf': round(self.stats['min_rtf'], 3) if self.stats['min_rtf'] != float('inf') else None,
-                    'max_rtf': round(self.stats['max_rtf'], 3),
-                    'avg_latency_ms': round(self.stats['avg_latency'] * 1000, 1),
-                    'min_latency_ms': round(self.stats['min_latency'] * 1000, 1) if self.stats['min_latency'] != float('inf') else None,
-                    'max_latency_ms': round(self.stats['max_latency'] * 1000, 1),
-                    'efficiency_ratio': round(efficiency, 2)
+                    'cache_hit_rate_percent': round(sanitize_float(cache_hit_rate, 0.0), 2),
+                    'avg_rtf': round(sanitize_float(self.stats['avg_rtf'], 0.0), 3),
+                    'min_rtf': round(self.stats['min_rtf'], 3) if self.stats['min_rtf'] is not None else None,
+                    'max_rtf': round(sanitize_float(self.stats['max_rtf'], 0.0), 3),
+                    'avg_latency_ms': round(sanitize_float(self.stats['avg_latency'] * 1000, 0.0), 1),
+                    'min_latency_ms': round(self.stats['min_latency'] * 1000, 1) if self.stats['min_latency'] is not None else None,
+                    'max_latency_ms': round(sanitize_float(self.stats['max_latency'] * 1000, 0.0), 1),
+                    'efficiency_ratio': round(sanitize_float(efficiency, 0.0), 2)
                 },
                 'voice_performance': {
                     voice: {
                         'requests': stats['requests'],
-                        'cache_hit_rate_percent': round((stats['cache_hits'] / stats['requests'] * 100), 2) if stats['requests'] > 0 else 0,
-                        'avg_rtf': round(stats['avg_rtf'], 3)
+                        'cache_hit_rate_percent': round(safe_percentage(stats['cache_hits'], stats['requests'], 0.0), 2),
+                        'avg_rtf': round(sanitize_float(stats['avg_rtf'], 0.0), 3)
                     }
                     for voice, stats in self.voice_stats.items()
                 },
