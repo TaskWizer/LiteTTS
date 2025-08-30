@@ -37,6 +37,9 @@ from .audio_quality_enhancer import audio_quality_enhancer
 from .voice_modulation_system import VoiceModulationSystem
 from .dynamic_emotion_intonation import DynamicEmotionIntonationSystem
 
+# Import Phase 6 enhancements
+from .phase6_text_processor import Phase6TextProcessor, Phase6ProcessingResult
+
 # Import preprocessing
 from ..text.phonemizer_preprocessor import phonemizer_preprocessor
 
@@ -76,11 +79,18 @@ class ProcessingOptions:
     enhance_audio_quality: bool = True
     apply_voice_modulation: bool = True
     use_dynamic_emotion: bool = True
-    
+
+    # Phase 6 options
+    use_phase6_processing: bool = True
+    use_enhanced_numbers: bool = True
+    use_enhanced_units: bool = True
+    use_enhanced_homographs: bool = True
+    use_enhanced_contractions: bool = True
+
     # Context options
     financial_context: Optional[FinancialContext] = None
     preserve_original_on_error: bool = True
-    
+
     # Performance options
     enable_parallel_processing: bool = False
     max_processing_time: float = 30.0  # seconds
@@ -102,7 +112,11 @@ class ProcessingResult:
     currency_enhancements: int = 0
     datetime_enhancements: int = 0
     audio_enhancements: int = 0
-    
+
+    # Phase 6 enhancement data
+    phase6_result: Optional[Phase6ProcessingResult] = None
+    phase6_enhancements: int = 0
+
     # Performance metrics
     stage_timings: Dict[str, float] = field(default_factory=dict)
 
@@ -131,6 +145,9 @@ class UnifiedTextProcessor:
 
         # Initialize audio quality processors
         self._init_audio_processors()
+
+        # Initialize Phase 6 processors
+        self._init_phase6_processors()
 
         logger.info("Unified Text Processor initialized")
 
@@ -219,6 +236,15 @@ class UnifiedTextProcessor:
             logger.warning(f"Some audio processors failed to initialize: {e}")
             self.voice_modulation = None
             self.dynamic_emotion = None
+
+    def _init_phase6_processors(self):
+        """Initialize Phase 6 processors"""
+        try:
+            self.phase6_processor = Phase6TextProcessor(self.config)
+            logger.debug("Phase 6 processors initialized")
+        except Exception as e:
+            logger.warning(f"Phase 6 processors failed to initialize: {e}")
+            self.phase6_processor = None
     
     def process_text(self, text: str, options: Optional[ProcessingOptions] = None) -> ProcessingResult:
         """Main text processing method
@@ -347,6 +373,30 @@ class UnifiedTextProcessor:
             result.stages_completed.append("text_processing_disabled")
             result.stage_timings["enhanced"] = time.perf_counter() - stage_start
             return text
+
+        # Phase 6 processing (FIRST - comprehensive text enhancement)
+        if (hasattr(options, 'use_phase6_processing') and options.use_phase6_processing and
+            self.phase6_processor and self._is_section_enabled("text_processing")):
+            phase6_start = time.perf_counter()
+            original_text = text
+            phase6_result = self.phase6_processor.process_text(text)
+            text = phase6_result.processed_text
+            result.phase6_result = phase6_result
+            result.phase6_enhancements = phase6_result.total_changes
+
+            if phase6_result.total_changes > 0:
+                result.changes_made.append(f"Applied Phase 6 enhancements: {phase6_result.total_changes} total changes")
+                result.stages_completed.append("phase6_processing")
+                logger.debug(f"Phase 6 processing: {phase6_result.total_changes} enhancements applied in {phase6_result.processing_time:.3f}s")
+
+                # Add detailed changes by category
+                for category, count in phase6_result.changes_by_category.items():
+                    if count > 0:
+                        result.changes_made.append(f"Phase 6 {category}: {count} changes")
+            else:
+                result.stages_completed.append("phase6_no_changes")
+
+            result.stage_timings["phase6_processing"] = time.perf_counter() - phase6_start
 
         # Pronunciation rules processing (FIRST - natural contraction pronunciation)
         if (hasattr(options, 'use_pronunciation_rules') and options.use_pronunciation_rules and
@@ -611,6 +661,12 @@ class UnifiedTextProcessor:
             'audio_quality_enhancement': True,
             'dynamic_emotion': self.dynamic_emotion is not None,
             'parallel_processing': False,  # Not implemented yet
+            # Phase 6 capabilities
+            'phase6_processing': self.phase6_processor is not None,
+            'enhanced_numbers': self.phase6_processor is not None,
+            'enhanced_units': self.phase6_processor is not None,
+            'enhanced_homographs': self.phase6_processor is not None,
+            'enhanced_contractions': self.phase6_processor is not None,
         }
 
     def create_processing_options(self, mode: Union[str, ProcessingMode], **kwargs) -> ProcessingOptions:
