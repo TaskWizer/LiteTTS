@@ -31,11 +31,9 @@ The following features are under active development and may have bugs or inconsi
 **The fastest, most efficient Text-to-Speech API with near-instant response times even on CPU-only systems.** ⚡
 
 ## 💖 Support This Project
-
 **This TTS API is completely free to use!** If you find it valuable for your projects, consider supporting its development:
 
 **🎯 Goal**: Make enough money working on cool projects so I don't have to work a 9-to-5
-
 - **💝 Sponsor on GitHub**: [Become a sponsor](https://github.com/sponsors/TaskWizer) for recurring support
 - **☕ Buy me a coffee**: [One-time donation](https://ko-fi.com/TaskWizer) to fuel development
 - **⭐ Star this repo**: Help others discover this project
@@ -45,7 +43,6 @@ The following features are under active development and may have bugs or inconsi
 Your support enables continued development of high-quality, open-source AI tools!
 
 ## ✨ Key Features
-
 - **⚡ Lightning Fast**: 29ms cached responses, 0.15 RTF (6.7x faster than real-time)
 - **🌍 54+ Voices**: Multi-language support with [voice showcase](docs/VOICES.md)
 - **🔌 OpenAI Compatible**: Drop-in replacement for OpenAI TTS API
@@ -63,7 +60,6 @@ git clone https://github.com/TaskWizer/LiteTTS.git && cd LiteTTS && uv run pytho
 
 <details>
 <summary><h2>📢 Prerequisites</h2></summary>
-
 Before getting started, ensure your system meets these requirements:
 
 **Hardware Requirements:**
@@ -85,7 +81,8 @@ Before getting started, ensure your system meets these requirements:
 
 <details>
 <summary><h2>🚀 Quick Start Options</h2></summary>
-
+Here are some quick start options, choose what works best for you!
+  
 ```bash
 # Clone the repository
 git clone https://github.com/TaskWizer/LiteTTS.git
@@ -221,7 +218,6 @@ uv run uvicorn app:app --reload --host 0.0.0.0 --port 8354 --workers 1
 For advanced configuration options, see the [Configuration Guide](docs/CONFIGURATION.md) and [complete documentation](#-documentation).
 
 ### ⚡ Instant Test
-
 ```bash
 # Test with a simple phrase (will be cached for instant future responses)
 curl -X POST "http://localhost:8354/v1/audio/speech" \
@@ -328,7 +324,7 @@ For comprehensive configuration options including:
 <summary><h2>🔒 Perth Watermarking System</h2></summary>
 LiteTTS includes an integrated Perth audio watermarking system for responsible AI compliance and content authenticity verification.
 
-  ### Key Features
+### Key Features
 - **🛡️ Automatic Watermarking**: All generated TTS audio is automatically watermarked
 - **🔍 Content Authenticity**: Verify audio origin and detect AI-generated content
 - **⚖️ Ethical AI Compliance**: Transparent disclosure of AI-generated content
@@ -351,7 +347,6 @@ LiteTTS includes comprehensive monitoring and observability features for product
 - **Production Dashboard**: Web-based monitoring interface at `/dashboard`
 
 ### Quick System Checks
-
 ```bash
 # Check overall system health
 curl http://localhost:8354/health
