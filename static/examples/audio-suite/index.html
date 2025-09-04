@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiteTTS Audio Suite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .demo-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .demo-card h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .demo-card p {
+            margin-bottom: 15px;
+            color: #666;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #5a6fd8;
+        }
+        
+        .audio-player {
+            margin-top: 15px;
+        }
+        
+        audio {
+            width: 100%;
+        }
+        
+        .format-comparison {
+            background: #e9ecef;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.loading { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎵 LiteTTS Audio Suite</h1>
+            <p>Comprehensive audio processing demonstrations and format comparisons</p>
+        </div>
+        
+        <div class="demo-grid">
+            <div class="demo-card">
+                <h3>🎤 Voice Comparison</h3>
+                <p>Compare different voices with the same text</p>
+                <button onclick="demonstrateVoices()">Demo Voices</button>
+                <div id="voiceComparison" class="audio-player"></div>
+            </div>
+            
+            <div class="demo-card">
+                <h3>⚡ Speed Variations</h3>
+                <p>Hear the same text at different speeds</p>
+                <button onclick="demonstrateSpeeds()">Demo Speeds</button>
+                <div id="speedComparison" class="audio-player"></div>
+            </div>
+            
+            <div class="demo-card">
+                <h3>🎼 Format Comparison</h3>
+                <p>Compare audio quality across different formats</p>
+                <button onclick="demonstrateFormats()">Demo Formats</button>
+                <div id="formatComparison" class="audio-player"></div>
+            </div>
+            
+            <div class="demo-card">
+                <h3>📝 Text Complexity</h3>
+                <p>Test with various text complexities</p>
+                <button onclick="demonstrateComplexity()">Demo Complexity</button>
+                <div id="complexityComparison" class="audio-player"></div>
+            </div>
+        </div>
+        
+        <div class="format-comparison">
+            <h3>📊 Audio Format Analysis</h3>
+            <p>Real-time comparison of file sizes and quality across formats</p>
+            <div id="formatAnalysis"></div>
+        </div>
+        
+        <div id="status" class="status" style="display: none;"></div>
+    </div>
+
+    <script>
+        const demoText = "Welcome to LiteTTS Audio Suite! This demonstration showcases our advanced text-to-speech capabilities.";
+        
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+        }
+        
+        async function generateAudio(text, options = {}) {
+            const defaultOptions = {
+                voice: 'af_heart',
+                response_format: 'mp3',
+                speed: 1.0
+            };
+            
+            const requestOptions = { ...defaultOptions, ...options };
+            
+            try {
+                const response = await fetch('/v1/audio/speech', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        input: text,
+                        ...requestOptions
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const audioBlob = await response.blob();
+                return {
+                    blob: audioBlob,
+                    url: URL.createObjectURL(audioBlob),
+                    size: audioBlob.size
+                };
+                
+            } catch (error) {
+                console.error('Error generating audio:', error);
+                throw error;
+            }
+        }
+        
+        async function demonstrateVoices() {
+            showStatus('Generating voice comparisons...', 'loading');
+            const container = document.getElementById('voiceComparison');
+            container.innerHTML = '';
+            
+            const voices = ['af_heart', 'am_puck', 'af_bella', 'am_adam'];
+            
+            try {
+                for (const voice of voices) {
+                    const audio = await generateAudio(demoText, { voice });
+                    
+                    const div = document.createElement('div');
+                    div.innerHTML = `
+                        <h4>${voice}</h4>
+                        <audio controls>
+                            <source src="${audio.url}" type="audio/mpeg">
+                        </audio>
+                    `;
+                    container.appendChild(div);
+                }
+                showStatus('Voice comparison generated successfully!', 'success');
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function demonstrateSpeeds() {
+            showStatus('Generating speed variations...', 'loading');
+            const container = document.getElementById('speedComparison');
+            container.innerHTML = '';
+            
+            const speeds = [0.5, 1.0, 1.5, 2.0];
+            
+            try {
+                for (const speed of speeds) {
+                    const audio = await generateAudio(demoText, { speed });
+                    
+                    const div = document.createElement('div');
+                    div.innerHTML = `
+                        <h4>Speed: ${speed}x</h4>
+                        <audio controls>
+                            <source src="${audio.url}" type="audio/mpeg">
+                        </audio>
+                    `;
+                    container.appendChild(div);
+                }
+                showStatus('Speed variations generated successfully!', 'success');
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function demonstrateFormats() {
+            showStatus('Generating format comparisons...', 'loading');
+            const container = document.getElementById('formatComparison');
+            container.innerHTML = '';
+            
+            const formats = ['mp3', 'wav', 'flac', 'opus'];
+            const formatData = [];
+            
+            try {
+                for (const format of formats) {
+                    const audio = await generateAudio(demoText, { response_format: format });
+                    
+                    formatData.push({
+                        format: format.toUpperCase(),
+                        size: audio.size,
+                        url: audio.url
+                    });
+                    
+                    const div = document.createElement('div');
+                    div.innerHTML = `
+                        <h4>${format.toUpperCase()} (${(audio.size / 1024).toFixed(1)} KB)</h4>
+                        <audio controls>
+                            <source src="${audio.url}" type="audio/${format}">
+                        </audio>
+                    `;
+                    container.appendChild(div);
+                }
+                
+                // Update format analysis
+                updateFormatAnalysis(formatData);
+                showStatus('Format comparison generated successfully!', 'success');
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function demonstrateComplexity() {
+            showStatus('Generating complexity demonstrations...', 'loading');
+            const container = document.getElementById('complexityComparison');
+            container.innerHTML = '';
+            
+            const texts = [
+                { name: 'Simple', text: 'Hello world.' },
+                { name: 'Numbers', text: 'The year 2024 has 365 days, and 12 months.' },
+                { name: 'Contractions', text: "I can't believe it's already 2024! We're making great progress." },
+                { name: 'Technical', text: 'The HTTP response status code 200 indicates successful API communication.' }
+            ];
+            
+            try {
+                for (const item of texts) {
+                    const audio = await generateAudio(item.text);
+                    
+                    const div = document.createElement('div');
+                    div.innerHTML = `
+                        <h4>${item.name}</h4>
+                        <p><em>"${item.text}"</em></p>
+                        <audio controls>
+                            <source src="${audio.url}" type="audio/mpeg">
+                        </audio>
+                    `;
+                    container.appendChild(div);
+                }
+                showStatus('Complexity demonstrations generated successfully!', 'success');
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        function updateFormatAnalysis(formatData) {
+            const container = document.getElementById('formatAnalysis');
+            
+            const table = document.createElement('table');
+            table.style.width = '100%';
+            table.style.borderCollapse = 'collapse';
+            
+            table.innerHTML = `
+                <tr style="background: #667eea; color: white;">
+                    <th style="padding: 10px; border: 1px solid #ddd;">Format</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">File Size</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">Compression Ratio</th>
+                </tr>
+            `;
+            
+            const maxSize = Math.max(...formatData.map(f => f.size));
+            
+            formatData.forEach(format => {
+                const row = document.createElement('tr');
+                const compressionRatio = ((maxSize - format.size) / maxSize * 100).toFixed(1);
+                
+                row.innerHTML = `
+                    <td style="padding: 10px; border: 1px solid #ddd;">${format.format}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">${(format.size / 1024).toFixed(1)} KB</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">${compressionRatio}%</td>
+                `;
+                table.appendChild(row);
+            });
+            
+            container.innerHTML = '';
+            container.appendChild(table);
+        }
+    </script>
+</body>
+</html>

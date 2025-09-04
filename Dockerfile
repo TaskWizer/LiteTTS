@@ -5,6 +5,7 @@ FROM python:3.12-slim AS builder
 ARG ENVIRONMENT=production
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
+ARG ENABLE_GPU=false
 
 # Install build dependencies and UV in a single layer
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -23,9 +24,18 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Copy dependency files
 COPY requirements.txt pyproject.toml ./
 
-# Install dependencies using UV with optimizations
+# Install dependencies using UV with conditional GPU support
 RUN uv pip install --no-cache-dir --upgrade pip setuptools wheel \
-    && uv pip install --no-cache-dir --compile -r requirements.txt \
+    && if [ "$ENABLE_GPU" = "true" ]; then \
+        echo "Installing GPU dependencies..." && \
+        uv pip install --no-cache-dir --compile -r requirements.txt && \
+        uv pip install --no-cache-dir onnxruntime-gpu>=1.22.0 && \
+        uv pip install --no-cache-dir torch>=2.0.0 --index-url https://download.pytorch.org/whl/cu118; \
+    else \
+        echo "Installing CPU-only dependencies..." && \
+        uv pip install --no-cache-dir --compile -r requirements.txt && \
+        uv pip install --no-cache-dir onnxruntime>=1.22.1; \
+    fi \
     && find /opt/venv -name "*.pyc" -delete \
     && find /opt/venv -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
 
@@ -36,6 +46,7 @@ FROM python:3.12-slim AS production
 ARG ENVIRONMENT=production
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
+ARG ENABLE_GPU=false
 
 # Set production environment variables (consolidated)
 ENV PYTHONUNBUFFERED=1 \
@@ -44,16 +55,38 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     ENVIRONMENT=production \
-    MAX_MEMORY_MB=150 \
+    MAX_MEMORY_MB=4096 \
     TARGET_RTF=0.25 \
     ENABLE_PERFORMANCE_OPTIMIZATION=true \
-    DEBIAN_FRONTEND=noninteractive
+    DEBIAN_FRONTEND=noninteractive \
+    # CPU optimization settings to match local execution
+    DYNAMIC_CPU_ALLOCATION_ENABLED=true \
+    CPU_TARGET=75.0 \
+    AGGRESSIVE_MODE=true \
+    THERMAL_PROTECTION=true \
+    ONNX_INTEGRATION=true \
+    UPDATE_ENVIRONMENT=true \
+    # ONNX Runtime optimizations
+    ORT_DISABLE_ALL_OPTIMIZATION=0 \
+    ORT_ENABLE_CPU_FP16_OPS=1 \
+    ORT_GRAPH_OPTIMIZATION_LEVEL=all \
+    ORT_EXECUTION_MODE=parallel \
+    ORT_ENABLE_MEM_PATTERN=1 \
+    ORT_ENABLE_CPU_MEM_ARENA=1 \
+    ORT_ENABLE_MEM_REUSE=1 \
+    # Memory allocation optimizations
+    MALLOC_ARENA_MAX=4 \
+    MALLOC_MMAP_THRESHOLD_=131072 \
+    MALLOC_TRIM_THRESHOLD_=131072 \
+    MALLOC_TOP_PAD_=131072 \
+    MALLOC_MMAP_MAX_=65536
 
 # Install minimal runtime dependencies in a single layer
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     tini \
     ca-certificates \
+    $(if [ "$ENABLE_GPU" = "true" ]; then echo "nvidia-container-toolkit"; fi) \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /tmp/* \

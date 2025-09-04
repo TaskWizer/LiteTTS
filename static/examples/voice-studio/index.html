@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiteTTS Voice Studio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .control-group {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .control-group h3 {
+            margin-bottom: 15px;
+            color: #495057;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        select, input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #5a6fd8;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .audio-player {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        audio {
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.loading {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎙️ LiteTTS Voice Studio</h1>
+            <p>Interactive voice testing and experimentation platform</p>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <h3>Voice Settings</h3>
+                <label for="voice">Voice:</label>
+                <select id="voice">
+                    <option value="af_heart">AF Heart (Female)</option>
+                    <option value="am_puck">AM Puck (Male)</option>
+                    <option value="af_bella">AF Bella (Female)</option>
+                    <option value="am_adam">AM Adam (Male)</option>
+                    <option value="af_nova">AF Nova (Female)</option>
+                </select>
+                
+                <label for="speed">Speed:</label>
+                <input type="range" id="speed" min="0.5" max="2.0" step="0.1" value="1.0">
+                <span id="speedValue">1.0x</span>
+            </div>
+            
+            <div class="control-group">
+                <h3>Audio Settings</h3>
+                <label for="format">Format:</label>
+                <select id="format">
+                    <option value="mp3">MP3</option>
+                    <option value="wav">WAV</option>
+                    <option value="flac">FLAC</option>
+                    <option value="opus">Opus</option>
+                </select>
+                
+                <label for="language">Language:</label>
+                <select id="language">
+                    <option value="en-us">English (US)</option>
+                    <option value="en-gb">English (UK)</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <h3>Text Input</h3>
+            <label for="text">Enter text to synthesize:</label>
+            <textarea id="text" placeholder="Enter your text here...">Hello! Welcome to LiteTTS Voice Studio. This is a demonstration of our text-to-speech capabilities.</textarea>
+            
+            <button id="synthesizeBtn" onclick="synthesizeText()">🎵 Synthesize Speech</button>
+        </div>
+        
+        <div id="status" class="status" style="display: none;"></div>
+        
+        <div class="audio-player" id="audioPlayer" style="display: none;">
+            <h3>Generated Audio</h3>
+            <audio id="audioElement" controls></audio>
+        </div>
+    </div>
+
+    <script>
+        // Update speed display
+        document.getElementById('speed').addEventListener('input', function() {
+            document.getElementById('speedValue').textContent = this.value + 'x';
+        });
+        
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+        }
+        
+        function hideStatus() {
+            document.getElementById('status').style.display = 'none';
+        }
+        
+        async function synthesizeText() {
+            const text = document.getElementById('text').value.trim();
+            if (!text) {
+                showStatus('Please enter some text to synthesize.', 'error');
+                return;
+            }
+            
+            const voice = document.getElementById('voice').value;
+            const speed = document.getElementById('speed').value;
+            const format = document.getElementById('format').value;
+            const language = document.getElementById('language').value;
+            
+            const synthesizeBtn = document.getElementById('synthesizeBtn');
+            synthesizeBtn.disabled = true;
+            synthesizeBtn.textContent = '🔄 Synthesizing...';
+            
+            showStatus('Generating speech...', 'loading');
+            
+            try {
+                const response = await fetch('/v1/audio/speech', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        input: text,
+                        voice: voice,
+                        response_format: format,
+                        speed: parseFloat(speed),
+                        language: language
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                
+                const audioElement = document.getElementById('audioElement');
+                audioElement.src = audioUrl;
+                
+                document.getElementById('audioPlayer').style.display = 'block';
+                showStatus('Speech generated successfully!', 'success');
+                
+                // Auto-play the audio
+                audioElement.play().catch(e => {
+                    console.log('Auto-play prevented by browser:', e);
+                });
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus(`Error generating speech: ${error.message}`, 'error');
+            } finally {
+                synthesizeBtn.disabled = false;
+                synthesizeBtn.textContent = '🎵 Synthesize Speech';
+            }
+        }
+        
+        // Allow Enter key to trigger synthesis
+        document.getElementById('text').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                synthesizeText();
+            }
+        });
+    </script>
+</body>
+</html>

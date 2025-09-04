@@ -70,4 +70,6 @@ watchdog==6.0.0
 yarl==1.20.1
 
 # Pin setuptools to avoid pkg_resources deprecation warnings
-setuptools<81
+setuptools>=61.0,<81
+# Add importlib-metadata for modern package metadata handling
+importlib-metadata>=4.0.0

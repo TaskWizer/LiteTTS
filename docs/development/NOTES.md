@@ -1102,10 +1102,16 @@ https://github.com/rsxdalv/TTS-WebUI
 - Audit and cleanup the system
 - Fix any issues (such as caused by .gitignore, etc.)
 - Improve and finalize documentation
+- Improve the utility of the front-end "apps" (demos, examples, tools, etc.)
+  - Enhance voice studio for voice cloning and synthesis (aka. generating voices from settings, etc.)
 - Add Windows support and rounded documentation (make super easy to use)
+- Create benchmark and testing suite (has to disable caching, etc.)
 - Research and plan out voice cloning features (and front-end app)
 - Research and plan out creating Dynamic Unsloth 2.0 Quants for eSpeak Fine-Tuned GGUF models and convert to ONNX runtime optimization (3x?)
 - Research other TTS system and determine what features, methods, and code could be useful (see planning doc)
+- Fix the API Dashboard:
+  - Latency is not correct (it's calculating total time)
+  - Enable options for enabling cache, chunking, speed controls, pitch/tone knobs, etc.
 
 # One Liner install and run commands:
 gh repo clone TaskWizer/LiteTTS && cd LiteTTS && uv run python app.py
@@ -1114,3 +1120,8 @@ git clone https://github.com/TaskWizer/LiteTTS.git && cd LiteTTS && uv run pytho
 # Useful Commands:
 docker system prune --all --volumes
 docker logs litetts-api | tail -20
+
+
+# Testing: ONNX vs PTH vs GGUF
+- Kokoro FastAPI: ~0.315 to 0.630 RTF
+- LiteTTS API: ~0.18 to ~0.35 RTF (non-docker)

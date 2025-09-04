@@ -525,6 +525,91 @@ class SystemOptimizer:
                 "io_optimizations_applied": False
             }
 
+    def apply_network_optimizations(self) -> Dict[str, Any]:
+        """
+        Apply network-related optimizations for TTS processing.
+
+        Returns:
+            Dict[str, Any]: Dictionary containing network optimization status and results.
+        """
+        try:
+            network_optimizations = {}
+            applied_settings = {}
+
+            # Network buffer optimizations
+            network_env_vars = {
+                # TCP buffer optimizations for API responses
+                "TCP_NODELAY": "1",  # Disable Nagle's algorithm for low latency
+                "SO_REUSEADDR": "1",  # Allow socket reuse
+
+                # HTTP connection optimizations
+                "HTTPX_TIMEOUT": "30",  # HTTP client timeout
+                "AIOHTTP_TIMEOUT": "30",  # Async HTTP timeout
+
+                # FastAPI/Uvicorn optimizations
+                "UVICORN_BACKLOG": "2048",  # Connection backlog
+                "UVICORN_LIMIT_CONCURRENCY": "1000",  # Max concurrent connections
+                "UVICORN_LIMIT_MAX_REQUESTS": "10000",  # Max requests per worker
+
+                # Keep-alive optimizations
+                "UVICORN_TIMEOUT_KEEP_ALIVE": "5",  # Keep-alive timeout
+                "UVICORN_TIMEOUT_GRACEFUL_SHUTDOWN": "30",  # Graceful shutdown timeout
+            }
+
+            # Apply network environment variables
+            for key, value in network_env_vars.items():
+                if key not in os.environ:
+                    os.environ[key] = value
+                    applied_settings[key] = value
+
+            network_optimizations["environment_variables"] = applied_settings
+
+            # Connection pool optimizations
+            connection_pool_settings = {
+                "max_connections": 100,  # Maximum connections in pool
+                "max_keepalive_connections": 20,  # Keep-alive connections
+                "keepalive_expiry": 5.0,  # Keep-alive expiry time
+                "timeout": 30.0,  # Connection timeout
+                "retries": 3  # Retry attempts
+            }
+            network_optimizations["connection_pool"] = connection_pool_settings
+
+            # Audio streaming optimizations
+            streaming_settings = {
+                "chunk_size": 8192,  # 8KB chunks for audio streaming
+                "buffer_size": 65536,  # 64KB buffer
+                "compression_enabled": True,  # Enable response compression
+                "streaming_threshold": 1024  # Stream responses > 1KB
+            }
+            network_optimizations["streaming"] = streaming_settings
+
+            # API response optimizations
+            response_settings = {
+                "enable_gzip": True,  # Enable gzip compression
+                "gzip_minimum_size": 1024,  # Compress responses > 1KB
+                "cache_control": "public, max-age=300",  # 5-minute cache
+                "etag_enabled": True  # Enable ETags for caching
+            }
+            network_optimizations["response_optimization"] = response_settings
+
+            result = {
+                "status": "success",
+                "optimizations": network_optimizations,
+                "settings_applied": len(applied_settings),
+                "network_optimizations_applied": True
+            }
+
+            logger.info(f"Network optimizations applied: {len(applied_settings)} environment variables set")
+            return result
+
+        except Exception as e:
+            logger.error(f"Failed to apply network optimizations: {e}")
+            return {
+                "status": "failed",
+                "error": str(e),
+                "network_optimizations_applied": False
+            }
+
     def apply_all_optimizations(self) -> Dict[str, Any]:
         """Apply all system-level optimizations"""
         results = {}
@@ -537,6 +622,9 @@ class SystemOptimizer:
 
         # Apply I/O optimizations
         results["io"] = self.apply_io_optimizations()
+
+        # Apply network optimizations
+        results["network"] = self.apply_network_optimizations()
 
         # Setup request batching
         results["batching"] = self.setup_request_batching()

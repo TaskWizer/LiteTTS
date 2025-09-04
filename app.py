@@ -16,6 +16,15 @@ from pydantic import BaseModel
 import logging
 from typing import Optional, List, Any, Union
 
+# Initialize warning suppression early to prevent noise from third-party libraries
+try:
+    from LiteTTS.utils.deprecation_warnings import initialize_warning_suppression
+    initialize_warning_suppression()
+except ImportError:
+    # Fallback if warning suppression module is not available
+    import warnings
+    warnings.filterwarnings("ignore", category=DeprecationWarning, message=".*pkg_resources.*")
+
 # Import our modules
 from LiteTTS.downloader import ensure_model_files
 from LiteTTS.config import config
@@ -23,6 +32,14 @@ from LiteTTS.exceptions import ModelError
 from LiteTTS.logging_config import setup_logging
 from LiteTTS.cache import cache_manager
 from LiteTTS.websocket import setup_websocket_endpoints
+
+# Import environment configuration bridge for Docker deployments
+try:
+    from LiteTTS.config.environment_bridge import initialize_environment_config
+    ENVIRONMENT_BRIDGE_AVAILABLE = True
+except ImportError:
+    ENVIRONMENT_BRIDGE_AVAILABLE = False
+    initialize_environment_config = None
 
 
 def json_safe_dumps(data: Any) -> str:
@@ -156,6 +173,20 @@ class LiteTTSApplication:
         """Modern FastAPI lifespan event handler"""
         # Startup
         self.logger.info("Starting LiteTTS API...")
+
+        # Initialize environment configuration for Docker deployments
+        if ENVIRONMENT_BRIDGE_AVAILABLE:
+            try:
+                env_config = initialize_environment_config()
+                if env_config:
+                    self.logger.info("🐳 Docker environment configuration applied")
+                    # Update config with environment settings
+                    env_perf_config = env_config.get_performance_config()
+                    if hasattr(config, 'performance') and hasattr(config.performance, 'dynamic_cpu_allocation'):
+                        config.performance.dynamic_cpu_allocation.update(env_perf_config.get('dynamic_cpu_allocation', {}))
+                        self.logger.info(f"🎯 CPU target updated to {env_perf_config['dynamic_cpu_allocation']['cpu_target']}%")
+            except Exception as e:
+                self.logger.warning(f"Failed to apply environment configuration: {e}")
 
         # Start performance monitoring
         self.performance_monitor.start_monitoring()
@@ -546,6 +577,19 @@ class LiteTTSApplication:
 
                     if cpu_config.get("enabled", True):
                         # Create allocation config
+                        # Override with environment configuration if available
+                        if ENVIRONMENT_BRIDGE_AVAILABLE:
+                            try:
+                                from LiteTTS.config.environment_bridge import get_environment_config
+                                env_config = get_environment_config()
+                                env_cpu_config = env_config.get_dynamic_cpu_allocation_config()
+
+                                # Merge environment config with file config
+                                cpu_config.update(env_cpu_config)
+                                self.logger.info(f"🐳 Using environment CPU target: {cpu_config.get('cpu_target', 75.0)}%")
+                            except Exception as e:
+                                self.logger.warning(f"Failed to load environment CPU config: {e}")
+
                         allocation_config = DynamicAllocationConfig(
                             enabled=cpu_config.get("enabled", True),
                             min_cores=cpu_config.get("min_cores", 1),
@@ -556,10 +600,11 @@ class LiteTTSApplication:
                             update_environment=cpu_config.get("update_environment", True)
                         )
 
-                        # Create monitor config
+                        # Create monitor config with environment-aware CPU target
+                        cpu_target = cpu_config.get("cpu_target", 75.0)
                         monitor_config = {
                             "min_threshold": cpu_config.get("min_threshold", 25.0),
-                            "max_threshold": cpu_config.get("max_threshold", 80.0),
+                            "max_threshold": cpu_target,  # Use environment CPU target
                             "monitoring_interval": cpu_config.get("monitoring_interval", 1.0),
                             "history_window": cpu_config.get("history_window", 10),
                             "allocation_cooldown": cpu_config.get("allocation_cooldown", 5.0)

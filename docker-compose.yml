@@ -5,6 +5,7 @@ services:
       dockerfile: Dockerfile
       args:
         ENVIRONMENT: production
+        ENABLE_GPU: ${ENABLE_GPU:-false}
     image: litetts:fixed
     container_name: litetts-api
     ports:
@@ -16,10 +17,40 @@ services:
       - PYTHONDONTWRITEBYTECODE=1
       - PYTHONUNBUFFERED=1
 
-      # Performance optimization
+      # Performance optimization (matching local settings.json)
       - ENABLE_PERFORMANCE_OPTIMIZATION=true
       - MAX_MEMORY_MB=4096
       - TARGET_RTF=0.25
+
+      # Dynamic CPU allocation settings (from config/settings.json)
+      - DYNAMIC_CPU_ALLOCATION_ENABLED=true
+      - CPU_TARGET=75.0
+      - AGGRESSIVE_MODE=true
+      - THERMAL_PROTECTION=true
+      - ONNX_INTEGRATION=true
+      - UPDATE_ENVIRONMENT=true
+
+      # ONNX Runtime performance settings
+      - ORT_DISABLE_ALL_OPTIMIZATION=0
+      - ORT_ENABLE_CPU_FP16_OPS=1
+      - ORT_GRAPH_OPTIMIZATION_LEVEL=all
+      - ORT_EXECUTION_MODE=parallel
+      - ORT_ENABLE_MEM_PATTERN=1
+      - ORT_ENABLE_CPU_MEM_ARENA=1
+      - ORT_ENABLE_MEM_REUSE=1
+
+      # Memory allocation optimizations
+      - MALLOC_ARENA_MAX=4
+      - MALLOC_MMAP_THRESHOLD_=131072
+      - MALLOC_TRIM_THRESHOLD_=131072
+      - MALLOC_TOP_PAD_=131072
+      - MALLOC_MMAP_MAX_=65536
+
+      # CPU threading optimizations
+      - OMP_NUM_THREADS=${OMP_NUM_THREADS:-8}
+      - MKL_NUM_THREADS=${MKL_NUM_THREADS:-8}
+      - OPENBLAS_NUM_THREADS=${OPENBLAS_NUM_THREADS:-8}
+      - VECLIB_MAXIMUM_THREADS=${VECLIB_MAXIMUM_THREADS:-8}
 
       # Server configuration
       - LITETTS_HOST=0.0.0.0
@@ -36,9 +67,13 @@ services:
       - LITETTS_CACHE_TTL=7200
 
       # Model configuration
-      - LITETTS_DEVICE=cpu
+      - LITETTS_DEVICE=${LITETTS_DEVICE:-cpu}
       - LITETTS_MODEL_PATH=/app/LiteTTS/models/model_q4.onnx
       - LITETTS_VOICES_PATH=/app/LiteTTS/voices
+
+      # GPU configuration (only used when ENABLE_GPU=true)
+      - CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-}
+      - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-}
 
       # Features
       - LITETTS_WATERMARKING_ENABLED=true
@@ -69,6 +104,10 @@ services:
         reservations:
           memory: 1024M
           cpus: '2'
+    # Conditional GPU runtime (only applied when ENABLE_GPU=true)
+    runtime: ${GPU_RUNTIME:-}
+    # GPU device access (only used when ENABLE_GPU=true)
+    # devices: ${GPU_DEVICES:-}  # Commented out due to syntax limitations
 
   openwebui:
     image: ghcr.io/open-webui/open-webui:main
