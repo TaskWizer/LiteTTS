@@ -22,7 +22,7 @@ from .manager import ModelManager, ModelInfo, DownloadProgress
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from models import TTSRequest, TTSResponse, TTSConfiguration, AudioSegment, validate_tts_request
+from models import TTSRequest, TTSResponse, TTSConfiguration, AudioSegment, VoiceEmbedding, validate_tts_request
 
 __all__ = [
     'ModelManager',
@@ -32,6 +32,7 @@ __all__ = [
     'TTSResponse',
     'TTSConfiguration',
     'AudioSegment',
+    'VoiceEmbedding',
     'validate_tts_request'
 ]
 

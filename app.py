@@ -7,6 +7,7 @@ import json
 import math
 import numpy as np
 import soundfile as sf
+import importlib.util
 from pathlib import Path
 from fastapi import FastAPI, HTTPException, APIRouter, WebSocket
 from fastapi.responses import StreamingResponse, Response
@@ -18,7 +19,15 @@ from typing import Optional, List, Any, Union
 
 # Import our modules
 from LiteTTS.downloader import ensure_model_files
-from LiteTTS.config import config
+# FIXED: Import directly from the correct config.py file to get the ConfigManager with model path resolution
+# Import the module directly to avoid namespace conflicts
+import sys
+from pathlib import Path
+config_py_path = Path(__file__).parent / "LiteTTS" / "config.py"
+spec = importlib.util.spec_from_file_location("litetts_config", config_py_path)
+litetts_config = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(litetts_config)
+config = litetts_config.config  # This is the ConfigManager instance with _update_legacy_configs()
 from LiteTTS.exceptions import ModelError
 from LiteTTS.logging_config import setup_logging
 from LiteTTS.cache import cache_manager
@@ -90,8 +99,10 @@ class LiteTTSApplication:
 
     def __init__(self):
         """Initialize the application with configuration and logging."""
-        # Set up logging
-        setup_logging(level=config.logging.level, file_path=config.logging.file_path)
+        # Set up logging with safe defaults
+        log_level = getattr(config.logging, 'level', 'INFO') if config.logging else 'INFO'
+        log_file = getattr(config.logging, 'file_path', None) if config.logging else None
+        setup_logging(level=log_level, file_path=log_file)
         self.logger = logging.getLogger(__name__)
 
         # Configuration - use new enhanced config
@@ -215,9 +226,64 @@ class LiteTTSApplication:
             hot_reload_enabled = getattr(self.config.performance, 'hot_reload', True)
 
             if hot_reload_enabled:
+                # Create custom reload callback that reinitializes TTS engine when model changes
+                def tts_aware_reload_callback(file_path: str):
+                    self.logger.info(f"🔄 Configuration file changed: {Path(file_path).name}")
+                    try:
+                        # Store old model path before reload
+                        old_model_path = getattr(self.config.tts, 'model_path', None) if hasattr(self.config, 'tts') else None
+
+                        # Reload configuration module
+                        import importlib
+                        import sys
+                        if 'LiteTTS.config' in sys.modules:
+                            config_module = sys.modules['LiteTTS.config']
+                            importlib.reload(config_module)
+                        else:
+                            import LiteTTS.config
+                            importlib.reload(LiteTTS.config)
+
+                        # Update config reference
+                        from LiteTTS.config import config
+                        self.config = config
+                        new_model_path = getattr(self.config.tts, 'model_path', None) if hasattr(self.config, 'tts') else None
+
+                        # Check if model changed and reinitialize if needed
+                        if old_model_path != new_model_path:
+                            self.logger.info(f"🔄 Model path changed: {old_model_path} → {new_model_path}")
+                            self.logger.info("🔄 Reinitializing TTS engine...")
+
+                            # Stop preloader if running
+                            if self.preloader:
+                                self.preloader.stop()
+                                self.logger.info("🛑 Preloader stopped for model reload")
+
+                            # Reinitialize TTS engine
+                            self.initialize_model()
+                            self.logger.info("✅ TTS engine reinitialized successfully")
+
+                            # Restart preloader
+                            if self.preloader:
+                                from LiteTTS.cache.preloader import IntelligentPreloader, CacheWarmingConfig
+                                preloader_config = CacheWarmingConfig(
+                                    primary_voices=["af_heart", "am_puck"],
+                                    warm_on_startup=True,
+                                    warm_during_idle=True,
+                                    idle_threshold_seconds=30.0
+                                )
+                                self.preloader = IntelligentPreloader(self, preloader_config)
+                                self.preloader.start()
+                                self.logger.info("🚀 Preloader restarted with new model")
+                        else:
+                            self.logger.info("✅ Configuration reloaded, model unchanged")
+
+                    except Exception as e:
+                        self.logger.error(f"❌ Configuration reload failed: {e}")
+                        self.logger.info("💡 Configuration changes will take effect on next restart")
+
                 self.config_hot_reload_manager = initialize_config_hot_reload(
-                    config_files=['config.json', 'override.json'],
-                    reload_callback=None,  # Use default callback
+                    config_files=['config/settings.json'],
+                    reload_callback=tts_aware_reload_callback,
                     enabled=True
                 )
                 self.logger.info("🔄 Configuration hot reload enabled")
@@ -292,7 +358,22 @@ class LiteTTSApplication:
         # Import dashboard analytics (avoid circular imports)
         import sys
         import importlib.util
-        spec = importlib.util.spec_from_file_location("dashboard", "LiteTTS/api/dashboard.py")
+        # Try multiple possible paths for dashboard
+        dashboard_paths = [
+            "api/dashboard.py",
+            "LiteTTS/api/dashboard.py",
+            os.path.join(os.path.dirname(__file__), "LiteTTS", "api", "dashboard.py")
+        ]
+
+        spec = None
+        for dashboard_path in dashboard_paths:
+            if os.path.exists(dashboard_path):
+                spec = importlib.util.spec_from_file_location("dashboard", dashboard_path)
+                break
+
+        if spec is None:
+            logger.warning("Dashboard module not found, skipping dashboard routes")
+            return
         dashboard_module = importlib.util.module_from_spec(spec)
         sys.modules["dashboard"] = dashboard_module
         spec.loader.exec_module(dashboard_module)
@@ -438,21 +519,23 @@ class LiteTTSApplication:
             # Auto-download voices on first startup
             self._ensure_voices_downloaded()
 
-            self.logger.info("📦 Model files ready, importing kokoro_onnx...")
+            self.logger.info("📦 Model files ready, initializing TTS engine...")
 
-            # Import kokoro_onnx here to avoid import errors if not installed
+            # Import our new TTS engine with inference backend support
             try:
-                from kokoro_onnx import Kokoro
-                self.logger.info("✅ kokoro_onnx imported successfully")
+                from LiteTTS.tts.engine import KokoroTTSEngine
+                from LiteTTS.models import TTSConfiguration
+                self.logger.info("✅ LiteTTS TTS engine imported successfully")
             except ImportError as e:
-                self.logger.error(f"❌ Failed to import kokoro_onnx: {e}")
-                raise ModelError(f"kokoro_onnx not available: {e}")
+                self.logger.error(f"❌ Failed to import TTS engine: {e}")
+                raise ModelError(f"TTS engine not available: {e}")
 
-            # Check kokoro_onnx version
+            # Check if we have kokoro_onnx for fallback (optional)
             try:
                 import kokoro_onnx
-                self.logger.info(f"📦 kokoro_onnx version: {getattr(kokoro_onnx, '__version__', 'unknown')}")
-            except:
+                self.logger.info(f"📦 kokoro_onnx version: {getattr(kokoro_onnx, '__version__', 'unknown')} (available for fallback)")
+            except ImportError:
+                self.logger.info("📦 kokoro_onnx not available (GGUF-only mode)")
                 pass
 
             # Apply patches to fix tensor rank issues
@@ -507,12 +590,73 @@ class LiteTTSApplication:
                 self.logger.info(f"   Voice manager: Individual loading strategy")
                 self.logger.info(f"   Compatibility file: {voices_file}")
 
-            self.logger.info(f"🚀 Initializing Kokoro model: {self.config.tts.model_path} | Voices: {voices_file}")
+            # FIXED: Use the correct config that has the resolved model path
+            self.logger.info("🔍 Using correct ConfigManager with resolved model path")
+            self.logger.info(f"   - Config type: {type(self.config)}")
+            self.logger.info(f"   - Has tts attr: {hasattr(self.config, 'tts')}")
 
-            # Initialize the model with voices file
-            self.model = Kokoro(self.config.tts.model_path, voices_file)
+            if hasattr(self.config, 'tts'):
+                self.logger.info(f"   - TTS config type: {type(self.config.tts)}")
+                resolved_model_path = getattr(self.config.tts, 'model_path', None)
+                self.logger.info(f"   - TTS model_path: '{resolved_model_path}'")
+                self.logger.info(f"   - TTS voices_path: '{getattr(self.config.tts, 'voices_path', 'ATTR_NOT_FOUND')}'")
+                self.logger.info(f"   - TTS default_voice: '{getattr(self.config.tts, 'default_voice', 'ATTR_NOT_FOUND')}'")
+            else:
+                self.logger.error("❌ Config has no tts attribute")
+                resolved_model_path = None
 
-            self.logger.info("✅ Model loaded successfully")
+            self.logger.info(f"🔍 Final resolved model path: '{resolved_model_path}'")
+
+            # Verify the model path is not empty
+            if not resolved_model_path or resolved_model_path == "." or resolved_model_path == "None":
+                self.logger.error(f"❌ CRITICAL: Model path is empty or invalid: '{resolved_model_path}'")
+                self.logger.error("   This indicates a configuration loading issue!")
+                raise ValueError(f"Invalid model path: '{resolved_model_path}'. Check configuration loading.")
+            else:
+                self.logger.info(f"✅ Model path validation passed: {resolved_model_path}")
+            self.logger.info(f"🚀 Initializing TTS engine: {resolved_model_path} | Voices: {voices_file}")
+
+            # Safely access model configuration with fallbacks
+            model_config = getattr(self.config, 'model', None)
+            if model_config:
+                inference_backend = getattr(model_config, 'inference_backend', 'auto')
+                preferred_backend = getattr(model_config, 'preferred_backend', 'onnx')
+                self.logger.info(f"🔧 Backend configuration: {inference_backend} (preferred: {preferred_backend})")
+            else:
+                self.logger.warning("🔧 Model configuration not available, using defaults")
+                # Create a default model config for GGUF support
+                from LiteTTS.config import ModelConfig
+                model_config = ModelConfig()
+                model_config.inference_backend = "auto"
+                model_config.preferred_backend = "gguf"  # Prefer GGUF since we have a GGUF model
+
+            tts_config = TTSConfiguration(
+                model_path=resolved_model_path,
+                voices_path=voices_file,
+                device=self.config.tts.device,
+                sample_rate=self.config.tts.sample_rate,
+                # Pass model configuration for backend selection
+                model_config=model_config
+            )
+
+            # Initialize the TTS engine with inference backend support
+            self.model = KokoroTTSEngine(tts_config)
+
+            self.logger.info("✅ TTS engine loaded successfully")
+
+            # Log backend information
+            engine_info = self.model.get_engine_info()
+            if 'backend_type' in engine_info:
+                self.logger.info(f"🔧 Using {engine_info['backend_type'].upper()} inference backend")
+                if 'backend_info' in engine_info:
+                    backend_info = engine_info['backend_info']
+                    self.logger.info(f"   Device: {backend_info.get('device', 'unknown')}")
+                    if 'memory_usage' in backend_info:
+                        memory = backend_info['memory_usage']
+                        total_mb = (memory.get('model_size', 0) + memory.get('runtime_overhead', 0)) / (1024*1024)
+                        self.logger.info(f"   Estimated memory: {total_mb:.1f} MB")
+            else:
+                self.logger.warning("⚠️ Backend information not available")
 
             # Initialize advanced text processing
             if ADVANCED_TEXT_PROCESSING_AVAILABLE:
@@ -615,11 +759,19 @@ class LiteTTSApplication:
             raise RuntimeError(f"Failed to initialize model: {str(e)}")
 
     def _ensure_voices_downloaded(self):
-        """Ensure voices are downloaded on first startup"""
+        """Ensure voices are downloaded on first startup - SINGLE PASS ONLY"""
         try:
+            # Global flag to prevent redundant voice processing
+            if hasattr(self.__class__, '_voices_processed'):
+                self.logger.info("🔄 Voices already processed, skipping redundant download cycle")
+                return
+
             if not self.voice_manager:
                 self.logger.warning("Voice manager not available, skipping auto-download")
                 return
+
+            # Mark voices as being processed to prevent redundant cycles
+            self.__class__._voices_processed = True
 
             # Check if this is first startup (no .bin voices downloaded)
             voices_dir = Path(self.config.paths.voices_dir)
@@ -630,33 +782,20 @@ class LiteTTSApplication:
 
             # If less than 5 .bin voices exist, download ALL voices (simplified voice management)
             if len(bin_voices) < 5:
-                self.logger.info("🚀 First startup detected - downloading ALL available voices...")
+                self.logger.info("🌍 Downloading ALL available voices...")
 
-                # Download ALL voices (simplified voice management)
-                all_voices = list(self.voice_manager.downloader.discovered_voices.keys())
-                all_downloaded = 0
-                all_converted = 0
+                # Use the downloader's built-in download_all method to avoid redundancy
+                from LiteTTS.downloader import download_all_voices
+                success = download_all_voices()
 
-                for voice_name in all_voices:
-                    if voice_name in self.voice_manager.downloader.discovered_voices:
-                        bin_path = voices_dir / f"{voice_name}.bin"
-
-                        if not bin_path.exists():
-                            self.logger.info(f"📥 Downloading: {voice_name}")
-                            success = self.voice_manager.downloader.download_voice(voice_name)
-                            if success:
-                                all_downloaded += 1
-                                if bin_path.exists():
-                                    all_converted += 1
-                                    self.logger.info(f"✅ Downloaded: {voice_name}")
-                                else:
-                                    self.logger.warning(f"⚠️ Downloaded but conversion failed: {voice_name}")
-                            else:
-                                self.logger.warning(f"❌ Failed to download: {voice_name}")
-                        else:
-                            all_converted += 1
-
-                self.logger.info(f"🎊 Downloaded {all_downloaded}/{len(all_voices)} voices, {all_converted} .bin files available")
+                if success:
+                    # Recount after download
+                    bin_voices_after = list(voices_dir.glob("*.bin"))
+                    self.logger.info(f"✅ Downloaded {len(bin_voices_after)} voices successfully")
+                else:
+                    self.logger.warning("⚠️ Some voices may have failed to download")
+            else:
+                self.logger.info(f"✅ Sufficient voices already available ({len(bin_voices)} .bin files)")
 
         except Exception as e:
             self.logger.error(f"❌ Failed to auto-download voices: {e}")
@@ -1439,18 +1578,36 @@ with open("hello.mp3", "wb") as f:
             """List available models (OpenAI compatibility)"""
             import time
 
+            # Safely access model configuration with fallbacks
+            model_config = getattr(self.config, 'model', None)
+            if model_config:
+                model_name = getattr(model_config, 'name', 'LiteTTS')
+                model_owner = getattr(model_config, 'owner', 'TaskWizer')
+                model_version = getattr(model_config, 'version', '1.0.0')
+                model_type = getattr(model_config, 'type', 'style_text_to_speech_2')
+                available_variants = getattr(model_config, 'available_variants', [])
+                default_variant = getattr(model_config, 'default_variant', 'model_q4.onnx')
+            else:
+                # Fallback values when model config is not available
+                model_name = 'LiteTTS'
+                model_owner = 'TaskWizer'
+                model_version = '1.0.0'
+                model_type = 'style_text_to_speech_2'
+                available_variants = []
+                default_variant = 'model_q4.onnx'
+
             return {
                 "object": "list",
                 "data": [
                     {
-                        "id": self.config.model.name,
+                        "id": model_name,
                         "object": "model",
                         "created": int(time.time()),  # Dynamic timestamp
-                        "owned_by": self.config.model.owner,
-                        "version": self.config.model.version,
-                        "type": self.config.model.type,
-                        "available_variants": self.config.model.available_variants,
-                        "default_variant": self.config.model.default_variant
+                        "owned_by": model_owner,
+                        "version": model_version,
+                        "type": model_type,
+                        "available_variants": available_variants,
+                        "default_variant": default_variant
                     }
                 ]
             }
@@ -1516,13 +1673,17 @@ with open("hello.mp3", "wb") as f:
         @self.v1_router.get("/health")
         async def health_check_v1():
             """Service health check (v1 API compatibility)"""
+            # Safely access model configuration with fallback
+            model_config = getattr(self.config, 'model', None)
+            model_version = getattr(model_config, 'version', '1.0.0') if model_config else '1.0.0'
+
             return {
                 "status": "healthy",
                 "model": self.config.tts.model_path,
                 "model_loaded": self.model is not None,
                 "voices_available": len(self.available_voices),
                 "available_voices": self.available_voices,
-                "version": self.config.model.version
+                "version": model_version
             }
 
         @self.v1_router.get("/voices")
@@ -2311,16 +2472,62 @@ with open("hello.mp3", "wb") as f:
                 }
 
             try:
+                self.logger.info("🔄 Starting comprehensive configuration reload...")
                 results = self.config_hot_reload_manager.reload_all()
 
                 # Update application config reference
                 from LiteTTS.config import config
+                old_model_path = getattr(self.config.tts, 'model_path', None) if hasattr(self.config, 'tts') else None
                 self.config = config
+                new_model_path = getattr(self.config.tts, 'model_path', None) if hasattr(self.config, 'tts') else None
+
+                # Check if model path changed - if so, reinitialize TTS engine
+                model_changed = old_model_path != new_model_path
+                if model_changed:
+                    self.logger.info(f"🔄 Model path changed: {old_model_path} → {new_model_path}")
+                    self.logger.info("🔄 Reinitializing TTS engine with new model...")
+
+                    # Stop preloader if running
+                    if self.preloader:
+                        self.preloader.stop()
+                        self.logger.info("🛑 Preloader stopped for model reload")
+
+                    # Reinitialize the TTS engine
+                    try:
+                        self.initialize_model()
+                        self.logger.info("✅ TTS engine reinitialized successfully")
+
+                        # Restart preloader with new model
+                        if self.preloader:
+                            from LiteTTS.cache.preloader import IntelligentPreloader, CacheWarmingConfig
+                            preloader_config = CacheWarmingConfig(
+                                primary_voices=["af_heart", "am_puck"],
+                                warm_on_startup=True,
+                                warm_during_idle=True,
+                                idle_threshold_seconds=30.0
+                            )
+                            self.preloader = IntelligentPreloader(self, preloader_config)
+                            self.preloader.start()
+                            self.logger.info("🚀 Preloader restarted with new model")
+
+                    except Exception as model_error:
+                        self.logger.error(f"❌ Failed to reinitialize TTS engine: {model_error}")
+                        return {
+                            "success": False,
+                            "error": f"Configuration reloaded but TTS engine reinitializtion failed: {model_error}",
+                            "results": results,
+                            "timestamp": time.time()
+                        }
+                else:
+                    self.logger.info("✅ Model path unchanged, TTS engine reinitializtion not needed")
 
                 return {
                     "success": True,
-                    "message": "All configuration files reloaded",
+                    "message": "All configuration files reloaded" + (" and TTS engine reinitialized" if model_changed else ""),
                     "results": results,
+                    "model_reinitialized": model_changed,
+                    "old_model_path": old_model_path,
+                    "new_model_path": new_model_path,
                     "timestamp": time.time()
                 }
             except Exception as e:
@@ -2336,14 +2543,46 @@ with open("hello.mp3", "wb") as f:
 
         from fastapi.responses import HTMLResponse, RedirectResponse
 
-        # Import dashboard analytics directly to avoid circular imports
+        # Import dashboard analytics with robust error handling
         import sys
         import importlib.util
-        spec = importlib.util.spec_from_file_location("dashboard", "LiteTTS/api/dashboard.py")
-        dashboard_module = importlib.util.module_from_spec(spec)
-        sys.modules["dashboard_endpoints"] = dashboard_module
-        spec.loader.exec_module(dashboard_module)
-        dashboard_analytics = dashboard_module.dashboard_analytics
+        import os
+
+        # Try multiple possible paths for dashboard
+        dashboard_paths = [
+            "api/dashboard.py",
+            "LiteTTS/api/dashboard.py",
+            os.path.join(os.path.dirname(__file__), "LiteTTS", "api", "dashboard.py")
+        ]
+
+        dashboard_analytics = None
+        dashboard_module = None
+
+        for dashboard_path in dashboard_paths:
+            try:
+                if os.path.exists(dashboard_path):
+                    spec = importlib.util.spec_from_file_location("dashboard", dashboard_path)
+                    if spec and spec.loader:
+                        dashboard_module = importlib.util.module_from_spec(spec)
+                        sys.modules["dashboard_endpoints"] = dashboard_module
+                        spec.loader.exec_module(dashboard_module)
+                        dashboard_analytics = getattr(dashboard_module, 'dashboard_analytics', None)
+                        self.logger.info(f"Successfully loaded dashboard module from {dashboard_path}")
+                        break
+            except Exception as e:
+                self.logger.warning(f"Failed to load dashboard from {dashboard_path}: {e}")
+                continue
+
+        if dashboard_analytics is None:
+            self.logger.warning("Dashboard module not found or failed to load, skipping dashboard routes")
+            # Setup minimal fallback dashboard endpoint
+            @self.app.get("/dashboard", response_class=HTMLResponse)
+            async def dashboard_fallback():
+                return HTMLResponse(
+                    content="<h1>Dashboard Unavailable</h1><p>Dashboard module could not be loaded. Core TTS functionality remains available.</p>",
+                    status_code=503
+                )
+            return
 
         @self.app.get("/dashboard", response_class=HTMLResponse)
         async def dashboard_page():
@@ -2369,8 +2608,14 @@ with open("hello.mp3", "wb") as f:
                 # Get performance data from existing monitor
                 performance_data = self.performance_monitor.get_performance_summary()
 
-                # Get dashboard analytics data
-                analytics_data = dashboard_analytics.get_dashboard_data()
+                # Get dashboard analytics data if available
+                analytics_data = {}
+                if dashboard_analytics:
+                    try:
+                        analytics_data = dashboard_analytics.get_dashboard_data()
+                    except Exception as e:
+                        self.logger.warning(f"Failed to get dashboard analytics data: {e}")
+                        analytics_data = {}
 
                 # Combine data sources with fallbacks
                 performance_summary = performance_data.get('summary', {})
@@ -2550,22 +2795,12 @@ def log_configuration_status():
     # Check which config files exist and are being used
     config_sources = []
 
-    # Base config
-    if Path("config.json").exists():
-        config_sources.append("config.json (base)")
-
-    # Override config
-    override_path = Path("override.json")
-    if override_path.exists():
-        try:
-            with open(override_path, 'r') as f:
-                override_data = json.load(f)
-            config_sources.append("override.json (active)")
-            if "server" in override_data and "port" in override_data["server"]:
-                print(f"   Port override: {override_data['server']['port']} (from override.json)")
-        except Exception as e:
-            config_sources.append("override.json (error)")
-            print(f"   Error reading override.json: {e}")
+    # Main configuration file
+    settings_path = Path("config/settings.json")
+    if settings_path.exists():
+        config_sources.append("config/settings.json (main)")
+    else:
+        print(f"Warning: Main configuration file {settings_path} not found")
 
     # Environment variables
     env_vars = []
@@ -2631,7 +2866,7 @@ def run_server():
     available_port = tts_app.find_available_port(default_port)
 
     print(f"Starting LiteTTS API on {tts_app.config.server.host}:{available_port}")
-    print(f"Configuration loaded from config.json")
+    print(f"Configuration loaded from config/settings.json")
     if available_port != default_port:
         print(f"Port {default_port} was unavailable, using {available_port}")
 
@@ -2724,7 +2959,7 @@ Examples:
     parser.add_argument(
         "--config",
         type=str,
-        help="Path to configuration file (default: config.json)"
+        help="Path to configuration file (default: config/settings.json)"
     )
 
     # Server configuration arguments
@@ -2801,39 +3036,32 @@ Examples:
 
     # Display startup information
     print(f"Starting LiteTTS API on {configured_host}:{configured_port}")
-    print(f"Configuration loaded from config.json")
+    print(f"Configuration loaded from config/settings.json")
     if args.reload:
         print("Hot reload enabled for development")
 
-    # Start the server
-    final_workers = configured_workers if not args.reload else 1
+    # Start the server with single worker to avoid initialization race conditions
+    # Multiple workers cause TTS engine initialization conflicts and startup loops
+    final_workers = 1  # Force single worker for stable startup
 
-    # Use import string for multiple workers, app object for single worker
-    if final_workers > 1:
-        # Multiple workers require import string
-        uvicorn.run(
-            "app:app",  # Import string
-            host=configured_host,
-            port=configured_port,
-            workers=final_workers,
-            reload=args.reload,
-            log_level=args.log_level,
-            access_log=not args.reload,
-            server_header=False,
-            date_header=False
-        )
-    else:
-        # Single worker can use app object directly
-        uvicorn.run(
-            app,  # App object
-            host=configured_host,
-            port=configured_port,
-            reload=args.reload,
-            log_level=args.log_level,
-            access_log=not args.reload,
-            server_header=False,
-            date_header=False
-        )
+    if args.reload:
+        print("Hot reload enabled for development")
+
+    print(f"Starting server with {final_workers} worker (optimized for TTS engine stability)")
+
+    # Always use single worker to prevent TTS engine initialization race conditions
+    # The TTS engine initialization is not thread-safe and causes startup failures with multiple workers
+    uvicorn.run(
+        app,  # Use app object directly for single worker
+        host=configured_host,
+        port=configured_port,
+        workers=final_workers,  # Always 1 for stability
+        reload=args.reload,
+        log_level=args.log_level,
+        access_log=not args.reload,
+        server_header=False,
+        date_header=False
+    )
 
 
 if __name__ == "__main__":

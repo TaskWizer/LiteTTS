@@ -1,5 +1,5 @@
 {
-  "timestamp": 1756478274.616117,
+  "timestamp": 1756947874.6216626,
   "models": {
     "model.onnx": {
       "name": "model.onnx",
@@ -72,6 +72,96 @@
       "download_url": "https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/onnx/model_uint8f16.onnx",
       "variant_type": "uint8f16",
       "description": "8-bit unsigned integer with 16-bit float"
+    },
+    "Kokoro_espeak.gguf": {
+      "name": "Kokoro_espeak.gguf",
+      "path": "Kokoro_espeak.gguf",
+      "size": 350751200,
+      "sha": "73e3d657c52d6d8359a323da906c1a1dd5ae8f155a37cb25bcb7e9353e38d230",
+      "download_url": "https://huggingface.co/mmwillet2/Kokoro_GGUF/resolve/main/Kokoro_espeak.gguf",
+      "variant_type": "espeak_base",
+      "description": "Full precision with eSpeak phonemization (eSpeak compatible)"
+    },
+    "Kokoro_espeak_F16.gguf": {
+      "name": "Kokoro_espeak_F16.gguf",
+      "path": "Kokoro_espeak_F16.gguf",
+      "size": 201810624,
+      "sha": "65ff6a252f1ea6053d7ee28d4bf0b5b9382ca2a40250ff6a8024d2e5859eced6",
+      "download_url": "https://huggingface.co/mmwillet2/Kokoro_GGUF/resolve/main/Kokoro_espeak_F16.gguf",
+      "variant_type": "f16",
+      "description": "16-bit float precision (eSpeak compatible)"
+    },
+    "Kokoro_espeak_Q4.gguf": {
+      "name": "Kokoro_espeak_Q4.gguf",
+      "path": "Kokoro_espeak_Q4.gguf",
+      "size": 177844992,
+      "sha": "ea9ea03fd8f794df36c776036e2689e872b00319c474d5e2656b9ede432ed9a5",
+      "download_url": "https://huggingface.co/mmwillet2/Kokoro_GGUF/resolve/main/Kokoro_espeak_Q4.gguf",
+      "variant_type": "q4",
+      "description": "4-bit quantization (Q4_0) (eSpeak compatible)"
+    },
+    "Kokoro_espeak_Q5.gguf": {
+      "name": "Kokoro_espeak_Q5.gguf",
+      "path": "Kokoro_espeak_Q5.gguf",
+      "size": 179928960,
+      "sha": "88649a63f50c4021cb8ffc7e9506125359f6205685f480539f70f167a7d2625b",
+      "download_url": "https://huggingface.co/mmwillet2/Kokoro_GGUF/resolve/main/Kokoro_espeak_Q5.gguf",
+      "variant_type": "q5",
+      "description": "5-bit quantization (Q5_0) (eSpeak compatible)"
+    },
+    "Kokoro_espeak_Q8.gguf": {
+      "name": "Kokoro_espeak_Q8.gguf",
+      "path": "Kokoro_espeak_Q8.gguf",
+      "size": 186180864,
+      "sha": "628bfe44fa6b411263607161c6b1178e07a8db65ec81c4e316488f6826d49133",
+      "download_url": "https://huggingface.co/mmwillet2/Kokoro_GGUF/resolve/main/Kokoro_espeak_Q8.gguf",
+      "variant_type": "q8",
+      "description": "8-bit quantization (Q8_0) (eSpeak compatible)"
+    },
+    "Kokoro_no_espeak.gguf": {
+      "name": "Kokoro_no_espeak.gguf",
+      "path": "Kokoro_no_espeak.gguf",
+      "size": 371002976,
+      "sha": "c3fa1ae88a3e78d4fae523657879e072603f721dfe1274e20ed8671e2baa1793",
+      "download_url": "https://huggingface.co/mmwillet2/Kokoro_GGUF/resolve/main/Kokoro_no_espeak.gguf",
+      "variant_type": "no_espeak_base",
+      "description": "Full precision with native phonemization (native phonemization)"
+    },
+    "Kokoro_no_espeak_F16.gguf": {
+      "name": "Kokoro_no_espeak_F16.gguf",
+      "path": "Kokoro_no_espeak_F16.gguf",
+      "size": 222062368,
+      "sha": "7529446263e0f3fd1ce95cd0d9bb9c50db7e27077423787ecb65fb20d98f2419",
+      "download_url": "https://huggingface.co/mmwillet2/Kokoro_GGUF/resolve/main/Kokoro_no_espeak_F16.gguf",
+      "variant_type": "f16",
+      "description": "16-bit float precision (native phonemization)"
+    },
+    "Kokoro_no_espeak_Q4.gguf": {
+      "name": "Kokoro_no_espeak_Q4.gguf",
+      "path": "Kokoro_no_espeak_Q4.gguf",
+      "size": 198096736,
+      "sha": "70c1c2afa5f2ca60008b180ac942ddaab011371372745e6f45265da3d2a7a852",
+      "download_url": "https://huggingface.co/mmwillet2/Kokoro_GGUF/resolve/main/Kokoro_no_espeak_Q4.gguf",
+      "variant_type": "q4",
+      "description": "4-bit quantization (Q4_0) (native phonemization)"
+    },
+    "Kokoro_no_espeak_Q5.gguf": {
+      "name": "Kokoro_no_espeak_Q5.gguf",
+      "path": "Kokoro_no_espeak_Q5.gguf",
+      "size": 200180704,
+      "sha": "02c6a917c857724f757e7ec14b0432b99472a131685544fff2d77d8ac5a53cb7",
+      "download_url": "https://huggingface.co/mmwillet2/Kokoro_GGUF/resolve/main/Kokoro_no_espeak_Q5.gguf",
+      "variant_type": "q5",
+      "description": "5-bit quantization (Q5_0) (native phonemization)"
+    },
+    "Kokoro_no_espeak_Q8.gguf": {
+      "name": "Kokoro_no_espeak_Q8.gguf",
+      "path": "Kokoro_no_espeak_Q8.gguf",
+      "size": 206432608,
+      "sha": "b5f16905757e494f802cffa06f5726b738158e336ceabdc7d9101e7045df65fb",
+      "download_url": "https://huggingface.co/mmwillet2/Kokoro_GGUF/resolve/main/Kokoro_no_espeak_Q8.gguf",
+      "variant_type": "q8",
+      "description": "8-bit quantization (Q8_0) (native phonemization)"
     }
   }
 }

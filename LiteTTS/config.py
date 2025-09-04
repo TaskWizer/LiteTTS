@@ -18,13 +18,21 @@ class ModelConfig:
     name: str = "LiteTTS"
     type: str = "style_text_to_speech_2"
     version: str = "1.0.0"
-    default_variant: str = "model_q4.onnx"  # Use Q4 quantized model for optimal performance/size balance
+    default_variant: str = "model_q4.onnx"  # Default fallback - will be overridden by settings.json
     available_variants: List[str] = None
     auto_discovery: bool = True
     cache_models: bool = True
     owner: str = "TaskWizer"
     performance_mode: str = "balanced"
     preload_models: bool = True  # Enable model preloading for faster startup
+
+    # Inference backend configuration
+    inference_backend: str = "auto"  # "auto", "onnx", "gguf"
+    preferred_backend: str = "onnx"  # Preferred backend when auto-detection is used
+    enable_backend_fallback: bool = True  # Enable fallback to alternative backend on failure
+
+    # GGUF-specific configuration
+    gguf_config: Optional[Dict[str, Any]] = None
 
     def __post_init__(self):
         if self.available_variants is None:
@@ -36,8 +44,29 @@ class ModelConfig:
                 "model_q8f16.onnx",
                 "model_quantized.onnx",
                 "model_uint8.onnx",
-                "model_uint8f16.onnx"
+                "model_uint8f16.onnx",
+                # GGUF variants
+                "Kokoro_espeak.gguf",
+                "Kokoro_espeak_F16.gguf",
+                "Kokoro_espeak_Q4.gguf",
+                "Kokoro_espeak_Q5.gguf",
+                "Kokoro_espeak_Q8.gguf",
+                "Kokoro_no_espeak.gguf",
+                "Kokoro_no_espeak_F16.gguf",
+                "Kokoro_no_espeak_Q4.gguf",
+                "Kokoro_no_espeak_Q5.gguf",
+                "Kokoro_no_espeak_Q8.gguf"
             ]
+
+        if self.gguf_config is None:
+            self.gguf_config = {
+                "context_size": 2048,
+                "n_threads": None,  # Auto-detect
+                "use_gpu": False,
+                "default_variant": "Kokoro_espeak_Q4.gguf",
+                "use_mmap": True,
+                "use_mlock": False
+            }
 
 @dataclass
 class VoiceConfig:
@@ -172,6 +201,8 @@ class RepositoryConfig:
     models_path: str = "onnx"
     voices_path: str = "voices"
     base_url: str = "https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main"
+    model_branch: str = "main"  # Add missing model_branch parameter
+    cache_dir: str = "models"  # Add missing cache_dir parameter
 
 @dataclass
 class PathsConfig:
@@ -215,12 +246,74 @@ class ApplicationConfig:
 @dataclass
 class TTSConfig:
     """Legacy TTS engine configuration for backward compatibility"""
-    model_path: str = "LiteTTS/models/model_q4.onnx"  # Use Q4 quantized model by default
+    model_path: str = ""  # Will be dynamically resolved
     voices_path: str = "LiteTTS/voices"
     default_voice: str = "af_heart"
     sample_rate: int = 24000
     chunk_size: int = 100
     device: str = "cpu"
+
+    def __post_init__(self):
+        """Initialize model path - will be set later by ConfigManager"""
+        # Model path will be resolved by ConfigManager after all configs are loaded
+        # This avoids circular import issues
+        pass
+
+    def resolve_model_path(self, configured_variant: str) -> str:
+        """Dynamically resolve model path based on configuration and available models"""
+        logger.info(f"🔍 Starting model path resolution for variant: '{configured_variant}'")
+
+        models_dir = Path("LiteTTS/models")
+        logger.info(f"📁 Models directory: {models_dir.absolute()}")
+
+        # Verify models directory exists
+        if not models_dir.exists():
+            logger.error(f"❌ Models directory does not exist: {models_dir.absolute()}")
+            return f"LiteTTS/models/{configured_variant}"
+
+        # List all files in models directory for debugging
+        try:
+            model_files = list(models_dir.glob("*"))
+            logger.info(f"📋 Available model files: {[f.name for f in model_files if f.is_file()]}")
+        except Exception as e:
+            logger.warning(f"⚠️ Could not list model files: {e}")
+
+        # First, try the configured default_variant
+        configured_path = models_dir / configured_variant
+        logger.info(f"🎯 Checking configured path: {configured_path.absolute()}")
+
+        if configured_path.exists():
+            logger.info(f"✅ Using configured model: {configured_variant}")
+            resolved_path = str(configured_path)
+            logger.info(f"📍 Resolved to absolute path: {resolved_path}")
+            return resolved_path
+        else:
+            logger.warning(f"❌ Configured model not found: {configured_variant} at {configured_path.absolute()}")
+
+        # Fallback priority order: ONNX models first (stable), then GGUF (experimental)
+        fallback_candidates = [
+            "model_q4.onnx",          # Preferred ONNX quantized
+            "model.onnx",             # ONNX base model
+            "model_fp16.onnx",        # ONNX FP16 model
+            "Kokoro_espeak_Q4.gguf",  # GGUF quantized fallback
+            "Kokoro_espeak.gguf",     # GGUF base fallback
+            "Kokoro_espeak_F16.gguf"  # GGUF FP16 fallback
+        ]
+
+        logger.info(f"🔄 Trying fallback candidates: {fallback_candidates}")
+        for candidate in fallback_candidates:
+            candidate_path = models_dir / candidate
+            logger.debug(f"   Checking: {candidate_path.absolute()}")
+            if candidate_path.exists():
+                logger.info(f"✅ Using fallback model: {candidate}")
+                resolved_path = str(candidate_path)
+                logger.info(f"📍 Resolved to absolute path: {resolved_path}")
+                return resolved_path
+
+        # Final fallback (will trigger proper error handling if missing)
+        default_path = f"LiteTTS/models/{configured_variant}"
+        logger.warning(f"❌ No models found, using configured default: {default_path}")
+        return default_path
     
 @dataclass
 class APIConfig:
@@ -309,23 +402,14 @@ class ConfigManager:
     """Central configuration manager with comprehensive environment variable support"""
 
     def __init__(self, config_file: str = None):
-        # Determine config file location with backward compatibility
+        # Determine config file location - use only config/settings.json
         if config_file is None:
-            # Check for new comprehensive settings file first (preferred)
-            if Path("config/settings.json").exists():
-                config_file = "config/settings.json"
-            # Fall back to root config.json for backward compatibility
-            elif Path("config.json").exists():
-                config_file = "config.json"
-            # Fall back to old location for backward compatibility
-            elif Path("LiteTTS/config.json").exists():
-                config_file = "LiteTTS/config.json"
-            else:
-                # Default to new comprehensive settings location
-                config_file = "config/settings.json"
+            # Use only the new comprehensive settings file
+            config_file = "config/settings.json"
 
         # Load from JSON config file first
         self.config_file = Path(config_file)
+        logger.info(f"📋 Loading configuration from: {self.config_file}")
         self._load_from_json()
 
         # Legacy configurations for backward compatibility
@@ -372,15 +456,35 @@ class ConfigManager:
                     logger.warning("Continuing with base configuration only")
 
             # Initialize configuration sections with merged data
-            self.model = ModelConfig(**config_data.get("model", {}))
-            self.voice = VoiceConfig(**config_data.get("voice", {}))
+            # Use explicit field assignment to ensure JSON values override dataclass defaults
+            model_data = config_data.get("model", {})
+            self.model = ModelConfig()
+            for field_name, field_value in model_data.items():
+                if hasattr(self.model, field_name):
+                    setattr(self.model, field_name, field_value)
+                    logger.debug(f"Set model.{field_name} = {field_value}")
+
+            voice_data = config_data.get("voice", {})
+            self.voice = VoiceConfig()
+            for field_name, field_value in voice_data.items():
+                if hasattr(self.voice, field_name):
+                    setattr(self.voice, field_name, field_value)
+
             # Handle nested chunked_generation config
             audio_config = config_data.get("audio", {})
             chunked_gen_data = audio_config.pop("chunked_generation", {})
-            self.audio = AudioConfig(**audio_config)
+            self.audio = AudioConfig()
+            for field_name, field_value in audio_config.items():
+                if hasattr(self.audio, field_name):
+                    setattr(self.audio, field_name, field_value)
             if chunked_gen_data:
                 self.audio.chunked_generation = ChunkedGenerationConfig(**chunked_gen_data)
-            self.server = ServerConfig(**config_data.get("server", {}))
+
+            server_data = config_data.get("server", {})
+            self.server = ServerConfig()
+            for field_name, field_value in server_data.items():
+                if hasattr(self.server, field_name):
+                    setattr(self.server, field_name, field_value)
 
             # Filter out problematic sections from performance config to prevent errors
             performance_data = config_data.get("performance", {}).copy()
@@ -400,12 +504,17 @@ class ConfigManager:
 
         except Exception as e:
             logger.error(f"Failed to load configuration: {e}")
-            # Fall back to defaults
+            # Fall back to defaults - ensure all required attributes are initialized
             self.model = ModelConfig()
             self.voice = VoiceConfig()
             self.audio = AudioConfig()
             self.server = ServerConfig()
             self.performance = PerformanceConfig()
+            self.repository = RepositoryConfig()
+            self.paths = PathsConfig()
+            self.tokenizer = TokenizerConfig()
+            self.endpoints = EndpointsConfig()
+            self.application = ApplicationConfig()
             self.repository = RepositoryConfig()
             self.paths = PathsConfig()
             self.tokenizer = TokenizerConfig()
@@ -431,8 +540,27 @@ class ConfigManager:
 
     def _update_legacy_configs(self):
         """Update legacy configurations with new values for backward compatibility"""
+        logger.info("🔧 Starting legacy config update process")
+
+        # Debug: Log the configured model variant
+        logger.info(f"📋 Configured model variant: {self.model.default_variant}")
+
         # Update TTSConfig with new values
-        self.tts.model_path = str(Path(self.paths.models_dir) / self.model.default_variant)
+        logger.info("🔄 Resolving model path...")
+        resolved_model_path = self.tts.resolve_model_path(self.model.default_variant)
+        logger.info(f"✅ Resolved model path: {resolved_model_path}")
+
+        self.tts.model_path = resolved_model_path
+        logger.info(f"📝 Set tts.model_path to: {self.tts.model_path}")
+
+        # Verify the path was set correctly
+        if not self.tts.model_path or self.tts.model_path == ".":
+            logger.error(f"❌ CRITICAL: Model path is empty or invalid: '{self.tts.model_path}'")
+            logger.error(f"   - Configured variant: {self.model.default_variant}")
+            logger.error(f"   - Resolved path: {resolved_model_path}")
+        else:
+            logger.info(f"✅ Model path successfully set: {self.tts.model_path}")
+
         self.tts.voices_path = self.paths.voices_dir
         self.tts.default_voice = self.voice.default_voice
         self.tts.sample_rate = self.audio.sample_rate
@@ -445,6 +573,8 @@ class ConfigManager:
 
         # Update CacheConfig with new values
         self.cache.enabled = self.performance.cache_enabled
+
+        logger.info("✅ Legacy config update completed")
     
     def _load_from_env(self):
         """Load configuration from environment variables with type safety"""
@@ -779,7 +909,12 @@ class ConfigManager:
             return False
 
 # Global configuration instance - prioritize comprehensive settings file
-config = ConfigManager()
+try:
+    config = ConfigManager()
+    logger.info("Global configuration instance created successfully")
+except Exception as e:
+    logger.error(f"Failed to create global configuration instance: {e}")
+    config = None
 
 # Alias for backward compatibility
 LiteTTSConfig = ConfigManager

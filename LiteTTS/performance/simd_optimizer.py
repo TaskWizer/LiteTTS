@@ -137,7 +137,6 @@ class SIMDOptimizer:
                             break
             elif platform.system() == "Windows":
                 # Basic Windows detection using platform
-                import platform
                 if 'AMD64' in platform.machine() or 'x86_64' in platform.machine():
                     # Assume modern x64 CPU has at least SSE2
                     flags = ['sse', 'sse2']
@@ -377,9 +376,20 @@ class SIMDOptimizer:
 # Global SIMD optimizer instance
 _global_simd_optimizer: Optional[SIMDOptimizer] = None
 
-def get_simd_optimizer() -> SIMDOptimizer:
-    """Get or create global SIMD optimizer instance"""
+def get_simd_optimizer() -> Optional[SIMDOptimizer]:
+    """Get or create global SIMD optimizer instance (respects beta_features configuration)"""
     global _global_simd_optimizer
+
+    # Check if SIMD optimizer is enabled in configuration
+    try:
+        from ..config import config
+        if not getattr(config, 'beta_features', {}).get('simd_optimizer', {}).get('enabled', False):
+            logger.debug("SIMD optimizer disabled in beta_features configuration")
+            return None
+    except Exception as e:
+        logger.warning(f"Could not check SIMD optimizer configuration: {e}")
+        return None
+
     if _global_simd_optimizer is None:
         _global_simd_optimizer = SIMDOptimizer()
     return _global_simd_optimizer
@@ -387,4 +397,7 @@ def get_simd_optimizer() -> SIMDOptimizer:
 def optimize_audio_with_simd(audio_data: np.ndarray) -> np.ndarray:
     """Convenience function for SIMD-optimized audio processing"""
     optimizer = get_simd_optimizer()
+    if optimizer is None:
+        logger.debug("SIMD optimizer not available, returning unprocessed audio")
+        return audio_data
     return optimizer.optimize_audio_processing(audio_data)

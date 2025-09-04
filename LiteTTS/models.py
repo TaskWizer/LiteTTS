@@ -23,6 +23,7 @@ class TTSConfiguration:
     cache_size: int = 1000
     max_text_length: int = 1000
     default_voice: str = "af_heart"
+    model_config: Optional[Any] = None  # ModelConfig for backend selection
 
 # Voice and Audio Models
 @dataclass

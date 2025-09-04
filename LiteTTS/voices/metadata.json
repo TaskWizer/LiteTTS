@@ -93,42 +93,42 @@
   },
   "stats": {
     "af_heart": {
-      "total_requests": 60,
-      "total_duration": 0.0,
-      "average_request_length": 0.0,
-      "last_used": "2025-08-30T12:50:31.238619",
-      "error_count": 0,
-      "success_rate": 1.0
+      "total_requests": 3867,
+      "total_duration": 3996.7280000000114,
+      "average_request_length": 1.0335474528057955,
+      "last_used": "2025-09-03T20:09:58.986871",
+      "error_count": 253,
+      "success_rate": 0.9345746056374451
     },
     "af_bella": {
-      "total_requests": 0,
-      "total_duration": 0.0,
-      "average_request_length": 0.0,
-      "last_used": null,
+      "total_requests": 4,
+      "total_duration": 38.54666666666667,
+      "average_request_length": 9.636666666666667,
+      "last_used": "2025-08-31T15:38:32.580626",
       "error_count": 0,
       "success_rate": 1.0
     },
     "af_alloy": {
-      "total_requests": 0,
-      "total_duration": 0.0,
-      "average_request_length": 0.0,
-      "last_used": null,
+      "total_requests": 6,
+      "total_duration": 60.221666666666664,
+      "average_request_length": 10.036944444444444,
+      "last_used": "2025-09-01T12:11:10.839463",
       "error_count": 0,
       "success_rate": 1.0
     },
     "af_aoede": {
-      "total_requests": 0,
-      "total_duration": 0.0,
-      "average_request_length": 0.0,
-      "last_used": null,
+      "total_requests": 18,
+      "total_duration": 71.74666666666667,
+      "average_request_length": 3.985925925925926,
+      "last_used": "2025-09-03T20:08:46.641551",
       "error_count": 0,
       "success_rate": 1.0
     },
     "af_jessica": {
-      "total_requests": 0,
-      "total_duration": 0.0,
-      "average_request_length": 0.0,
-      "last_used": null,
+      "total_requests": 6,
+      "total_duration": 10.4,
+      "average_request_length": 1.7333333333333334,
+      "last_used": "2025-09-03T20:08:01.253750",
       "error_count": 0,
       "success_rate": 1.0
     },
@@ -141,20 +141,20 @@
       "success_rate": 1.0
     },
     "af_sky": {
-      "total_requests": 0,
-      "total_duration": 0.0,
-      "average_request_length": 0.0,
-      "last_used": null,
+      "total_requests": 4,
+      "total_duration": 6.075,
+      "average_request_length": 1.51875,
+      "last_used": "2025-09-03T20:10:28.213225",
       "error_count": 0,
       "success_rate": 1.0
     },
     "am_puck": {
-      "total_requests": 0,
-      "total_duration": 0.0,
-      "average_request_length": 0.0,
-      "last_used": null,
-      "error_count": 0,
-      "success_rate": 1.0
+      "total_requests": 3332,
+      "total_duration": 3568.69266666667,
+      "average_request_length": 1.0710362144857952,
+      "last_used": "2025-09-03T20:10:09.063234",
+      "error_count": 234,
+      "success_rate": 0.9297719087635054
     },
     "am_liam": {
       "total_requests": 0,
@@ -163,7 +163,47 @@
       "last_used": null,
       "error_count": 0,
       "success_rate": 1.0
+    },
+    "af": {
+      "total_requests": 6,
+      "total_duration": 44.696666666666665,
+      "average_request_length": 7.4494444444444445,
+      "last_used": "2025-09-03T20:10:37.793652",
+      "error_count": 0,
+      "success_rate": 1.0
+    },
+    "am_eric": {
+      "total_requests": 2,
+      "total_duration": 3.95,
+      "average_request_length": 1.975,
+      "last_used": "2025-09-01T12:30:36.014497",
+      "error_count": 0,
+      "success_rate": 1.0
+    },
+    "af_nova": {
+      "total_requests": 4,
+      "total_duration": 6.8,
+      "average_request_length": 1.7,
+      "last_used": "2025-09-03T20:10:24.183704",
+      "error_count": 0,
+      "success_rate": 1.0
+    },
+    "af_sarah": {
+      "total_requests": 2,
+      "total_duration": 2.925,
+      "average_request_length": 1.4625,
+      "last_used": "2025-09-03T20:10:31.607582",
+      "error_count": 0,
+      "success_rate": 1.0
+    },
+    "af_river": {
+      "total_requests": 2,
+      "total_duration": 2.025,
+      "average_request_length": 1.0125,
+      "last_used": "2025-09-03T20:10:34.711575",
+      "error_count": 0,
+      "success_rate": 1.0
     }
   },
-  "last_updated": "2025-08-30T12:50:31.238625"
+  "last_updated": "2025-09-03T20:10:44.118590"
 }

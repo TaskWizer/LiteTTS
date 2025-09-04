@@ -14,13 +14,13 @@ logger = logging.getLogger(__name__)
 class PronunciationRulesProcessor:
     """Processor for applying pronunciation rules to maintain natural speech"""
     
-    def __init__(self, config_path: str = "config.json"):
+    def __init__(self, config_path: str = "config/settings.json"):
         self.config = self._load_config(config_path)
         self.contraction_rules = self._load_contraction_rules()
         self.enabled = self._is_enabled()
-        
+
     def _load_config(self, config_path: str) -> Dict:
-        """Load configuration from config.json"""
+        """Load configuration from config/settings.json"""
         try:
             with open(config_path, 'r') as f:
                 return json.load(f)
@@ -213,7 +213,7 @@ class PronunciationRulesProcessor:
         
         return validation
 
-def create_pronunciation_rules_processor(config_path: str = "config.json") -> PronunciationRulesProcessor:
+def create_pronunciation_rules_processor(config_path: str = "config/settings.json") -> PronunciationRulesProcessor:
     """Factory function to create a pronunciation rules processor"""
     return PronunciationRulesProcessor(config_path)
 

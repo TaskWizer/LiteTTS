@@ -31,13 +31,47 @@ class ConfigManager:
             if Path("config/settings.json").exists():
                 config_path = "config/settings.json"
             else:
-                config_path = "config.json"  # Fallback for backward compatibility
+                config_path = "config.json"  # Fallback for backward compatibility (deprecated)
 
         self.config_path = config_path
         self.user_config = self._load_user_config()
         self.internal_config = get_internal_config()
         self.merged_config = self._merge_configs()
-        
+
+        # Add missing attributes for backward compatibility
+        self._initialize_config_attributes()
+
+    def _initialize_config_attributes(self):
+        """Initialize configuration attributes for backward compatibility"""
+        from types import SimpleNamespace
+
+        # Create paths attribute with defaults
+        paths_config = self.merged_config.get("paths", {})
+        self.paths = SimpleNamespace()
+        self.paths.models_dir = paths_config.get("models_dir", "LiteTTS/models")
+        self.paths.voices_dir = paths_config.get("voices_dir", "LiteTTS/voices")
+        self.paths.cache_dir = paths_config.get("cache_dir", "cache")
+        self.paths.logs_dir = paths_config.get("logs_dir", "docs/logs")
+        self.paths.temp_dir = paths_config.get("temp_dir", "LiteTTS/temp")
+
+        # Create repository attribute with defaults
+        repository_config = self.merged_config.get("repository", {})
+        self.repository = SimpleNamespace()
+        self.repository.huggingface_repo = repository_config.get("huggingface_repo", "onnx-community/Kokoro-82M-v1.0-ONNX")
+        self.repository.models_path = repository_config.get("models_path", "onnx")
+        self.repository.voices_path = repository_config.get("voices_path", "voices")
+        self.repository.base_url = repository_config.get("base_url", "https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main")
+        self.repository.model_branch = repository_config.get("model_branch", "main")
+        self.repository.cache_dir = repository_config.get("cache_dir", "models")
+
+        # Create model attribute with defaults
+        model_config = self.merged_config.get("model", {})
+        self.model = SimpleNamespace()
+        self.model.default_variant = model_config.get("default_variant", "model_q4.onnx")
+        self.model.available_variants = model_config.get("available_variants", ["model_q4.onnx"])
+        self.model.auto_discovery = model_config.get("auto_discovery", True)
+        self.model.cache_models = model_config.get("cache_models", True)
+
     def _load_user_config(self) -> Dict[str, Any]:
         """Load user-facing configuration from config.json"""
         try:

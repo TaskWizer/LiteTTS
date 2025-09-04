@@ -60,8 +60,16 @@ def ensure_model_files() -> bool:
     success = True
 
     try:
-        # Initialize model manager with configuration
-        model_manager = ModelManager(config.paths.models_dir, config)
+        # Initialize model manager with configuration - defensive null checks
+        if config.paths is None:
+            logger.error("❌ Configuration paths not initialized - using defaults")
+            models_dir = 'LiteTTS/models'
+            voices_dir = 'LiteTTS/voices'
+        else:
+            models_dir = getattr(config.paths, 'models_dir', 'LiteTTS/models')
+            voices_dir = getattr(config.paths, 'voices_dir', 'LiteTTS/voices')
+
+        model_manager = ModelManager(models_dir, config)
 
         # Get the configured model path
         model_path = model_manager.get_model_path(config.model.default_variant)
@@ -79,8 +87,8 @@ def ensure_model_files() -> bool:
             logger.info(f"✓ Model already exists: {config.model.default_variant}")
 
         # Ensure voices directory exists and download essential voices
-        voices_dir = Path(config.paths.voices_dir)
-        voices_dir.mkdir(parents=True, exist_ok=True)
+        voices_dir_path = Path(voices_dir)
+        voices_dir_path.mkdir(parents=True, exist_ok=True)
 
         # Download ALL voices using the simplified voice downloader
         voice_downloader = VoiceDownloader(str(voices_dir), config)

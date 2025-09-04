@@ -33,10 +33,13 @@ class TextNormalizer:
     def _load_config(self):
         """Load configuration settings for text normalization"""
         try:
-            # First try to load from main config.json
+            # First try to load from main settings.json
             import json
             from pathlib import Path
-            config_path = Path("config.json")
+            config_path = Path("config/settings.json")
+            if not config_path.exists():
+                # Fallback to deprecated config.json
+                config_path = Path("config.json")
             if config_path.exists():
                 with open(config_path) as f:
                     main_config = json.load(f)

@@ -39,7 +39,7 @@ class ConfigReloadHandler(FileSystemEventHandler):
         file_path = Path(event.src_path)
         
         # Only reload for configuration files
-        if file_path.suffix in ['.json'] and file_path.name in ['config.json', 'override.json']:
+        if file_path.suffix in ['.json'] and file_path.name in ['config.json', 'override.json', 'settings.json']:
             current_time = time.time()
             
             # Debounce rapid file changes

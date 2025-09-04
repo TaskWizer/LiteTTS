@@ -15,9 +15,11 @@
       "model_q8f16.onnx",
       "model_quantized.onnx",
       "model_uint8.onnx",
-      "model_uint8f16.onnx"
+      "model_uint8f16.onnx",
+      "Kokoro_espeak_Q4.gguf"
     ],
-    "performance_mode": "balanced"
+    "performance_mode": "balanced",
+    "enable_backend_fallback": true
   },
   "repository": {
     "huggingface_repo": "TaskWizer/LiteTTS",
@@ -69,17 +71,18 @@
   },
   "tts": {
     "device": "cpu",
-    "model_path": "LiteTTS/models/model_q4.onnx",
+    "model_path": null,
     "voices_path": "LiteTTS/voices",
     "default_voice": "af_heart",
     "sample_rate": 24000,
-    "chunk_size": 100
+    "chunk_size": 100,
+    "ttscpp_executable": "LiteTTS/backends/TTS.cpp/build/bin/tts-cli"
   },
   "server": {
     "port": 8354,
     "host": "0.0.0.0",
     "environment": "production",
-    "workers": 1,
+    "workers": 4,
     "max_port_attempts": 5,
     "cors_origins": [
       "http://localhost:3000",
@@ -91,7 +94,9 @@
   "performance": {
     "cache_enabled": true,
     "preload_models": true,
-    "max_text_length": 8192,
+    "max_text_length": 8000,
+    "chunk_size": 200,
+    "timeout_seconds": 30,
     "max_retry_attempts": 3,
     "retry_delay_seconds": 0.1,
     "concurrent_requests": 5,
@@ -236,10 +241,10 @@
   },
   "beta_features": {
     "enabled": false,
-    "description": "Experimental features that may improve performance but require testing",
+    "description": "Experimental features that may improve performance but require testing - DISABLED BY DEFAULT for stability",
     "time_stretching_optimization": {
       "enabled": false,
-      "description": "Reduces generation time by synthesizing at faster speed then correcting duration",
+      "description": "DISABLED: Reduces generation time by synthesizing at faster speed then correcting duration - causes audio quality issues",
       "generation_speed_boost": 30,
       "correction_quality": "medium",
       "max_speed_boost": 100,
@@ -264,6 +269,30 @@
       "comprehensive_test_suite": true,
       "phonetic_mapping_system": true,
       "emotional_prosodic_engine": true
+    },
+    "simd_optimizer": {
+      "enabled": false,
+      "description": "DISABLED: SIMD optimizations for performance - causes audio quality issues",
+      "auto_detect_capabilities": false,
+      "fallback_to_standard": true
+    },
+    "system_optimizer": {
+      "enabled": false,
+      "description": "DISABLED: System-level optimizations - causes audio quality issues",
+      "cpu_affinity": false,
+      "memory_optimization": false,
+      "thread_optimization": false
+    },
+    "time_stretcher": {
+      "enabled": false,
+      "description": "DISABLED: Time stretching optimization - causes audio quality issues",
+      "generation_speed_boost": 30,
+      "correction_quality": "medium",
+      "max_speed_boost": 100,
+      "min_speed_boost": 10,
+      "auto_enable_for_long_text": 50,
+      "quality_fallback": true,
+      "benchmark_mode": false
     },
     "phonetic_processing": {
       "enabled": true,
@@ -329,6 +358,7 @@
   "cache": {
     "enabled": true,
     "auto_optimize": true,
+    "max_size": 200,
     "max_size_mb": 1024,
     "ttl_seconds": 7200,
     "cleanup_interval": 180,

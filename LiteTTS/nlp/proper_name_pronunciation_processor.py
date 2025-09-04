@@ -14,15 +14,15 @@ logger = logging.getLogger(__name__)
 class ProperNamePronunciationProcessor:
     """Processor for fixing specific proper name and word pronunciation issues"""
     
-    def __init__(self, config_path: str = "config.json"):
+    def __init__(self, config_path: str = "config/settings.json"):
         self.config = self._load_config(config_path)
         self.proper_name_fixes = self._load_proper_name_fixes()
         self.word_pronunciation_fixes = self._load_word_pronunciation_fixes()
         self.context_sensitive_fixes = self._load_context_sensitive_fixes()
         self.enabled = self._is_enabled()
-        
+
     def _load_config(self, config_path: str) -> Dict:
-        """Load configuration from config.json"""
+        """Load configuration from config/settings.json"""
         try:
             with open(config_path, 'r') as f:
                 return json.load(f)

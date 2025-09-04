@@ -18,14 +18,16 @@ try:
     LIBROSA_AVAILABLE = True
 except ImportError:
     LIBROSA_AVAILABLE = False
-    logging.warning("librosa not available - time-stretching will use basic implementation")
+    # Only log at debug level to reduce console noise
+    logging.getLogger(__name__).debug("librosa not available - time-stretching will use basic implementation")
 
 try:
     import pyrubberband as pyrb
     PYRUBBERBAND_AVAILABLE = True
 except ImportError:
     PYRUBBERBAND_AVAILABLE = False
-    logging.warning("pyrubberband not available - using librosa for time-stretching")
+    # Only log at debug level to reduce console noise
+    logging.getLogger(__name__).debug("pyrubberband not available - using basic fallback implementation")
 
 from .audio_segment import AudioSegment
 

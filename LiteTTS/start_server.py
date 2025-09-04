@@ -119,12 +119,14 @@ def main():
         logger.info("📋 Configuration Status:")
         config_sources = []
 
-        # Check base config
-        if Path("config.json").exists():
-            config_sources.append("config.json")
-            with open("config.json", 'r') as f:
+        # Check settings config
+        if Path("config/settings.json").exists():
+            config_sources.append("config/settings.json")
+            with open("config/settings.json", 'r') as f:
                 base_config = json.load(f)
             logger.info(f"   📄 Base config: port={base_config.get('server', {}).get('port', 'unknown')}")
+        else:
+            logger.warning("config/settings.json not found - using defaults")
 
         # Check override config
         override_path = Path("override.json")
@@ -165,7 +167,7 @@ def main():
         elif override_path.exists():
             logger.info(f"   🎯 Using override.json port: {port}")
         else:
-            logger.info(f"   🎯 Using config.json port: {port}")
+            logger.info(f"   🎯 Using config/settings.json port: {port}")
 
         # Find available port if not explicitly specified
         if args.port is None:

@@ -66,8 +66,8 @@ def get_voice_manager(voices_dir: str = None) -> Optional['DynamicVoiceManager']
         if voices_dir is None:
             try:
                 from ..config import config
-                voices_dir = config.paths.voices_dir
-            except ImportError:
+                voices_dir = getattr(config.paths, 'voices_dir', 'LiteTTS/voices') if config.paths else 'LiteTTS/voices'
+            except (ImportError, AttributeError):
                 voices_dir = "LiteTTS/voices"  # Fallback
 
         _voice_manager = DynamicVoiceManager(voices_dir)

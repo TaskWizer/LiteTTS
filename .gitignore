@@ -21,9 +21,8 @@
 *.log.*
 *.m4a
 *.model
- .mp3
-*
-.ogg
+#*.mp3
+*.ogg
 *.old
 .opus
 *.pem

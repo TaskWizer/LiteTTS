@@ -7,12 +7,18 @@ import torch
 import onnxruntime as ort
 import numpy as np
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Union
+from typing import Dict, List, Optional, Any, Union, Tuple
 import logging
 import threading
 import queue
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+# Import new inference backend system
+from ..inference import (
+    BaseInferenceBackend, InferenceConfig, ModelInputs, ModelOutputs,
+    InferenceBackendFactory
+)
 
 from ..models import VoiceEmbedding, AudioSegment, TTSConfiguration
 from ..voice.manager import VoiceManager
@@ -30,10 +36,26 @@ class KokoroTTSEngine:
     """Main TTS engine using Kokoro model with ONNX runtime"""
     
     def __init__(self, config: TTSConfiguration):
+        logger.info("🚀 Initializing KokoroTTSEngine")
+
         self.config = config
         self.device = config.device
         self.sample_rate = config.sample_rate
-        
+
+        # Debug: Log the received configuration
+        logger.info(f"📋 Received TTS Configuration:")
+        logger.info(f"   - Model path: '{getattr(config, 'model_path', 'NOT_SET')}'")
+        logger.info(f"   - Device: {self.device}")
+        logger.info(f"   - Sample rate: {self.sample_rate}")
+        logger.info(f"   - Voices path: '{getattr(config, 'voices_path', 'NOT_SET')}'")
+
+        # Critical check: Verify model path is not empty
+        if not hasattr(config, 'model_path') or not config.model_path or config.model_path == ".":
+            logger.error(f"❌ CRITICAL: Invalid model path in TTS config: '{getattr(config, 'model_path', 'NOT_SET')}'")
+            logger.error("   This will cause TTS engine initialization to fail!")
+        else:
+            logger.info(f"✅ Model path looks valid: {config.model_path}")
+
         # Initialize components
         self.voice_manager = VoiceManager()
         self.voice_blender = VoiceBlender(self.voice_manager)
@@ -41,15 +63,15 @@ class KokoroTTSEngine:
 
         # Initialize chunked generation components
         self._initialize_chunked_generation()
-        
-        # ONNX session
-        self.onnx_session = None
+
+        # Inference backend
+        self.inference_backend = None
         self.tokenizer = None
-        
+
         # Model state
         self.model_loaded = False
         self.available_voices = []
-        
+
         # Initialize the engine
         self._initialize_engine()
     
@@ -106,47 +128,165 @@ class KokoroTTSEngine:
         logger.info("Initializing Kokoro TTS engine")
         
         try:
-            # Load ONNX model
-            self._load_onnx_model()
-            
+            # Load inference backend
+            self._load_inference_backend()
+
             # Load tokenizer
             self._load_tokenizer()
-            
+
             # Setup voice system
             self._setup_voice_system()
-            
+
             self.model_loaded = True
             logger.info("Kokoro TTS engine initialized successfully")
-            
+
         except Exception as e:
             logger.error(f"Failed to initialize TTS engine: {e}")
             self.model_loaded = False
     
-    def _load_onnx_model(self):
-        """Load the ONNX model"""
+    def _load_inference_backend(self):
+        """Load the appropriate inference backend"""
+        logger.info("🔧 Loading inference backend...")
+
+        # Debug: Log the model path from config
+        logger.info(f"📍 Model path from config: '{self.config.model_path}'")
+
+        # Critical check: Verify model path is not empty before creating Path object
+        if not self.config.model_path or self.config.model_path == ".":
+            logger.error(f"❌ CRITICAL: Empty or invalid model path: '{self.config.model_path}'")
+            raise ValueError(f"Invalid model path: '{self.config.model_path}'. Cannot initialize TTS engine.")
+
         model_path = Path(self.config.model_path)
-        
+        logger.info(f"📁 Resolved model path object: {model_path.absolute()}")
+
         if not model_path.exists():
-            raise FileNotFoundError(f"ONNX model not found: {model_path}")
-        
-        # Configure ONNX runtime providers
+            logger.error(f"❌ Model file not found: {model_path.absolute()}")
+            raise FileNotFoundError(f"Model not found: {model_path}")
+        else:
+            logger.info(f"✅ Model file exists: {model_path.absolute()}")
+
+        # Determine backend type
+        logger.info("🔍 Determining backend type...")
+        backend_type = self._determine_backend_type()
+        logger.info(f"🎯 Selected backend type: {backend_type}")
+
+        # Create inference configuration
+        logger.info("⚙️ Creating inference configuration...")
+        inference_config = InferenceConfig(
+            backend_type=backend_type,
+            model_path=str(model_path),
+            device=self.device,
+            providers=self._get_providers() if backend_type == "onnx" else None,
+            session_options=self._get_session_options() if backend_type == "onnx" else None,
+            backend_specific_options=self._get_backend_specific_options(backend_type)
+        )
+        logger.info(f"✅ Inference config created with model path: {inference_config.model_path}")
+
+        # Create backend without any fallback mechanisms
+        try:
+            logger.info(f"Creating {backend_type} backend without fallback mechanisms")
+            self.inference_backend = InferenceBackendFactory.create_backend_strict(inference_config)
+
+            # Load the model - fail explicitly if this doesn't work
+            if not self.inference_backend.load_model():
+                raise RuntimeError(f"Failed to load model with {backend_type} backend. "
+                                 f"No fallback mechanisms available - fix the underlying issue.")
+
+            logger.info(f"Successfully created and loaded {backend_type} backend")
+
+        except Exception as e:
+            logger.error(f"Failed to create {backend_type} backend: {e}")
+            logger.error("No fallback mechanisms available. The system requires the specified backend to work.")
+            # Set inference_backend to None to ensure proper state tracking
+            self.inference_backend = None
+            raise
+
+        # Validate that the backend is properly loaded
+        if not self.inference_backend or not self.inference_backend.is_loaded:
+            raise RuntimeError(f"Backend {backend_type} failed to load properly")
+
+        logger.info(f"Loaded {self.inference_backend.get_backend_type()} backend for model: {model_path}")
+        logger.info(f"Backend info: {self.inference_backend.get_performance_info()}")
+
+    def _determine_backend_type(self) -> str:
+        """Determine which inference backend to use"""
+        # Check model configuration first (from ModelConfig)
+        if hasattr(self.config, 'model_config') and self.config.model_config:
+            model_config = self.config.model_config
+            backend_pref_raw = getattr(model_config, 'inference_backend', 'auto')
+            # Handle None values by defaulting to 'auto'
+            backend_pref = (backend_pref_raw or 'auto').lower()
+
+            if backend_pref in ["onnx", "gguf"]:
+                return backend_pref
+            elif backend_pref == "auto":
+                # Auto-detect based on model file and preference
+                preferred_raw = getattr(model_config, 'preferred_backend', 'onnx')
+                preferred = preferred_raw or 'onnx'
+                return InferenceBackendFactory.auto_detect_backend(
+                    self.config.model_path, preferred
+                )
+
+        # Check legacy configuration preference
+        if hasattr(self.config, 'inference_backend') and self.config.inference_backend:
+            backend_pref = self.config.inference_backend.lower()
+
+            if backend_pref in ["onnx", "gguf"]:
+                return backend_pref
+            elif backend_pref == "auto":
+                # Auto-detect based on model file and preference
+                preferred_raw = getattr(self.config, 'preferred_backend', 'onnx')
+                preferred = preferred_raw or 'onnx'
+                return InferenceBackendFactory.auto_detect_backend(
+                    self.config.model_path, preferred
+                )
+
+        # Default auto-detection
+        return InferenceBackendFactory.auto_detect_backend(self.config.model_path)
+
+    def _get_providers(self) -> List[str]:
+        """Get ONNX providers based on device"""
         providers = []
         if self.device == "cuda" and "CUDAExecutionProvider" in ort.get_available_providers():
             providers.append("CUDAExecutionProvider")
         providers.append("CPUExecutionProvider")
-        
-        # Create ONNX session
-        session_options = ort.SessionOptions()
-        session_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
-        
-        self.onnx_session = ort.InferenceSession(
-            str(model_path),
-            sess_options=session_options,
-            providers=providers
-        )
-        
-        logger.info(f"Loaded ONNX model from {model_path}")
-        logger.info(f"Using providers: {self.onnx_session.get_providers()}")
+        return providers
+
+    def _get_session_options(self) -> Dict[str, Any]:
+        """Get ONNX session options"""
+        # Import here to avoid circular imports
+        try:
+            import onnxruntime as ort
+            return {
+                "graph_optimization_level": ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+            }
+        except ImportError:
+            # Fallback if onnxruntime is not available
+            return {}
+
+    def _get_backend_specific_options(self, backend_type: str) -> Dict[str, Any]:
+        """Get backend-specific configuration options"""
+        if backend_type == "gguf":
+            # Get GGUF configuration from model config first
+            if hasattr(self.config, 'model_config') and self.config.model_config:
+                model_config = self.config.model_config
+                if hasattr(model_config, 'gguf_config') and model_config.gguf_config:
+                    return model_config.gguf_config.copy()
+
+            # Fallback to legacy config
+            if hasattr(self.config, 'gguf_config') and self.config.gguf_config:
+                return self.config.gguf_config.copy()
+
+            # Default GGUF options
+            return {
+                "context_size": 2048,
+                "n_threads": None,
+                "use_gpu": self.device == "cuda",
+                "use_mmap": True,
+                "use_mlock": False
+            }
+        else:
+            return {}
     
     def _load_tokenizer(self):
         """Load the tokenizer"""
@@ -163,7 +303,7 @@ class KokoroTTSEngine:
             else:
                 # Use a simple character-based tokenizer as fallback
                 self.tokenizer = self._create_simple_tokenizer()
-                logger.warning("Using simple character-based tokenizer")
+                logger.info("Using simple character-based tokenizer (no external tokenizer file found)")
                 
         except Exception as e:
             logger.error(f"Failed to load tokenizer: {e}")
@@ -173,11 +313,15 @@ class KokoroTTSEngine:
         """Create a simple character-based tokenizer"""
         # Get character set from config if available
         from ..config import config
-        if hasattr(config, 'tokenizer'):
-            chars = config.tokenizer.character_set
-            pad_token_id = config.tokenizer.pad_token_id
-            unk_token_id = config.tokenizer.unk_token_id
-            tokenizer_type = config.tokenizer.type
+        if hasattr(config, 'tokenizer') and config.tokenizer:
+            chars = getattr(config.tokenizer, 'character_set', None)
+            pad_token_id = getattr(config.tokenizer, 'pad_token_id', 0)
+            unk_token_id = getattr(config.tokenizer, 'unk_token_id', 0)
+            tokenizer_type = getattr(config.tokenizer, 'type', 'character')
+
+            # If character_set is None or empty, use fallback
+            if not chars:
+                chars = " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?;:-'"
         else:
             # Fallback defaults
             chars = " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?;:-'"
@@ -198,18 +342,62 @@ class KokoroTTSEngine:
         }
     
     def _setup_voice_system(self):
-        """Setup the voice management system"""
-        # Ensure default voices are available
-        setup_results = self.voice_manager.setup_system(download_all=False)
-        
+        """Setup the voice management system - OPTIMIZED TO PREVENT REDUNDANT PROCESSING"""
+        # Check if voices have already been processed by the main app
+        # This prevents redundant download/validation cycles during TTS engine initialization
+        from pathlib import Path
+        voices_dir = Path(self.voice_manager.voices_path if hasattr(self.voice_manager, 'voices_path') else 'LiteTTS/voices')
+        bin_voices = list(voices_dir.glob("*.bin"))
+
+        if len(bin_voices) >= 5:
+            # Voices already available, skip redundant download and just validate/cache
+            logger.info("📥 Downloading ALL available voices (simplified voice management)")
+
+            # Skip download step, only validate and cache existing voices
+            setup_results = {
+                'download_results': {voice.stem: True for voice in bin_voices},  # Mark as already downloaded
+                'validation_results': {},
+                'cache_results': {},
+                'success': False
+            }
+
+            # Only validate existing voices (much faster than re-downloading)
+            setup_results['validation_results'] = self.voice_manager.validate_all_voices()
+
+            # Preload default voices into cache
+            default_voices = ['af_heart', 'am_puck']
+            setup_results['cache_results'] = self.voice_manager.preload_voices(default_voices)
+
+            # Check success based on validation and cache only
+            validation_success = any(
+                result.is_valid for result in setup_results['validation_results'].values()
+            )
+            cache_success = any(setup_results['cache_results'].values())
+            setup_results['success'] = validation_success and cache_success
+
+        else:
+            # Fallback: ensure default voices are available (should rarely happen)
+            logger.info("🔄 Setting up voice system (fallback mode)")
+            setup_results = self.voice_manager.setup_system(download_all=False)
+
         if not setup_results['success']:
             logger.warning("Voice system setup had issues, some voices may not be available")
-        
+
         # Get available voices
         self.available_voices = self.voice_manager.get_available_voices()
         logger.info(f"Available voices: {self.available_voices}")
     
-    def synthesize(self, text: str, voice: str, speed: float = 1.0, 
+    def create(self, text: str, voice: str, speed: float = 1.0, lang: str = "en-us") -> Tuple[np.ndarray, int]:
+        """
+        Create audio from text (compatibility method for old Kokoro API)
+
+        Returns:
+            Tuple of (audio_array, sample_rate) for compatibility with old Kokoro API
+        """
+        audio_segment = self.synthesize(text, voice, speed)
+        return audio_segment.audio_data, audio_segment.sample_rate
+
+    def synthesize(self, text: str, voice: str, speed: float = 1.0,
                   emotion: Optional[str] = None, emotion_strength: float = 1.0) -> AudioSegment:
         """Synthesize text to audio"""
         if not self.model_loaded:
@@ -229,14 +417,14 @@ class KokoroTTSEngine:
             # Tokenize text
             tokens = self._tokenize_text(text)
             
-            # Prepare inputs for ONNX model
-            model_inputs = self._prepare_model_inputs(tokens, voice_embedding, speed, emotion, emotion_strength)
-            
-            # Run inference
-            audio_data = self._run_inference(model_inputs)
-            
-            # Post-process audio
-            audio_segment = self._post_process_audio(audio_data, speed)
+            # Prepare inputs for inference backend
+            model_inputs = self._prepare_backend_inputs(tokens, voice_embedding, speed, emotion, emotion_strength, text)
+
+            # Run inference through backend
+            model_outputs = self.inference_backend.run_inference(model_inputs)
+
+            # Convert to AudioSegment
+            audio_segment = self._convert_to_audio_segment(model_outputs, speed)
             
             # Update voice usage statistics
             self.voice_manager.metadata_manager.update_voice_stats(
@@ -294,9 +482,9 @@ class KokoroTTSEngine:
             logger.debug(f"Tokenized '{text[:50]}...' to {len(tokens)} tokens (fallback)")
             return tokens
     
-    def _prepare_model_inputs(self, tokens: np.ndarray, voice_embedding: VoiceEmbedding,
-                            speed: float, emotion: Optional[str], emotion_strength: float) -> Dict[str, np.ndarray]:
-        """Prepare inputs for the ONNX model"""
+    def _prepare_backend_inputs(self, tokens: np.ndarray, voice_embedding: VoiceEmbedding,
+                              speed: float, emotion: Optional[str], emotion_strength: float, text: str = None) -> ModelInputs:
+        """Prepare inputs for the inference backend"""
         # Get voice embedding data
         voice_data = voice_embedding.embedding_data
 
@@ -323,61 +511,67 @@ class KokoroTTSEngine:
             else:
                 raise ValueError(f"Voice data too small: {voice_data.shape}, need at least 256 elements")
 
-        # Basic input preparation with correct input names for ONNX model
-        inputs = {
-            'input_ids': tokens.reshape(1, -1).astype(np.int64),  # Add batch dimension, ensure int64
-            'style': style_vector.astype(np.float32),  # Ensure float32
-            'speed': np.array([speed], dtype=np.float32)  # Shape: [1]
-        }
+        # Create standardized model inputs
+        additional_inputs = {}
+        if text is not None:
+            additional_inputs['text'] = text
+        if emotion is not None:
+            additional_inputs['emotion'] = emotion
+            additional_inputs['emotion_strength'] = emotion_strength
 
-        logger.debug(f"Model inputs prepared: input_ids shape={inputs['input_ids'].shape}, "
-                    f"style shape={inputs['style'].shape}, speed shape={inputs['speed'].shape}")
+        model_inputs = ModelInputs(
+            input_ids=tokens.reshape(1, -1).astype(np.int64),  # Add batch dimension, ensure int64
+            style=style_vector.astype(np.float32),  # Ensure float32
+            speed=np.array([speed], dtype=np.float32),  # Shape: [1]
+            additional_inputs=additional_inputs if additional_inputs else None
+        )
 
-        return inputs
+        logger.debug(f"Backend inputs prepared: input_ids shape={model_inputs.input_ids.shape}, "
+                    f"style shape={model_inputs.style.shape}, speed shape={model_inputs.speed.shape}")
+
+        return model_inputs
     
-    def _run_inference(self, model_inputs: Dict[str, np.ndarray]) -> np.ndarray:
-        """Run ONNX model inference"""
+    def _convert_to_audio_segment(self, model_outputs: ModelOutputs, speed: float) -> AudioSegment:
+        """Convert backend outputs to AudioSegment"""
         try:
-            # Get input names from the model
-            input_names = [input.name for input in self.onnx_session.get_inputs()]
-            logger.debug(f"Model expects inputs: {input_names}")
-            logger.debug(f"Provided inputs: {list(model_inputs.keys())}")
+            audio_data = model_outputs.audio
 
-            # Prepare inputs for ONNX session
-            onnx_inputs = {}
-            missing_inputs = []
+            # Apply speed adjustment if needed (simple time-stretching)
+            if speed != 1.0:
+                audio_data = self._apply_speed_adjustment(audio_data, speed)
 
-            for name in input_names:
-                if name in model_inputs:
-                    onnx_inputs[name] = model_inputs[name]
-                    logger.debug(f"Input '{name}' shape: {model_inputs[name].shape}, dtype: {model_inputs[name].dtype}")
-                else:
-                    missing_inputs.append(name)
-                    logger.warning(f"Missing required input: {name}")
+            # Final validation of audio data
+            if len(audio_data) == 0:
+                raise ValueError("Audio data is empty after processing")
 
-            if missing_inputs:
-                raise ValueError(f"Missing required model inputs: {missing_inputs}")
+            # Calculate duration
+            duration = len(audio_data) / model_outputs.sample_rate if len(audio_data) > 0 else 0.0
 
-            # Run inference
-            logger.debug("Running ONNX inference...")
-            outputs = self.onnx_session.run(None, onnx_inputs)
+            # Create audio segment
+            audio_segment = AudioSegment(
+                audio_data=audio_data,
+                sample_rate=model_outputs.sample_rate,
+                duration=duration,
+                format="wav",
+                metadata=model_outputs.metadata
+            )
 
-            # Check output
-            if not outputs or len(outputs) == 0:
-                raise RuntimeError("ONNX model returned no outputs")
+            # Basic audio validation
+            if len(audio_data) == 0:
+                logger.warning("Generated audio is empty")
+            elif model_outputs.sample_rate <= 0:
+                logger.warning("Invalid sample rate in generated audio")
+            else:
+                logger.debug(f"Audio generation successful: {len(audio_data)} samples, "
+                           f"{duration:.3f}s duration")
 
-            audio_output = outputs[0]
-            logger.debug(f"ONNX output shape: {audio_output.shape}, dtype: {audio_output.dtype}")
+            logger.debug(f"Audio conversion complete: {len(audio_data)} samples, "
+                        f"{len(audio_data)/model_outputs.sample_rate:.3f}s duration")
 
-            # Validate output
-            if audio_output.size == 0:
-                raise RuntimeError("ONNX model returned empty audio output")
-
-            return audio_output
+            return audio_segment
 
         except Exception as e:
-            logger.error(f"ONNX inference failed: {e}")
-            logger.error(f"Model inputs were: {[(k, v.shape, v.dtype) for k, v in model_inputs.items()]}")
+            logger.error(f"Audio conversion failed: {e}")
             raise
     
     def _post_process_audio(self, audio_data: np.ndarray, speed: float) -> AudioSegment:
@@ -593,16 +787,26 @@ class KokoroTTSEngine:
     
     def get_engine_info(self) -> Dict[str, Any]:
         """Get engine information"""
-        return {
+        base_info = {
             'model_loaded': self.model_loaded,
             'device': self.device,
             'sample_rate': self.sample_rate,
             'available_voices': self.available_voices,
             'voice_count': len(self.available_voices),
-            'onnx_providers': self.onnx_session.get_providers() if self.onnx_session else [],
             'tokenizer_type': self.tokenizer['type'] if self.tokenizer else None,
             'vocab_size': self.tokenizer['vocab_size'] if self.tokenizer else 0
         }
+
+        # Add backend-specific information
+        if self.inference_backend:
+            backend_info = self.inference_backend.get_performance_info()
+            base_info.update({
+                'backend_type': self.inference_backend.get_backend_type(),
+                'backend_info': backend_info,
+                'model_info': self.inference_backend.get_model_info()
+            })
+
+        return base_info
     
     def preload_voice(self, voice_name: str) -> bool:
         """Preload a voice into cache"""
@@ -952,13 +1156,13 @@ class KokoroTTSEngine:
     def cleanup(self):
         """Clean up engine resources"""
         logger.info("Cleaning up TTS engine")
-        
-        if self.onnx_session:
-            # ONNX sessions don't need explicit cleanup, but we can clear the reference
-            self.onnx_session = None
-        
+
+        if self.inference_backend:
+            self.inference_backend.cleanup()
+            self.inference_backend = None
+
         if self.voice_manager:
             self.voice_manager.cleanup_system()
-        
+
         self.model_loaded = False
         logger.info("TTS engine cleanup completed")

@@ -25,6 +25,8 @@ class ModelInfo:
     download_url: str
     variant_type: str  # e.g., "base", "fp16", "quantized"
     description: str = ""
+    backend_type: str = "onnx"  # "onnx", "gguf"
+    quantization_level: Optional[str] = None  # "Q4", "Q5", "Q8", "F16", etc.
 
 @dataclass
 class DownloadProgress:
@@ -42,29 +44,44 @@ class ModelManager:
         self.models_dir = Path(models_dir)
         self.models_dir.mkdir(parents=True, exist_ok=True)
         
-        # Configuration
+        # Configuration with defensive null checks
         self.config = config
-        if config:
-            self.hf_repo = config.repository.huggingface_repo
-            self.base_url = config.repository.base_url
-            self.models_path = config.repository.models_path
-            self.available_variants = config.model.available_variants
-            self.default_variant = config.model.default_variant
-            self.auto_discovery = config.model.auto_discovery
-            self.cache_models = config.model.cache_models
+        if config and hasattr(config, 'repository') and config.repository:
+            self.hf_repo = getattr(config.repository, 'huggingface_repo', 'onnx-community/Kokoro-82M-v1.0-ONNX')
+            self.base_url = getattr(config.repository, 'base_url', 'https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main')
+            self.models_path = getattr(config.repository, 'models_path', 'onnx')
         else:
-            # Fallback defaults
-            self.hf_repo = "onnx-community/Kokoro-82M-v1.0-ONNX"
-            self.base_url = "https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main"
-            self.models_path = "onnx"
+            logger.warning("❌ Repository configuration not available - using defaults")
+            self.hf_repo = 'onnx-community/Kokoro-82M-v1.0-ONNX'
+            self.base_url = 'https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main'
+            self.models_path = 'onnx'
+
+        if config and hasattr(config, 'model') and config.model:
+            self.available_variants = getattr(config.model, 'available_variants', ['model_q4.onnx'])
+            self.default_variant = getattr(config.model, 'default_variant', 'model_q4.onnx')
+            self.auto_discovery = getattr(config.model, 'auto_discovery', True)
+            self.cache_models = getattr(config.model, 'cache_models', True)
+        else:
+            logger.warning("❌ Model configuration not available - using defaults")
             self.available_variants = [
                 "model.onnx", "model_fp16.onnx", "model_q4.onnx",
                 "model_q4f16.onnx", "model_q8f16.onnx", "model_quantized.onnx",
                 "model_uint8.onnx", "model_uint8f16.onnx"
             ]
-            self.default_variant = "model_q4.onnx"  # Use Q4 quantized model for optimal balance
+            self.default_variant = "model_q4.onnx"
             self.auto_discovery = True
             self.cache_models = True
+
+        # GGUF repository configuration
+        self.gguf_repo = "mmwillet2/Kokoro_GGUF"
+        self.gguf_base_url = "https://huggingface.co/mmwillet2/Kokoro_GGUF/resolve/main"
+        self.gguf_variants = [
+            "Kokoro_espeak.gguf", "Kokoro_espeak_F16.gguf", "Kokoro_espeak_Q4.gguf",
+            "Kokoro_espeak_Q5.gguf", "Kokoro_espeak_Q8.gguf",
+            "Kokoro_no_espeak.gguf", "Kokoro_no_espeak_F16.gguf", "Kokoro_no_espeak_Q4.gguf",
+            "Kokoro_no_espeak_Q5.gguf", "Kokoro_no_espeak_Q8.gguf"
+        ]
+        self.default_gguf_variant = "Kokoro_espeak_Q4.gguf"  # Match Q4 quantization level
         
         # Cache for discovered models
         self.discovered_models: Dict[str, ModelInfo] = {}
@@ -77,6 +94,7 @@ class ModelManager:
         # Discover models if cache is empty or expired
         if self.auto_discovery and (not self.discovered_models or self._is_cache_expired()):
             self.discover_models_from_huggingface()
+            self.discover_gguf_models_from_huggingface()
     
     def _load_discovery_cache(self) -> None:
         """Load discovery cache from JSON file"""
@@ -182,7 +200,9 @@ class ModelManager:
                     sha=actual_hash,
                     download_url=f"{self.base_url}/{file_info['path']}",
                     variant_type=variant_type,
-                    description=self._get_variant_description(variant_type)
+                    description=self._get_variant_description(variant_type),
+                    backend_type="onnx",
+                    quantization_level=self._extract_quantization_level(model_name)
                 )
                 
                 self.discovered_models[model_name] = model_info
@@ -196,6 +216,62 @@ class ModelManager:
         
         except Exception as e:
             logger.error(f"Failed to discover models from HuggingFace: {e}")
+            return False
+
+    def discover_gguf_models_from_huggingface(self) -> bool:
+        """Discover GGUF model files from HuggingFace repository"""
+        logger.info(f"Discovering GGUF models from HuggingFace repository: {self.gguf_repo}")
+
+        try:
+            # Get repository tree from HuggingFace API
+            tree_url = f"https://huggingface.co/api/models/{self.gguf_repo}/tree/main"
+            response = requests.get(tree_url, timeout=30)
+            response.raise_for_status()
+
+            repo_data = response.json()
+            gguf_files = []
+
+            # Find all .gguf files
+            for item in repo_data:
+                if (item.get('type') == 'file' and
+                    item.get('path', '').endswith('.gguf')):
+                    gguf_files.append(item)
+
+            # Process discovered GGUF model files
+            for file_info in gguf_files:
+                model_name = Path(file_info['path']).name
+
+                # Determine variant type for GGUF
+                variant_type = self._determine_gguf_variant_type(model_name)
+
+                # For LFS files, use the actual file hash from lfs.oid
+                lfs_info = file_info.get('lfs', {})
+                actual_hash = lfs_info.get('oid', file_info.get('oid', ''))
+                actual_size = lfs_info.get('size', file_info.get('size', 0))
+
+                model_info = ModelInfo(
+                    name=model_name,
+                    path=file_info['path'],
+                    size=actual_size,
+                    sha=actual_hash,
+                    download_url=f"{self.gguf_base_url}/{file_info['path']}",
+                    variant_type=variant_type,
+                    description=self._get_gguf_variant_description(variant_type, model_name),
+                    backend_type="gguf",
+                    quantization_level=self._extract_gguf_quantization_level(model_name)
+                )
+
+                self.discovered_models[model_name] = model_info
+
+            logger.info(f"Discovered {len(gguf_files)} GGUF model files from HuggingFace")
+
+            # Save to cache
+            if self.cache_models:
+                self._save_discovery_cache()
+            return True
+
+        except Exception as e:
+            logger.error(f"Failed to discover GGUF models from HuggingFace: {e}")
             return False
     
     def _determine_variant_type(self, model_name: str) -> str:
@@ -220,6 +296,61 @@ class ModelManager:
             return "base"
         else:
             return "unknown"
+
+    def _determine_gguf_variant_type(self, model_name: str) -> str:
+        """Determine the variant type from GGUF model filename"""
+        name_lower = model_name.lower()
+
+        if "f16" in name_lower:
+            return "f16"
+        elif "q4" in name_lower:
+            return "q4"
+        elif "q5" in name_lower:
+            return "q5"
+        elif "q8" in name_lower:
+            return "q8"
+        elif "espeak" in name_lower and "no_espeak" not in name_lower:
+            return "espeak_base"
+        elif "no_espeak" in name_lower:
+            return "no_espeak_base"
+        else:
+            return "gguf_unknown"
+
+    def _extract_quantization_level(self, model_name: str) -> Optional[str]:
+        """Extract quantization level from ONNX model filename"""
+        name_lower = model_name.lower()
+
+        if "q4f16" in name_lower:
+            return "Q4F16"
+        elif "q4" in name_lower:
+            return "Q4"
+        elif "q8f16" in name_lower:
+            return "Q8F16"
+        elif "uint8f16" in name_lower:
+            return "UINT8F16"
+        elif "uint8" in name_lower:
+            return "UINT8"
+        elif "fp16" in name_lower:
+            return "FP16"
+        elif "quantized" in name_lower:
+            return "QUANTIZED"
+        else:
+            return None
+
+    def _extract_gguf_quantization_level(self, model_name: str) -> Optional[str]:
+        """Extract quantization level from GGUF model filename"""
+        name_lower = model_name.lower()
+
+        if "_f16" in name_lower:
+            return "F16"
+        elif "_q4" in name_lower:
+            return "Q4_0"
+        elif "_q5" in name_lower:
+            return "Q5_0"
+        elif "_q8" in name_lower:
+            return "Q8_0"
+        else:
+            return "FP32"  # Base model without quantization suffix
     
     def _get_variant_description(self, variant_type: str) -> str:
         """Get description for variant type"""
@@ -235,6 +366,30 @@ class ModelManager:
             "unknown": "Unknown variant type"
         }
         return descriptions.get(variant_type, "Unknown variant type")
+
+    def _get_gguf_variant_description(self, variant_type: str, model_name: str) -> str:
+        """Get description for GGUF variant type"""
+        descriptions = {
+            "espeak_base": "Full precision with eSpeak phonemization",
+            "no_espeak_base": "Full precision with native phonemization",
+            "f16": "16-bit float precision",
+            "q4": "4-bit quantization (Q4_0)",
+            "q5": "5-bit quantization (Q5_0)",
+            "q8": "8-bit quantization (Q8_0)",
+            "gguf_unknown": "GGUF format with unknown quantization"
+        }
+
+        base_desc = descriptions.get(variant_type, "GGUF format")
+
+        # Add phonemization info
+        if "espeak" in model_name.lower() and "no_espeak" not in model_name.lower():
+            phoneme_info = " (eSpeak compatible)"
+        elif "no_espeak" in model_name.lower():
+            phoneme_info = " (native phonemization)"
+        else:
+            phoneme_info = ""
+
+        return base_desc + phoneme_info
     
     def get_available_models(self) -> List[str]:
         """Get list of all available model names"""

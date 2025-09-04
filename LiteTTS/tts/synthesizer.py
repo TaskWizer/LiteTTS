@@ -37,10 +37,12 @@ class TTSSynthesizer:
             from ..config import config as global_config
             config_dict = global_config.to_dict() if hasattr(global_config, 'to_dict') else {}
         except ImportError:
-            # Fallback to loading config.json directly
+            # Fallback to loading config files directly
             import json
             try:
-                with open('config.json', 'r') as f:
+                # Try settings.json first, then config.json
+                config_path = 'config/settings.json' if Path('config/settings.json').exists() else 'config.json'
+                with open(config_path, 'r') as f:
                     config_dict = json.load(f)
             except Exception:
                 config_dict = {}
