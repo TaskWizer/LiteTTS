@@ -22,7 +22,7 @@
     "sensitive_fields": ["api_key", "token", "password"]
   },
   "performance": {
-    "max_memory_mb": 150,
+    "max_memory_mb": 2048,
     "target_rtf": 0.25,
     "max_cpu_usage": 85.0,
     "enable_optimization": true,

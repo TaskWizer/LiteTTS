@@ -196,14 +196,126 @@ class LiteTTSApplication:
         if self.model:
             from LiteTTS.cache.preloader import IntelligentPreloader, CacheWarmingConfig
             preloader_config = CacheWarmingConfig(
-                primary_voices=["af_heart", "am_puck"],
+                primary_voices=["af_heart"],  # OPTIMIZED: Single voice for fastest startup
                 warm_on_startup=True,  # ENABLED: Warm cache on startup to eliminate cold start latency
                 warm_during_idle=True,  # ENABLED: Continue warming during idle periods
-                idle_threshold_seconds=30.0
+                idle_threshold_seconds=2.0,  # OPTIMIZED: Start background warming after 2s
+                max_concurrent_warming=4,  # OPTIMIZED: Increased parallelism
+                warming_batch_size=3,  # OPTIMIZED: Smaller batches for faster processing
+                startup_cache_limit=4,  # OPTIMIZED: Limit startup cache entries
+                enable_parallel_startup_warming=True,  # OPTIMIZED: Enable parallel warming
+                startup_timeout_seconds=2.0,  # OPTIMIZED: 2s timeout for startup warming
+                background_warming_enabled=True  # OPTIMIZED: Enable background warming
             )
             self.preloader = IntelligentPreloader(self, preloader_config)
             self.preloader.start()
+
+            # IMMEDIATE critical cache warming for fastest startup
+            self.logger.info("🔥 Starting immediate critical cache warming...")
+            cache_warming_success = self.preloader.warm_critical_cache_immediately()
+            if cache_warming_success:
+                self.logger.info("✅ Critical cache warming completed successfully")
+            else:
+                self.logger.warning("⚠️ Critical cache warming incomplete - some entries may be slower")
+
             self.logger.info("🚀 Intelligent preloader started")
+
+        # Initialize synthesis optimizer for consistent RTF performance
+        self.logger.info("🎯 Initializing synthesis performance optimizer...")
+        try:
+            from LiteTTS.performance.synthesis_optimizer import initialize_synthesis_optimizer, SynthesisPerformanceConfig
+
+            # Configure synthesis optimizer for optimal RTF performance
+            synthesis_config = SynthesisPerformanceConfig(
+                target_rtf=0.5,  # Target RTF < 0.5
+                critical_rtf_threshold=1.0,  # Alert if RTF > 1.0
+                enable_fast_path=True,  # Enable fast path for short text
+                fast_path_text_length=50,  # Fast path for text <= 50 chars
+                enable_pipeline_optimization=True,  # Enable pipeline optimization
+                enable_rtf_monitoring=True,  # Enable RTF monitoring
+                skip_unnecessary_processing=True,  # Skip processing for simple requests
+                use_cached_voice_embeddings=True,  # Cache voice embeddings
+                optimize_audio_processing=True,  # Optimize audio processing
+                enable_parallel_processing=True,  # Enable parallel processing
+                synthesis_timeout=10.0,  # 10s timeout for synthesis
+                fast_path_timeout=2.0  # 2s timeout for fast path
+            )
+
+            initialize_synthesis_optimizer(synthesis_config)
+            self.logger.info("✅ Synthesis optimizer initialized for consistent RTF performance")
+
+        except Exception as e:
+            self.logger.error(f"❌ Synthesis optimizer initialization failed: {e}")
+            self.logger.info("Continuing without synthesis optimization...")
+
+        # Initialize worker manager for stable Uvicorn processes
+        self.logger.info("👷 Initializing worker manager for process stability...")
+        try:
+            from LiteTTS.server.worker_manager import initialize_worker_manager, WorkerConfig
+
+            # Configure worker manager for stability
+            worker_config = WorkerConfig(
+                max_workers=4,  # Reasonable default
+                worker_timeout=30.0,
+                worker_memory_limit_mb=2048,  # 2GB per worker
+                worker_cpu_limit_percent=90.0,
+                health_check_interval=10.0,
+                memory_check_interval=5.0,
+                restart_threshold_failures=3,
+                graceful_shutdown_timeout=30.0,
+                force_shutdown_timeout=10.0,
+                enable_memory_monitoring=True,
+                enable_cpu_monitoring=True,
+                enable_auto_restart=True,
+                uvicorn_backlog=2048,
+                uvicorn_limit_concurrency=1000,
+                uvicorn_limit_max_requests=10000,
+                uvicorn_timeout_keep_alive=5,
+                uvicorn_timeout_graceful_shutdown=30
+            )
+
+            worker_manager = initialize_worker_manager(worker_config)
+            worker_manager.apply_worker_environment_variables()
+            worker_manager.start_monitoring()
+
+            self.logger.info("✅ Worker manager initialized for process stability")
+
+        except Exception as e:
+            self.logger.error(f"❌ Worker manager initialization failed: {e}")
+            self.logger.info("Continuing without worker management...")
+
+        # Initialize advanced memory optimization
+        self.logger.info("🧠 Initializing advanced memory optimization...")
+        try:
+            from LiteTTS.performance.memory_optimization import MemoryOptimizer
+
+            # Create memory optimizer with realistic target
+            memory_optimizer = MemoryOptimizer()
+
+            # Determine target memory based on environment
+            env_memory_limit = int(os.getenv("MAX_MEMORY_MB", "1024"))
+            target_memory = min(env_memory_limit, 2048)  # Cap at 2GB for safety
+
+            # Run comprehensive memory optimization
+            memory_results = memory_optimizer.run_comprehensive_optimization(target_memory)
+
+            if memory_results.get("success", False):
+                baseline_mb = memory_results.get("baseline_memory_mb", 0)
+                final_mb = memory_results.get("final_memory_mb", 0)
+                self.logger.info(f"✅ Memory optimization completed: {baseline_mb:.1f}MB → {final_mb:.1f}MB")
+
+                # Log optimization details
+                config = memory_results.get("config", {})
+                if config:
+                    self.logger.info(f"   Cache limit: {config.get('cache_size_limit_mb', 0)}MB")
+                    self.logger.info(f"   Aggressive GC: {config.get('enable_aggressive_gc', False)}")
+                    self.logger.info(f"   Memory monitoring: {config.get('memory_monitoring_interval', 0)}s interval")
+            else:
+                self.logger.warning(f"⚠️ Memory optimization incomplete: {memory_results.get('error', 'unknown error')}")
+
+        except Exception as e:
+            self.logger.error(f"❌ Memory optimization failed: {e}")
+            self.logger.info("Continuing without advanced memory optimization...")
 
         # Run comprehensive performance optimization
         self.logger.info("⚡ Running performance optimization...")
@@ -584,9 +696,16 @@ class LiteTTSApplication:
                                 env_config = get_environment_config()
                                 env_cpu_config = env_config.get_dynamic_cpu_allocation_config()
 
-                                # Merge environment config with file config
+                                # Debug logging for environment configuration
+                                self.logger.info(f"🔍 Environment CPU config loaded: {env_cpu_config}")
+
+                                # Merge environment config with file config (environment takes priority)
                                 cpu_config.update(env_cpu_config)
-                                self.logger.info(f"🐳 Using environment CPU target: {cpu_config.get('cpu_target', 75.0)}%")
+
+                                # Log final merged configuration
+                                self.logger.info(f"🐳 Final CPU config: target={cpu_config.get('cpu_target', 75.0)}%, "
+                                               f"aggressive={cpu_config.get('aggressive_mode', True)}, "
+                                               f"thermal_protection={cpu_config.get('thermal_protection', True)}")
                             except Exception as e:
                                 self.logger.warning(f"Failed to load environment CPU config: {e}")
 
@@ -594,7 +713,7 @@ class LiteTTSApplication:
                             enabled=cpu_config.get("enabled", True),
                             min_cores=cpu_config.get("min_cores", 1),
                             max_cores=cpu_config.get("max_cores"),
-                            aggressive_mode=cpu_config.get("aggressive_mode", False),
+                            aggressive_mode=cpu_config.get("aggressive_mode", True),  # FIXED: Default to True
                             thermal_protection=cpu_config.get("thermal_protection", True),
                             onnx_integration=cpu_config.get("onnx_integration", True),
                             update_environment=cpu_config.get("update_environment", True)
@@ -1560,15 +1679,40 @@ with open("hello.mp3", "wb") as f:
 
         @self.v1_router.get("/health")
         async def health_check_v1():
-            """Service health check (v1 API compatibility)"""
-            return {
+            """Service health check (v1 API compatibility) with worker status"""
+            health_data = {
                 "status": "healthy",
                 "model": self.config.tts.model_path,
                 "model_loaded": self.model is not None,
                 "voices_available": len(self.available_voices),
                 "available_voices": self.available_voices,
-                "version": self.config.model.version
+                "version": self.config.model.version,
+                "timestamp": datetime.now().isoformat()
             }
+
+            # Add worker statistics if available
+            try:
+                from LiteTTS.server.worker_manager import get_worker_manager
+                worker_manager = get_worker_manager()
+                worker_stats = worker_manager.get_worker_stats()
+
+                health_data["workers"] = {
+                    "current_workers": worker_stats.get("current_workers", 0),
+                    "total_restarted": worker_stats.get("total_workers_restarted", 0),
+                    "total_failed": worker_stats.get("total_workers_failed", 0),
+                    "memory_mb": round(worker_stats.get("process_memory_mb", 0), 1),
+                    "cpu_percent": round(worker_stats.get("cpu_percent", 0), 1)
+                }
+
+                # Check if workers are healthy
+                if worker_stats.get("total_workers_failed", 0) > 10:
+                    health_data["status"] = "degraded"
+                    health_data["warning"] = "High worker failure rate detected"
+
+            except Exception as e:
+                health_data["worker_manager_error"] = str(e)
+
+            return health_data
 
         @self.v1_router.get("/voices")
         async def list_voices_v1_simple():
@@ -1851,15 +1995,40 @@ with open("hello.mp3", "wb") as f:
 
         @self.legacy_router.get("/health")
         async def health_check():
-            """Service health check"""
-            return {
+            """Service health check with worker status"""
+            health_data = {
                 "status": "healthy",
                 "model": self.config.tts.model_path,
                 "model_loaded": self.model is not None,
                 "voices_available": len(self.available_voices),
                 "available_voices": self.available_voices,
-                "version": self.config.application.version
+                "version": self.config.application.version,
+                "timestamp": datetime.now().isoformat()
             }
+
+            # Add worker statistics if available
+            try:
+                from LiteTTS.server.worker_manager import get_worker_manager
+                worker_manager = get_worker_manager()
+                worker_stats = worker_manager.get_worker_stats()
+
+                health_data["workers"] = {
+                    "current_workers": worker_stats.get("current_workers", 0),
+                    "total_restarted": worker_stats.get("total_workers_restarted", 0),
+                    "total_failed": worker_stats.get("total_workers_failed", 0),
+                    "memory_mb": round(worker_stats.get("process_memory_mb", 0), 1),
+                    "cpu_percent": round(worker_stats.get("cpu_percent", 0), 1)
+                }
+
+                # Check if workers are healthy
+                if worker_stats.get("total_workers_failed", 0) > 10:
+                    health_data["status"] = "degraded"
+                    health_data["warning"] = "High worker failure rate detected"
+
+            except Exception as e:
+                health_data["worker_manager_error"] = str(e)
+
+            return health_data
 
     def setup_utility_endpoints(self):
         """Setup utility and development endpoints."""
@@ -2850,35 +3019,86 @@ Examples:
     if args.reload:
         print("Hot reload enabled for development")
 
-    # Start the server
+    # Start the server with optimized worker configuration
     final_workers = configured_workers if not args.reload else 1
+
+    # Get optimized Uvicorn configuration from worker manager
+    try:
+        from LiteTTS.server.worker_manager import get_worker_manager
+        worker_manager = get_worker_manager()
+        uvicorn_config = worker_manager.get_uvicorn_config()
+
+        # Override with command line arguments
+        uvicorn_config.update({
+            "host": configured_host,
+            "port": configured_port,
+            "workers": final_workers,
+            "reload": args.reload,
+            "log_level": args.log_level,
+            "access_log": not args.reload,
+        })
+
+        print(f"🚀 Starting server with optimized worker configuration:")
+        print(f"   Workers: {uvicorn_config['workers']}")
+        print(f"   Memory limit per worker: {worker_manager.config.worker_memory_limit_mb}MB")
+        print(f"   Worker timeout: {uvicorn_config['timeout']}s")
+        print(f"   Max requests per worker: {uvicorn_config['max_requests']}")
+
+    except Exception as e:
+        print(f"⚠️ Failed to get worker manager config: {e}")
+        # Fallback to basic configuration
+        uvicorn_config = {
+            "host": configured_host,
+            "port": configured_port,
+            "workers": final_workers,
+            "reload": args.reload,
+            "log_level": args.log_level,
+            "access_log": not args.reload,
+            "server_header": False,
+            "date_header": False,
+            "timeout": 30,
+            "keep_alive": 5,
+            "backlog": 2048,
+            "limit_concurrency": 1000,
+        }
 
     # Use import string for multiple workers, app object for single worker
     if final_workers > 1:
         # Multiple workers require import string
-        uvicorn.run(
-            "app:app",  # Import string
-            host=configured_host,
-            port=configured_port,
-            workers=final_workers,
-            reload=args.reload,
-            log_level=args.log_level,
-            access_log=not args.reload,
-            server_header=False,
-            date_header=False
-        )
+        # Remove Gunicorn-specific parameters that are invalid for Uvicorn
+        uvicorn_config_multi = uvicorn_config.copy()
+        invalid_multi_worker_params = [
+            'worker_class', 'max_worker_connections', 'error_log', 'capture_output',
+            'max_requests', 'max_requests_jitter', 'preload_app', 'worker_connections',
+            'timeout', 'graceful_timeout', 'keep_alive'
+        ]
+        for param in invalid_multi_worker_params:
+            uvicorn_config_multi.pop(param, None)
+
+        # Map keep_alive to timeout_keep_alive if present
+        if 'keep_alive' in uvicorn_config:
+            uvicorn_config_multi['timeout_keep_alive'] = uvicorn_config['keep_alive']
+
+        uvicorn.run("app:app", **uvicorn_config_multi)
     else:
         # Single worker can use app object directly
-        uvicorn.run(
-            app,  # App object
-            host=configured_host,
-            port=configured_port,
-            reload=args.reload,
-            log_level=args.log_level,
-            access_log=not args.reload,
-            server_header=False,
-            date_header=False
-        )
+        uvicorn_config_single = uvicorn_config.copy()
+        # Remove worker-specific and invalid settings for single worker mode
+        # Keep only valid uvicorn.run() parameters
+        invalid_single_worker_params = [
+            'workers', 'max_requests', 'max_requests_jitter', 'preload_app',
+            'worker_class', 'worker_connections', 'max_worker_connections',
+            'timeout', 'graceful_timeout', 'error_log', 'capture_output',
+            'keep_alive'  # This should be timeout_keep_alive
+        ]
+        for param in invalid_single_worker_params:
+            uvicorn_config_single.pop(param, None)
+
+        # Map keep_alive to timeout_keep_alive if present
+        if 'keep_alive' in uvicorn_config:
+            uvicorn_config_single['timeout_keep_alive'] = uvicorn_config['keep_alive']
+
+        uvicorn.run(app, **uvicorn_config_single)
 
 
 if __name__ == "__main__":

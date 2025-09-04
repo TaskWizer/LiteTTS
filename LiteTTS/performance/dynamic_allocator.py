@@ -42,9 +42,17 @@ class DynamicCPUAllocator:
         if self.config.max_cores is None:
             self.config.max_cores = max(1, total_cores - 1)
         
-        logger.info(f"Dynamic CPU Allocator initialized: "
+        logger.info(f"🎯 Dynamic CPU Allocator initialized: "
                    f"cores={self.config.min_cores}-{self.config.max_cores}, "
-                   f"aggressive={self.config.aggressive_mode}")
+                   f"aggressive={self.config.aggressive_mode}, "
+                   f"thermal_protection={self.config.thermal_protection}, "
+                   f"onnx_integration={self.config.onnx_integration}")
+
+        # Log aggressive mode configuration details
+        if self.config.aggressive_mode:
+            logger.info("⚡ AGGRESSIVE MODE ENABLED - Maximum performance optimizations active")
+        else:
+            logger.info("🔒 Conservative mode - Balanced performance optimizations")
     
     def initialize_monitoring(self, monitor_config: Optional[Dict] = None):
         """Initialize CPU monitoring with allocation callbacks"""
@@ -128,14 +136,18 @@ class DynamicCPUAllocator:
             
             # Apply aggressive settings if enabled
             if self.config.aggressive_mode:
-                env_updates.update({
+                aggressive_env_vars = {
                     "OMP_SCHEDULE": "dynamic",
                     "OMP_PROC_BIND": "spread",
                     "OMP_PLACES": "cores",
                     "KMP_AFFINITY": "granularity=fine,compact,1,0",
                     "KMP_BLOCKTIME": "0"
-                })
-            
+                }
+                env_updates.update(aggressive_env_vars)
+                logger.info(f"⚡ Applied AGGRESSIVE mode environment variables: {list(aggressive_env_vars.keys())}")
+            else:
+                logger.info("🔒 Skipping aggressive environment variables (conservative mode)")
+
             # Update environment
             for key, value in env_updates.items():
                 os.environ[key] = value

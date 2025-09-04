@@ -227,24 +227,123 @@ class MemoryOptimizer:
             return False
     
     def optimize_garbage_collection(self, config: MemoryOptimizationConfig):
-        """Optimize garbage collection settings"""
+        """Optimize garbage collection settings with improved thresholds"""
         logger.info("Optimizing garbage collection...")
-        
+
         if config.enable_aggressive_gc:
-            # Set more aggressive GC thresholds
-            gc.set_threshold(700, 10, 10)  # More frequent collection
-            logger.info("Set aggressive GC thresholds")
+            # Set aggressive GC thresholds for memory-constrained environments
+            # More frequent collection for generation 0 (short-lived objects)
+            # Less frequent for generation 1 and 2 (long-lived objects)
+            gc.set_threshold(500, 8, 8)  # More aggressive than default (700, 10, 10)
+            logger.info("⚡ Set AGGRESSIVE GC thresholds: (500, 8, 8)")
+
+            # Set up periodic forced collection for aggressive mode
+            self._setup_periodic_gc(interval=30.0)  # Every 30 seconds
+
         else:
-            # Set conservative GC thresholds
-            gc.set_threshold(700, 10, 10)  # Default values
-            logger.info("Set conservative GC thresholds")
-        
+            # Set conservative GC thresholds for performance-focused environments
+            # Less frequent collection to reduce GC overhead
+            gc.set_threshold(1000, 15, 15)  # Less aggressive than default
+            logger.info("🔒 Set CONSERVATIVE GC thresholds: (1000, 15, 15)")
+
+            # Set up periodic forced collection for conservative mode
+            self._setup_periodic_gc(interval=120.0)  # Every 2 minutes
+
         # Enable automatic garbage collection
         gc.enable()
-        
-        # Force initial collection
-        collected = gc.collect()
-        logger.info(f"Initial GC collected {collected} objects")
+
+        # Force initial collection and log statistics
+        collected_gen0 = gc.collect(0)  # Collect generation 0
+        collected_gen1 = gc.collect(1)  # Collect generation 1
+        collected_gen2 = gc.collect(2)  # Collect generation 2
+
+        total_collected = collected_gen0 + collected_gen1 + collected_gen2
+        logger.info(f"Initial GC collected {total_collected} objects "
+                   f"(Gen0: {collected_gen0}, Gen1: {collected_gen1}, Gen2: {collected_gen2})")
+
+        # Log current GC statistics
+        gc_stats = gc.get_stats()
+        logger.info(f"GC statistics: {gc_stats}")
+
+    def _setup_periodic_gc(self, interval: float):
+        """Setup periodic garbage collection"""
+        def periodic_gc():
+            while self.monitoring_active:
+                try:
+                    time.sleep(interval)
+                    if self.monitoring_active:
+                        # Perform full garbage collection
+                        collected = gc.collect()
+                        if collected > 0:
+                            logger.debug(f"Periodic GC collected {collected} objects")
+
+                        # Check for memory pressure and adjust if needed
+                        self._check_memory_pressure()
+
+                except Exception as e:
+                    logger.warning(f"Periodic GC error: {e}")
+
+        if not hasattr(self, 'gc_thread') or not self.gc_thread.is_alive():
+            self.gc_thread = threading.Thread(target=periodic_gc, daemon=True)
+            self.gc_thread.start()
+            logger.info(f"Started periodic GC with {interval}s interval")
+
+    def _check_memory_pressure(self):
+        """Check for memory pressure and take action if needed"""
+        try:
+            current_profile = self.get_current_memory_profile()
+
+            # Check if memory usage is high
+            if current_profile.process_memory_percent > 15:  # > 15% of system memory
+                logger.warning(f"High memory usage detected: {current_profile.process_memory_mb:.1f}MB "
+                             f"({current_profile.process_memory_percent:.1f}%)")
+
+                # Force aggressive garbage collection
+                collected = gc.collect()
+                logger.info(f"Memory pressure GC collected {collected} objects")
+
+                # Clear any cached data if memory pressure is severe
+                if current_profile.process_memory_percent > 20:  # > 20% of system memory
+                    self._emergency_memory_cleanup()
+
+        except Exception as e:
+            logger.warning(f"Memory pressure check failed: {e}")
+
+    def _emergency_memory_cleanup(self):
+        """Emergency memory cleanup under severe memory pressure"""
+        logger.warning("🚨 Emergency memory cleanup triggered")
+
+        try:
+            # Clear synthesis optimizer caches
+            try:
+                from LiteTTS.performance.synthesis_optimizer import get_synthesis_optimizer
+                synthesis_optimizer = get_synthesis_optimizer()
+                synthesis_optimizer.reset_caches()
+                logger.info("Cleared synthesis optimizer caches")
+            except Exception:
+                pass
+
+            # Clear preloader caches
+            try:
+                from LiteTTS.cache.preloader import get_preloader
+                preloader = get_preloader()
+                if hasattr(preloader, 'clear_cache'):
+                    preloader.clear_cache()
+                    logger.info("Cleared preloader caches")
+            except Exception:
+                pass
+
+            # Force full garbage collection
+            collected = gc.collect()
+            logger.info(f"Emergency GC collected {collected} objects")
+
+            # Log memory status after cleanup
+            post_cleanup_profile = self.get_current_memory_profile()
+            logger.info(f"Memory after cleanup: {post_cleanup_profile.process_memory_mb:.1f}MB "
+                       f"({post_cleanup_profile.process_memory_percent:.1f}%)")
+
+        except Exception as e:
+            logger.error(f"Emergency memory cleanup failed: {e}")
     
     def implement_caching_optimization(self, config: MemoryOptimizationConfig) -> Dict[str, Any]:
         """Implement optimized caching mechanisms"""
@@ -321,36 +420,65 @@ class MemoryOptimizer:
         logger.info(f"Memory leak analysis completed. Growth: {leak_analysis['memory_growth_mb']:.2f}MB")
         return leak_analysis
     
-    def calculate_optimal_config(self, target_memory_mb: int = 150) -> MemoryOptimizationConfig:
-        """Calculate optimal memory configuration"""
+    def calculate_optimal_config(self, target_memory_mb: int = 1024) -> MemoryOptimizationConfig:
+        """Calculate optimal memory configuration with realistic targets"""
         logger.info(f"Calculating optimal memory configuration for {target_memory_mb}MB target...")
-        
+
         # Get current system memory
         system_memory = psutil.virtual_memory()
+        total_memory_gb = system_memory.total / (1024**3)
         available_mb = system_memory.available / (1024 * 1024)
-        
-        # Calculate conservative allocations
-        pre_allocation_size = min(32, target_memory_mb // 4)  # 25% for pre-allocation
-        pool_size = min(16, target_memory_mb // 8)            # 12.5% for pooling
-        cache_size = min(64, target_memory_mb // 2)           # 50% for caching
-        
+
+        # Adjust target based on system memory
+        if total_memory_gb < 4:
+            # Low memory system - be conservative
+            adjusted_target = min(target_memory_mb, 512)
+            enable_aggressive_gc = True
+            logger.info(f"Low memory system detected ({total_memory_gb:.1f}GB), using conservative target: {adjusted_target}MB")
+        elif total_memory_gb < 8:
+            # Medium memory system - balanced approach
+            adjusted_target = min(target_memory_mb, 1024)
+            enable_aggressive_gc = target_memory_mb < 800
+            logger.info(f"Medium memory system detected ({total_memory_gb:.1f}GB), using balanced target: {adjusted_target}MB")
+        else:
+            # High memory system - allow more memory usage
+            adjusted_target = target_memory_mb
+            enable_aggressive_gc = False
+            logger.info(f"High memory system detected ({total_memory_gb:.1f}GB), using full target: {adjusted_target}MB")
+
+        # Calculate allocations based on adjusted target
+        pre_allocation_size = min(64, adjusted_target // 8)   # 12.5% for pre-allocation
+        pool_size = min(32, adjusted_target // 16)            # 6.25% for pooling
+        cache_size = min(256, adjusted_target // 2)           # 50% for caching
+
+        # Ensure minimum viable sizes
+        pre_allocation_size = max(16, pre_allocation_size)
+        pool_size = max(8, pool_size)
+        cache_size = max(64, cache_size)
+
         config = MemoryOptimizationConfig(
             enable_pre_allocation=True,
             pre_allocation_size_mb=pre_allocation_size,
             enable_memory_pooling=True,
             pool_size_mb=pool_size,
-            enable_aggressive_gc=target_memory_mb < 200,
-            gc_threshold_mb=target_memory_mb // 10,
-            enable_memory_mapping=available_mb > 4096,  # Only if >4GB available
+            enable_aggressive_gc=enable_aggressive_gc,
+            gc_threshold_mb=adjusted_target // 20,  # 5% of target for GC threshold
+            enable_memory_mapping=available_mb > 2048,  # Only if >2GB available
             cache_size_limit_mb=cache_size,
             enable_lazy_loading=True,
-            memory_monitoring_interval=1.0
+            memory_monitoring_interval=2.0 if enable_aggressive_gc else 5.0
         )
-        
-        logger.info(f"Optimal config: Pre-alloc: {pre_allocation_size}MB, Cache: {cache_size}MB")
+
+        logger.info(f"🎯 Optimal config calculated:")
+        logger.info(f"   Pre-allocation: {pre_allocation_size}MB")
+        logger.info(f"   Memory pooling: {pool_size}MB")
+        logger.info(f"   Cache limit: {cache_size}MB")
+        logger.info(f"   Aggressive GC: {enable_aggressive_gc}")
+        logger.info(f"   Memory mapping: {config.enable_memory_mapping}")
+
         return config
     
-    def run_comprehensive_optimization(self, target_memory_mb: int = 150) -> Dict[str, Any]:
+    def run_comprehensive_optimization(self, target_memory_mb: int = 1024) -> Dict[str, Any]:
         """Run comprehensive memory optimization"""
         logger.info("Starting comprehensive memory optimization...")
         

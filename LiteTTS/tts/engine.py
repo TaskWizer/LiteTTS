@@ -209,41 +209,89 @@ class KokoroTTSEngine:
         self.available_voices = self.voice_manager.get_available_voices()
         logger.info(f"Available voices: {self.available_voices}")
     
-    def synthesize(self, text: str, voice: str, speed: float = 1.0, 
+    def synthesize(self, text: str, voice: str, speed: float = 1.0,
                   emotion: Optional[str] = None, emotion_strength: float = 1.0) -> AudioSegment:
-        """Synthesize text to audio"""
+        """Synthesize text to audio with PERFORMANCE OPTIMIZATION"""
         if not self.model_loaded:
             raise RuntimeError("TTS engine not properly initialized")
-        
+
         if voice not in self.available_voices:
             raise ValueError(f"Voice '{voice}' not available. Available voices: {self.available_voices}")
-        
+
         logger.debug(f"Synthesizing text: '{text[:50]}...' with voice: {voice}")
-        
+
         try:
-            # Get voice embedding
-            voice_embedding = self.voice_manager.get_voice_embedding(voice)
-            if not voice_embedding:
-                raise RuntimeError(f"Failed to load voice embedding: {voice}")
-            
-            # Tokenize text
-            tokens = self._tokenize_text(text)
-            
-            # Prepare inputs for ONNX model
-            model_inputs = self._prepare_model_inputs(tokens, voice_embedding, speed, emotion, emotion_strength)
-            
-            # Run inference
-            audio_data = self._run_inference(model_inputs)
-            
-            # Post-process audio
-            audio_segment = self._post_process_audio(audio_data, speed)
-            
+            # Use synthesis optimizer for consistent RTF performance
+            from LiteTTS.performance.synthesis_optimizer import get_synthesis_optimizer
+            synthesis_optimizer = get_synthesis_optimizer()
+
+            # Execute optimized synthesis
+            audio_segment, performance_data = synthesis_optimizer.optimize_synthesis_pipeline(
+                self._synthesize_core, text, voice, speed, emotion, emotion_strength
+            )
+
+            # Log performance metrics
+            rtf = performance_data['rtf']
+            if rtf > 0.5:
+                logger.warning(f"RTF performance: {rtf:.3f} (target: <0.5) for '{text[:30]}...' ({voice})")
+            else:
+                logger.debug(f"RTF performance: {rtf:.3f} for '{text[:30]}...' ({voice})")
+
             # Update voice usage statistics
             self.voice_manager.metadata_manager.update_voice_stats(
                 voice, audio_segment.duration, success=True
             )
-            
-            logger.debug(f"Synthesis completed: {audio_segment.duration:.2f}s audio generated")
+
+            logger.debug(f"Optimized synthesis completed: {audio_segment.duration:.2f}s audio, RTF: {rtf:.3f}")
+            return audio_segment
+
+        except Exception as e:
+            logger.error(f"Optimized synthesis failed, falling back to core synthesis: {e}")
+            # Fallback to core synthesis without optimization
+            return self._synthesize_core(text, voice, speed, emotion, emotion_strength)
+
+    def _synthesize_core(self, text: str, voice: str, speed: float = 1.0,
+                        emotion: Optional[str] = None, emotion_strength: float = 1.0) -> AudioSegment:
+        """Core synthesis method without optimization wrapper"""
+        try:
+            # Get voice embedding with caching
+            from LiteTTS.performance.synthesis_optimizer import get_synthesis_optimizer
+            synthesis_optimizer = get_synthesis_optimizer()
+
+            # Check for cached voice embedding
+            if voice in synthesis_optimizer.voice_embedding_cache:
+                voice_embedding = synthesis_optimizer.voice_embedding_cache[voice]
+                logger.debug(f"Using cached voice embedding for: {voice}")
+            else:
+                voice_embedding = self.voice_manager.get_voice_embedding(voice)
+                if not voice_embedding:
+                    raise RuntimeError(f"Failed to load voice embedding: {voice}")
+                # Cache for future use
+                synthesis_optimizer.cache_voice_embedding(voice, voice_embedding)
+
+            # Tokenize text with caching
+            token_cache_key = f"{text}:{voice}"
+            if token_cache_key in synthesis_optimizer.tokenization_cache:
+                tokens = synthesis_optimizer.tokenization_cache[token_cache_key]
+                logger.debug(f"Using cached tokenization for: {text[:30]}...")
+            else:
+                tokens = self._tokenize_text(text)
+                synthesis_optimizer.cache_tokenization(text, voice, tokens)
+
+            # Prepare inputs for ONNX model
+            model_inputs = self._prepare_model_inputs(tokens, voice_embedding, speed, emotion, emotion_strength)
+
+            # Run inference
+            audio_data = self._run_inference(model_inputs)
+
+            # Post-process audio (skip for simple requests)
+            if emotion is None and speed == 1.0 and len(text) <= 50:
+                # Fast path: minimal post-processing
+                audio_segment = self._post_process_audio_fast(audio_data)
+            else:
+                # Full post-processing
+                audio_segment = self._post_process_audio(audio_data, speed)
+
             return audio_segment
             
         except Exception as e:
@@ -380,8 +428,47 @@ class KokoroTTSEngine:
             logger.error(f"Model inputs were: {[(k, v.shape, v.dtype) for k, v in model_inputs.items()]}")
             raise
     
+    def _post_process_audio_fast(self, audio_data: np.ndarray) -> AudioSegment:
+        """Fast post-processing for simple requests (minimal processing for RTF optimization)"""
+        try:
+            # Basic validation only
+            if audio_data.size == 0:
+                raise ValueError("Cannot post-process empty audio data")
+
+            # Ensure audio is in the right format
+            if audio_data.ndim > 1:
+                audio_data = audio_data.flatten()
+
+            # Convert to float32 if needed
+            if audio_data.dtype != np.float32:
+                audio_data = audio_data.astype(np.float32)
+
+            # Quick normalization only (skip complex processing)
+            max_val = np.max(np.abs(audio_data))
+            if max_val > 0.95:
+                audio_data = audio_data * (0.95 / max_val)
+
+            # Create AudioSegment with minimal processing
+            audio_segment = AudioSegment(
+                audio_data=audio_data,
+                sample_rate=self.sample_rate,
+                format="wav"
+            )
+
+            logger.debug(f"Fast post-processing complete: {len(audio_data)} samples")
+            return audio_segment
+
+        except Exception as e:
+            logger.error(f"Fast audio post-processing failed: {e}")
+            # Return basic AudioSegment
+            return AudioSegment(
+                audio_data=audio_data,
+                sample_rate=self.sample_rate,
+                format="wav"
+            )
+
     def _post_process_audio(self, audio_data: np.ndarray, speed: float) -> AudioSegment:
-        """Post-process the generated audio"""
+        """Full post-processing for complex requests"""
         logger.debug(f"Post-processing audio: shape={audio_data.shape}, dtype={audio_data.dtype}")
 
         # Check for empty audio

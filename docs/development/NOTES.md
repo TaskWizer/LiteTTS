@@ -1117,6 +1117,9 @@ https://github.com/rsxdalv/TTS-WebUI
 gh repo clone TaskWizer/LiteTTS && cd LiteTTS && uv run python app.py
 git clone https://github.com/TaskWizer/LiteTTS.git && cd LiteTTS && uv run python app.py
 
+# Optimal configuration with OpenWebUI Preconfigured for LiteTTS and
+gh repo clone TaskWizer/LiteTTS && cd LiteTTS && uv run python app.py & docker compose up -d
+
 # Useful Commands:
 docker system prune --all --volumes
 docker logs litetts-api | tail -20
@@ -1125,3 +1128,7 @@ docker logs litetts-api | tail -20
 # Testing: ONNX vs PTH vs GGUF
 - Kokoro FastAPI: ~0.315 to 0.630 RTF
 - LiteTTS API: ~0.18 to ~0.35 RTF (non-docker)
+
+I SHOULD NOT HAVE TO MONITOR AND AUDIT EVERY FUCKING PART OF THE GOD DAMN SYSTEM AFTER YOU MAKE SOME TWEAKS. YOU SHOULD BE TESTING AND VALIDATING EACH CHANGE YOU MAKE. STOP CLAIMING SHIT WAS DONE WHEN IT WASN'T EVEN PROPERLY TESTED OR AT ALL VALIDATED AGAINST "REAL" METRICS.... AND NOT JUST DAMN ASSUMPTIONS. DO BETTER!!!!
+
+THE TESTS YOU DID RUN WERE ALSO A FUCKING JOKE BEAUSE YOU WERE JUST HITTING THE FUCKING CACHE AND NOT TESTING REAL PERFORMANCE AFTER THE INITIAL AUDIO GENERATION. THIS IS USELESS INFORMATION AND MAKES YOU PROVIDE UNREALISTIC AVERAGES THAT ARE FRANKLY JUST GARBAGE INFORMATION. DO A BETTER AUDIT OF THE SYSTEM AND MAKE SURE EVERYTHING IS WORKING COMPLETELY BEFORE HANDING IT OVER!!!!

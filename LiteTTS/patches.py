@@ -44,6 +44,7 @@ def patch_kokoro_onnx():
                 session_options.execution_mode = ort.ExecutionMode.ORT_PARALLEL
 
             # Optimize thread usage with dynamic CPU allocation
+            enable_aggressive = False  # Default to conservative mode
             try:
                 from LiteTTS.performance.dynamic_allocator import get_dynamic_allocator
                 dynamic_allocator = get_dynamic_allocator()
@@ -51,6 +52,8 @@ def patch_kokoro_onnx():
                 # Try to apply dynamic allocation first
                 if dynamic_allocator.apply_to_onnx_session_options(session_options):
                     logger.info("Applied dynamic CPU allocation to ONNX session")
+                    # Check if dynamic allocator supports aggressive mode
+                    enable_aggressive = getattr(dynamic_allocator, 'aggressive_mode', False)
                 else:
                     # Fallback to static CPU optimizer
                     from LiteTTS.performance.cpu_optimizer import get_cpu_optimizer

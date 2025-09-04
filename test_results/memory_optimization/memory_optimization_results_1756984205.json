@@ -1,0 +1,202 @@
+{
+  "optimization_timestamp": 1756984205.8546166,
+  "target_memory_mb": 1024,
+  "optimization_config": {
+    "enable_pre_allocation": true,
+    "pre_allocation_size_mb": 64,
+    "enable_memory_pooling": true,
+    "pool_size_mb": 32,
+    "enable_aggressive_gc": false,
+    "gc_threshold_mb": 51,
+    "enable_memory_mapping": true,
+    "cache_size_limit_mb": 256,
+    "enable_lazy_loading": true,
+    "memory_monitoring_interval": 5.0
+  },
+  "baseline_profile": {
+    "total_memory_mb": 31852.3125,
+    "available_memory_mb": 16935.859375,
+    "used_memory_mb": 13927.1484375,
+    "process_memory_mb": 1119.78125,
+    "process_memory_percent": 3.515541454015309,
+    "peak_memory_mb": 1119.78125,
+    "memory_growth_mb": 22.0390625,
+    "gc_collections": {
+      "generation_0": 6,
+      "generation_1": 3,
+      "generation_2": 10
+    },
+    "largest_objects": [
+      {
+        "size_mb": 6.929350852966309,
+        "count": 115305,
+        "filename": "    obj, end = self.scan_once(s, idx)"
+      },
+      {
+        "size_mb": 6.449100494384766,
+        "count": 56588,
+        "filename": "  File \"<frozen importlib._bootstrap_external>\", line 757"
+      },
+      {
+        "size_mb": 0.9964475631713867,
+        "count": 8,
+        "filename": "    voice_data = np.fromfile(voice_file, dtype=np.float32)"
+      },
+      {
+        "size_mb": 0.4656791687011719,
+        "count": 5464,
+        "filename": "  File \"<frozen importlib._bootstrap>\", line 488"
+      },
+      {
+        "size_mb": 0.2827291488647461,
+        "count": 3362,
+        "filename": "    lines = fp.readlines()"
+      },
+      {
+        "size_mb": 0.24968719482421875,
+        "count": 30,
+        "filename": "    return Loop()"
+      },
+      {
+        "size_mb": 0.1970529556274414,
+        "count": 1528,
+        "filename": "    bytecode = compile(script, filename, \"exec\")"
+      },
+      {
+        "size_mb": 0.14757728576660156,
+        "count": 537,
+        "filename": "  File \"<frozen abc>\", line 106"
+      },
+      {
+        "size_mb": 0.13886642456054688,
+        "count": 515,
+        "filename": "    return type(attr_class_name, (tuple,), body)"
+      },
+      {
+        "size_mb": 0.1381378173828125,
+        "count": 1609,
+        "filename": "    script.splitlines(True),"
+      }
+    ]
+  },
+  "final_profile": {
+    "total_memory_mb": 31852.3125,
+    "available_memory_mb": 16903.52734375,
+    "used_memory_mb": 13959.48046875,
+    "process_memory_mb": 1218.63671875,
+    "process_memory_percent": 3.8258971581733663,
+    "peak_memory_mb": 1218.63671875,
+    "memory_growth_mb": 120.89453125,
+    "gc_collections": {
+      "generation_0": 79,
+      "generation_1": 0,
+      "generation_2": 0
+    },
+    "largest_objects": [
+      {
+        "size_mb": 53.00021743774414,
+        "count": 8,
+        "filename": "    buffer = bytearray(size)"
+      },
+      {
+        "size_mb": 6.929350852966309,
+        "count": 115305,
+        "filename": "    obj, end = self.scan_once(s, idx)"
+      },
+      {
+        "size_mb": 6.447879791259766,
+        "count": 56580,
+        "filename": "  File \"<frozen importlib._bootstrap_external>\", line 757"
+      },
+      {
+        "size_mb": 0.9964475631713867,
+        "count": 8,
+        "filename": "    voice_data = np.fromfile(voice_file, dtype=np.float32)"
+      },
+      {
+        "size_mb": 0.4655294418334961,
+        "count": 5461,
+        "filename": "  File \"<frozen importlib._bootstrap>\", line 488"
+      },
+      {
+        "size_mb": 0.4274587631225586,
+        "count": 4984,
+        "filename": "    lines = fp.readlines()"
+      },
+      {
+        "size_mb": 0.24968719482421875,
+        "count": 30,
+        "filename": "    return Loop()"
+      },
+      {
+        "size_mb": 0.1970529556274414,
+        "count": 1528,
+        "filename": "    bytecode = compile(script, filename, \"exec\")"
+      },
+      {
+        "size_mb": 0.14757728576660156,
+        "count": 537,
+        "filename": "  File \"<frozen abc>\", line 106"
+      },
+      {
+        "size_mb": 0.13886642456054688,
+        "count": 515,
+        "filename": "    return type(attr_class_name, (tuple,), body)"
+      }
+    ]
+  },
+  "memory_improvement": {
+    "baseline_memory_mb": 1119.78125,
+    "final_memory_mb": 1218.63671875,
+    "memory_change_mb": 98.85546875,
+    "target_achieved": true
+  },
+  "pre_allocation_success": true,
+  "cache_configuration": {
+    "voice_cache": {
+      "enabled": true,
+      "max_size_mb": 50,
+      "ttl_seconds": 3600,
+      "eviction_policy": "lru"
+    },
+    "model_cache": {
+      "enabled": true,
+      "max_size_mb": 100,
+      "ttl_seconds": 7200,
+      "eviction_policy": "lru"
+    },
+    "text_processing_cache": {
+      "enabled": true,
+      "max_size_mb": 25,
+      "ttl_seconds": 1800,
+      "eviction_policy": "lru"
+    },
+    "audio_cache": {
+      "enabled": true,
+      "max_size_mb": 25,
+      "ttl_seconds": 900,
+      "eviction_policy": "lru"
+    }
+  },
+  "monitoring_statistics": {
+    "duration_seconds": 29.97150182723999,
+    "samples_collected": 23,
+    "min_memory_mb": 1142.18359375,
+    "max_memory_mb": 1218.63671875,
+    "avg_memory_mb": 1211.6197350543478,
+    "memory_variance": 241.87903045481227,
+    "peak_growth_mb": 76.453125
+  },
+  "leak_analysis": {
+    "memory_growth_mb": 22.63671875,
+    "monitoring_duration": 30,
+    "potential_leaks": [],
+    "top_memory_increases": []
+  },
+  "recommendations": [
+    "Memory target achieved with 925.1MB headroom",
+    "High memory growth detected - investigate potential memory leaks",
+    "High GC activity - consider optimizing object allocation patterns",
+    "Large cache size may impact memory usage - monitor cache hit rates"
+  ]
+}
