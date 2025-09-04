@@ -6,7 +6,8 @@
 [![Performance](https://img.shields.io/badge/RTF-0.15-brightgreen.svg)](docs/PERFORMANCE.md)
 [![Quality](https://img.shields.io/badge/Quality-Production%20Ready-green.svg)](docs/development/audits/SYSTEM_IMPROVEMENTS_DOCUMENTATION.md)
 
-## ⚠️ **ALPHA SOFTWARE NOTICE**
+<details>
+<summary><h2>⚠️ ALPHA SOFTWARE NOTICE (Expand for details)</h2></summary>
 
 **LiteTTS is currently in alpha development.** Core TTS synthesis works reliably, but advanced features have known limitations.
 
@@ -25,8 +26,7 @@ The following features are under active development and may have bugs or inconsi
 - **Core functionality is stable** - basic text-to-speech works reliably
 - **Use in production at your own risk** - thorough testing recommended
 - **Active development** - regular updates and improvements being made
-
----
+</details>
 
 **The fastest, most efficient Text-to-Speech API with near-instant response times even on CPU-only systems.** ⚡
 
@@ -56,7 +56,13 @@ Your support enables continued development of high-quality, open-source AI tools
 - **🛡️ Security & Compliance**: Built-in ethical AI features and content authenticity verification
 - **🐳 Easy Deployment**: Docker support with automatic model downloads
 
-## 📢 Prerequisites
+## 💪🏻 *Trust me bro*, oneliner
+```bash
+git clone https://github.com/TaskWizer/LiteTTS.git && cd LiteTTS && uv run python app.py
+```
+
+<details>
+<summary><h2>📢 Prerequisites</h2></summary>
 
 Before getting started, ensure your system meets these requirements:
 
@@ -75,8 +81,10 @@ Before getting started, ensure your system meets these requirements:
   - Ultra-fast Python package installer and resolver with 
   - Automatic virtual environment management
   - See [Installation Guide](https://docs.astral.sh/uv/getting-started/installation)
+</details>
 
-## 🚀 Quick Start
+<details>
+<summary><h2>🚀 Quick Start Options</h2></summary>
 
 ```bash
 # Clone the repository
@@ -86,8 +94,8 @@ cd LiteTTS
 # Option 1: Direct UV Python execution (recommended)
 uv run python app.py
 
-# Option 2: Docker container execution (production-ready with TLS)
-cp .env.example .env  # Configure your deployment
+# Option 2: All-in-one Docker deployment
+# Default docker-compose includes OpenWebUI (with Caddy for TLS and ChromaDB) and LiteTTS-API
 docker-compose up -d
 
 # Option 3: Manual installation with virtual environment (best practice)
@@ -98,24 +106,27 @@ python app.py
 ```
 
 **That's it!** 🎉 The API will be available at `http://localhost:8354` (default configured port).
+</details>
 
-## 💪🏻 *Trust me bro*, oneliner
-```bash
-git clone https://github.com/TaskWizer/LiteTTS.git && cd LiteTTS && uv run python app.py
-```
+<details>
+<summary><h2>🎉 Recommended Setup</h2></summary>
+<h3>Using OpenWebUI (Docker with Caddy for TLS and ChromaDB for Knwoledge) and TTS API (Metal)</h3>
+When testing the TTS API, using docker introduced overhead resulting in 2-3x performance degradation. 
+So it's recommended to run the core TTS system locally and use within OpenWebUI or just use the "apps" 
+included with the API itself and therefor running it standalone (simply run the <i>"<b>Trust me bro</b>, 
+oneliner"</i> above) by hand. The following instructions will show how to "set it and forget it" to load 
+automatically.
+</details>
 
-## 🚀 Getting Started Guides
+<details>
+<summary><h2>📚 Documentation</h2></summary>
+**Complete guides and references for setup, usage, and advanced features:**
 
 **Detailed setup and usage guides:**
-
 - **[Quick Start Commands](docs/usage/QUICK_START_COMMANDS.md)** - Detailed setup and installation guide
 - **[Dependencies & Installation](docs/DEPENDENCIES.md)** - Complete dependency management and troubleshooting
 - **[OpenWebUI Integration](docs/usage/OPENWEBUI-INTEGRATION.md)** - Complete OpenWebUI setup tutorial
 - **[Docker Deployment](docs/usage/DOCKER-DEPLOYMENT.md)** - Containerized deployment guide
-
-## 📚 Documentation
-
-**Complete guides and references for setup, usage, and advanced features:**
 
 ### 📖 Usage & API
 - **[API Documentation](docs/FEATURES.md)** - Complete endpoint reference and examples
@@ -135,7 +146,15 @@ git clone https://github.com/TaskWizer/LiteTTS.git && cd LiteTTS && uv run pytho
 - **[Testing Guide](docs/TESTING.md)** - Running tests and validation
 - **[Contributing Guide](docs/CONTRIBUTIONS.md)** - How to contribute to the project
 
-### 📁 Project Structure
+### 📊 Project Information
+- **[Development Roadmap](docs/ROADMAP.md)** - Future features and multi-language expansion plans
+- **[Changelog](docs/CHANGELOG.md)** - Version history and updates
+- **[Production Guide](docs/development/audits/PRODUCTION_MVP_SUMMARY.md)** - Deployment best practices
+- **[License](LICENSE)** - Apache 2.0 License details
+</details>
+
+<details>
+<summary><h2>📁 Project Structure</h2></summary>
 The project follows a clean, organized structure for maintainability and scalability:
 
 ```
@@ -154,16 +173,10 @@ LiteTTS/
 ├── docker-compose.yml         # Docker orchestration
 └── Dockerfile                 # Container definition
 ```
+</details>
 
-### 📊 Project Information
-- **[Development Roadmap](docs/ROADMAP.md)** - Future features and multi-language expansion plans
-- **[Changelog](docs/CHANGELOG.md)** - Version history and updates
-- **[Production Guide](docs/development/audits/PRODUCTION_MVP_SUMMARY.md)** - Deployment best practices
-- **[License](LICENSE)** - Apache 2.0 License details
-
----
-### 📝 Server Startup Options
-
+<details>
+<summary><h2>📝 Server Startup Options</h2></summary>
 **Multiple ways to start the server:**
 
 ```bash
@@ -178,15 +191,16 @@ uvicorn app:app --host 0.0.0.0 --port 8354      # Direct uvicorn (requires expli
 **Note** You can also modify the core `./config/settings.json` file directly, but it's not recommended as it will be overwritten on updates. Instead, use the [`override.json` method](docs/CONFIGURATION.md) to customize settings.
 
 ### 🔧 Configuration Hierarchy
-
 Configuration precedence (highest to lowest priority):
 1. **Command-line arguments** (`--port`, `--host`, `--workers`)
 2. **Environment variables** (`PORT`, `API_HOST`, `WORKERS`)
 3. **./config/override.json** (rename override.json.example to override.json for custom settings)
 4. **./config/settings.json** (base defaults - port 8354)
 5. **Default values** (Port 8354 represents "TTS" in English Gematria (an arbitrary, unused port)
+</details>
 
-### 🔄 Development Mode
+<details>
+<summary><h2>🔄 Development Mode</h2></summary>
 
 For development with hot reload (detects changes and restarts automatically):
 ```bash
@@ -200,9 +214,10 @@ uv run uvicorn app:app --reload --host 0.0.0.0 --port 8354 --workers 1
 *Note: The reload flag enables Hot Module Replacement (HMR) for automatic restarts on code changes.*
 
 **📖 See the complete [Development Documentation](docs/DEVELOPMENT.md)**
+</details>
 
-### 📚 Advanced Usage
-
+<details>
+<summary><h2>📚 Advanced Usage</h2></summary>
 For advanced configuration options, see the [Configuration Guide](docs/CONFIGURATION.md) and [complete documentation](#-documentation).
 
 ### ⚡ Instant Test
@@ -222,9 +237,10 @@ curl -X POST "http://localhost:8354/v1/audio/speech" \
 ```
 
 An optimized model for your system is automatically downloaded on first run.
+</details>
 
-## 📦 Dependencies & Installation
-
+<details>
+<summary><h2>📦 Dependencies & Installation</h2></summary>
 LiteTTS requires Python 3.12+ and several core dependencies for optimal performance.
 
 **Key Dependencies:**
@@ -233,13 +249,13 @@ LiteTTS requires Python 3.12+ and several core dependencies for optimal performa
 - **Development**: pytest, black, ruff for contributors
 
 **📖 See the complete [Dependencies & Installation Guide](docs/DEPENDENCIES.md)**
+</details>
 
-## 💻 Future Development & Testing Roadmap
-
+<details>
+<summary><h2>💻 Development Roadmap</h2></summary>
 This project has an ambitious roadmap for cross-platform testing, performance optimization, and AI integration enhancements.
 
 ### Key Development Areas
-
 - **🌍 Multi-Language Support**: Spanish, French, German, Japanese, Mandarin Chinese (2025)
 - **⚡ Performance Optimization**: GPU acceleration, model quantization, edge computing
 - **🤖 Advanced Features**: Voice cloning, emotion control, contextual awareness
@@ -247,8 +263,10 @@ This project has an ambitious roadmap for cross-platform testing, performance op
 - **🤝 Community Contributions**: Voice donation program, quality assurance pipeline
 
 **📖 See the complete [Development Roadmap](docs/ROADMAP.md)**
+</details>
 
-## 🔌 API Basic Usage
+<details>
+<summary><h2>🔌 API Basic Usage</h2></summary>
 
 ### OpenAI-Compatible API
 ```bash
@@ -275,13 +293,13 @@ In OpenWebUI Settings → Audio:
 - **TTS Voice**: `af_heart`
 
 **📖 See the complete [OpenWebUI Integration](docs/usage/OPENWEBUI-INTEGRATION.md) guide**
+</details>
 
-## ⚙️ Configuration
-
+<details>
+<summary><h2>⚙️ Configuration</h2></summary>
 LiteTTS uses a flexible configuration system that allows easy customization while maintaining sensible defaults.
 
 ### Quick Configuration
-
 **Basic customization using `override.json`:**
 ```json
 {
@@ -296,7 +314,6 @@ LiteTTS uses a flexible configuration system that allows easy customization whil
 ```
 
 ### Complete Configuration Guide
-
 For comprehensive configuration options including:
 - Server and performance settings
 - Voice and audio customization
@@ -305,13 +322,13 @@ For comprehensive configuration options including:
 - Beta features and advanced options
 
 **📖 See the complete [Configuration Guide](docs/CONFIGURATION.md)**
+</details>
 
-## 🔒 Perth Watermarking System
-
+<details>
+<summary><h2>🔒 Perth Watermarking System</h2></summary>
 LiteTTS includes an integrated Perth audio watermarking system for responsible AI compliance and content authenticity verification.
 
-### Key Features
-
+  ### Key Features
 - **🛡️ Automatic Watermarking**: All generated TTS audio is automatically watermarked
 - **🔍 Content Authenticity**: Verify audio origin and detect AI-generated content
 - **⚖️ Ethical AI Compliance**: Transparent disclosure of AI-generated content
@@ -320,13 +337,13 @@ LiteTTS includes an integrated Perth audio watermarking system for responsible A
 - **✅ Production Ready**: Perth library installed and functional
 
 **📖 See the complete [Watermarking Guide](docs/WATERMARKING.md)**
+</details>
 
-## 📊 Monitoring & Observability
-
+<details>
+<summary><h2>📊 Monitoring & Observability</h2></summary>
 LiteTTS includes comprehensive monitoring and observability features for production deployments.
 
 ### Key Features
-
 - **Health Monitoring**: Real-time component status and system health checks
 - **Performance Metrics**: Response times, throughput, and resource utilization
 - **Fault Tolerance**: Circuit breakers, retry logic, and graceful degradation
@@ -347,17 +364,20 @@ curl http://localhost:8354/metrics
 ```
 
 **📖 See the complete [Monitoring & Observability Guide](docs/MONITORING.md)**
+</details>
 
-## 🤝 Contributing
-
+<details>
+<summary><h2>🤝 Contributing</h2></summary>
 Contributions are welcome! Please see our [Contributing Guide](docs/CONTRIBUTIONS.md) for details.
+</details>
 
-## 📄 License
-
+<details>
+<summary><h2>📄 License</h2></summary>
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+</details>
 
-## ⚠️ Ethical Use Disclaimer
-
+<details>
+<summary><h2>⚠️ Ethical Use Disclaimer</h2></summary>
 **By using this model, you agree to uphold relevant legal standards and ethical responsibilities. This tool is not responsible for any misuse:**
 
 - **🚫 Identity Misuse**: Do not produce audio resembling real individuals without explicit permission
@@ -365,13 +385,15 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 - **🚫 Illegal or Malicious Use**: Do not use this model for activities that are illegal or intended to cause harm
 
 **We strongly encourage responsible AI practices and respect for individual privacy and consent.**
+</details>
 
-## 🌸 About "Kokoro"
-
+<details>
+<summary><h2>🌸 About "Kokoro"</h2></summary>
 **"Kokoro"** (心) is a Japanese word that encompasses a rich and complex meaning, often translated as "heart," but extending to include "mind," "spirit," "feeling," and even "essence" or "core". It's not just a physical organ or a simple emotion, but rather the seat of consciousness, thoughts, feelings, and will. This name reflects our commitment to creating TTS technology that captures not just the words, but the heart and spirit of human communication.
+</details>
 
-## 🙏 Acknowledgments
-
+<details>
+<summary><h2>🙏 Acknowledgments</h2></summary>
 **LiteTTS is built on the excellent work of the Kokoro TTS project:**
 
 - **[Hexgrad Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M)** - Original Kokoro TTS model
@@ -384,8 +406,6 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 - [OpenWebUI](https://openwebui.com/) - Integration target
 
 *LiteTTS extends and optimizes the Kokoro model for production use as part of the TaskWizer framework, while maintaining full compatibility with the original Kokoro ecosystem.*
-
----
+</details>
 
 **Need help?** Check our [📚 Documentation](#-documentation) or [create an issue](https://github.com/TaskWizer/LiteTTS/issues)!
-
