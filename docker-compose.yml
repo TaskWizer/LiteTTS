@@ -1,20 +1,53 @@
-version: '3.8'
-
 services:
   litetts:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        ENVIRONMENT: production
+    image: litetts:fixed
     container_name: litetts-api
+    ports:
+      - "8354:8354"  # Expose LiteTTS API port
     environment:
+      # Core application settings
       - ENVIRONMENT=production
-      - LOG_LEVEL=INFO
-      - CACHE_ENABLED=true
-      - LITETTS_WORKERS=4
-      - LITETTS_CACHE_SIZE=2000
-      - LITETTS_WATERMARKING_ENABLED=true
       - PYTHONPATH=/app
       - PYTHONDONTWRITEBYTECODE=1
       - PYTHONUNBUFFERED=1
+
+      # Performance optimization
+      - ENABLE_PERFORMANCE_OPTIMIZATION=true
+      - MAX_MEMORY_MB=4096
+      - TARGET_RTF=0.25
+
+      # Server configuration
+      - LITETTS_HOST=0.0.0.0
+      - LITETTS_PORT=8354
+      - LITETTS_WORKERS=4  # Reduced for better resource usage
+
+      # Logging
+      - LITETTS_LOG_LEVEL=INFO
+      - LITETTS_LOG_DIR=/app/docs/logs
+
+      # Cache configuration
+      - LITETTS_CACHE_ENABLED=true
+      - LITETTS_CACHE_SIZE=1024  # Optimized for memory usage
+      - LITETTS_CACHE_TTL=7200
+
+      # Model configuration
+      - LITETTS_DEVICE=cpu
+      - LITETTS_MODEL_PATH=/app/LiteTTS/models/model_q4.onnx
+      - LITETTS_VOICES_PATH=/app/LiteTTS/voices
+
+      # Features
+      - LITETTS_WATERMARKING_ENABLED=true
+
+      # Security
+      - LITETTS_API_KEY_REQUIRED=false
+      - LITETTS_CORS_ORIGINS=*
     volumes:
+      # Persistent storage for models and voices
       - ./LiteTTS/models:/app/LiteTTS/models:ro
       - ./LiteTTS/voices:/app/LiteTTS/voices
       - litetts-cache:/app/LiteTTS/cache
@@ -24,14 +57,24 @@ services:
       - owui-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8354/health"]
-      interval: 60s
+      interval: 45s  # Optimized intervals
       timeout: 15s
-      retries: 3
-      start_period: 60s
+      retries: 2
+      start_period: 90s
+    deploy:
+      resources:
+        limits:
+          memory: 4096M
+          cpus: '8.0'
+        reservations:
+          memory: 1024M
+          cpus: '2'
 
   openwebui:
     image: ghcr.io/open-webui/open-webui:main
     container_name: openwebui
+    ports:
+      - "3000:8080"  # Expose OpenWebUI on port 3000 to avoid conflicts
     environment:
       - AUDIO_TTS_ENGINE=custom
       - AUDIO_TTS_API_URL=http://litetts:8354
@@ -57,7 +100,7 @@ services:
     image: caddy:2-alpine
     container_name: caddy
     ports:
-      - "${CADDY_HTTP_PORT:-80}:80"  # Comment out for production (best practice)
+      - "${CADDY_HTTP_PORT:-80}:80"  # Main web interface via Caddy reverse proxy
       # Uncomment the following line to enable HTTPS
       # - "${CADDY_HTTPS_PORT:-443}:443"
     volumes:
@@ -71,6 +114,8 @@ services:
   chroma:
     image: chromadb/chroma:latest
     container_name: chroma
+    ports:
+      - "8000:8000"  # Expose Chroma database port
     environment:
       - IS_PERSISTENT=TRUE
       - ALLOW_RESET=TRUE

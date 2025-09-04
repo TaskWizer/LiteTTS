@@ -13,6 +13,20 @@ from .config import config
 from .logging_config import setup_logging, log_system_info
 from .exceptions import ConfigurationError, ModelError
 
+# Import platform-safe emoji utilities
+try:
+    from .utils.platform_emojis import (
+        log_start, log_success, log_error, log_warning, log_config, log_info
+    )
+except ImportError:
+    # Fallback functions if utility module is not available
+    def log_start(msg): return f"[START] {msg}"
+    def log_success(msg): return f"[OK] {msg}"
+    def log_error(msg): return f"[ERROR] {msg}"
+    def log_warning(msg): return f"[WARN] {msg}"
+    def log_config(msg): return f"[CONFIG] {msg}"
+    def log_info(msg): return f"[INFO] {msg}"
+
 logger = logging.getLogger(__name__)
 
 
@@ -35,7 +49,7 @@ class StartupValidator:
             )
             return False
         
-        logger.info(f"✅ Python version: {sys.version}")
+        logger.info(log_success(f"Python version: {sys.version}"))
         return True
     
     def validate_dependencies(self) -> bool:
@@ -59,14 +73,14 @@ class StartupValidator:
         for package, description in required_packages:
             try:
                 __import__(package)
-                logger.debug(f"✅ {description} available")
+                logger.debug(log_success(f"{description} available"))
             except ImportError:
                 missing_required.append(description)
-        
+
         for package, description in optional_packages:
             try:
                 __import__(package)
-                logger.debug(f"✅ {description} available")
+                logger.debug(log_success(f"{description} available"))
             except ImportError:
                 missing_optional.append(description)
                 self.warnings.append(f"Optional dependency missing: {description}")
@@ -94,7 +108,7 @@ class StartupValidator:
         for directory in directories:
             try:
                 directory.mkdir(parents=True, exist_ok=True)
-                logger.debug(f"✅ Directory available: {directory}")
+                logger.debug(log_success(f"Directory available: {directory}"))
             except Exception as e:
                 self.errors.append(f"Cannot create directory {directory}: {e}")
                 return False
@@ -109,12 +123,12 @@ class StartupValidator:
         if not model_path.exists():
             self.warnings.append(f"Model file not found: {model_path} (will be downloaded)")
         else:
-            logger.info(f"✅ Model file found: {model_path}")
-        
+            logger.info(log_success(f"Model file found: {model_path}"))
+
         if not voices_path.exists():
             self.warnings.append(f"Voices file not found: {voices_path} (will be downloaded)")
         else:
-            logger.info(f"✅ Voices file found: {voices_path}")
+            logger.info(log_success(f"Voices file found: {voices_path}"))
         
         return True
     
@@ -127,12 +141,12 @@ class StartupValidator:
                     self.warnings.append("CUDA requested but not available, falling back to CPU")
                     config.tts.device = "cpu"
                 else:
-                    logger.info(f"✅ CUDA available: {torch.cuda.get_device_name(0)}")
+                    logger.info(log_success(f"CUDA available: {torch.cuda.get_device_name(0)}"))
             except ImportError:
                 self.warnings.append("CUDA requested but PyTorch not available, falling back to CPU")
                 config.tts.device = "cpu"
-        
-        logger.info(f"✅ Using device: {config.tts.device}")
+
+        logger.info(log_success(f"Using device: {config.tts.device}"))
         return True
     
     def validate_network_ports(self) -> bool:
@@ -142,7 +156,7 @@ class StartupValidator:
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.bind((config.api.host, config.api.port))
-                logger.info(f"✅ Port {config.api.port} available")
+                logger.info(log_success(f"Port {config.api.port} available"))
                 return True
         except OSError as e:
             if e.errno == 98:  # Address already in use
@@ -159,8 +173,8 @@ class StartupValidator:
     
     def run_all_validations(self) -> Tuple[bool, List[str], List[str]]:
         """Run all validation checks"""
-        logger.info("🔍 Running startup validations...")
-        
+        logger.info(log_info("Running startup validations..."))
+
         validations = [
             ("Python version", self.validate_python_version),
             ("Dependencies", self.validate_dependencies),
@@ -170,26 +184,26 @@ class StartupValidator:
             ("Network ports", self.validate_network_ports),
             ("Configuration", self.validate_configuration),
         ]
-        
+
         all_passed = True
         for name, validation_func in validations:
             try:
                 if not validation_func():
                     all_passed = False
-                    logger.error(f"❌ {name} validation failed")
+                    logger.error(log_error(f"{name} validation failed"))
                 else:
-                    logger.debug(f"✅ {name} validation passed")
+                    logger.debug(log_success(f"{name} validation passed"))
             except Exception as e:
                 all_passed = False
                 self.errors.append(f"{name} validation error: {e}")
-                logger.error(f"❌ {name} validation error: {e}")
+                logger.error(log_error(f"{name} validation error: {e}"))
         
         return all_passed, self.errors, self.warnings
 
 
 async def initialize_system() -> bool:
     """Initialize the Kokoro TTS system"""
-    logger.info("🚀 Initializing Kokoro ONNX TTS API...")
+    logger.info(log_start("Initializing LiteTTS API..."))
     
     try:
         # Set up logging first
@@ -210,20 +224,20 @@ async def initialize_system() -> bool:
         
         # Log warnings
         for warning in warnings:
-            logger.warning(f"⚠️  {warning}")
-        
+            logger.warning(log_warning(warning))
+
         # Handle errors
         if errors:
-            logger.error("❌ Startup validation failed:")
+            logger.error(log_error("Startup validation failed:"))
             for error in errors:
                 logger.error(f"   • {error}")
             raise ConfigurationError("Startup validation failed", details={"errors": errors})
-        
-        logger.info("✅ System initialization completed successfully")
+
+        logger.info(log_success("System initialization completed successfully"))
         return True
-        
+
     except Exception as e:
-        logger.error(f"❌ System initialization failed: {e}")
+        logger.error(log_error(f"System initialization failed: {e}"))
         raise
 
 
@@ -247,10 +261,10 @@ async def main():
     """Main startup function"""
     try:
         await initialize_system()
-        print("✅ Kokoro ONNX TTS API is ready to start!")
+        print(log_success("LiteTTS API is ready to start!"))
         return 0
     except Exception as e:
-        print(f"❌ Startup failed: {e}")
+        print(log_error(f"Startup failed: {e}"))
         return 1
 
 if __name__ == "__main__":

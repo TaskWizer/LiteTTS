@@ -30,7 +30,7 @@
     "download_all_on_startup": true,
     "cache_discovery": true,
     "discovery_cache_hours": 24,
-    "max_cache_size": 512,
+    "max_cache_size": 2048,
     "preload_default_voices": true,
     "voice_blending": true,
     "emotion_support": true,
@@ -45,7 +45,7 @@
     "default_language": "en-us",
     "sample_rate": 24000,
     "mp3_bitrate": 96,
-    "streaming_chunk_duration": 0.5,
+    "streaming_chunk_duration": 0.25,
     "supported_formats": [
       "mp3",
       "wav",
@@ -98,7 +98,7 @@
     "memory_optimization": true,
     "dynamic_cpu_allocation": {
       "enabled": true,
-      "cpu_target": 50.0,
+      "cpu_target": 75.0,
       "aggressive_mode": true,
       "thermal_protection": true,
       "onnx_integration": true,
@@ -329,7 +329,7 @@
   "cache": {
     "enabled": true,
     "auto_optimize": true,
-    "max_size_mb": 1024,
+    "max_size_mb": 4096,
     "ttl_seconds": 7200,
     "cleanup_interval": 180,
     "disable_for_benchmarking": false,

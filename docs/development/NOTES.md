@@ -1095,3 +1095,22 @@ https://www.youtube.com/watch?v=tje3uAZqgV0&t=638s
 
 https://github.com/SWivid/F5-TTS
 https://github.com/rsxdalv/TTS-WebUI
+
+
+# Todo
+- Backup notes and re-setup system
+- Audit and cleanup the system
+- Fix any issues (such as caused by .gitignore, etc.)
+- Improve and finalize documentation
+- Add Windows support and rounded documentation (make super easy to use)
+- Research and plan out voice cloning features (and front-end app)
+- Research and plan out creating Dynamic Unsloth 2.0 Quants for eSpeak Fine-Tuned GGUF models and convert to ONNX runtime optimization (3x?)
+- Research other TTS system and determine what features, methods, and code could be useful (see planning doc)
+
+# One Liner install and run commands:
+gh repo clone TaskWizer/LiteTTS && cd LiteTTS && uv run python app.py
+git clone https://github.com/TaskWizer/LiteTTS.git && cd LiteTTS && uv run python app.py
+
+# Useful Commands:
+docker system prune --all --volumes
+docker logs litetts-api | tail -20

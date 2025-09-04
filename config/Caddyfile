@@ -32,8 +32,8 @@
 # localhost:80 {
 
 # Recommended for local development across all local network interfaces
-localhost, 127.0.0.1, ::1, *.local, 192.168.1.* {
-    tls internal  # Enables self-signed certs for development, comment out for HTTP only or remove for production
+:80 {
+    # HTTP only for local development
 
     # LiteTTS TTS API endpoints - specific paths only
     handle /api/v1/audio/* {

@@ -70,17 +70,19 @@ def patch_kokoro_onnx():
                     session_options.execution_mode = ort.ExecutionMode.ORT_PARALLEL
                     session_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
 
-                    # Enable additional optimizations for Intel CPUs
-                    if "Intel" in cpu_optimizer.cpu_info.model_name:
-                        # Check if entries already exist to avoid overwrite warnings
-                        try:
-                            session_options.add_session_config_entry("session.use_env_allocators", "1")
-                        except Exception:
-                            pass  # Entry already exists
-                        try:
-                            session_options.add_session_config_entry("session.use_deterministic_compute", "0")
-                        except Exception:
-                            pass  # Entry already exists
+                    # Use centralized ONNX configuration to avoid duplicate warnings
+                    try:
+                        from LiteTTS.utils.onnx_config_manager import get_onnx_config_manager
+                        onnx_manager = get_onnx_config_manager()
+
+                        cpu_info = {
+                            "model_name": cpu_optimizer.cpu_info.model_name,
+                            "supports_avx2": cpu_optimizer.cpu_info.supports_avx2
+                        }
+                        onnx_manager.apply_cpu_optimizations(session_options, "kokoro_patches", cpu_info)
+
+                    except ImportError:
+                        logger.debug("ONNX config manager not available, skipping advanced optimizations")
 
                     mode = "aggressive" if enable_aggressive else "conservative"
                     temp = thermal_status.get("temperature", 0)

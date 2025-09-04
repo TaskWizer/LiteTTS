@@ -9,6 +9,19 @@ import sys
 from pathlib import Path
 from typing import Optional
 
+# Import platform-safe emoji utilities
+try:
+    from LiteTTS.utils.platform_emojis import EMOJIS, get_emoji, format_log_message
+except ImportError:
+    # Fallback if the utility module is not available
+    def get_emoji(name: str, fallback: str = '[?]') -> str:
+        return fallback
+
+    def format_log_message(emoji_name: str, message: str) -> str:
+        return f"[{emoji_name.upper()}] {message}"
+
+    EMOJIS = {}
+
 class PerformanceFilter(logging.Filter):
     """Filter for performance-related log messages"""
     def filter(self, record):
@@ -158,12 +171,12 @@ def setup_logging(
     
     # Log setup completion
     logger = logging.getLogger("kokoro.logging")
-    logger.info(f"📋 Comprehensive logging system initialized")
-    logger.info(f"📁 Log directory: {log_dir.absolute()}")
-    logger.info(f"📊 Log level: {level}")
-    logger.info(f"📝 Log files: main, performance, cache, errors, structured")
+    logger.info(format_log_message('clipboard', 'Comprehensive logging system initialized'))
+    logger.info(format_log_message('folder', f'Log directory: {log_dir.absolute()}'))
+    logger.info(format_log_message('chart', f'Log level: {level}'))
+    logger.info(format_log_message('memo', 'Log files: main, performance, cache, errors, structured'))
     if file_path:
-        logger.info(f"📄 Custom log file: {file_path}")
+        logger.info(format_log_message('page', f'Custom log file: {file_path}'))
 
 
 class ColoredFormatter(logging.Formatter):
@@ -232,7 +245,7 @@ class RequestLogger:
         import time
         self.start_time = time.time()
         context_str = f" | Context: {self.context}" if self.context else ""
-        self.logger.info(f"🚀 Request {self.request_id} started{context_str}", 
+        self.logger.info(format_log_message('rocket', f'Request {self.request_id} started{context_str}'),
                         extra={"request_id": self.request_id, "event": "request_start", **self.context})
         return self
     
@@ -242,12 +255,12 @@ class RequestLogger:
         self.metrics["duration"] = duration
         
         if exc_type is None:
-            self.logger.info(f"✅ Request {self.request_id} completed in {duration:.3f}s", 
-                           extra={"request_id": self.request_id, "event": "request_complete", 
+            self.logger.info(format_log_message('check', f'Request {self.request_id} completed in {duration:.3f}s'),
+                           extra={"request_id": self.request_id, "event": "request_complete",
                                  "duration": duration, "metrics": self.metrics, **self.context})
         else:
-            self.logger.error(f"❌ Request {self.request_id} failed in {duration:.3f}s: {exc_val}", 
-                            extra={"request_id": self.request_id, "event": "request_error", 
+            self.logger.error(format_log_message('cross', f'Request {self.request_id} failed in {duration:.3f}s: {exc_val}'),
+                            extra={"request_id": self.request_id, "event": "request_error",
                                   "duration": duration, "error": str(exc_val), "metrics": self.metrics, **self.context})
     
     def info(self, message: str, **kwargs):

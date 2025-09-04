@@ -172,6 +172,8 @@ class RepositoryConfig:
     models_path: str = "onnx"
     voices_path: str = "voices"
     base_url: str = "https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main"
+    model_branch: str = "main"  # Git branch for model repository
+    cache_dir: str = "models"  # Local cache directory for models
 
 @dataclass
 class PathsConfig:
@@ -392,7 +394,19 @@ class ConfigManager:
             performance_data.pop("memory_management", None)  # Remove memory_management if present
             self.performance = PerformanceConfig(**performance_data)
 
-            self.repository = RepositoryConfig(**config_data.get("repository", {}))
+            # Safe repository config initialization with error handling
+            try:
+                repo_config = config_data.get("repository", {})
+                # Filter out any unknown parameters that might cause issues
+                valid_repo_params = {
+                    k: v for k, v in repo_config.items()
+                    if k in ['huggingface_repo', 'models_path', 'voices_path', 'base_url', 'model_branch', 'cache_dir']
+                }
+                self.repository = RepositoryConfig(**valid_repo_params)
+            except TypeError as e:
+                logger.warning(f"Repository config initialization failed: {e}, using defaults")
+                self.repository = RepositoryConfig()
+
             self.paths = PathsConfig(**config_data.get("paths", {}))
             self.tokenizer = TokenizerConfig(**config_data.get("tokenizer", {}))
             self.endpoints = EndpointsConfig(**config_data.get("endpoints", {}))
@@ -400,13 +414,28 @@ class ConfigManager:
 
         except Exception as e:
             logger.error(f"Failed to load configuration: {e}")
-            # Fall back to defaults
+            # Fall back to defaults with safe initialization
             self.model = ModelConfig()
             self.voice = VoiceConfig()
             self.audio = AudioConfig()
             self.server = ServerConfig()
             self.performance = PerformanceConfig()
-            self.repository = RepositoryConfig()
+
+            # Safe repository config initialization
+            try:
+                self.repository = RepositoryConfig()
+            except TypeError as repo_error:
+                logger.warning(f"RepositoryConfig initialization failed: {repo_error}, using minimal config")
+                # Create minimal repository config manually
+                self.repository = type('RepositoryConfig', (), {
+                    'huggingface_repo': "onnx-community/Kokoro-82M-v1.0-ONNX",
+                    'models_path': "onnx",
+                    'voices_path': "voices",
+                    'base_url': "https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main",
+                    'model_branch': "main",
+                    'cache_dir': "models"
+                })()
+
             self.paths = PathsConfig()
             self.tokenizer = TokenizerConfig()
             self.endpoints = EndpointsConfig()

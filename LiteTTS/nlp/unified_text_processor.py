@@ -37,13 +37,23 @@ from .audio_quality_enhancer import audio_quality_enhancer
 from .voice_modulation_system import VoiceModulationSystem
 from .dynamic_emotion_intonation import DynamicEmotionIntonationSystem
 
-# Import Phase 6 enhancements
-from .phase6_text_processor import Phase6TextProcessor, Phase6ProcessingResult
+# Import Phase 6 enhancements (optional)
+try:
+    from .phase6_text_processor import Phase6TextProcessor, Phase6ProcessingResult
+    PHASE6_AVAILABLE = True
+except ImportError:
+    PHASE6_AVAILABLE = False
+    Phase6TextProcessor = None
+    Phase6ProcessingResult = None
 
 # Import preprocessing
 from ..text.phonemizer_preprocessor import phonemizer_preprocessor
 
 logger = logging.getLogger(__name__)
+
+# Log Phase 6 availability after logger is initialized
+if not PHASE6_AVAILABLE:
+    logger.warning("Phase 6 text processor not available, advanced text processing will be limited")
 
 class ProcessingMode(Enum):
     """Text processing modes"""
@@ -239,6 +249,11 @@ class UnifiedTextProcessor:
 
     def _init_phase6_processors(self):
         """Initialize Phase 6 processors"""
+        if not PHASE6_AVAILABLE:
+            logger.info("Phase 6 text processor not available, skipping initialization")
+            self.phase6_processor = None
+            return
+
         try:
             self.phase6_processor = Phase6TextProcessor(self.config)
             logger.debug("Phase 6 processors initialized")

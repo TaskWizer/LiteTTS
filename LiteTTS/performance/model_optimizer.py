@@ -55,56 +55,49 @@ class ModelOptimizer:
     def get_optimized_session_options(self) -> Dict[str, Any]:
         """Get ONNX session options optimized for aggressive performance"""
         try:
-            import onnxruntime as ort
-            
-            session_options = ort.SessionOptions()
-            
-            # Aggressive graph optimizations
-            session_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
-            session_options.execution_mode = ort.ExecutionMode.ORT_PARALLEL
-            
-            # Memory optimizations
-            session_options.enable_mem_pattern = True
-            session_options.enable_cpu_mem_arena = True
-            session_options.enable_mem_reuse = True
-            
-            # Aggressive performance settings - check for existing entries to avoid warnings
-            try:
-                session_options.add_session_config_entry("session.use_env_allocators", "1")
-            except Exception:
-                pass  # Entry already exists
-            try:
-                session_options.add_session_config_entry("session.use_deterministic_compute", "0")
-            except Exception:
-                pass  # Entry already exists
-            try:
-                session_options.add_session_config_entry("session.disable_prepacking", "0")
-            except Exception:
-                pass  # Entry already exists
-            
-            # Intel-specific optimizations
+            from LiteTTS.utils.onnx_config_manager import create_optimized_session_options
+
+            # Get CPU info for optimizations
+            cpu_info = None
+            memory_limit_mb = None
+            inter_op_threads = None
+            intra_op_threads = None
+
             try:
                 from LiteTTS.performance.cpu_optimizer import get_cpu_optimizer
                 cpu_optimizer = get_cpu_optimizer()
-                
-                if "Intel" in cpu_optimizer.cpu_info.model_name:
-                    try:
-                        session_options.add_session_config_entry("session.use_intel_optimizations", "1")
-                    except Exception:
-                        pass  # Entry already exists
 
-                    # AVX optimizations
-                    if cpu_optimizer.cpu_info.supports_avx2:
-                        try:
-                            session_options.add_session_config_entry("session.use_avx2", "1")
-                        except Exception:
-                            pass  # Entry already exists
-                        
+                # Check thermal status for aggressive optimization safety
+                thermal_status = cpu_optimizer.get_thermal_status()
+                enable_aggressive = thermal_status["safe_for_aggressive"]
+
+                if enable_aggressive:
+                    settings = cpu_optimizer.get_recommended_settings(aggressive=True)
+                    inter_op_threads = settings["onnx_inter_op_threads"]
+                    intra_op_threads = settings["onnx_intra_op_threads"]
+
+                cpu_info = {
+                    "model_name": cpu_optimizer.cpu_info.model_name,
+                    "supports_avx2": cpu_optimizer.cpu_info.supports_avx2
+                }
+
             except ImportError:
-                pass
-            
-            return {"session_options": session_options}
-            
+                logger.debug("CPU optimizer not available, using default ONNX settings")
+
+            # Create optimized session options using centralized manager
+            session_options = create_optimized_session_options(
+                session_id="model_optimizer",
+                cpu_info=cpu_info,
+                memory_limit_mb=memory_limit_mb,
+                inter_op_threads=inter_op_threads,
+                intra_op_threads=intra_op_threads
+            )
+
+            if session_options:
+                return {"session_options": session_options}
+            else:
+                return {}
+
         except ImportError:
             logger.warning("ONNX Runtime not available for session optimization")
             return {}
