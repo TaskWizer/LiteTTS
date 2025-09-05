@@ -71,7 +71,7 @@ class PronunciationDictionary:
             'mortgage': 'MOR-gij',  # Silent 't'
             'answer': 'AN-ser',  # Silent 'w'
             'sword': 'SORD',  # Silent 'w'
-            'two': 'TOO',  # Silent 'w'
+            # 'two': 'TOO',  # REMOVED: Causes corruption in time expressions - let natural pronunciation handle this
             'write': 'RYT',  # Silent 'w'
             'wrong': 'RONG',  # Silent 'w'
             'wrist': 'RIST',  # Silent 'w'

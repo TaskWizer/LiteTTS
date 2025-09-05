@@ -22,6 +22,28 @@ except ImportError:
     ENHANCED_CONTRACTIONS_AVAILABLE = False
     logger.warning("Enhanced Contraction Processor V2 not available, falling back to basic processing")
 
+# Import advanced number, currency, and date processors
+try:
+    from .advanced_currency_processor import AdvancedCurrencyProcessor, FinancialContext
+    ADVANCED_CURRENCY_AVAILABLE = True
+except ImportError:
+    ADVANCED_CURRENCY_AVAILABLE = False
+    logger.warning("Advanced Currency Processor not available")
+
+try:
+    from .enhanced_datetime_processor import EnhancedDateTimeProcessor
+    ENHANCED_DATETIME_AVAILABLE = True
+except ImportError:
+    ENHANCED_DATETIME_AVAILABLE = False
+    logger.warning("Enhanced DateTime Processor not available")
+
+try:
+    from .text_normalizer import TextNormalizer
+    TEXT_NORMALIZER_AVAILABLE = True
+except ImportError:
+    TEXT_NORMALIZER_AVAILABLE = False
+    logger.warning("Text Normalizer not available")
+
 logger = logging.getLogger(__name__)
 
 class Phase6ProcessingMode(Enum):
@@ -65,13 +87,55 @@ class Phase6TextProcessor:
         self.mode = Phase6ProcessingMode.STANDARD
         
         # Initialize processing components
+        self._init_advanced_processors()
         self._init_number_processors()
         self._init_unit_processors()
         self._init_homograph_processors()
         self._init_contraction_processors()
         
         logger.debug("Phase 6 text processor initialized")
-    
+
+    def _init_advanced_processors(self):
+        """Initialize advanced text processing components"""
+        # Initialize advanced currency processor
+        if ADVANCED_CURRENCY_AVAILABLE:
+            try:
+                self.currency_processor = AdvancedCurrencyProcessor()
+                self.financial_context = FinancialContext()
+                self.use_advanced_currency = True
+                logger.debug("Advanced Currency Processor initialized")
+            except Exception as e:
+                logger.warning(f"Failed to initialize Advanced Currency Processor: {e}")
+                self.use_advanced_currency = False
+        else:
+            self.use_advanced_currency = False
+
+        # Initialize enhanced datetime processor
+        if ENHANCED_DATETIME_AVAILABLE:
+            try:
+                self.datetime_processor = EnhancedDateTimeProcessor()
+                self.use_enhanced_datetime = True
+                logger.debug("Enhanced DateTime Processor initialized")
+            except Exception as e:
+                logger.warning(f"Failed to initialize Enhanced DateTime Processor: {e}")
+                self.use_enhanced_datetime = False
+        else:
+            self.use_enhanced_datetime = False
+
+        # Initialize text normalizer for number-to-words
+        if TEXT_NORMALIZER_AVAILABLE:
+            try:
+                # Configure for full number expansion (not preserve_natural_speech mode)
+                self.text_normalizer = TextNormalizer()
+                self.text_normalizer.preserve_natural_speech = False  # Enable full number processing
+                self.use_text_normalizer = True
+                logger.debug("Text Normalizer initialized with full number expansion")
+            except Exception as e:
+                logger.warning(f"Failed to initialize Text Normalizer: {e}")
+                self.use_text_normalizer = False
+        else:
+            self.use_text_normalizer = False
+
     def _init_number_processors(self):
         """Initialize number processing components"""
         # Enhanced number patterns
@@ -285,40 +349,94 @@ class Phase6TextProcessor:
             )
     
     def _process_numbers(self, text: str) -> Tuple[str, int]:
-        """Process numbers for better TTS pronunciation"""
+        """Process numbers, currency, and dates for better TTS pronunciation"""
         changes = 0
-        
-        # Process currency
+        original_text = text
+
+        # Stage 1: Process currency using advanced processor
+        if self.use_advanced_currency:
+            try:
+                processed_currency = self.currency_processor.process_currency_text(text, self.financial_context)
+                if processed_currency != text:
+                    text = processed_currency
+                    changes += 1
+                    logger.debug("Advanced currency processing applied")
+            except Exception as e:
+                logger.warning(f"Advanced currency processing failed: {e}")
+
+        # Stage 2: Process dates and times using enhanced processor
+        if self.use_enhanced_datetime:
+            try:
+                processed_datetime = self.datetime_processor.process_dates_and_times(text)
+                if processed_datetime != text:
+                    text = processed_datetime
+                    changes += 1
+                    logger.debug("Enhanced datetime processing applied")
+            except Exception as e:
+                logger.warning(f"Enhanced datetime processing failed: {e}")
+
+        # Stage 3: Process standalone numbers using text normalizer
+        # Skip if advanced processors already handled the text to avoid conflicts
+        if self.use_text_normalizer and changes == 0:
+            try:
+                processed_numbers = self.text_normalizer.normalize_text(text)
+                if processed_numbers != text:
+                    text = processed_numbers
+                    changes += 1
+                    logger.debug("Text normalizer processing applied")
+            except Exception as e:
+                logger.warning(f"Text normalizer processing failed: {e}")
+        elif changes > 0:
+            logger.debug("Skipping text normalizer - advanced processors already applied")
+
+        # Fallback: Basic processing if advanced processors not available
+        if not any([self.use_advanced_currency, self.use_enhanced_datetime, self.use_text_normalizer]):
+            text, fallback_changes = self._process_numbers_fallback(text)
+            changes += fallback_changes
+
+        return text, changes
+
+    def _process_numbers_fallback(self, text: str) -> Tuple[str, int]:
+        """Fallback number processing when advanced processors unavailable"""
+        changes = 0
+
+        # Process currency (basic)
         def replace_currency(match):
             nonlocal changes
             amount = match.group(0)
-            # Convert $1,234.56 to "one thousand two hundred thirty four dollars and fifty six cents"
-            # Simplified implementation - can be enhanced
             changes += 1
-            return f"${amount[1:]} dollars"  # Basic conversion
-        
+            return f"{amount} dollars"  # Very basic conversion
+
         text = self.currency_pattern.sub(replace_currency, text)
-        
+
         # Process percentages
         def replace_percentage(match):
             nonlocal changes
             changes += 1
             return match.group(0).replace('%', ' percent')
-        
+
         text = self.percentage_pattern.sub(replace_percentage, text)
-        
+
         return text, changes
     
     def _process_units(self, text: str) -> Tuple[str, int]:
-        """Process unit abbreviations"""
+        """Process unit abbreviations with time format protection"""
         changes = 0
-        
+
         for abbrev, full_form in self.unit_mappings.items():
-            pattern = r'\b' + re.escape(abbrev) + r'\b'
+            # Special handling for 'm' to avoid corrupting a.m./p.m.
+            if abbrev == 'm':
+                # Only match 'm' when it's not part of a.m. or p.m.
+                # Negative lookbehind: not preceded by 'a ' or 'p ' (after text normalization)
+                # Also handle original 'a.' or 'p.' formats
+                pattern = r'(?<!a\s)(?<!p\s)(?<!a\.)(?<!p\.)\b' + re.escape(abbrev) + r'\b(?!\.)'
+            else:
+                pattern = r'\b' + re.escape(abbrev) + r'\b'
+
             if re.search(pattern, text):
                 text = re.sub(pattern, full_form, text)
                 changes += 1
-        
+
         return text, changes
     
     def _process_homographs(self, text: str) -> Tuple[str, int]:

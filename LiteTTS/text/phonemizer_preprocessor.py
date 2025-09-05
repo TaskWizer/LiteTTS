@@ -366,7 +366,10 @@ class PhonemizationPreprocessor:
         warnings.extend(self._detect_potential_issues(text))
 
         # Ensure text ends with proper punctuation (but don't count this as a word)
-        if text and not text[-1] in '.!?':
+        # Skip terminal punctuation for time expressions
+        is_time_expression = self._is_time_expression(text)
+
+        if text and not text[-1] in '.!?' and not is_time_expression:
             text += '.'
             changes_made.append("Added terminal punctuation")
 
@@ -382,7 +385,24 @@ class PhonemizationPreprocessor:
             logger.debug(f"Text preprocessing made {len(changes_made)} changes: {', '.join(changes_made)}")
 
         return result
-    
+
+    def _is_time_expression(self, text: str) -> bool:
+        """Check if the text is a time expression that shouldn't have terminal punctuation"""
+        text_lower = text.lower().strip()
+
+        # Check for time expression patterns
+        time_patterns = [
+            r'\b(?:ten|eleven|twelve|one|two|three|four|five|six|seven|eight|nine)\s+(?:thirty|fifteen|forty|oh|zero)\s*(?:five)?\s+(?:a\s+m|p\s+m)$',
+            r'\b(?:ten|eleven|twelve|one|two|three|four|five|six|seven|eight|nine)\s+o\'?clock\s*(?:a\s+m|p\s+m)?$',
+            r'\b(?:ten|eleven|twelve|one|two|three|four|five|six|seven|eight|nine)\s+(?:a\s+m|p\s+m)$'
+        ]
+
+        for pattern in time_patterns:
+            if re.search(pattern, text_lower):
+                return True
+
+        return False
+
     def _expand_contractions(self, text: str) -> Tuple[str, List[str]]:
         """
         Process contractions using enhanced contraction processor or fallback to legacy method

@@ -139,6 +139,10 @@ class TickerSymbolProcessor:
             # Common acronyms
             'FAQ', 'FYI', 'ASAP', 'ETA', 'EOD', 'COD', 'FOB', 'ROI', 'KPI',
             'SLA', 'NDA', 'IPO', 'M&A', 'B2B', 'B2C', 'P2P', 'SaaS', 'PaaS',
+
+            # Time-related words (CRITICAL: Prevent time corruption)
+            'FORTY', 'FIFTY', 'SIXTY', 'TWENTY', 'THIRTY', 'ELEVEN', 'TWELVE',
+            'THIRTEEN', 'FOURTEEN', 'FIFTEEN', 'SIXTEEN', 'SEVENTEEN', 'EIGHTEEN', 'NINETEEN',
         }
     
     def process_ticker_symbols(self, text: str) -> TickerProcessingResult:

@@ -77,7 +77,7 @@ class TextNormalizer:
             'percentage': re.compile(r'\b\d+(?:\.\d+)?%\b'),
             'fraction': re.compile(r'\b\d+/\d+\b'),
             'phone': re.compile(r'\b(?:\+?1[-.]?)?\(?([0-9]{3})\)?[-.]?([0-9]{3})[-.]?([0-9]{4})\b'),
-            'time': re.compile(r'\b([0-1]?[0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9]))?\s*(AM|PM)?\b', re.IGNORECASE),
+            'time': re.compile(r'\b([0-1]?[0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9]))?\s*(AM|PM|a\.m\.|p\.m\.)?(?=\s|$|[^\w.])', re.IGNORECASE),
             'date': re.compile(r'\b(\d{1,2})/(\d{1,2})/(\d{2,4})\b'),
             'year': re.compile(r'\b(19|20)\d{2}\b'),
             'currency': re.compile(r'\$([0-9,]+(?:\.[0-9]{2})?)')
@@ -342,19 +342,27 @@ class TextNormalizer:
         def replace_time(match):
             hour, minute = match.group(1), match.group(2)
             ampm = match.group(4) or ""
-            
+
             hour_word = self._number_to_words(hour)
             if minute == "00":
                 result = f"{hour_word} o'clock"
             else:
                 minute_word = self._number_to_words(minute)
                 result = f"{hour_word} {minute_word}"
-            
+
             if ampm:
-                result += f" {ampm.upper()}"
-            
+                # Convert all AM/PM formats to "a m"/"p m" format (no periods, single space)
+                ampm_lower = ampm.lower()
+                if ampm_lower in ["a.m.", "am"]:
+                    result += " a m"
+                elif ampm_lower in ["p.m.", "pm"]:
+                    result += " p m"
+                else:
+                    # Fallback for any other format
+                    result += f" {ampm}"
+
             return result
-        
+
         text = self.number_patterns['time'].sub(replace_time, text)
         return text
     

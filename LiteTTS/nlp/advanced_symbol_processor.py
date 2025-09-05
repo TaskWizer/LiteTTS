@@ -224,30 +224,30 @@ class AdvancedSymbolProcessor:
     def process_symbols(self, text: str) -> str:
         """Process symbols and punctuation for natural TTS pronunciation"""
         logger.debug(f"Processing symbols in: {text[:100]}...")
-        
+
         # Step 1: Handle HTML entities first (critical for apostrophe issues)
         if self.fix_html_entities:
             text = self._fix_html_entities(text)
-        
+
         # Step 2: Handle quotes naturally to prevent "in quat" issues
         if self.handle_quotes_naturally:
             text = self._process_quotes(text)
-        
+
         # Step 3: Handle markdown symbols if needed
         if self.preserve_markdown:
             text = self._preserve_markdown_context(text)
         else:
             text = self._remove_markdown_symbols(text)
-        
+
         # Step 4: Process regular symbols
         text = self._process_regular_symbols(text)
-        
-        # Step 5: Normalize punctuation
-        text = self._normalize_punctuation(text)
-        
+
+        # Step 5: Normalize punctuation (but skip time-related punctuation)
+        text = self._normalize_punctuation_safe(text)
+
         # Step 6: Clean up whitespace
         text = self._clean_whitespace(text)
-        
+
         logger.debug(f"Symbol processing result: {text[:100]}...")
         return text
     
@@ -335,7 +335,43 @@ class AdvancedSymbolProcessor:
                 text = text.replace(symbol, replacement)
         
         return text
-    
+
+    def _normalize_punctuation_safe(self, text: str) -> str:
+        """Normalize punctuation while avoiding time format corruption"""
+        # Protect time expressions before applying punctuation rules
+        time_expressions = []
+        placeholder_counter = 0
+
+        # Find and protect time expressions
+        time_patterns = [
+            r'\b(?:ten|eleven|twelve|one|two|three|four|five|six|seven|eight|nine)\s*:\s*(?:thirty|fifteen|forty|oh|zero)\s*(?:five)?\s*(?:a\s*\.\s*m\.|p\s*\.\s*m\.)?\b',
+            r'\b(?:ten|eleven|twelve|one|two|three|four|five|six|seven|eight|nine)\s+(?:thirty|fifteen|forty|oh|zero)\s*(?:five)?\s+(?:a\s+m|p\s+m)\b',
+            r'\b(?:ten|eleven|twelve|one|two|three|four|five|six|seven|eight|nine)\s+o\'?clock\s*(?:a\s*\.\s*m\.|p\s*\.\s*m\.|a\s+m|p\s+m)?\b'
+        ]
+
+        for pattern in time_patterns:
+            matches = list(re.finditer(pattern, text, re.IGNORECASE))
+            for match in reversed(matches):
+                placeholder = f"__TIME_EXPR_{placeholder_counter}__"
+                time_expressions.append((placeholder, match.group(0)))
+                text = text[:match.start()] + placeholder + text[match.end():]
+                placeholder_counter += 1
+
+        # Apply safe punctuation rules (excluding colon and period spacing)
+        safe_rules = []
+        for pattern, replacement in self.punctuation_rules:
+            if pattern not in [r'\s*:\s*', r'\s*\.\s*']:
+                safe_rules.append((pattern, replacement))
+
+        for pattern, replacement in safe_rules:
+            text = re.sub(pattern, replacement, text)
+
+        # Restore time expressions
+        for placeholder, original in time_expressions:
+            text = text.replace(placeholder, original)
+
+        return text
+
     def _normalize_punctuation(self, text: str) -> str:
         """Normalize punctuation for better TTS pronunciation"""
         for pattern, replacement in self.punctuation_rules:

@@ -264,6 +264,7 @@ class MonitoringConfig:
     system_monitoring: bool = True
     monitoring_interval: float = 1.0  # seconds
     join_timeout: float = 5.0  # seconds
+    metrics_retention_days: int = 7  # days
 
 @dataclass
 class TestingConfig:
@@ -720,10 +721,10 @@ class ConfigManager:
             },
             "monitoring": {
                 "enabled": self.monitoring.enabled,
-                "metrics_endpoint": self.monitoring.metrics_endpoint,
-                "health_endpoint": self.monitoring.health_endpoint,
-                "request_tracking": self.monitoring.request_tracking,
-                "performance_logging": self.monitoring.performance_logging,
+                "max_history": self.monitoring.max_history,
+                "system_monitoring": self.monitoring.system_monitoring,
+                "monitoring_interval": self.monitoring.monitoring_interval,
+                "join_timeout": self.monitoring.join_timeout,
                 "metrics_retention_days": self.monitoring.metrics_retention_days,
             },
             "security": {

@@ -28,17 +28,19 @@ class PerformanceMetrics:
     generation_type: GenerationType
     text_length: int
     voice_id: str
-    
+
     # Timing metrics
     total_time: float
     synthesis_time: float
     processing_time: float
-    first_chunk_time: Optional[float] = None
-    
+
     # Quality metrics
     audio_size: int
     estimated_duration: float
     rtf: float  # Real-time factor
+
+    # Optional timing metrics
+    first_chunk_time: Optional[float] = None
     
     # Chunking metrics (for chunked generation)
     chunk_count: Optional[int] = None

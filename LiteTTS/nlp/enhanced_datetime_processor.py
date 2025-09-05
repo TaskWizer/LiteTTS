@@ -25,7 +25,7 @@ class EnhancedDateTimeProcessor:
         # Configuration
         self.use_ordinal_dates = True
         self.use_full_month_names = True
-        self.use_natural_time_format = True
+        self.use_natural_time_format = False  # CHANGED: Use literal format for TTS
         self.handle_relative_dates = True
         
     def _load_date_patterns(self) -> List[Tuple[str, str]]:
@@ -85,10 +85,10 @@ class EnhancedDateTimeProcessor:
             (r'\b([0-2]?\d):([0-5]\d)\b(?!\s*(?:AM|PM|am|pm|a\.m\.|p\.m\.))', 'time_24'),
 
             # 12-hour format with AM/PM
-            (r'\b([0-1]?\d):([0-5]\d)\s*(AM|PM|am|pm|a\.m\.|p\.m\.)\b', 'time_12_ampm'),
+            (r'\b([0-1]?\d):([0-5]\d)\s*(AM|PM|am|pm|a\.m\.|p\.m\.)(?=\s|$|[^\w.])', 'time_12_ampm'),
 
             # Time with seconds and AM/PM
-            (r'\b([0-1]?\d):([0-5]\d):([0-5]\d)\s*(AM|PM|am|pm|a\.m\.|p\.m\.)\b', 'time_12_seconds_ampm'),
+            (r'\b([0-1]?\d):([0-5]\d):([0-5]\d)\s*(AM|PM|am|pm|a\.m\.|p\.m\.)(?=\s|$|[^\w.])', 'time_12_seconds_ampm'),
 
             # Casual time expressions
             (r'\b(noon|midnight|midday)\b', 'casual_time'),
@@ -326,7 +326,15 @@ class EnhancedDateTimeProcessor:
                 hour = int(groups[0])
                 minute = int(groups[1])
                 seconds = int(groups[2]) if len(groups) > 3 else None
-                ampm = groups[-1].upper()
+                ampm_raw = groups[-1]
+
+                # Normalize AM/PM format
+                if ampm_raw.lower() in ['a.m.', 'am']:
+                    ampm = 'AM'
+                elif ampm_raw.lower() in ['p.m.', 'pm']:
+                    ampm = 'PM'
+                else:
+                    ampm = ampm_raw.upper()
 
                 return self._format_natural_time(hour, minute, seconds, ampm=ampm)
 
@@ -388,10 +396,12 @@ class EnhancedDateTimeProcessor:
             else:
                 return f"two thousand {self._number_to_words(str(remainder))}"
         elif 2010 <= year_int <= 2099:
-            # e.g., 2023 -> "twenty twenty-three"
-            first_part = self._number_to_words(str(year_int // 100))
-            second_part = self._number_to_words(str(year_int % 100))
-            return f"{first_part} {second_part}"
+            # e.g., 2025 -> "two thousand twenty-five" (for TTS clarity)
+            remainder = year_int % 100
+            if remainder == 0:
+                return "two thousand"
+            else:
+                return f"two thousand {self._number_to_words(str(remainder))}"
         else:
             # Default to reading as a regular number
             return self._number_to_words(year)
@@ -421,24 +431,40 @@ class EnhancedDateTimeProcessor:
             # Default case - assume 12-hour format without AM/PM
             hour_12 = hour
         
-        # Format the time naturally
-        if minute == 0 and not seconds:
-            # e.g., "3 o'clock"
-            time_str = f"{self._number_to_words(str(hour_12))} o'clock"
-        elif minute == 15:
-            time_str = f"quarter past {self._number_to_words(str(hour_12))}"
-        elif minute == 30:
-            time_str = f"half past {self._number_to_words(str(hour_12))}"
-        elif minute == 45:
-            next_hour = hour_12 + 1 if hour_12 < 12 else 1
-            time_str = f"quarter to {self._number_to_words(str(next_hour))}"
+        # Format the time based on configuration
+        if self.use_natural_time_format:
+            # Natural time format (original behavior)
+            if minute == 0 and not seconds:
+                # e.g., "3 o'clock"
+                time_str = f"{self._number_to_words(str(hour_12))} o'clock"
+            elif minute == 15:
+                time_str = f"quarter past {self._number_to_words(str(hour_12))}"
+            elif minute == 30:
+                time_str = f"half past {self._number_to_words(str(hour_12))}"
+            elif minute == 45:
+                next_hour = hour_12 + 1 if hour_12 < 12 else 1
+                time_str = f"quarter to {self._number_to_words(str(next_hour))}"
+            else:
+                hour_word = self._number_to_words(str(hour_12))
+                minute_word = self._number_to_words(str(minute))
+                time_str = f"{hour_word} {minute_word}"
         else:
+            # Literal time format (required for TTS)
             hour_word = self._number_to_words(str(hour_12))
-            minute_word = self._number_to_words(str(minute))
-            time_str = f"{hour_word} {minute_word}"
+            if minute == 0 and not seconds:
+                time_str = f"{hour_word} o'clock"
+            else:
+                minute_word = self._number_to_words(str(minute))
+                time_str = f"{hour_word} {minute_word}"
         
         if ampm:
-            time_str += f" {ampm}"
+            # Convert AM/PM to proper TTS format
+            if ampm.upper() == "AM":
+                time_str += " a m"
+            elif ampm.upper() == "PM":
+                time_str += " p m"
+            else:
+                time_str += f" {ampm}"
         
         if seconds:
             seconds_word = self._number_to_words(str(seconds))
