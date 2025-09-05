@@ -57,38 +57,24 @@ class CleanTextNormalizer:
         return True
         
     def _load_contraction_fixes(self) -> Dict[str, str]:
-        """Load contraction pronunciation fixes"""
+        """Load contraction pronunciation fixes - ONLY truly problematic contractions"""
+        # CRITICAL FIX: Only include contractions that are truly problematic for TTS
+        # Natural contractions like "won't", "we'll", "I'm" should be preserved
         return {
-            # Problematic contractions that need expansion
-            "I'll": "I will",
-            "you'll": "you will", 
-            "he'll": "he will",
-            "she'll": "she will",
-            "it'll": "it will",
-            "we'll": "we will",
-            "they'll": "they will",
-            "that'll": "that will",
-            "I'd": "I would",
-            "you'd": "you would",
-            "he'd": "he would", 
-            "she'd": "she would",
-            "it'd": "it would",
-            "we'd": "we would",
-            "they'd": "they would",
-            "I'm": "I am",
-            "It's": "It is",
-            "it's": "it is",
-            "wasn't": "was not",
-            "weren't": "were not",
-            "isn't": "is not",
-            "aren't": "are not",
-            "hasn't": "has not",
-            "haven't": "have not",
-            "hadn't": "had not",
-            "won't": "will not",
-            "can't": "cannot",
-            "couldn't": "could not",
-            "shouldn't": "should not",
+            # Only include contractions that cause actual TTS pronunciation issues
+            # Most W/I contractions are now preserved for natural speech
+            "that'll": "that will",  # Can be problematic
+            "who'll": "who will",    # Can be problematic
+            "what'll": "what will",  # Can be problematic
+            "where'll": "where will", # Can be problematic
+            "when'll": "when will",  # Can be problematic
+            "how'll": "how will",    # Can be problematic
+            "that'd": "that would",  # Can be problematic
+            "who'd": "who would",    # Can be problematic
+            "what'd": "what would",  # Can be problematic
+            "where'd": "where would", # Can be problematic
+            "when'd": "when would",  # Can be problematic
+            "how'd": "how would",    # Can be problematic
             "wouldn't": "would not",
             "mustn't": "must not",
             "needn't": "need not",

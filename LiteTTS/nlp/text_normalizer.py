@@ -235,10 +235,23 @@ class TextNormalizer:
 
         # If expand_problematic_only is True, only expand known problematic contractions
         if self.expand_problematic_only and not self.expand_contractions:
-            # Define problematic contractions that cause TTS issues
+            # CRITICAL FIX: Define only truly problematic contractions that cause TTS issues
+            # Natural contractions like "won't", "we'll", "I'm" should be preserved
             problematic_contractions = {
-                "won't": "will not",  # This one can be problematic
-                "can't": "cannot",    # This one can be problematic
+                # Only include contractions that cause actual pronunciation issues
+                # Most W/I contractions are now preserved for natural speech
+                "that'll": "that will",
+                "who'll": "who will",
+                "what'll": "what will",
+                "where'll": "where will",
+                "when'll": "when will",
+                "how'll": "how will",
+                "that'd": "that would",
+                "who'd": "who would",
+                "what'd": "what would",
+                "where'd": "where would",
+                "when'd": "when would",
+                "how'd": "how would",
             }
 
             for contraction, expansion in problematic_contractions.items():

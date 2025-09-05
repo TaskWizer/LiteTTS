@@ -50,16 +50,51 @@ class EnhancedContractionProcessorV2:
         """Initialize the enhanced contraction processor"""
         self.config = config or {}
         self.debug_mode = self.config.get('debug', False)
-        
+
+        # Load pronunciation configuration to respect natural/problematic classification
+        self._load_pronunciation_config()
+
         # Initialize contraction rules
         self._init_contraction_rules()
-        
+
         # Compile regex patterns for performance
         self._compile_patterns()
-        
-        logger.info("Enhanced Contraction Processor V2 initialized with %d rules", 
+
+        logger.info("Enhanced Contraction Processor V2 initialized with %d rules",
                    len(self.contraction_rules))
-    
+
+    def _load_pronunciation_config(self):
+        """Load pronunciation configuration to respect natural/problematic contraction classification"""
+        try:
+            import json
+            import os
+
+            # Try to load enhanced pronunciation config
+            config_path = os.path.join(os.path.dirname(__file__), '..', 'config', 'enhanced_pronunciation_config.json')
+            if os.path.exists(config_path):
+                with open(config_path, 'r') as f:
+                    pronunciation_config = json.load(f)
+
+                contraction_config = pronunciation_config.get('contraction_processing', {})
+                # Convert to lowercase for case-insensitive matching
+                self.natural_contractions = set(c.lower() for c in contraction_config.get('natural_contractions', []))
+                self.problematic_contractions = set(c.lower() for c in contraction_config.get('problematic_contractions', []))
+                self.preserve_natural_speech = contraction_config.get('preserve_natural_speech', True)
+
+                logger.info(f"Loaded pronunciation config: {len(self.natural_contractions)} natural, {len(self.problematic_contractions)} problematic contractions")
+            else:
+                # Fallback to default behavior
+                self.natural_contractions = set()
+                self.problematic_contractions = set()
+                self.preserve_natural_speech = True
+                logger.warning("Enhanced pronunciation config not found, using default behavior")
+
+        except Exception as e:
+            logger.warning(f"Failed to load pronunciation config: {e}, using default behavior")
+            self.natural_contractions = set()
+            self.problematic_contractions = set()
+            self.preserve_natural_speech = True
+
     def _init_contraction_rules(self):
         """Initialize comprehensive contraction rules based on research"""
         self.contraction_rules = {
@@ -271,6 +306,12 @@ class EnhancedContractionProcessorV2:
         for contraction, rule in sorted_rules:
             contraction_lower = contraction.lower()
             if contraction_lower not in processed_text.lower():
+                continue
+
+            # CRITICAL FIX: Skip natural contractions when preserve_natural_speech is True
+            if self.preserve_natural_speech and contraction_lower in self.natural_contractions:
+                if self.debug_mode:
+                    logger.debug(f"Preserving natural contraction: {contraction}")
                 continue
 
             # Check for context-sensitive contractions first

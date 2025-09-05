@@ -420,17 +420,24 @@ class Phase6TextProcessor:
         return text, changes
     
     def _process_units(self, text: str) -> Tuple[str, int]:
-        """Process unit abbreviations with time format protection"""
+        """Process unit abbreviations with contraction and time format protection"""
         changes = 0
 
+        # CRITICAL FIX: Skip unit processing for problematic units that interfere with contractions
+        # Units 'm' and 't' are too common in contractions and cause issues
+        problematic_units = {'m', 't'}  # Skip these to avoid contraction interference
+
         for abbrev, full_form in self.unit_mappings.items():
-            # Special handling for 'm' to avoid corrupting a.m./p.m.
-            if abbrev == 'm':
-                # Only match 'm' when it's not part of a.m. or p.m.
-                # Negative lookbehind: not preceded by 'a ' or 'p ' (after text normalization)
-                # Also handle original 'a.' or 'p.' formats
-                pattern = r'(?<!a\s)(?<!p\s)(?<!a\.)(?<!p\.)\b' + re.escape(abbrev) + r'\b(?!\.)'
+            # Skip problematic units that interfere with contractions
+            if abbrev in problematic_units:
+                continue
+
+            # Special handling for 'a.m./p.m.' protection (keep existing logic)
+            if abbrev == 'a' or abbrev == 'p':
+                # Only match when not part of a.m. or p.m.
+                pattern = r'\b' + re.escape(abbrev) + r'\b(?!\s*\.?\s*m\.?)'
             else:
+                # Standard pattern for safe units
                 pattern = r'\b' + re.escape(abbrev) + r'\b'
 
             if re.search(pattern, text):

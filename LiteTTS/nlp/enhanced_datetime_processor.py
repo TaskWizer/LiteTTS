@@ -78,14 +78,17 @@ class EnhancedDateTimeProcessor:
             (r'\b([0-1]?\d):([0-5]\d)\s*(AM|PM|am|pm)\s*-\s*([0-1]?\d):([0-5]\d)\s*(AM|PM|am|pm)\b', 'time_range_12_ampm'),
             (r'\b([0-1]?\d)\s*(AM|PM|am|pm)\s*-\s*([0-1]?\d)\s*(AM|PM|am|pm)\b', 'time_range_hour_ampm'),
 
-            # 24-hour format: HH:MM:SS (not followed by AM/PM)
-            (r'\b([0-2]?\d):([0-5]\d):([0-5]\d)\b(?!\s*(?:AM|PM|am|pm|a\.m\.|p\.m\.))', 'time_24_seconds'),
-
-            # 24-hour format: HH:MM (not followed by AM/PM)
-            (r'\b([0-2]?\d):([0-5]\d)\b(?!\s*(?:AM|PM|am|pm|a\.m\.|p\.m\.))', 'time_24'),
-
             # 12-hour format with AM/PM
             (r'\b([0-1]?\d):([0-5]\d)\s*(AM|PM|am|pm|a\.m\.|p\.m\.)(?=\s|$|[^\w.])', 'time_12_ampm'),
+
+            # 24-hour format: HH:MM:SS (not followed by AM/PM) - only for hours 13-23
+            (r'\b(1[3-9]|2[0-3]):([0-5]\d):([0-5]\d)\b(?!\s*(?:AM|PM|am|pm|a\.m\.|p\.m\.))', 'time_24_seconds'),
+
+            # 24-hour format: HH:MM (not followed by AM/PM) - only for hours 13-23
+            (r'\b(1[3-9]|2[0-3]):([0-5]\d)\b(?!\s*(?:AM|PM|am|pm|a\.m\.|p\.m\.))', 'time_24'),
+
+            # 12-hour bare format: H:MM or HH:MM (1-12, not followed by AM/PM)
+            (r'\b(1[0-2]|[1-9]):([0-5]\d)\b(?!\s*(?:AM|PM|am|pm|a\.m\.|p\.m\.))', 'time_12_bare'),
 
             # Time with seconds and AM/PM
             (r'\b([0-1]?\d):([0-5]\d):([0-5]\d)\s*(AM|PM|am|pm|a\.m\.|p\.m\.)(?=\s|$|[^\w.])', 'time_12_seconds_ampm'),
@@ -312,13 +315,25 @@ class EnhancedDateTimeProcessor:
                 return f"{start_time} to {end_time}"
 
             elif time_type == 'time_24' or time_type == 'time_24_seconds':
-                # 24-hour format
+                # 24-hour format - read literally for TTS (e.g., "fourteen thirty")
                 groups = match.groups()
                 hour = int(groups[0])
                 minute = int(groups[1])
                 seconds = int(groups[2]) if len(groups) > 2 else None
 
-                return self._format_natural_time(hour, minute, seconds, is_24_hour=True)
+                # Format as literal 24-hour time without AM/PM conversion
+                hour_word = self._number_to_words(str(hour))
+                if minute == 0 and not seconds:
+                    time_str = f"{hour_word} o'clock"
+                else:
+                    minute_word = self._format_time_minutes(minute)
+                    time_str = f"{hour_word} {minute_word}"
+
+                if seconds:
+                    seconds_word = self._number_to_words(str(seconds))
+                    time_str += f" and {seconds_word} seconds"
+
+                return time_str
 
             elif time_type == 'time_12_ampm' or time_type == 'time_12_seconds_ampm':
                 # 12-hour format with AM/PM
@@ -337,6 +352,15 @@ class EnhancedDateTimeProcessor:
                     ampm = ampm_raw.upper()
 
                 return self._format_natural_time(hour, minute, seconds, ampm=ampm)
+
+            elif time_type == 'time_12_bare':
+                # 12-hour bare format without AM/PM (e.g., "7:15")
+                groups = match.groups()
+                hour = int(groups[0])
+                minute = int(groups[1])
+
+                # Process as 12-hour format without AM/PM (no auto-addition)
+                return self._format_natural_time(hour, minute, ampm=None, is_24_hour=False)
 
             elif time_type == 'casual_time':
                 # noon, midnight, etc.
@@ -410,26 +434,19 @@ class EnhancedDateTimeProcessor:
                            ampm: Optional[str] = None, is_24_hour: bool = False) -> str:
         """Format time in natural language"""
         if is_24_hour and not ampm:
-            # Convert 24-hour to 12-hour for natural speech
-            if hour == 0:
-                hour_12 = 12
-                ampm = "AM"
-            elif hour < 12:
-                hour_12 = hour
-                ampm = "AM"
-            elif hour == 12:
-                hour_12 = 12
-                ampm = "PM"
-            else:
-                hour_12 = hour - 12
-                ampm = "PM"
+            # For 24-hour format, read literally without AM/PM conversion for TTS
+            # This preserves the original 24-hour format (e.g., "fourteen thirty")
+            hour_12 = hour
+            ampm = None  # Don't add AM/PM for 24-hour times
         elif ampm:
             # 12-hour format with provided AM/PM
             hour_12 = hour
             # ampm is already provided, don't modify it
         else:
-            # Default case - assume 12-hour format without AM/PM
+            # Default case - 12-hour format without AM/PM (bare time like "7:15")
+            # DO NOT add AM/PM automatically - preserve clean format
             hour_12 = hour
+            ampm = None  # Explicitly set to None to prevent auto-addition
         
         # Format the time based on configuration
         if self.use_natural_time_format:
@@ -446,7 +463,7 @@ class EnhancedDateTimeProcessor:
                 time_str = f"quarter to {self._number_to_words(str(next_hour))}"
             else:
                 hour_word = self._number_to_words(str(hour_12))
-                minute_word = self._number_to_words(str(minute))
+                minute_word = self._format_time_minutes(minute)
                 time_str = f"{hour_word} {minute_word}"
         else:
             # Literal time format (required for TTS)
@@ -454,7 +471,7 @@ class EnhancedDateTimeProcessor:
             if minute == 0 and not seconds:
                 time_str = f"{hour_word} o'clock"
             else:
-                minute_word = self._number_to_words(str(minute))
+                minute_word = self._format_time_minutes(minute)
                 time_str = f"{hour_word} {minute_word}"
         
         if ampm:
@@ -501,7 +518,19 @@ class EnhancedDateTimeProcessor:
             'Oct': 'October', 'Nov': 'November', 'Dec': 'December'
         }
         return abbrev_map.get(abbrev, abbrev)
-    
+
+    def _format_time_minutes(self, minute: int) -> str:
+        """Format minutes for time expressions with proper 'oh' handling"""
+        if minute == 0:
+            return "o'clock"
+        elif 1 <= minute <= 9:
+            # Single digit minutes: "05" -> "oh five"
+            minute_word = self._number_to_words(str(minute))
+            return f"oh {minute_word}"
+        else:
+            # Double digit minutes: "15" -> "fifteen"
+            return self._number_to_words(str(minute))
+
     def _number_to_words(self, number_str: str) -> str:
         """Convert number to words (simplified version)"""
         # This is a simplified implementation

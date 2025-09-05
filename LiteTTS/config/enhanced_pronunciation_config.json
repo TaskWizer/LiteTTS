@@ -18,15 +18,16 @@
     "preserve_natural_speech": true,
     "expand_problematic_only": true,
     "problematic_contractions": [
-      "I'll", "you'll", "I'd", "he'll", "she'll", "it'll", "we'd", "they'd",
-      "he'd", "she'd", "it'd", "that'll", "who'll", "what'll", "where'll",
-      "when'll", "how'll", "that'd", "who'd", "what'd", "where'd", "when'd", "how'd"
+      "that'll", "who'll", "what'll", "where'll", "when'll", "how'll",
+      "that'd", "who'd", "what'd", "where'd", "when'd", "how'd"
     ],
     "natural_contractions": [
       "don't", "won't", "can't", "couldn't", "shouldn't", "wouldn't",
       "mustn't", "needn't", "aren't", "isn't", "wasn't", "weren't",
       "hasn't", "haven't", "hadn't", "didn't", "doesn't", "we're",
-      "they're", "you're", "we've", "they've", "you've", "we'll", "they'll"
+      "they're", "you're", "we've", "they've", "you've", "we'll", "they'll",
+      "I'll", "you'll", "I'd", "he'll", "she'll", "it'll", "we'd", "they'd",
+      "he'd", "she'd", "it'd", "I'm", "I've"
     ]
   },
   
