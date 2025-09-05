@@ -97,9 +97,20 @@ class WorkerManager:
                 self._shutdown_in_progress = True
                 self._shutdown_start_time = time.time()
 
-            # Start shutdown in a separate thread to avoid blocking signal handler
-            shutdown_thread = threading.Thread(target=self._shutdown_with_timeout, daemon=True)
+            # Set shutdown flag and trigger immediate shutdown
+            # Use a non-daemon thread to ensure proper cleanup
+            shutdown_thread = threading.Thread(target=self._shutdown_with_timeout, daemon=False)
             shutdown_thread.start()
+
+            # Give the shutdown thread a moment to start, then force exit if needed
+            shutdown_thread.join(timeout=0.1)
+            if shutdown_thread.is_alive():
+                # Shutdown thread is running, let it handle the cleanup
+                pass
+            else:
+                # Shutdown completed immediately, force exit
+                logger.info("Immediate shutdown completed, forcing process exit")
+                os._exit(0)
 
         # Handle common shutdown signals
         for sig in [signal.SIGTERM, signal.SIGINT]:
@@ -308,8 +319,9 @@ class WorkerManager:
                 else:
                     logger.info(f"Shutdown completed in {elapsed:.1f}s")
 
-            # Exit the process
-            sys.exit(0)
+            # Force exit the entire process (including uvicorn)
+            logger.info("Forcing process termination to ensure complete shutdown")
+            os._exit(0)
 
     def shutdown_gracefully(self):
         """Shutdown all workers gracefully with improved timeouts"""
