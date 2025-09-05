@@ -239,7 +239,7 @@ class TechnicalDocumentationGenerator:
     def _document_json_config(self, config_file: Path) -> str:
         """Document a JSON configuration file"""
         try:
-            with open(config_file, 'r') as f:
+            with open(config_file, 'r', encoding='utf-8') as f:
                 config_data = json.load(f)
             
             content = f"**File:** `{config_file.name}`\n\n"

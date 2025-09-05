@@ -34,8 +34,20 @@ class AudioQualityTestRunner:
     """
     
     def __init__(self, config_path: Optional[Path] = None):
-        self.config_path = config_path or Path("config.json")
-        self.config = self._load_config()
+        # Use centralized config system with fallback to specified path
+        if config_path is None:
+            # Try to use centralized configuration
+            try:
+                from ...config import config as app_config
+                self.config = app_config.to_dict() if hasattr(app_config, 'to_dict') else {}
+                self.config_path = None  # Using centralized config
+            except ImportError:
+                # Fallback to default config file
+                self.config_path = Path("config/settings.json") if Path("config/settings.json").exists() else Path("config.json")
+                self.config = self._load_config()
+        else:
+            self.config_path = config_path
+            self.config = self._load_config()
         
         # Initialize audio quality tester
         self.tester = AudioQualityTester(self.config)
@@ -49,10 +61,13 @@ class AudioQualityTestRunner:
         
     def _load_config(self) -> Dict[str, Any]:
         """
-        Load configuration from config.json with audio quality testing defaults
+        Load configuration from config file with audio quality testing defaults
         """
+        if self.config_path is None:
+            return {}  # Already loaded from centralized config
+
         try:
-            with open(self.config_path, 'r') as f:
+            with open(self.config_path, 'r', encoding='utf-8') as f:
                 config = json.load(f)
         except FileNotFoundError:
             logger.warning(f"Config file not found: {self.config_path}, using defaults")

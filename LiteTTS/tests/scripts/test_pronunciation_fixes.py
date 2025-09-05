@@ -18,12 +18,24 @@ def test_pronunciation_fixes():
     print("🧪 TESTING PRONUNCIATION FIXES")
     print("=" * 50)
 
-    # Load configuration
-    try:
-        with open('config.json', 'r') as f:
-            config = json.load(f)
-    except Exception as e:
-        print(f"❌ Could not load config: {e}")
+    # Load configuration (prefer centralized config)
+    config = {}
+    config_files = ['config/settings.json', 'config.json']
+
+    for config_file in config_files:
+        try:
+            with open(config_file, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+            print(f"✅ Loaded config from {config_file}")
+            break
+        except FileNotFoundError:
+            continue
+        except Exception as e:
+            print(f"⚠️ Error loading {config_file}: {e}")
+            continue
+
+    if not config:
+        print("❌ Could not load any config file")
         return False
 
     # Initialize processors

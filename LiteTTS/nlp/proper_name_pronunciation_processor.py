@@ -14,21 +14,37 @@ logger = logging.getLogger(__name__)
 class ProperNamePronunciationProcessor:
     """Processor for fixing specific proper name and word pronunciation issues"""
     
-    def __init__(self, config_path: str = "config.json"):
-        self.config = self._load_config(config_path)
+    def __init__(self, config: Optional[Dict] = None):
+        """Initialize proper name pronunciation processor
+
+        Args:
+            config: Configuration dictionary (uses centralized config system)
+        """
+        self.config = config or self._load_default_config()
         self.proper_name_fixes = self._load_proper_name_fixes()
         self.word_pronunciation_fixes = self._load_word_pronunciation_fixes()
         self.context_sensitive_fixes = self._load_context_sensitive_fixes()
         self.enabled = self._is_enabled()
-        
-    def _load_config(self, config_path: str) -> Dict:
-        """Load configuration from config.json"""
+
+    def _load_default_config(self) -> Dict:
+        """Load default configuration from centralized config system"""
         try:
-            with open(config_path, 'r') as f:
-                return json.load(f)
-        except Exception as e:
-            logger.warning(f"Could not load config from {config_path}: {e}")
-            return {}
+            # Try to import and use the centralized config system
+            from ..config import config as app_config
+            return app_config.to_dict()
+        except ImportError:
+            logger.warning("Could not load centralized config, using defaults")
+            return self._get_fallback_config()
+
+    def _get_fallback_config(self) -> Dict:
+        """Get fallback configuration if centralized config is not available"""
+        return {
+            'text_processing': {
+                'proper_name_pronunciation': {
+                    'enabled': True
+                }
+            }
+        }
     
     def _is_enabled(self) -> bool:
         """Check if proper name pronunciation fixes are enabled"""

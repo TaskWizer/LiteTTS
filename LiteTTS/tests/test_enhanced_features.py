@@ -321,7 +321,7 @@ def test_configuration_save():
         assert config_file.exists()
         
         # Verify saved content
-        with open(config_file) as f:
+        with open(config_file, encoding='utf-8') as f:
             saved_config = json.load(f)
         
         assert saved_config["voice"]["default_voice"] == "test_voice"

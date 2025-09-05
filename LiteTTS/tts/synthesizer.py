@@ -37,13 +37,21 @@ class TTSSynthesizer:
             from ..config import config as global_config
             config_dict = global_config.to_dict() if hasattr(global_config, 'to_dict') else {}
         except ImportError:
-            # Fallback to loading config.json directly
+            # Fallback to loading config file directly (prefer centralized location)
             import json
-            try:
-                with open('config.json', 'r') as f:
-                    config_dict = json.load(f)
-            except Exception:
-                config_dict = {}
+            config_dict = {}
+            config_files = ['config/settings.json', 'config.json']
+
+            for config_file in config_files:
+                try:
+                    with open(config_file, 'r', encoding='utf-8') as f:
+                        config_dict = json.load(f)
+                    break  # Successfully loaded
+                except FileNotFoundError:
+                    continue
+                except Exception as e:
+                    logger.warning(f"Error loading {config_file}: {e}")
+                    continue
 
         # Initialize both processors for compatibility and advanced features
         self.nlp_processor = NLPProcessor(config=config_dict)

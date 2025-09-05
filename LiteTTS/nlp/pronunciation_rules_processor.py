@@ -13,20 +13,37 @@ logger = logging.getLogger(__name__)
 
 class PronunciationRulesProcessor:
     """Processor for applying pronunciation rules to maintain natural speech"""
-    
-    def __init__(self, config_path: str = "config.json"):
-        self.config = self._load_config(config_path)
+
+    def __init__(self, config: Optional[Dict] = None):
+        """Initialize pronunciation rules processor
+
+        Args:
+            config: Configuration dictionary (uses centralized config system)
+        """
+        self.config = config or self._load_default_config()
         self.contraction_rules = self._load_contraction_rules()
         self.enabled = self._is_enabled()
-        
-    def _load_config(self, config_path: str) -> Dict:
-        """Load configuration from config.json"""
+
+    def _load_default_config(self) -> Dict:
+        """Load default configuration from centralized config system"""
         try:
-            with open(config_path, 'r') as f:
-                return json.load(f)
-        except Exception as e:
-            logger.warning(f"Could not load config from {config_path}: {e}")
-            return {}
+            # Try to import and use the centralized config system
+            from ..config import config as app_config
+            return app_config.to_dict()
+        except ImportError:
+            logger.warning("Could not load centralized config, using defaults")
+            return self._get_fallback_config()
+
+    def _get_fallback_config(self) -> Dict:
+        """Get fallback configuration if centralized config is not available"""
+        return {
+            'text_processing': {
+                'contraction_handling': {
+                    'use_pronunciation_rules': True,
+                    'expand_contractions': False
+                }
+            }
+        }
     
     def _is_enabled(self) -> bool:
         """Check if pronunciation rules are enabled"""
@@ -213,9 +230,9 @@ class PronunciationRulesProcessor:
         
         return validation
 
-def create_pronunciation_rules_processor(config_path: str = "config.json") -> PronunciationRulesProcessor:
+def create_pronunciation_rules_processor(config: Optional[Dict] = None) -> PronunciationRulesProcessor:
     """Factory function to create a pronunciation rules processor"""
-    return PronunciationRulesProcessor(config_path)
+    return PronunciationRulesProcessor(config)
 
 # Example usage and testing
 if __name__ == "__main__":

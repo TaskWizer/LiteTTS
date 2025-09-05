@@ -82,7 +82,7 @@ class OrpheusEncoder(TTSEncoder):
                     f"Failed with exception, {e}, attempting to obtain tokenizer.json via repository '{self.repo_id}'."
                 )
                 raise e
-            with open(conf_path, "r+") as f:
+            with open(conf_path, "r+", encoding='utf-8') as f:
                 self._tokenizer_json = json.load(f)
         return self._tokenizer_json
 

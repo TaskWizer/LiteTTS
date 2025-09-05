@@ -353,7 +353,7 @@ class ConfigManager:
             # Load base configuration
             config_data = {}
             if self.config_file.exists():
-                with open(self.config_file, 'r') as f:
+                with open(self.config_file, 'r', encoding='utf-8') as f:
                     config_data = json.load(f)
                 logger.info(f"Loaded base configuration from {self.config_file}")
             else:
@@ -797,8 +797,8 @@ class ConfigManager:
                 }
             }
 
-            with open(filepath, 'w') as f:
-                json.dump(config_data, f, indent=2)
+            with open(filepath, 'w', encoding='utf-8') as f:
+                json.dump(config_data, f, indent=2, ensure_ascii=False)
 
             logger.info(f"Configuration saved to {filepath}")
             return True

@@ -5,6 +5,7 @@ Startup validation and initialization for LiteTTS
 
 import logging
 import sys
+import platform
 from pathlib import Path
 from typing import List, Tuple, Optional
 import asyncio
@@ -28,6 +29,70 @@ except ImportError:
     def log_info(msg): return f"[INFO] {msg}"
 
 logger = logging.getLogger(__name__)
+
+
+def configure_windows_console() -> bool:
+    """
+    Configure Windows console for proper Unicode support.
+
+    This function attempts to configure the Windows console to handle
+    Unicode characters properly, which is essential for emoji display
+    and UTF-8 text processing.
+
+    Returns:
+        bool: True if configuration was successful or not needed, False if failed
+    """
+    if platform.system() != "Windows":
+        return True  # Not Windows, no configuration needed
+
+    try:
+        # Try to enable UTF-8 mode on Windows console
+        import os
+        import locale
+
+        # Set environment variables for UTF-8 support
+        os.environ['PYTHONIOENCODING'] = 'utf-8'
+
+        # Try to set console code page to UTF-8 (65001)
+        try:
+            import subprocess
+            subprocess.run(['chcp', '65001'], capture_output=True, check=False)
+        except (subprocess.SubprocessError, FileNotFoundError):
+            pass  # chcp command not available or failed
+
+        # Configure Python's locale for UTF-8
+        try:
+            locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+        except locale.Error:
+            try:
+                locale.setlocale(locale.LC_ALL, 'C.UTF-8')
+            except locale.Error:
+                pass  # Locale configuration failed, continue anyway
+
+        # Try to reconfigure stdout/stderr for UTF-8 with error handling
+        try:
+            import codecs
+
+            # Only reconfigure if we're using a problematic encoding
+            stdout_encoding = getattr(sys.stdout, 'encoding', 'cp1252')
+            if stdout_encoding.lower() in ['cp1252', 'windows-1252']:
+                # Wrap stdout and stderr with UTF-8 codec and error handling
+                sys.stdout = codecs.getwriter('utf-8')(
+                    sys.stdout.detach(), errors='replace'
+                )
+                sys.stderr = codecs.getwriter('utf-8')(
+                    sys.stderr.detach(), errors='replace'
+                )
+
+        except (AttributeError, OSError):
+            pass  # Stream reconfiguration failed, continue anyway
+
+        return True
+
+    except Exception as e:
+        # Log the error but don't fail startup
+        print(f"Warning: Failed to configure Windows console for Unicode: {e}")
+        return False
 
 
 class StartupValidator:
@@ -203,10 +268,21 @@ class StartupValidator:
 
 async def initialize_system() -> bool:
     """Initialize the Kokoro TTS system"""
-    logger.info(log_start("Initializing LiteTTS API..."))
-    
+
+    # Configure Windows console BEFORE any logging setup
+    configure_windows_console()
+
+    # Initialize warning suppression early
     try:
-        # Set up logging first
+        from .utils.deprecation_warnings import initialize_warning_suppression
+        initialize_warning_suppression()
+    except ImportError:
+        pass  # Warning suppression not available
+
+    logger.info(log_start("Initializing LiteTTS API..."))
+
+    try:
+        # Set up logging after Windows console configuration
         setup_logging(
             level=config.logging.level,
             file_path=config.logging.file_path,

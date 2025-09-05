@@ -16,14 +16,23 @@ from pydantic import BaseModel
 import logging
 from typing import Optional, List, Any, Union
 
-# Initialize warning suppression early to prevent noise from third-party libraries
+# Initialize warning suppression VERY early to prevent noise from third-party libraries
+# This must be done before any imports that might trigger warnings
+import warnings
+
+# Suppress pkg_resources warnings immediately
+warnings.filterwarnings("ignore", category=UserWarning, message=".*pkg_resources is deprecated.*")
+warnings.filterwarnings("ignore", category=DeprecationWarning, message=".*pkg_resources.*")
+warnings.filterwarnings("ignore", category=UserWarning, module=".*perth.*")
+warnings.filterwarnings("ignore", category=UserWarning, module=".*resemble.*")
+
+# Now try to initialize the full warning suppression system
 try:
     from LiteTTS.utils.deprecation_warnings import initialize_warning_suppression
     initialize_warning_suppression()
 except ImportError:
-    # Fallback if warning suppression module is not available
-    import warnings
-    warnings.filterwarnings("ignore", category=DeprecationWarning, message=".*pkg_resources.*")
+    # Fallback already handled above
+    pass
 
 # Import our modules
 from LiteTTS.downloader import ensure_model_files
@@ -2563,11 +2572,14 @@ with open("hello.mp3", "wb") as f:
         async def dashboard_page():
             """Dashboard web interface - serve static file"""
             try:
-                with open("static/dashboard/index.html", "r") as f:
+                with open("static/dashboard/index.html", "r", encoding="utf-8") as f:
                     html_content = f.read()
                 return HTMLResponse(content=html_content)
             except FileNotFoundError:
                 return HTMLResponse(content="<h1>Dashboard not found</h1><p>Dashboard file missing at static/dashboard/index.html</p>", status_code=404)
+            except UnicodeDecodeError as e:
+                self.logger.error(f"Unicode decode error reading dashboard file: {e}")
+                return HTMLResponse(content="<h1>Dashboard Error</h1><p>Unable to read dashboard file due to encoding issues</p>", status_code=500)
 
         # WebSocket endpoints are now handled by the WebSocket infrastructure
         # See setup_websocket_endpoints() in LiteTTS.websocket.endpoints
@@ -2687,6 +2699,13 @@ def _configure_uvicorn_early():
 
 # Apply early uvicorn configuration
 _configure_uvicorn_early()
+
+# Configure Windows console encoding BEFORE any application initialization
+try:
+    from LiteTTS.startup import configure_windows_console
+    configure_windows_console()
+except ImportError:
+    pass  # Fallback if startup module not available
 
 # Create application instance
 tts_app = LiteTTSApplication()

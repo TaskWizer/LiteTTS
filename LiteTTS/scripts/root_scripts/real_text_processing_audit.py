@@ -22,9 +22,17 @@ def test_configuration_loading():
     print("=== CONFIGURATION LOADING AUDIT ===")
     
     try:
-        # Test config.json loading
-        with open('config.json', 'r') as f:
-            config = json.load(f)
+        # Test config loading (prefer centralized config)
+        config_files = ['config/settings.json', 'config.json']
+        config = {}
+        for config_file in config_files:
+            try:
+                with open(config_file, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+                print(f"   ✅ Loaded config from {config_file}")
+                break
+            except FileNotFoundError:
+                continue
         
         print("✓ config.json loaded successfully")
         
@@ -125,12 +133,21 @@ def test_synthesizer_configuration():
         # Load the configuration the same way the synthesizer does
         config_dict = {}
         
-        # Try to load config the same way synthesizer does
-        try:
-            with open('config.json', 'r') as f:
-                config_dict = json.load(f)
-        except Exception:
-            config_dict = {}
+        # Try to load config the same way synthesizer does (prefer centralized config)
+        config_dict = {}
+        config_files = ['config/settings.json', 'config.json']
+
+        for config_file in config_files:
+            try:
+                with open(config_file, 'r', encoding='utf-8') as f:
+                    config_dict = json.load(f)
+                print(f"   ✅ Synthesizer would load config from {config_file}")
+                break
+            except FileNotFoundError:
+                continue
+            except Exception as e:
+                print(f"   ⚠️ Error loading {config_file}: {e}")
+                continue
         
         # Apply the same logic as in synthesizer.py
         text_config = config_dict.get('text_processing', {})

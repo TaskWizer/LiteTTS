@@ -230,9 +230,9 @@ class UnifiedTextProcessor:
 
         self.phonetic_contraction_processor = PhoneticContractionProcessor(config=self.config)
         self.interjection_processor = InterjectionFixProcessor()
-        self.pronunciation_rules_processor = PronunciationRulesProcessor()
+        self.pronunciation_rules_processor = PronunciationRulesProcessor(config=self.config)
         self.ticker_symbol_processor = TickerSymbolProcessor()
-        self.proper_name_processor = ProperNamePronunciationProcessor()
+        self.proper_name_processor = ProperNamePronunciationProcessor(config=self.config)
 
         logger.debug("Enhanced processors initialized")
     

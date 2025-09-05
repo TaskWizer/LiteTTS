@@ -41,7 +41,7 @@ class ConfigManager:
     def _load_user_config(self) -> Dict[str, Any]:
         """Load user-facing configuration from config.json"""
         try:
-            with open(self.config_path, 'r') as f:
+            with open(self.config_path, 'r', encoding='utf-8') as f:
                 config = json.load(f)
                 logger.info(f"Loaded user configuration from {self.config_path}")
                 return config
@@ -210,8 +210,8 @@ class ConfigManager:
     def _save_user_config(self):
         """Save user configuration to file"""
         try:
-            with open(self.config_path, 'w') as f:
-                json.dump(self.user_config, f, indent=2)
+            with open(self.config_path, 'w', encoding='utf-8') as f:
+                json.dump(self.user_config, f, indent=2, ensure_ascii=False)
             logger.info(f"Saved user configuration to {self.config_path}")
         except Exception as e:
             logger.error(f"Failed to save user configuration: {e}")

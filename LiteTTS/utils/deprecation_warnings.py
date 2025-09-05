@@ -21,35 +21,62 @@ class DeprecationWarningManager:
     def suppress_pkg_resources_warnings(self):
         """Suppress pkg_resources deprecation warnings from third-party libraries"""
         try:
-            # Suppress specific pkg_resources deprecation warnings
+            # Suppress the specific pkg_resources deprecation warning message
+            warnings.filterwarnings(
+                "ignore",
+                category=UserWarning,
+                message=".*pkg_resources is deprecated as an API.*"
+            )
+
+            # Also suppress as DeprecationWarning in case it changes
             warnings.filterwarnings(
                 "ignore",
                 category=DeprecationWarning,
-                message=".*pkg_resources is deprecated.*"
+                message=".*pkg_resources.*"
             )
-            
+
             # Suppress warnings from specific modules that use pkg_resources
+            warnings.filterwarnings(
+                "ignore",
+                category=UserWarning,
+                module=".*perth.*"
+            )
+
+            warnings.filterwarnings(
+                "ignore",
+                category=UserWarning,
+                module=".*resemble.*"
+            )
+
+            # Also suppress DeprecationWarning from these modules
             warnings.filterwarnings(
                 "ignore",
                 category=DeprecationWarning,
                 module=".*perth.*"
             )
-            
+
             warnings.filterwarnings(
                 "ignore",
                 category=DeprecationWarning,
                 module=".*resemble.*"
             )
-            
+
+            # Suppress the specific resource_filename import warning
+            warnings.filterwarnings(
+                "ignore",
+                message=".*from pkg_resources import resource_filename.*"
+            )
+
             # Log that we've suppressed these warnings
             self.suppressed_warnings.append({
                 "type": "pkg_resources_deprecation",
                 "reason": "Third-party library (resemble-perth) uses deprecated pkg_resources",
-                "action": "Suppressed until library updates to importlib.metadata"
+                "action": "Suppressed until library updates to importlib.metadata",
+                "note": "Warning comes from perth/perth_net/__init__.py:1"
             })
-            
+
             logger.debug("Suppressed pkg_resources deprecation warnings from third-party libraries")
-            
+
         except Exception as e:
             logger.warning(f"Failed to suppress pkg_resources warnings: {e}")
     

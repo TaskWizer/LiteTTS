@@ -12,17 +12,43 @@ from typing import Dict, Any
 def is_windows_with_encoding_issues() -> bool:
     """
     Check if we're on Windows with potential Unicode encoding issues.
+
+    This function detects if we're running on Windows with console encoding
+    that cannot handle Unicode emoji characters. It checks multiple streams
+    and encoding scenarios to provide accurate detection.
     """
     if platform.system() != "Windows":
         return False
-    
-    # Check if stdout encoding can handle Unicode emojis
+
+    # Check multiple potential encoding issues on Windows
     try:
-        encoding = sys.stdout.encoding or 'cp1252'
+        # Test stdout encoding (console output)
+        stdout_encoding = getattr(sys.stdout, 'encoding', None) or 'cp1252'
+
+        # Test stderr encoding (error output)
+        stderr_encoding = getattr(sys.stderr, 'encoding', None) or 'cp1252'
+
+        # Test a representative emoji that commonly fails on Windows
         test_emoji = '🚀'
-        test_emoji.encode(encoding)
+
+        # Try encoding to both stdout and stderr encodings
+        test_emoji.encode(stdout_encoding)
+        test_emoji.encode(stderr_encoding)
+
+        # Additional check: try writing to a StringIO to simulate logging
+        import io
+        test_stream = io.StringIO()
+        test_stream.write(test_emoji)
+        test_content = test_stream.getvalue()
+
+        # If we can encode to console encodings, check if it's actually cp1252
+        # which is the problematic encoding on Windows
+        if stdout_encoding.lower() in ['cp1252', 'windows-1252']:
+            return True
+
         return False  # Encoding works fine
-    except (UnicodeEncodeError, LookupError):
+
+    except (UnicodeEncodeError, LookupError, AttributeError):
         return True  # Encoding issues detected
 
 

@@ -78,7 +78,28 @@ def setup_logging(
     else:
         formatter = ColoredFormatter(format_string)
     
-    # Console handler with enhanced formatting
+    # Console handler with enhanced formatting and Windows encoding support
+    # Configure console output stream with proper encoding for Windows
+    import platform
+    if platform.system() == "Windows":
+        # Try to configure console for UTF-8 output on Windows
+        try:
+            # Attempt to reconfigure stdout for UTF-8
+            import codecs
+            import locale
+
+            # Get the current console encoding
+            console_encoding = sys.stdout.encoding or locale.getpreferredencoding()
+
+            # If we're using a problematic encoding, try to use UTF-8 with error handling
+            if console_encoding.lower() in ['cp1252', 'windows-1252']:
+                # Create a UTF-8 writer with error handling for Windows console
+                sys.stdout = codecs.getwriter('utf-8')(sys.stdout.detach(), errors='replace')
+                sys.stderr = codecs.getwriter('utf-8')(sys.stderr.detach(), errors='replace')
+        except (AttributeError, OSError, ImportError):
+            # If reconfiguration fails, we'll rely on the emoji fallback system
+            pass
+
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setFormatter(formatter)
     console_handler.setLevel(getattr(logging, level.upper()))
