@@ -14,6 +14,14 @@ from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, field
 from enum import Enum
 
+# Import the enhanced contraction processor
+try:
+    from .enhanced_contraction_processor_v2 import EnhancedContractionProcessorV2
+    ENHANCED_CONTRACTIONS_AVAILABLE = True
+except ImportError:
+    ENHANCED_CONTRACTIONS_AVAILABLE = False
+    logger.warning("Enhanced Contraction Processor V2 not available, falling back to basic processing")
+
 logger = logging.getLogger(__name__)
 
 class Phase6ProcessingMode(Enum):
@@ -144,7 +152,21 @@ class Phase6TextProcessor:
     
     def _init_contraction_processors(self):
         """Initialize contraction processing components"""
-        # Enhanced contraction mappings with pronunciation hints
+        # Initialize enhanced contraction processor if available
+        if ENHANCED_CONTRACTIONS_AVAILABLE:
+            try:
+                self.enhanced_contraction_processor = EnhancedContractionProcessorV2(
+                    config={'debug': self.config.get('debug_contractions', False)}
+                )
+                self.use_enhanced_contractions = True
+                logger.info("Enhanced Contraction Processor V2 initialized successfully")
+            except Exception as e:
+                logger.warning(f"Failed to initialize Enhanced Contraction Processor V2: {e}")
+                self.use_enhanced_contractions = False
+        else:
+            self.use_enhanced_contractions = False
+
+        # Fallback: Basic contraction mappings (kept for compatibility)
         self.contraction_mappings = {
             "won't": "will not",
             "can't": "cannot",
@@ -203,29 +225,29 @@ class Phase6TextProcessor:
         logger.debug(f"Phase 6 processing text with mode: {mode.value}")
         
         try:
-            # Stage 1: Enhanced number processing
-            text, number_changes = self._process_numbers(text)
-            changes_by_category['numbers'] = number_changes
-            if number_changes > 0:
-                processing_stages.append('number_processing')
-            
-            # Stage 2: Unit processing
-            text, unit_changes = self._process_units(text)
-            changes_by_category['units'] = unit_changes
-            if unit_changes > 0:
-                processing_stages.append('unit_processing')
-            
-            # Stage 3: Homograph resolution
-            text, homograph_changes = self._process_homographs(text)
-            changes_by_category['homographs'] = homograph_changes
-            if homograph_changes > 0:
-                processing_stages.append('homograph_resolution')
-            
-            # Stage 4: Enhanced contraction processing
+            # Stage 1: Enhanced contraction processing (first to avoid interference)
             text, contraction_changes = self._process_contractions(text)
             changes_by_category['contractions'] = contraction_changes
             if contraction_changes > 0:
                 processing_stages.append('contraction_processing')
+
+            # Stage 2: Enhanced number processing
+            text, number_changes = self._process_numbers(text)
+            changes_by_category['numbers'] = number_changes
+            if number_changes > 0:
+                processing_stages.append('number_processing')
+
+            # Stage 3: Unit processing
+            text, unit_changes = self._process_units(text)
+            changes_by_category['units'] = unit_changes
+            if unit_changes > 0:
+                processing_stages.append('unit_processing')
+
+            # Stage 4: Homograph resolution
+            text, homograph_changes = self._process_homographs(text)
+            changes_by_category['homographs'] = homograph_changes
+            if homograph_changes > 0:
+                processing_stages.append('homograph_resolution')
             
             # Stage 5: Context normalization (advanced modes only)
             if mode in [Phase6ProcessingMode.ADVANCED, Phase6ProcessingMode.COMPREHENSIVE]:
@@ -312,15 +334,40 @@ class Phase6TextProcessor:
         return text, changes
     
     def _process_contractions(self, text: str) -> Tuple[str, int]:
-        """Process contractions for better pronunciation"""
+        """Process contractions for better pronunciation using enhanced processor"""
+        if not text or not text.strip():
+            return text, 0
+
+        original_text = text
+
+        # Use enhanced contraction processor if available
+        if self.use_enhanced_contractions:
+            try:
+                processed_text = self.enhanced_contraction_processor.process_contractions(text)
+
+                # Count changes by comparing original and processed text
+                changes = 0
+                if processed_text != original_text:
+                    # Simple heuristic: count the number of contractions that were likely processed
+                    for contraction in self.enhanced_contraction_processor.contraction_rules.keys():
+                        original_count = len(re.findall(r'\b' + re.escape(contraction) + r'\b', original_text, re.IGNORECASE))
+                        processed_count = len(re.findall(r'\b' + re.escape(contraction) + r'\b', processed_text, re.IGNORECASE))
+                        changes += max(0, original_count - processed_count)
+
+                logger.debug(f"Enhanced contraction processing: {changes} contractions processed")
+                return processed_text, changes
+
+            except Exception as e:
+                logger.warning(f"Enhanced contraction processing failed: {e}, falling back to basic processing")
+
+        # Fallback: Basic contraction processing
         changes = 0
-        
         for contraction, expansion in self.contraction_mappings.items():
             pattern = r'\b' + re.escape(contraction) + r'\b'
             if re.search(pattern, text, re.IGNORECASE):
                 text = re.sub(pattern, expansion, text, flags=re.IGNORECASE)
                 changes += 1
-        
+
         return text, changes
     
     def _process_context_normalization(self, text: str) -> Tuple[str, int]:

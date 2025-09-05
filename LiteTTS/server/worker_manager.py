@@ -13,6 +13,8 @@ import psutil
 from typing import Dict, Any, Optional, List
 from dataclasses import dataclass
 import multiprocessing
+import sys
+from threading import Lock
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +59,13 @@ class WorkerManager:
         self.monitoring_thread: Optional[threading.Thread] = None
         self.shutdown_event = threading.Event()
         self.lock = threading.RLock()
-        
+
+        # Shutdown state protection
+        self._shutdown_in_progress = False
+        self._shutdown_start_time: Optional[float] = None
+        self._shutdown_lock = Lock()
+        self._force_shutdown_requested = False
+
         # Worker statistics
         self.stats = {
             'total_workers_started': 0,
@@ -66,18 +74,33 @@ class WorkerManager:
             'current_workers': 0,
             'last_restart_time': None
         }
-        
+
         # Setup signal handlers
         self._setup_signal_handlers()
-        
+
         logger.info("Worker manager initialized")
     
     def _setup_signal_handlers(self):
-        """Setup signal handlers for graceful shutdown"""
+        """Setup signal handlers for graceful shutdown with protection against recursive calls"""
         def signal_handler(signum, frame):
-            logger.info(f"Received signal {signum}, initiating graceful shutdown...")
-            self.shutdown_gracefully()
-        
+            with self._shutdown_lock:
+                if self._shutdown_in_progress:
+                    if not self._force_shutdown_requested:
+                        logger.warning(f"Received signal {signum} during shutdown. Press CTRL+C again to force terminate.")
+                        self._force_shutdown_requested = True
+                        return
+                    else:
+                        logger.error("Force shutdown requested. Terminating immediately.")
+                        os._exit(1)
+
+                logger.info(f"Received signal {signum}, initiating graceful shutdown...")
+                self._shutdown_in_progress = True
+                self._shutdown_start_time = time.time()
+
+            # Start shutdown in a separate thread to avoid blocking signal handler
+            shutdown_thread = threading.Thread(target=self._shutdown_with_timeout, daemon=True)
+            shutdown_thread.start()
+
         # Handle common shutdown signals
         for sig in [signal.SIGTERM, signal.SIGINT]:
             try:
@@ -267,33 +290,59 @@ class WorkerManager:
         except Exception as e:
             logger.error(f"Failed to restart worker {worker_pid}: {e}")
     
+    def _shutdown_with_timeout(self):
+        """Shutdown with timeout protection to prevent infinite loops"""
+        max_shutdown_time = 10.0  # Maximum 10 seconds for shutdown
+
+        try:
+            self.shutdown_gracefully()
+        except Exception as e:
+            logger.error(f"Error during graceful shutdown: {e}")
+        finally:
+            # Check if we exceeded the timeout
+            if self._shutdown_start_time:
+                elapsed = time.time() - self._shutdown_start_time
+                if elapsed > max_shutdown_time:
+                    logger.error(f"Shutdown timeout exceeded ({elapsed:.1f}s > {max_shutdown_time}s). Force terminating.")
+                    os._exit(1)
+                else:
+                    logger.info(f"Shutdown completed in {elapsed:.1f}s")
+
+            # Exit the process
+            sys.exit(0)
+
     def shutdown_gracefully(self):
-        """Shutdown all workers gracefully"""
+        """Shutdown all workers gracefully with improved timeouts"""
         logger.info("Initiating graceful worker shutdown...")
-        
-        # Stop monitoring
+
+        # Stop monitoring with shorter timeout
         self.shutdown_event.set()
         if self.monitoring_thread:
-            self.monitoring_thread.join(timeout=5.0)
-        
+            logger.debug("Stopping monitoring thread...")
+            self.monitoring_thread.join(timeout=2.0)  # Reduced from 5.0
+            if self.monitoring_thread.is_alive():
+                logger.warning("Monitoring thread did not stop gracefully")
+
         try:
             # Get all child processes
             current_process = psutil.Process()
             children = current_process.children(recursive=True)
-            
+
             if children:
                 logger.info(f"Shutting down {len(children)} worker processes...")
-                
+
                 # Send SIGTERM to all children
                 for child in children:
                     try:
                         child.terminate()
                     except (psutil.NoSuchProcess, psutil.AccessDenied):
                         continue
-                
-                # Wait for graceful shutdown
-                gone, alive = psutil.wait_procs(children, timeout=self.config.graceful_shutdown_timeout)
-                
+
+                # Wait for graceful shutdown with reduced timeout
+                graceful_timeout = min(5.0, self.config.graceful_shutdown_timeout)  # Max 5 seconds
+                logger.debug(f"Waiting up to {graceful_timeout}s for graceful shutdown...")
+                gone, alive = psutil.wait_procs(children, timeout=graceful_timeout)
+
                 # Force kill any remaining processes
                 if alive:
                     logger.warning(f"Force killing {len(alive)} remaining workers")
@@ -302,11 +351,17 @@ class WorkerManager:
                             child.kill()
                         except (psutil.NoSuchProcess, psutil.AccessDenied):
                             continue
-                
+
+                    # Wait a bit for force kill to complete
+                    time.sleep(0.5)
+
                 logger.info("All workers shutdown completed")
-            
+            else:
+                logger.info("No worker processes to shutdown")
+
         except Exception as e:
             logger.error(f"Error during worker shutdown: {e}")
+            # Don't re-raise, let the timeout mechanism handle it
     
     def get_worker_stats(self) -> Dict[str, Any]:
         """Get worker statistics"""
