@@ -43,7 +43,7 @@ class AdvancedAbbreviationHandler:
             'CTO': 'C T O',
             'COO': 'C O O',
             'HR': 'H R',
-            'IT': 'I T',
+            # 'IT': 'I T',  # DISABLED: Causes false matches with the word "it"
             'AI': 'A I',
             'API': 'A P I',
             'URL': 'U R L',
@@ -152,9 +152,13 @@ class AdvancedAbbreviationHandler:
             'DIY': 'do it yourself',
             'FAQ': 'frequently asked questions',  # Alternative to spelling out
             
-            # Time and dates
-            'AM': 'A M',  # Keep as letters for time
-            'PM': 'P M',  # Keep as letters for time
+            # Time and dates - Enhanced phonetic handling
+            'AM': 'ay em',  # Better phonetic representation
+            'PM': 'pee em',  # Better phonetic representation
+            'a m': 'ay em',  # Handle processed time format
+            'p m': 'pee em',  # Handle processed time format
+            'A M': 'ay em',  # Handle uppercase format
+            'P M': 'pee em',  # Handle uppercase format
             'EST': 'Eastern Standard Time',
             'PST': 'Pacific Standard Time',
             'GMT': 'Greenwich Mean Time',
@@ -242,10 +246,10 @@ class AdvancedAbbreviationHandler:
                 'country': 'United States',
                 'pronoun': 'us',
             },
-            'IT': {
-                'technology': 'I T',
-                'pronoun': 'it',
-            },
+            # 'IT': {  # DISABLED: Too prone to false matches with "it"
+            #     'technology': 'I T',
+            #     'pronoun': 'it',
+            # },
             'AI': {
                 'technology': 'A I',
                 'name': 'Ai',  # Japanese name

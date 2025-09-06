@@ -297,24 +297,35 @@ class TextNormalizer:
     def _normalize_numbers(self, text: str) -> str:
         """Normalize various number formats with natural speech preservation"""
 
-        # If preserve_natural_speech is True, be more conservative with number expansion
-        if self.preserve_natural_speech:
-            # Only expand percentages, currency, and decimals - preserve years and other numbers
-            # Percentages
-            text = self.number_patterns['percentage'].sub(
-                lambda m: f"{self._number_to_words(m.group().rstrip('%'))} percent", text
-            )
+        # CRITICAL FIX: For TTS, we need numbers expanded to words for proper pronunciation
+        # Even in preserve_natural_speech mode, expand numbers but preserve contractions
 
-            # Decimal numbers (always expand for clarity, even in natural speech mode)
-            text = self.number_patterns['decimal'].sub(
-                lambda m: self._number_to_words(m.group()), text
-            )
+        # Percentages
+        text = self.number_patterns['percentage'].sub(
+            lambda m: f"{self._number_to_words(m.group().rstrip('%'))} percent", text
+        )
 
-            # Don't expand years in natural speech mode (1990's should stay as 1990's)
-            # Don't expand cardinal numbers in natural speech mode
-            # Don't expand fractions and ordinals in natural speech mode
+        # Decimal numbers
+        text = self.number_patterns['decimal'].sub(
+            lambda m: self._number_to_words(m.group()), text
+        )
 
-            return text
+        # Cardinal numbers (for TTS pronunciation)
+        text = self.number_patterns['cardinal'].sub(
+            lambda m: self._number_to_words(m.group()), text
+        )
+
+        # Fractions
+        text = self.number_patterns['fraction'].sub(
+            lambda m: self._fraction_to_words(m.group()), text
+        )
+
+        # Ordinals
+        text = self.number_patterns['ordinal'].sub(
+            lambda m: self._ordinal_to_words(m.group()), text
+        )
+
+        return text
 
         # Full expansion mode (legacy behavior)
         # Percentages

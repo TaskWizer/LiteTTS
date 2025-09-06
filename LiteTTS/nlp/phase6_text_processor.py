@@ -432,6 +432,19 @@ class Phase6TextProcessor:
             if abbrev in problematic_units:
                 continue
 
+            # CRITICAL FIX: Special context-aware handling for "in" to prevent time context interference
+            if abbrev == 'in':
+                # Skip conversion in time contexts like "7:15 in the evening"
+                if self._is_time_context_for_in(text):
+                    continue  # Skip "in" processing in time contexts
+
+                # Convert "in" to "inches" when preceded by a number (measurement context)
+                pattern = r'(\d+(?:\.\d+)?)\s+' + re.escape(abbrev) + r'\b'
+                if re.search(pattern, text):
+                    text = re.sub(pattern, r'\1 ' + full_form, text)
+                    changes += 1
+                continue
+
             # Special handling for 'a.m./p.m.' protection (keep existing logic)
             if abbrev == 'a' or abbrev == 'p':
                 # Only match when not part of a.m. or p.m.
@@ -445,7 +458,25 @@ class Phase6TextProcessor:
                 changes += 1
 
         return text, changes
-    
+
+    def _is_time_context_for_in(self, text: str) -> bool:
+        """Check if 'in' appears in a time context where it shouldn't be converted to 'inches'"""
+        # Common time context patterns where "in" is a preposition, not a unit
+        time_context_patterns = [
+            r'\d{1,2}:\d{2}\s+in\s+the\s+(morning|afternoon|evening|night)',  # "7:15 in the evening"
+            r'\d{1,2}\s+(AM|PM|a\.m\.|p\.m\.)\s+in\s+the\s+(morning|afternoon|evening|night)',  # "7 PM in the evening"
+            r'in\s+the\s+(morning|afternoon|evening|night)',  # "in the morning"
+            r'in\s+\d+\s+(minutes?|hours?|days?|weeks?|months?|years?)',  # "in 5 minutes"
+            r'in\s+(January|February|March|April|May|June|July|August|September|October|November|December)',  # "in January"
+            r'in\s+\d{4}',  # "in 2024"
+        ]
+
+        for pattern in time_context_patterns:
+            if re.search(pattern, text, re.IGNORECASE):
+                return True
+
+        return False
+
     def _process_homographs(self, text: str) -> Tuple[str, int]:
         """Process homographs with context awareness"""
         changes = 0

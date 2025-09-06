@@ -194,21 +194,25 @@ class ContractionPronunciationFix:
         return text
     
     def _hybrid_contraction_processing(self, text: str) -> str:
-        """Hybrid approach: expand problematic, keep natural"""
-        # Expand only the most problematic contractions
+        """Hybrid approach: expand problematic, keep natural
+
+        CRITICAL FIX: Drastically reduced expansion to preserve natural speech.
+        Only expand contractions that consistently cause severe pronunciation issues.
+        """
+        # ONLY expand the most severely problematic contractions
+        # Most contractions should be preserved for natural speech with apostrophe sounds
         problematic_contractions = [
-            (r"\bI'm\b", "I am"),
-            (r"\bI'll\b", "I will"), 
-            (r"\bI'd\b", "I would"),
-            (r"\byou'll\b", "you will"),
-            (r"\bhe'll\b", "he will"),
-            (r"\bshe'll\b", "she will"),
-            (r"\bit'll\b", "it will"),
-            (r"\bwe'll\b", "we will"),
-            (r"\bthey'll\b", "they will"),
-            (r"\bwon't\b", "will not"),
+            # Keep only "wasn't" as it was specifically reported as problematic
+            (r"\bwasn't\b", "was not"),
+
+            # REMOVED: Most contractions should be preserved for natural speech
+            # The original approach of expanding everything removes apostrophe sounds
+            # which is worse than minor pronunciation variations
+
+            # NOTE: "I'll", "won't", "can't" etc. are REMOVED from this list
+            # They should be preserved with their apostrophes for natural pronunciation
         ]
-        
+
         for pattern, replacement in problematic_contractions:
             if re.search(pattern, text, re.IGNORECASE):
                 text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)

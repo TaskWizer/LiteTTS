@@ -74,52 +74,26 @@ class EnhancedContractionProcessor:
         }
     
     def _load_problematic_contractions(self) -> Dict[str, str]:
-        """Load contractions that cause TTS pronunciation issues"""
+        """Load contractions that cause TTS pronunciation issues
+
+        CRITICAL FIX: Drastically reduced the list to only truly problematic contractions.
+        Most contractions should be preserved for natural speech with apostrophe sounds.
+        Only expand contractions that consistently cause severe pronunciation issues.
+        """
         return {
-            # Critical pronunciation issues identified by user feedback
+            # ONLY the most problematic contractions that cause severe pronunciation issues
+            # These are contractions where the phonemizer consistently fails
+
+            # Keep "wasn't" expansion as it was specifically reported as problematic
             "wasn't": "was not",    # User reported: "waaasant" pronunciation
-            "I'll": "I will",       # User reported: sounds like "ill"
-            "you'll": "you will",   # User reported: sounds like "yaw-wl"
-            "I'd": "I would",       # User reported: sounds like "I-D"
-            "that's": "that is",    # User reported: becomes "hit that"
-            "he'll": "he will",  # Similar issues
-            "she'll": "she will",  # Similar issues
-            "it'll": "it will",  # Similar issues
-            "that'll": "that will",  # Similar issues
-            "who'll": "who will",  # Similar issues
-            "what'll": "what will",  # Similar issues
-            "where'll": "where will",  # Similar issues
-            "when'll": "when will",  # Similar issues
-            "how'll": "how will",  # Similar issues
-            # Possessive contractions that get mispronounced
-            "he'd": "he would",
-            "she'd": "she would",
-            "it'd": "it would",
-            "we'd": "we would",
-            "they'd": "they would",
-            "you'd": "you would",
-            "that'd": "that would",
-            "who'd": "who would",
-            "what'd": "what would",
-            "where'd": "where would",
-            "when'd": "when would",
-            "how'd": "how would",
-            # CRITICAL FIX: Negative contractions that cause pronunciation issues
-            "wasn't": "was not",  # FIXED: was pronounced as "wawsnt", now "wAHz not"
-            "isn't": "is not",    # Ensure proper pronunciation
-            "aren't": "are not",  # Ensure proper pronunciation
-            "weren't": "were not", # Ensure proper pronunciation
-            "haven't": "have not", # Ensure proper pronunciation
-            "hasn't": "has not",   # Ensure proper pronunciation
-            "hadn't": "had not",   # Ensure proper pronunciation
-            "don't": "do not",     # Ensure proper pronunciation
-            "doesn't": "does not", # Ensure proper pronunciation
-            "didn't": "did not",   # Ensure proper pronunciation
-            "won't": "will not",   # Ensure proper pronunciation
-            "wouldn't": "would not", # Ensure proper pronunciation
-            "can't": "cannot",     # Ensure proper pronunciation
-            "couldn't": "could not", # Ensure proper pronunciation
-            "shouldn't": "should not", # Ensure proper pronunciation
+
+            # REMOVED: Most contractions should be preserved for natural speech
+            # The original approach of expanding everything removes apostrophe sounds
+            # which is worse than minor pronunciation variations
+
+            # NOTE: "I'll", "won't", "can't" etc. are REMOVED from this list
+            # They should be preserved with their apostrophes for natural pronunciation
+            # The phonemizer should handle these correctly with the apostrophe present
         }
     
     def _load_phonetic_contractions(self) -> Dict[str, str]:

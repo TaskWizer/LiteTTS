@@ -11,6 +11,7 @@ from .homograph_resolver import HomographResolver
 from .phonetic_processor import PhoneticProcessor
 from .spell_processor import SpellProcessor
 from .prosody_analyzer import ProsodyAnalyzer
+from .advanced_abbreviation_handler import AdvancedAbbreviationHandler
 from .emotion_detector import EmotionDetector, EmotionProfile
 from .context_adapter import ContextAdapter, SpeechContext
 from .naturalness_enhancer import NaturalnessEnhancer, NaturalnessProfile
@@ -55,6 +56,7 @@ class NLPProcessor:
         self.phonetic_processor = PhoneticProcessor(self.config)
         self.spell_processor = SpellProcessor()
         self.prosody_analyzer = ProsodyAnalyzer()
+        self.abbreviation_handler = AdvancedAbbreviationHandler()
 
         # Advanced human-likeness features
         self.enable_advanced_features = enable_advanced_features
@@ -109,6 +111,9 @@ class NLPProcessor:
         # Step 4: Text normalization (if enabled)
         if options.normalize:
             text = self.text_normalizer.normalize_text(text)
+
+        # Step 4.5: Process abbreviations (for AM/PM phonetic enhancement)
+        text = self.abbreviation_handler.process_abbreviations(text)
 
         # Step 5: Process conversational features
         text = self.prosody_analyzer.process_conversational_features(text)

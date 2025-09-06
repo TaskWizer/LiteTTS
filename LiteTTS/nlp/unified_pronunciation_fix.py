@@ -36,9 +36,9 @@ class UnifiedPronunciationFix:
         # Configuration
         self.enable_comma_fixes = True
         self.enable_diphthong_fixes = True
-        self.enable_contraction_fixes = True
+        self.enable_contraction_fixes = False  # CRITICAL FIX: Disable contraction expansion to preserve natural speech
         self.enable_interjection_fixes = True
-        self.contraction_mode = "expand"  # "expand", "phonetic", or "hybrid"
+        self.contraction_mode = "hybrid"  # "expand", "phonetic", or "hybrid" - use hybrid to preserve most contractions
         
     def process_pronunciation_fixes(self, text: str, 
                                   enable_comma: bool = None,
