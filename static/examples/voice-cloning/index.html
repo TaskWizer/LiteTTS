@@ -563,28 +563,39 @@
                 formData.append('voice_name', voiceNameInput.value.trim());
                 formData.append('description', voiceDescriptionInput.value.trim());
 
-                // Note: This is a placeholder for voice analysis
-                // In a real implementation, this would call a voice cloning API
-                await new Promise(resolve => setTimeout(resolve, 3000)); // Simulate processing
+                // Call the real voice cloning API
+                const response = await fetch('/v1/voices/create', {
+                    method: 'POST',
+                    body: formData
+                });
 
                 // Complete progress
                 clearInterval(progressInterval);
                 analysisProgressFill.style.width = '100%';
 
-                // Create voice profile
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Voice cloning failed');
+                }
+
+                const result = await response.json();
+
+                // Create voice profile from API response
                 voiceProfile = {
-                    name: voiceNameInput.value.trim(),
-                    description: voiceDescriptionInput.value.trim(),
+                    name: result.voice.name,
+                    description: result.voice.metadata?.description || voiceDescriptionInput.value.trim(),
                     originalFile: uploadedFile.name,
-                    createdAt: new Date().toISOString(),
-                    id: 'custom_' + Date.now()
+                    createdAt: result.voice.metadata?.created_at || new Date().toISOString(),
+                    id: result.voice.name,
+                    similarity_score: result.voice.similarity_score,
+                    file_path: result.voice.file_path
                 };
 
                 // Show results
                 analysisResults.classList.remove('hidden');
                 testVoiceBtn.disabled = false;
                 activateStep(3);
-                showStatus('Voice analysis completed successfully!', 'success');
+                showStatus(`Voice '${result.voice.name}' created successfully! Similarity: ${(result.voice.similarity_score * 100).toFixed(1)}%`, 'success');
 
             } catch (error) {
                 clearInterval(progressInterval);
@@ -618,17 +629,16 @@
             }, 150);
 
             try {
-                // Use the existing LiteTTS API to generate speech
-                const response = await fetch('/v1/audio/speech', {
+                // Use the cloned voice API to generate speech
+                const formData = new FormData();
+                formData.append('text', testTextInput.value.trim());
+                formData.append('voice_name', voiceProfile.name);
+                formData.append('response_format', 'mp3');
+                formData.append('speed', '1.0');
+
+                const response = await fetch('/v1/audio/clone', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        input: testTextInput.value.trim(),
-                        voice: 'af_heart', // Use a default voice for now
-                        response_format: 'mp3'
-                    })
+                    body: formData
                 });
 
                 if (!response.ok) {
@@ -675,6 +685,10 @@
                     <div>
                         <h4>Original File</h4>
                         <p>${voiceProfile.originalFile}</p>
+                    </div>
+                    <div>
+                        <h4>Similarity Score</h4>
+                        <p>${voiceProfile.similarity_score ? (voiceProfile.similarity_score * 100).toFixed(1) + '%' : 'N/A'}</p>
                     </div>
                     <div>
                         <h4>Created</h4>

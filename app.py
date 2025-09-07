@@ -548,6 +548,15 @@ class LiteTTSApplication:
         self.v1_router = APIRouter(prefix="/v1", tags=["v1"])
         self.legacy_router = APIRouter(tags=["legacy"])
 
+        # Initialize voice cloning router
+        try:
+            from LiteTTS.api.voice_cloning_router import VoiceCloningRouter
+            self.voice_cloning_router = VoiceCloningRouter()
+            self.logger.info("Voice cloning router initialized successfully")
+        except Exception as e:
+            self.logger.error(f"Failed to initialize voice cloning router: {e}")
+            self.voice_cloning_router = None
+
     def _include_routers(self):
         """Include routers in the main app with organized grouping."""
 
@@ -555,6 +564,13 @@ class LiteTTSApplication:
         # Production API Endpoints
         # ============================================
         self.app.include_router(self.v1_router)
+
+        # ============================================
+        # Voice Cloning API Endpoints
+        # ============================================
+        if self.voice_cloning_router:
+            self.app.include_router(self.voice_cloning_router.get_router(), tags=["voice-cloning"])
+            self.logger.info("Voice cloning endpoints included")
 
         # ============================================
         # Legacy Compatibility Endpoints
