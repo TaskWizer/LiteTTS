@@ -119,23 +119,39 @@ class VoiceManager:
         if self.performance_monitoring:
             self.performance_stats['cache_misses'] += 1
 
-        # If not in cache and not downloaded, try to download (individual file)
-        if not self.downloader.is_voice_downloaded(voice_name):
-            logger.info(f"Voice {voice_name} not found, downloading individual file")
-            if self.performance_monitoring:
-                self.performance_stats['download_requests'] += 1
+        # If not in cache, check if it's available (either downloaded HF voice or custom voice)
+        is_hf_voice = voice_name in self.downloader.discovered_voices
+        is_available = False
 
-            if self.download_voice(voice_name):
-                # Try to get from cache again after download
-                embedding = self.cache.get_voice_embedding(voice_name)
-                if embedding:
-                    if self.performance_monitoring:
-                        load_time = time.perf_counter() - start_time
-                        self.performance_stats['load_times'].append(load_time)
-                        logger.info(f"Voice {voice_name} downloaded and loaded in {load_time*1000:.2f}ms")
+        if is_hf_voice:
+            # For HuggingFace voices, check if downloaded
+            if not self.downloader.is_voice_downloaded(voice_name):
+                logger.info(f"Voice {voice_name} not found, downloading individual file")
+                if self.performance_monitoring:
+                    self.performance_stats['download_requests'] += 1
 
-                    self.metadata_manager.update_voice_stats(voice_name, 0.0, success=True)
-                    return embedding
+                if self.download_voice(voice_name):
+                    is_available = True
+            else:
+                is_available = True
+        else:
+            # For custom voices, check if file exists
+            voice_file = self.voices_dir / f"{voice_name}.bin"
+            if voice_file.exists():
+                is_available = True
+                logger.debug(f"Found custom voice file: {voice_name}")
+
+        if is_available:
+            # Try to get from cache again after download/discovery
+            embedding = self.cache.get_voice_embedding(voice_name)
+            if embedding:
+                if self.performance_monitoring:
+                    load_time = time.perf_counter() - start_time
+                    self.performance_stats['load_times'].append(load_time)
+                    logger.info(f"Voice {voice_name} loaded in {load_time*1000:.2f}ms")
+
+                self.metadata_manager.update_voice_stats(voice_name, 0.0, success=True)
+                return embedding
 
         # Update stats for failed attempt
         self.metadata_manager.update_voice_stats(voice_name, 0.0, success=False)
@@ -193,18 +209,48 @@ class VoiceManager:
         """Get list of available voices (downloaded and ready)"""
         available = []
 
+        # Get HuggingFace discovered voices
         for voice_name in self.downloader.discovered_voices.keys():
             if self.is_voice_ready(voice_name):
                 available.append(voice_name)
 
-        return available
+        # Also scan for local custom voices (not in HuggingFace discovery)
+        for voice_file in self.voices_dir.glob("*.bin"):
+            voice_name = voice_file.stem
+
+            # Skip if already included from HuggingFace discovery
+            if voice_name in self.downloader.discovered_voices:
+                continue
+
+            # Check if custom voice is ready
+            if self._is_custom_voice_ready(voice_name):
+                available.append(voice_name)
+
+        return sorted(available)
     
     def is_voice_ready(self, voice_name: str) -> bool:
         """Check if voice is downloaded and valid"""
-        if not self.downloader.is_voice_downloaded(voice_name):
-            return False
-        
+        # Check if it's a HuggingFace voice
+        if voice_name in self.downloader.discovered_voices:
+            if not self.downloader.is_voice_downloaded(voice_name):
+                return False
+        else:
+            # Check if it's a custom voice
+            return self._is_custom_voice_ready(voice_name)
+
         voice_file = self.voices_dir / f"{voice_name}.bin"
+        validation_result = self.validator.validate_voice(voice_name, voice_file)
+        return validation_result.is_valid
+
+    def _is_custom_voice_ready(self, voice_name: str) -> bool:
+        """Check if a custom voice (not from HuggingFace) is ready"""
+        voice_file = self.voices_dir / f"{voice_name}.bin"
+
+        # Check if file exists
+        if not voice_file.exists():
+            return False
+
+        # Validate the voice file
         validation_result = self.validator.validate_voice(voice_name, voice_file)
         return validation_result.is_valid
     

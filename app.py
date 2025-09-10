@@ -2425,7 +2425,7 @@ with open("hello.mp3", "wb") as f:
         async def examples_redirect():
             """Redirect to static examples page"""
             from fastapi.responses import RedirectResponse
-            return RedirectResponse(url="/static/examples/", status_code=302)
+            return RedirectResponse(url="/static/examples/index.html", status_code=302)
 
         @self.app.get("/api/examples")
         async def api_examples():
@@ -2726,6 +2726,9 @@ except ImportError:
 # Create application instance
 tts_app = LiteTTSApplication()
 app = tts_app.create_app()
+
+# Make app instance globally accessible for voice cloning router
+app_instance = tts_app
 
 # Configuration is available via tts_app.config for external scripts
 

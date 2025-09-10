@@ -3,8 +3,8 @@
 Voice cloning API endpoints for LiteTTS
 """
 
-from fastapi import APIRouter, HTTPException, UploadFile, File, Form, BackgroundTasks
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form, BackgroundTasks, Request
+from fastapi.responses import JSONResponse, Response
 from typing import Dict, List, Any, Optional
 import logging
 import tempfile
@@ -13,6 +13,34 @@ from pathlib import Path
 import shutil
 
 from ..voice.cloning import VoiceCloner, VoiceCloneResult, AudioAnalysisResult
+from ..voice.metadata import VoiceMetadataManager
+
+try:
+    from ..models import VoiceMetadata
+except ImportError:
+    # Fallback import from models.py file
+    import sys
+    from pathlib import Path
+    models_path = Path(__file__).parent.parent / "models.py"
+    if models_path.exists():
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("models", models_path)
+        models_module = importlib.util.module_from_spec(spec)
+        sys.modules["models"] = models_module
+        spec.loader.exec_module(models_module)
+        VoiceMetadata = models_module.VoiceMetadata
+    else:
+        # Final fallback - define minimal class
+        from dataclasses import dataclass
+        @dataclass
+        class VoiceMetadata:
+            name: str
+            gender: str = "unknown"
+            accent: str = "american"
+            voice_type: str = "neural"
+            quality_rating: float = 4.0
+            language: str = "en-us"
+            description: str = ""
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +50,8 @@ class VoiceCloningRouter:
     def __init__(self):
         self.router = APIRouter()
         self.voice_cloner = VoiceCloner()
-        
+        self.metadata_manager = VoiceMetadataManager()
+
         # Supported audio formats
         self.supported_formats = {'.wav', '.mp3', '.m4a', '.flac', '.ogg'}
         self.max_file_size = 50 * 1024 * 1024  # 50MB
@@ -130,7 +159,23 @@ class VoiceCloningRouter:
                             status_code=400,
                             detail=f"Voice cloning failed: {clone_result.error_message}"
                         )
-                    
+
+                    # Register the custom voice with the metadata manager
+                    try:
+                        voice_metadata = VoiceMetadata(
+                            name=voice_name,
+                            gender="unknown",  # Could be enhanced with voice analysis
+                            accent="custom",
+                            voice_type="cloned",
+                            quality_rating=clone_result.similarity_score * 5.0 if clone_result.similarity_score else 4.0,
+                            language="en-us",  # Could be detected from audio
+                            description=description or f"Custom cloned voice: {voice_name}"
+                        )
+                        self.metadata_manager.add_custom_voice(voice_name, voice_metadata)
+                        logger.info(f"Registered custom voice metadata for: {voice_name}")
+                    except Exception as e:
+                        logger.warning(f"Failed to register voice metadata for {voice_name}: {e}")
+
                     # Return success response
                     return {
                         'status': 'success',
@@ -185,8 +230,15 @@ class VoiceCloningRouter:
             """
             try:
                 success = self.voice_cloner.delete_custom_voice(voice_name)
-                
+
                 if success:
+                    # Also remove from metadata manager
+                    try:
+                        self.metadata_manager.remove_voice(voice_name)
+                        logger.info(f"Removed voice metadata for: {voice_name}")
+                    except Exception as e:
+                        logger.warning(f"Failed to remove voice metadata for {voice_name}: {e}")
+
                     return {
                         'status': 'success',
                         'message': f"Voice '{voice_name}' deleted successfully"
@@ -227,34 +279,38 @@ class VoiceCloningRouter:
                         detail=f"Custom voice '{voice_name}' not found"
                     )
 
-                # Redirect to existing TTS API
-                import httpx
-                async with httpx.AsyncClient() as client:
-                    response = await client.post(
-                        "http://localhost:8354/v1/audio/speech",
-                        json={
-                            "input": text,
-                            "voice": voice_name,
-                            "response_format": response_format,
-                            "speed": speed
-                        }
-                    )
+                # Use the model directly for synthesis
+                try:
+                    # Import the global model instance
+                    import app
 
-                    if response.status_code != 200:
+                    # Get the app instance from the global scope
+                    app_instance = getattr(app, 'app_instance', None)
+
+                    if not app_instance:
                         raise HTTPException(
-                            status_code=response.status_code,
-                            detail=f"TTS synthesis failed: {response.text}"
+                            status_code=500,
+                            detail="TTS service not available"
                         )
 
-                    # Return audio response
-                    from fastapi.responses import Response
-                    media_type = f"audio/{response_format}"
-                    return Response(
-                        content=response.content,
-                        media_type=media_type,
-                        headers={
-                            "Content-Disposition": f"attachment; filename=cloned_speech.{response_format}"
-                        }
+                    # Create TTS request
+                    from LiteTTS.models import TTSRequest
+                    tts_request = TTSRequest(
+                        input=text,
+                        voice=voice_name,
+                        response_format=response_format,
+                        speed=speed,
+                        stream=False
+                    )
+
+                    # Use the app's internal synthesis method
+                    return await app_instance._generate_speech_internal(tts_request)
+
+                except Exception as synthesis_error:
+                    logger.error(f"Direct synthesis failed: {synthesis_error}")
+                    raise HTTPException(
+                        status_code=500,
+                        detail=f"Voice synthesis failed: {str(synthesis_error)}"
                     )
 
             except HTTPException:

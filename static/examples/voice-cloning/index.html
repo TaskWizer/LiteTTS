@@ -551,34 +551,63 @@
             // Simulate progress
             let progress = 0;
             const progressInterval = setInterval(() => {
-                progress += Math.random() * 20;
-                if (progress > 90) progress = 90;
+                progress += Math.random() * 10;
+                if (progress > 50) progress = 50;
                 analysisProgressFill.style.width = progress + '%';
             }, 200);
 
             try {
-                // Create FormData for file upload
-                const formData = new FormData();
-                formData.append('audio_file', uploadedFile);
-                formData.append('voice_name', voiceNameInput.value.trim());
-                formData.append('description', voiceDescriptionInput.value.trim());
+                // Step 1: Analyze audio first
+                const analyzeFormData = new FormData();
+                analyzeFormData.append('audio_file', uploadedFile);
 
-                // Call the real voice cloning API
-                const response = await fetch('/v1/voices/create', {
+                const analyzeResponse = await fetch('/v1/voices/analyze', {
                     method: 'POST',
-                    body: formData
+                    body: analyzeFormData
+                });
+
+                if (!analyzeResponse.ok) {
+                    const errorData = await analyzeResponse.json();
+                    throw new Error(errorData.detail || 'Audio analysis failed');
+                }
+
+                const analysisResult = await analyzeResponse.json();
+
+                // Update progress
+                progress = 60;
+                analysisProgressFill.style.width = progress + '%';
+
+                // Check if audio is suitable for voice cloning
+                if (!analysisResult.analysis.suitability.recommended) {
+                    const issues = analysisResult.analysis.suitability.issues.join(', ');
+                    throw new Error(`Audio not suitable for voice cloning: ${issues}`);
+                }
+
+                // Step 2: If analysis passes, create the voice
+                document.getElementById('analyzeText').textContent = 'Creating Voice...';
+                progress = 70;
+                analysisProgressFill.style.width = progress + '%';
+
+                const createFormData = new FormData();
+                createFormData.append('audio_file', uploadedFile);
+                createFormData.append('voice_name', voiceNameInput.value.trim());
+                createFormData.append('description', voiceDescriptionInput.value.trim());
+
+                const createResponse = await fetch('/v1/voices/create', {
+                    method: 'POST',
+                    body: createFormData
                 });
 
                 // Complete progress
                 clearInterval(progressInterval);
                 analysisProgressFill.style.width = '100%';
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Voice cloning failed');
+                if (!createResponse.ok) {
+                    const errorData = await createResponse.json();
+                    throw new Error(errorData.detail || 'Voice creation failed');
                 }
 
-                const result = await response.json();
+                const result = await createResponse.json();
 
                 // Create voice profile from API response
                 voiceProfile = {
@@ -588,7 +617,8 @@
                     createdAt: result.voice.metadata?.created_at || new Date().toISOString(),
                     id: result.voice.name,
                     similarity_score: result.voice.similarity_score,
-                    file_path: result.voice.file_path
+                    file_path: result.voice.file_path,
+                    analysis: analysisResult.analysis
                 };
 
                 // Show results

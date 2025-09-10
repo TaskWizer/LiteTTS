@@ -1,0 +1,22 @@
+[ ] NAME:LiteTTS System Diagnostic and Repair DESCRIPTION:Systematically diagnose and fix critical issues with TTS pronunciation, dashboard navigation, examples page, and voice cloning demo frontend
+-[/] NAME:Phase 1: Diagnostic Investigation DESCRIPTION:Comprehensive analysis of current system state and issue identification
+--[x] NAME:Task 1.1: TTS Pronunciation Analysis DESCRIPTION:Investigate why "test" is pronounced as "tess" - examine text processing pipeline, phonetic dictionary, and pronunciation rules
+--[ ] NAME:Task 1.2: Dashboard Navigation Analysis DESCRIPTION:Analyze dashboard HTML structure, routing configuration, and identify why examples link is non-functional
+--[ ] NAME:Task 1.3: Examples Page Assessment DESCRIPTION:Evaluate current examples landing page structure and identify enhancement opportunities
+--[ ] NAME:Task 1.4: Voice Cloning Demo Frontend Analysis DESCRIPTION:Investigate frontend-backend integration issues causing false "too long" errors and "Generate Test Audio" failures
+-[ ] NAME:Phase 2: Critical Frontend Fixes (HIGHEST PRIORITY) DESCRIPTION:Fix voice cloning demo frontend issues that completely block users
+--[ ] NAME:Task 2.1: Fix Audio File Length Validation DESCRIPTION:Resolve false "Audio input file is too long" errors in voice cloning demo frontend
+--[ ] NAME:Task 2.2: Fix Generate Test Audio Button DESCRIPTION:Resolve "Failed to generate test audio" error and ensure button produces audio output
+--[ ] NAME:Task 2.3: Validate Frontend-Backend Integration DESCRIPTION:Ensure voice cloning demo frontend properly communicates with working backend APIs
+-[ ] NAME:Phase 3: Navigation and UX Fixes (HIGH PRIORITY) DESCRIPTION:Fix dashboard navigation and enhance user experience
+--[ ] NAME:Task 3.1: Fix Dashboard Examples Link DESCRIPTION:Repair non-functional examples link on main dashboard
+--[ ] NAME:Task 3.2: Enhance Examples Landing Page DESCRIPTION:Create comprehensive showcase of all available demos with professional presentation
+--[ ] NAME:Task 3.3: Validate All Navigation Links DESCRIPTION:Ensure all dashboard and examples page links are functional
+-[ ] NAME:Phase 4: TTS Quality Fixes (MEDIUM PRIORITY) DESCRIPTION:Fix pronunciation issues affecting output quality
+--[ ] NAME:Task 4.1: Fix "test" Pronunciation DESCRIPTION:Ensure "test" is pronounced correctly as /tɛst/ not /tɛs/
+--[ ] NAME:Task 4.2: Validate Other 'st' Ending Words DESCRIPTION:Test multiple words ending in 'st' to ensure fix doesn't break other pronunciations
+--[ ] NAME:Task 4.3: Regression Testing DESCRIPTION:Ensure pronunciation fixes don't introduce new issues
+-[ ] NAME:Phase 5: Comprehensive End-to-End Validation DESCRIPTION:Validate complete user workflows and system functionality
+--[ ] NAME:Task 5.1: Dashboard to Voice Cloning Workflow DESCRIPTION:Test complete user journey from dashboard → examples → voice cloning demo → successful voice cloning
+--[ ] NAME:Task 5.2: Cross-Browser Compatibility Testing DESCRIPTION:Validate functionality works in major browsers
+--[ ] NAME:Task 5.3: Error Handling Validation DESCRIPTION:Ensure appropriate user feedback for actual errors vs false positives

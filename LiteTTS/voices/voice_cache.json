@@ -670,5 +670,41 @@
     "gender": null,
     "nationality": null,
     "discovered_at": "2025-09-05T23:52:23.101697"
+  },
+  "Don": {
+    "name": "Don",
+    "file_path": "LiteTTS/voices/Don.bin",
+    "file_size": 522240,
+    "checksum": "5ea257ff344b9a761b7f681465c3aba9d5d1eab78cf5402ec020910ae9ea7d4a",
+    "last_modified": 1757227854.287036,
+    "source": "custom",
+    "language": null,
+    "gender": null,
+    "nationality": null,
+    "discovered_at": "2025-09-07T01:54:55.956433"
+  },
+  "test_voice_fixed": {
+    "name": "test_voice_fixed",
+    "file_path": "LiteTTS/voices/test_voice_fixed.bin",
+    "file_size": 522240,
+    "checksum": "9fb275f88ecdd120b0fd28d74166eaf7f8be3c7c6108f4261fcab252d7f4011d",
+    "last_modified": 1757228899.2607505,
+    "source": "custom",
+    "language": null,
+    "gender": null,
+    "nationality": null,
+    "discovered_at": "2025-09-07T02:09:39.726552"
+  },
+  "test_metadata_voice": {
+    "name": "test_metadata_voice",
+    "file_path": "LiteTTS/voices/test_metadata_voice.bin",
+    "file_size": 522240,
+    "checksum": "9fef546092a1283c265a19f4f665f57822c2af06dbb62b8223fb86e268145b18",
+    "last_modified": 1757229752.351342,
+    "source": "custom",
+    "language": null,
+    "gender": null,
+    "nationality": null,
+    "discovered_at": "2025-09-09T23:45:20.303475"
   }
 }
