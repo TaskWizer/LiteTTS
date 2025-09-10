@@ -706,5 +706,17 @@
     "gender": null,
     "nationality": null,
     "discovered_at": "2025-09-09T23:45:20.303475"
+  },
+  "cycle": {
+    "name": "cycle",
+    "file_path": "LiteTTS/voices/cycle.bin",
+    "file_size": 522240,
+    "checksum": "9303decbc08c811d71b336570cb2fb6e4ce48a2c86b6954384921a303e78f92a",
+    "last_modified": 1757480735.3773887,
+    "source": "custom",
+    "language": null,
+    "gender": null,
+    "nationality": null,
+    "discovered_at": "2025-09-10T00:10:51.352526"
   }
 }

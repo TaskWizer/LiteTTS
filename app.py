@@ -854,13 +854,41 @@ class LiteTTSApplication:
             # Don't fail startup if voice download fails
             pass
     
+    def refresh_available_voices(self):
+        """Refresh the list of available voices (useful after creating new voices)"""
+        try:
+            # Get available voices from the voice combiner (more reliable)
+            self.available_voices = self.voice_combiner.get_voice_list()
+            self.logger.info(f"🔄 Refreshed voices from combiner: {len(self.available_voices)} voices")
+
+            # Also try the dynamic system as fallback
+            dynamic_voices = self.get_available_voices()
+            self.logger.debug(f"🔍 Dynamic system voices: {len(dynamic_voices)} voices")
+
+            # Use combiner voices if available, otherwise fallback to dynamic
+            if not self.available_voices and dynamic_voices:
+                self.available_voices = dynamic_voices
+                self.logger.info("📋 Using dynamic voices as fallback")
+
+            self.logger.info(f"🎭 Refreshed available voices count: {len(self.available_voices)}")
+            return True
+        except Exception as e:
+            self.logger.error(f"❌ Failed to refresh available voices: {e}")
+            return False
+
     def get_voice_name(self, voice_name: str) -> str:
         """Get the correct voice name for the API"""
         # Resolve voice name using dynamic system
         resolved_voice = self.resolve_voice_name(voice_name)
 
         if resolved_voice not in self.available_voices:
-            raise HTTPException(400, detail=f"Voice '{voice_name}' not available. Available: {self.available_voices}")
+            # Try refreshing the voice list in case new voices were added
+            self.logger.info(f"Voice '{voice_name}' not found, refreshing voice list...")
+            self.refresh_available_voices()
+
+            # Check again after refresh
+            if resolved_voice not in self.available_voices:
+                raise HTTPException(400, detail=f"Voice '{voice_name}' not available. Available: {self.available_voices}")
 
         return resolved_voice
     

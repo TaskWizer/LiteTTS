@@ -176,6 +176,16 @@ class VoiceCloningRouter:
                     except Exception as e:
                         logger.warning(f"Failed to register voice metadata for {voice_name}: {e}")
 
+                    # Refresh the main app's voice list so the new voice is available for synthesis
+                    try:
+                        import app
+                        app_instance = getattr(app, 'app_instance', None)
+                        if app_instance and hasattr(app_instance, 'refresh_available_voices'):
+                            app_instance.refresh_available_voices()
+                            logger.info(f"Refreshed main app voice list after creating: {voice_name}")
+                    except Exception as e:
+                        logger.warning(f"Failed to refresh main app voice list: {e}")
+
                     # Return success response
                     return {
                         'status': 'success',
@@ -238,6 +248,16 @@ class VoiceCloningRouter:
                         logger.info(f"Removed voice metadata for: {voice_name}")
                     except Exception as e:
                         logger.warning(f"Failed to remove voice metadata for {voice_name}: {e}")
+
+                    # Refresh the main app's voice list so the deleted voice is removed
+                    try:
+                        import app
+                        app_instance = getattr(app, 'app_instance', None)
+                        if app_instance and hasattr(app_instance, 'refresh_available_voices'):
+                            app_instance.refresh_available_voices()
+                            logger.info(f"Refreshed main app voice list after deleting: {voice_name}")
+                    except Exception as e:
+                        logger.warning(f"Failed to refresh main app voice list: {e}")
 
                     return {
                         'status': 'success',
