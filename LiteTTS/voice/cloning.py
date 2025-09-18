@@ -48,10 +48,16 @@ class VoiceCloner:
         
         # Voice cloning configuration
         self.min_audio_duration = 3.0  # Minimum 3 seconds
-        self.max_audio_duration = 30.0  # Maximum 30 seconds
+        self.max_audio_duration = 120.0  # Maximum 120 seconds (extended from 30s)
         self.target_sample_rate = 24000
         self.embedding_dim = 256
         self.num_style_vectors = 510
+
+        # Enhanced mode support (backward compatibility)
+        self.enhanced_mode_enabled = os.environ.get('VOICE_CLONING_ENHANCED_MODE', 'true').lower() == 'true'
+        if not self.enhanced_mode_enabled:
+            self.max_audio_duration = 30.0  # Fallback to original limit
+            logger.info("Enhanced voice cloning mode disabled, using 30s limit")
         
         logger.info(f"VoiceCloner initialized with voices directory: {self.voices_dir}")
     

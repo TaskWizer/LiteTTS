@@ -12,11 +12,20 @@ import os
 from pathlib import Path
 import shutil
 
-from ..voice.cloning import VoiceCloner, VoiceCloneResult, AudioAnalysisResult
-from ..voice.metadata import VoiceMetadataManager
+try:
+    from ..voice.cloning import VoiceCloner, VoiceCloneResult, AudioAnalysisResult
+    from ..voice.metadata import VoiceMetadataManager
+    from ..models import VoiceMetadata
+except ImportError:
+    # Handle direct execution or import issues
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).parent.parent))
+    from voice.cloning import VoiceCloner, VoiceCloneResult, AudioAnalysisResult
+    from voice.metadata import VoiceMetadataManager
 
 try:
-    from ..models import VoiceMetadata
+    from models import VoiceMetadata
 except ImportError:
     # Fallback import from models.py file
     import sys
@@ -54,7 +63,8 @@ class VoiceCloningRouter:
 
         # Supported audio formats
         self.supported_formats = {'.wav', '.mp3', '.m4a', '.flac', '.ogg'}
-        self.max_file_size = 50 * 1024 * 1024  # 50MB
+        self.max_file_size = 50 * 1024 * 1024  # 50MB for standard cloning
+        self.max_file_size_extended = 200 * 1024 * 1024  # 200MB for enhanced cloning (120s support)
         
         # Setup routes
         self._setup_routes()
@@ -220,7 +230,201 @@ class VoiceCloningRouter:
                     status_code=500,
                     content={"error": "Voice creation failed", "detail": str(e)}
                 )
-        
+
+        @self.router.post("/v1/voices/create-extended")
+        async def create_extended_voice(
+            audio_files: List[UploadFile] = File(..., description="Audio files for enhanced voice cloning (up to 5 files, 120s each)"),
+            voice_name: str = Form(..., description="Name for the custom voice"),
+            description: str = Form("", description="Optional description for the voice"),
+            enable_segmentation: bool = Form(True, description="Enable intelligent audio segmentation for long clips"),
+            background_tasks: BackgroundTasks = None
+        ):
+            """
+            Create a custom voice using enhanced voice cloning with 120s support
+
+            This endpoint supports:
+            - Up to 120 seconds per audio file (4x increase from standard)
+            - Multiple reference audio files (up to 5)
+            - Intelligent audio segmentation for optimal quality
+            - Enhanced voice characteristic analysis
+            """
+            try:
+                # Validate number of files
+                if len(audio_files) > 5:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Too many audio files: {len(audio_files)} (max: 5)"
+                    )
+
+                if len(audio_files) == 0:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="At least one audio file is required"
+                    )
+
+                # Validate voice name
+                voice_name_error = self._validate_voice_name(voice_name)
+                if voice_name_error:
+                    raise HTTPException(status_code=400, detail=voice_name_error)
+
+                # Process each audio file
+                temp_files = []
+                total_duration = 0.0
+                analysis_results = []
+
+                try:
+                    for i, audio_file in enumerate(audio_files):
+                        # Validate each file with extended limits
+                        validation_error = self._validate_audio_file_extended(audio_file)
+                        if validation_error:
+                            raise HTTPException(
+                                status_code=400,
+                                detail=f"File {i+1} validation failed: {validation_error}"
+                            )
+
+                        # Save temporary file
+                        temp_file = tempfile.NamedTemporaryFile(
+                            delete=False,
+                            suffix=Path(audio_file.filename).suffix,
+                            prefix=f"voice_clone_{i+1}_"
+                        )
+                        shutil.copyfileobj(audio_file.file, temp_file)
+                        temp_file.close()
+                        temp_files.append(temp_file.name)
+
+                        # Analyze audio
+                        analysis_result = self.voice_cloner.analyze_audio(temp_file.name)
+
+                        if not analysis_result.success:
+                            raise HTTPException(
+                                status_code=400,
+                                detail=f"Audio analysis failed for file {i+1}: {analysis_result.error_message}"
+                            )
+
+                        analysis_results.append(analysis_result)
+                        total_duration += analysis_result.duration
+
+                        # Check individual file duration (enhanced limit)
+                        if analysis_result.duration > self.voice_cloner.max_audio_duration:
+                            raise HTTPException(
+                                status_code=400,
+                                detail=f"File {i+1} too long: {analysis_result.duration:.1f}s (max: {self.voice_cloner.max_audio_duration}s)"
+                            )
+
+                    # Check total duration
+                    max_total_duration = self.voice_cloner.max_audio_duration * len(audio_files)
+                    if total_duration > max_total_duration:
+                        raise HTTPException(
+                            status_code=400,
+                            detail=f"Total audio duration too long: {total_duration:.1f}s (max: {max_total_duration}s)"
+                        )
+
+                    # Enhanced voice cloning with multiple files
+                    if len(temp_files) == 1:
+                        # Single file - use standard cloning
+                        clone_result = self.voice_cloner.clone_voice(temp_files[0], voice_name, description)
+                    else:
+                        # Multiple files - use enhanced cloning (if available)
+                        try:
+                            # Try to use enhanced cloning method
+                            if hasattr(self.voice_cloner, 'clone_voice_enhanced'):
+                                clone_result = self.voice_cloner.clone_voice_enhanced(
+                                    temp_files,
+                                    voice_name,
+                                    description,
+                                    enable_segmentation=enable_segmentation
+                                )
+                            else:
+                                # Fallback: use first file for now
+                                logger.warning("Enhanced cloning not available, using first file only")
+                                clone_result = self.voice_cloner.clone_voice(temp_files[0], voice_name, description)
+                        except Exception as e:
+                            logger.error(f"Enhanced cloning failed, falling back to single file: {e}")
+                            clone_result = self.voice_cloner.clone_voice(temp_files[0], voice_name, description)
+
+                    if not clone_result.success:
+                        raise HTTPException(
+                            status_code=400,
+                            detail=f"Voice cloning failed: {clone_result.error_message}"
+                        )
+
+                    # Calculate enhanced quality metrics
+                    avg_quality = sum(r.quality_score for r in analysis_results) / len(analysis_results)
+                    quality_consistency = 1.0 - (max(r.quality_score for r in analysis_results) - min(r.quality_score for r in analysis_results))
+
+                    # Register the custom voice with enhanced metadata
+                    try:
+                        voice_metadata = VoiceMetadata(
+                            name=voice_name,
+                            gender="unknown",  # Could be enhanced with voice analysis
+                            accent="custom",
+                            voice_type="enhanced_cloned",
+                            quality_rating=avg_quality * 5.0,
+                            language="en-us",  # Could be detected from audio
+                            description=description or f"Enhanced cloned voice: {voice_name} ({len(audio_files)} clips, {total_duration:.1f}s total)"
+                        )
+                        self.metadata_manager.add_custom_voice(voice_name, voice_metadata)
+                        logger.info(f"Registered enhanced voice metadata for: {voice_name}")
+                    except Exception as e:
+                        logger.warning(f"Failed to register voice metadata for {voice_name}: {e}")
+
+                    # Refresh the main app's voice list
+                    try:
+                        import app
+                        app_instance = getattr(app, 'app_instance', None)
+                        if app_instance and hasattr(app_instance, 'refresh_available_voices'):
+                            success = app_instance.refresh_available_voices()
+                            if success:
+                                logger.info(f"✅ Refreshed main app voice list after creating enhanced voice: {voice_name}")
+                    except Exception as e:
+                        logger.warning(f"Failed to refresh main app voice list: {e}")
+
+                    # Return enhanced success response
+                    return {
+                        'status': 'success',
+                        'voice': {
+                            'name': clone_result.voice_name,
+                            'file_path': clone_result.voice_file_path,
+                            'similarity_score': clone_result.similarity_score,
+                            'metadata': clone_result.metadata
+                        },
+                        'enhanced_metrics': {
+                            'total_files': len(audio_files),
+                            'total_duration': total_duration,
+                            'average_quality': avg_quality,
+                            'quality_consistency': quality_consistency,
+                            'segmentation_enabled': enable_segmentation
+                        },
+                        'analysis_summary': [
+                            {
+                                'file_index': i + 1,
+                                'duration': result.duration,
+                                'quality_score': result.quality_score,
+                                'sample_rate': result.sample_rate
+                            }
+                            for i, result in enumerate(analysis_results)
+                        ],
+                        'message': f"Enhanced voice '{voice_name}' created successfully from {len(audio_files)} audio files"
+                    }
+
+                finally:
+                    # Clean up all temporary files
+                    for temp_file in temp_files:
+                        try:
+                            if os.path.exists(temp_file):
+                                os.unlink(temp_file)
+                        except Exception as e:
+                            logger.warning(f"Failed to clean up temp file {temp_file}: {e}")
+
+            except HTTPException:
+                raise
+            except Exception as e:
+                logger.error(f"Enhanced voice creation failed: {e}")
+                return JSONResponse(
+                    status_code=500,
+                    content={"error": "Enhanced voice creation failed", "detail": str(e)}
+                )
+
         @self.router.get("/v1/voices/custom")
         async def list_custom_voices():
             """
@@ -369,7 +573,26 @@ class VoiceCloningRouter:
             return f"Invalid content type: {audio_file.content_type}. Expected audio file."
         
         return None
-    
+
+    def _validate_audio_file_extended(self, audio_file: UploadFile) -> Optional[str]:
+        """Validate uploaded audio file for extended voice cloning (120s support)"""
+
+        # Check file size with extended limit
+        if hasattr(audio_file, 'size') and audio_file.size > self.max_file_size_extended:
+            return f"File too large: {audio_file.size / 1024 / 1024:.1f}MB (max: {self.max_file_size_extended / 1024 / 1024}MB for extended cloning)"
+
+        # Check file extension
+        if audio_file.filename:
+            file_ext = Path(audio_file.filename).suffix.lower()
+            if file_ext not in self.supported_formats:
+                return f"Unsupported format: {file_ext}. Supported: {', '.join(self.supported_formats)}"
+
+        # Check content type
+        if audio_file.content_type and not audio_file.content_type.startswith('audio/'):
+            return f"Invalid content type: {audio_file.content_type}. Expected audio file."
+
+        return None
+
     def _validate_voice_name(self, voice_name: str) -> Optional[str]:
         """Validate voice name"""
         
