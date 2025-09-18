@@ -181,8 +181,17 @@ class VoiceCloningRouter:
                         import app
                         app_instance = getattr(app, 'app_instance', None)
                         if app_instance and hasattr(app_instance, 'refresh_available_voices'):
-                            app_instance.refresh_available_voices()
-                            logger.info(f"Refreshed main app voice list after creating: {voice_name}")
+                            # Force a comprehensive refresh
+                            success = app_instance.refresh_available_voices()
+                            if success:
+                                logger.info(f"✅ Refreshed main app voice list after creating: {voice_name}")
+                                # Verify the voice is now available
+                                if hasattr(app_instance, 'available_voices') and voice_name in app_instance.available_voices:
+                                    logger.info(f"✅ Voice '{voice_name}' confirmed available for synthesis")
+                                else:
+                                    logger.warning(f"⚠️ Voice '{voice_name}' not found after refresh - may need manual restart")
+                            else:
+                                logger.warning(f"❌ Voice list refresh failed for: {voice_name}")
                     except Exception as e:
                         logger.warning(f"Failed to refresh main app voice list: {e}")
 

@@ -237,6 +237,12 @@
             border: 1px solid #93c5fd;
         }
 
+        .status-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fcd34d;
+        }
+
         .voice-preview {
             background: white;
             border-radius: 15px;
@@ -367,6 +373,17 @@
                     
                     <div class="form-group">
                         <label for="testText">Test Text</label>
+                        <div style="margin-bottom: 10px;">
+                            <select id="testPhraseSelect" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="">Choose a test phrase or write your own...</option>
+                                <option value="Hello, this is a test of my custom voice clone. How does it sound?">Default greeting</option>
+                                <option value="The quick brown fox jumps over the lazy dog. This sentence contains every letter of the alphabet.">Pangram test</option>
+                                <option value="Welcome to our voice cloning demonstration. This technology can replicate speech patterns with remarkable accuracy.">Professional announcement</option>
+                                <option value="Good morning! I hope you're having a wonderful day. The weather is absolutely beautiful today.">Casual conversation</option>
+                                <option value="In a hole in the ground there lived a hobbit. Not a nasty, dirty, wet hole filled with the ends of worms.">Literary excerpt</option>
+                                <option value="Testing numbers and dates: Today is September 10th, 2025. The temperature is 72 degrees Fahrenheit.">Numbers and dates</option>
+                            </select>
+                        </div>
                         <textarea id="testText" rows="3" placeholder="Enter text to test your cloned voice...">Hello, this is a test of my custom voice clone. How does it sound?</textarea>
                     </div>
                     
@@ -382,6 +399,14 @@
                     <div id="testAudio" class="audio-player hidden">
                         <h4>🔊 Generated Voice Test</h4>
                         <audio controls style="width: 100%; margin-top: 10px;"></audio>
+                        <div style="margin-top: 10px; text-align: center;">
+                            <button class="btn" id="downloadTestAudio" style="background: #28a745; margin-right: 10px;">
+                                📥 Download Test Audio
+                            </button>
+                            <button class="btn" id="regenerateTestAudio" style="background: #17a2b8;">
+                                🔄 Generate New Test
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -411,6 +436,7 @@
         let currentStep = 1;
         let uploadedFile = null;
         let voiceProfile = null;
+        let currentTestAudioUrl = null;
 
         // DOM Elements
         const uploadArea = document.getElementById('uploadArea');
@@ -425,10 +451,13 @@
         const analysisProgressFill = document.getElementById('analysisProgressFill');
         const analysisResults = document.getElementById('analysisResults');
         const testTextInput = document.getElementById('testText');
+        const testPhraseSelect = document.getElementById('testPhraseSelect');
         const testVoiceBtn = document.getElementById('testVoiceBtn');
         const testProgress = document.getElementById('testProgress');
         const testProgressFill = document.getElementById('testProgressFill');
         const testAudio = document.getElementById('testAudio');
+        const downloadTestAudioBtn = document.getElementById('downloadTestAudio');
+        const regenerateTestAudioBtn = document.getElementById('regenerateTestAudio');
         const voicePreview = document.getElementById('voicePreview');
         const voiceProfileInfo = document.getElementById('voiceProfileInfo');
         const saveVoiceBtn = document.getElementById('saveVoiceBtn');
@@ -454,7 +483,14 @@
             analyzeBtn.addEventListener('click', analyzeVoice);
 
             // Voice testing events
+            testPhraseSelect.addEventListener('change', function() {
+                if (this.value) {
+                    testTextInput.value = this.value;
+                }
+            });
             testVoiceBtn.addEventListener('click', testGeneratedVoice);
+            downloadTestAudioBtn.addEventListener('click', downloadTestAudio);
+            regenerateTestAudioBtn.addEventListener('click', testGeneratedVoice);
 
             // Action buttons
             saveVoiceBtn.addEventListener('click', saveVoiceProfile);
@@ -625,7 +661,22 @@
                 analysisResults.classList.remove('hidden');
                 testVoiceBtn.disabled = false;
                 activateStep(3);
-                showStatus(`Voice '${result.voice.name}' created successfully! Similarity: ${(result.voice.similarity_score * 100).toFixed(1)}%`, 'success');
+
+                // Show success message with readiness indicator
+                const similarityPercent = (result.voice.similarity_score * 100).toFixed(1);
+                let readinessMessage = `Voice '${result.voice.name}' created successfully! Similarity: ${similarityPercent}%`;
+
+                if (result.voice.similarity_score >= 0.85) {
+                    readinessMessage += ' 🟢 Excellent quality - Ready for testing!';
+                } else if (result.voice.similarity_score >= 0.70) {
+                    readinessMessage += ' 🟡 Good quality - Ready for testing!';
+                } else if (result.voice.similarity_score >= 0.50) {
+                    readinessMessage += ' 🟠 Fair quality - You may want to try with a different audio sample.';
+                } else {
+                    readinessMessage += ' 🔴 Low quality - Consider using a clearer, longer audio sample.';
+                }
+
+                showStatus(readinessMessage, 'success');
 
             } catch (error) {
                 clearInterval(progressInterval);
@@ -639,8 +690,25 @@
         }
 
         async function testGeneratedVoice() {
-            if (!voiceProfile || !testTextInput.value.trim()) {
-                showStatus('Please complete voice analysis and enter test text', 'error');
+            if (!voiceProfile) {
+                showStatus('Please complete voice creation first. Upload an audio file and click "Analyze Voice".', 'error');
+                return;
+            }
+
+            if (!testTextInput.value.trim()) {
+                showStatus('Please enter some text to test your voice. You can choose from the dropdown or write your own.', 'error');
+                return;
+            }
+
+            // Check text length
+            const textLength = testTextInput.value.trim().length;
+            if (textLength > 500) {
+                showStatus('Text is too long for testing. Please use shorter phrases (max 500 characters) for better results.', 'warning');
+                return;
+            }
+
+            if (textLength < 10) {
+                showStatus('Text is too short. Please use at least 10 characters for meaningful voice testing.', 'warning');
                 return;
             }
 
@@ -672,7 +740,18 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error('Failed to generate test audio');
+                    // Try to get detailed error message from response
+                    let errorMessage = 'Failed to generate test audio';
+                    try {
+                        const errorData = await response.json();
+                        if (errorData.detail) {
+                            errorMessage = errorData.detail;
+                        }
+                    } catch (e) {
+                        // If we can't parse JSON, use the status text
+                        errorMessage = `Failed to generate test audio: ${response.status} ${response.statusText}`;
+                    }
+                    throw new Error(errorMessage);
                 }
 
                 // Complete progress
@@ -682,23 +761,131 @@
                 // Create audio blob and display player
                 const audioBlob = await response.blob();
                 const audioUrl = URL.createObjectURL(audioBlob);
+                currentTestAudioUrl = audioUrl; // Store for download functionality
                 const audioElement = testAudio.querySelector('audio');
                 audioElement.src = audioUrl;
                 testAudio.classList.remove('hidden');
 
-                // Show voice preview
+                // Show voice preview and quality metrics
                 displayVoicePreview();
+                displayQualityMetrics(audioBlob);
                 showStatus('Test audio generated successfully!', 'success');
 
             } catch (error) {
                 clearInterval(progressInterval);
-                showStatus('Failed to generate test audio: ' + error.message, 'error');
+
+                // Provide specific error messages based on the error
+                let errorMessage = error.message;
+                if (errorMessage.includes('not found')) {
+                    errorMessage = `Voice '${voiceProfile.name}' is not ready yet. Please wait a moment and try again, or restart the application if the issue persists.`;
+                } else if (errorMessage.includes('400')) {
+                    errorMessage = 'Invalid request. Please check your text input and try again.';
+                } else if (errorMessage.includes('500')) {
+                    errorMessage = 'Server error occurred. Please try again in a moment.';
+                } else if (errorMessage.includes('Failed to fetch')) {
+                    errorMessage = 'Network error. Please check your connection and try again.';
+                } else if (!errorMessage || errorMessage === 'Failed to generate test audio') {
+                    errorMessage = 'Unable to generate test audio. Please ensure your voice was created successfully and try again.';
+                }
+
+                showStatus(errorMessage, 'error');
             } finally {
                 // Reset button
                 document.getElementById('testIcon').textContent = '🎵';
                 document.getElementById('testText').textContent = 'Generate Test Audio';
                 testVoiceBtn.disabled = false;
             }
+        }
+
+        function downloadTestAudio() {
+            if (!currentTestAudioUrl) {
+                showStatus('No test audio available to download. Please generate test audio first.', 'error');
+                return;
+            }
+
+            try {
+                // Create a temporary download link
+                const downloadLink = document.createElement('a');
+                downloadLink.href = currentTestAudioUrl;
+                downloadLink.download = `${voiceProfile.name}_test_audio.mp3`;
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+
+                showStatus('Test audio downloaded successfully!', 'success');
+            } catch (error) {
+                showStatus('Failed to download test audio: ' + error.message, 'error');
+            }
+        }
+
+        function displayQualityMetrics(audioBlob) {
+            // Calculate audio metrics
+            const fileSizeKB = (audioBlob.size / 1024).toFixed(1);
+            const textLength = testTextInput.value.trim().length;
+            const estimatedDuration = Math.max(1, textLength * 0.08); // Rough estimate: ~80ms per character
+
+            // Determine quality rating based on similarity score and file size
+            let qualityRating = 'Good';
+            let qualityColor = '#28a745';
+
+            if (voiceProfile.similarity_score) {
+                const similarity = voiceProfile.similarity_score * 100;
+                if (similarity >= 85) {
+                    qualityRating = 'Excellent';
+                    qualityColor = '#007bff';
+                } else if (similarity >= 70) {
+                    qualityRating = 'Very Good';
+                    qualityColor = '#17a2b8';
+                } else if (similarity >= 50) {
+                    qualityRating = 'Good';
+                    qualityColor = '#28a745';
+                } else {
+                    qualityRating = 'Fair';
+                    qualityColor = '#ffc107';
+                }
+            }
+
+            // Display quality metrics
+            const qualityMetrics = document.createElement('div');
+            qualityMetrics.id = 'qualityMetrics';
+            qualityMetrics.style.cssText = `
+                margin-top: 15px;
+                padding: 15px;
+                background: #f8f9fa;
+                border-radius: 8px;
+                border-left: 4px solid ${qualityColor};
+            `;
+
+            qualityMetrics.innerHTML = `
+                <h4 style="margin: 0 0 10px 0; color: #333;">📊 Quality Metrics</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; font-size: 14px;">
+                    <div>
+                        <strong>Quality Rating:</strong><br>
+                        <span style="color: ${qualityColor}; font-weight: bold;">${qualityRating}</span>
+                    </div>
+                    <div>
+                        <strong>Audio Size:</strong><br>
+                        ${fileSizeKB} KB
+                    </div>
+                    <div>
+                        <strong>Text Length:</strong><br>
+                        ${textLength} characters
+                    </div>
+                    <div>
+                        <strong>Est. Duration:</strong><br>
+                        ~${estimatedDuration.toFixed(1)}s
+                    </div>
+                </div>
+            `;
+
+            // Remove existing quality metrics if any
+            const existingMetrics = document.getElementById('qualityMetrics');
+            if (existingMetrics) {
+                existingMetrics.remove();
+            }
+
+            // Add to test audio section
+            testAudio.appendChild(qualityMetrics);
         }
 
         function displayVoicePreview() {

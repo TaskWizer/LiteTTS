@@ -857,20 +857,50 @@ class LiteTTSApplication:
     def refresh_available_voices(self):
         """Refresh the list of available voices (useful after creating new voices)"""
         try:
-            # Get available voices from the voice combiner (more reliable)
-            self.available_voices = self.voice_combiner.get_voice_list()
-            self.logger.info(f"🔄 Refreshed voices from combiner: {len(self.available_voices)} voices")
+            # Force refresh of voice discovery cache
+            if hasattr(self, 'voice_discovery') and self.voice_discovery:
+                try:
+                    # Force a fresh scan of the voices directory
+                    discovered, updated = self.voice_discovery.discover_voices()
+                    self.logger.info(f"🔍 Voice discovery refresh: {discovered} new, {updated} updated")
+                except Exception as e:
+                    self.logger.warning(f"Voice discovery refresh failed: {e}")
 
-            # Also try the dynamic system as fallback
-            dynamic_voices = self.get_available_voices()
-            self.logger.debug(f"🔍 Dynamic system voices: {len(dynamic_voices)} voices")
+            # Force refresh of voice manager
+            if hasattr(self, 'voice_manager') and self.voice_manager:
+                try:
+                    # Get fresh list from voice manager
+                    manager_voices = self.voice_manager.get_available_voices()
+                    self.logger.info(f"🎭 Voice manager found: {len(manager_voices)} voices")
+                except Exception as e:
+                    self.logger.warning(f"Voice manager refresh failed: {e}")
 
-            # Use combiner voices if available, otherwise fallback to dynamic
-            if not self.available_voices and dynamic_voices:
-                self.available_voices = dynamic_voices
-                self.logger.info("📋 Using dynamic voices as fallback")
+            # Force refresh of voice combiner by rescanning filesystem
+            try:
+                # Get fresh list by directly scanning the filesystem
+                voices_dir = Path(self.config.paths.voices_dir)
+                filesystem_voices = [f.stem for f in voices_dir.glob("*.bin")]
+                self.logger.info(f"📁 Filesystem scan found: {len(filesystem_voices)} voices")
+
+                # Update the available voices list with the fresh scan
+                self.available_voices = sorted(filesystem_voices)
+
+                # Also update the voice combiner's cache if possible
+                if hasattr(self.voice_combiner, '_get_available_voices'):
+                    combiner_voices = self.voice_combiner._get_available_voices()
+                    self.logger.info(f"🔄 Combiner refresh found: {len(combiner_voices)} voices")
+
+                    # Use the most comprehensive list
+                    all_voices = set(self.available_voices) | set(combiner_voices)
+                    self.available_voices = sorted(list(all_voices))
+
+            except Exception as e:
+                self.logger.warning(f"Filesystem scan failed: {e}")
+                # Fallback to combiner
+                self.available_voices = self.voice_combiner.get_voice_list()
 
             self.logger.info(f"🎭 Refreshed available voices count: {len(self.available_voices)}")
+            self.logger.debug(f"🎭 Available voices: {self.available_voices}")
             return True
         except Exception as e:
             self.logger.error(f"❌ Failed to refresh available voices: {e}")
