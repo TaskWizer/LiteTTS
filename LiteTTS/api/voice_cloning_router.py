@@ -137,6 +137,8 @@ class VoiceCloningRouter:
             audio_file: UploadFile = File(..., description="Audio file for voice cloning"),
             voice_name: str = Form(..., description="Name for the custom voice"),
             description: str = Form("", description="Optional description for the voice"),
+            temporary: bool = Form(True, description="Create as temporary voice (default: true)"),
+            session_id: str = Form(None, description="Session ID for temporary voice grouping"),
             background_tasks: BackgroundTasks = None
         ):
             """
@@ -161,61 +163,108 @@ class VoiceCloningRouter:
                     temp_path = temp_file.name
                 
                 try:
-                    # Clone voice
-                    clone_result = self.voice_cloner.clone_voice(temp_path, voice_name, description)
-                    
-                    if not clone_result.success:
-                        raise HTTPException(
-                            status_code=400,
-                            detail=f"Voice cloning failed: {clone_result.error_message}"
-                        )
+                    if temporary:
+                        # Create temporary voice
+                        from ..voice.temporary_storage import TemporaryVoiceManager
+                        temp_manager = TemporaryVoiceManager()
 
-                    # Register the custom voice with the metadata manager
-                    try:
-                        voice_metadata = VoiceMetadata(
-                            name=voice_name,
-                            gender="unknown",  # Could be enhanced with voice analysis
-                            accent="custom",
-                            voice_type="cloned",
-                            quality_rating=clone_result.similarity_score * 5.0 if clone_result.similarity_score else 4.0,
-                            language="en-us",  # Could be detected from audio
-                            description=description or f"Custom cloned voice: {voice_name}"
-                        )
-                        self.metadata_manager.add_custom_voice(voice_name, voice_metadata)
-                        logger.info(f"Registered custom voice metadata for: {voice_name}")
-                    except Exception as e:
-                        logger.warning(f"Failed to register voice metadata for {voice_name}: {e}")
+                        # Clone voice to get the voice data
+                        clone_result = self.voice_cloner.clone_voice(temp_path, voice_name, description)
 
-                    # Refresh the main app's voice list so the new voice is available for synthesis
-                    try:
-                        import app
-                        app_instance = getattr(app, 'app_instance', None)
-                        if app_instance and hasattr(app_instance, 'refresh_available_voices'):
-                            # Force a comprehensive refresh
-                            success = app_instance.refresh_available_voices()
-                            if success:
-                                logger.info(f"✅ Refreshed main app voice list after creating: {voice_name}")
-                                # Verify the voice is now available
-                                if hasattr(app_instance, 'available_voices') and voice_name in app_instance.available_voices:
-                                    logger.info(f"✅ Voice '{voice_name}' confirmed available for synthesis")
+                        if not clone_result.success:
+                            raise HTTPException(
+                                status_code=400,
+                                detail=f"Voice cloning failed: {clone_result.error_message}"
+                            )
+
+                        # Read the created voice file and move it to temporary storage
+                        voice_file_path = Path(clone_result.voice_file_path)
+                        if voice_file_path.exists():
+                            voice_data = voice_file_path.read_bytes()
+                            # Remove from permanent storage
+                            voice_file_path.unlink()
+
+                            # Create in temporary storage
+                            temp_voice_path = temp_manager.create_temporary_voice(
+                                voice_name, voice_data, session_id
+                            )
+
+                            logger.info(f"Created temporary voice: {voice_name} at {temp_voice_path}")
+
+                            return {
+                                'status': 'success',
+                                'voice': {
+                                    'name': clone_result.voice_name,
+                                    'file_path': temp_voice_path,
+                                    'similarity_score': clone_result.similarity_score,
+                                    'metadata': clone_result.metadata,
+                                    'temporary': True,
+                                    'session_id': session_id
+                                },
+                                'message': f"Temporary voice '{voice_name}' created successfully. Use /v1/voices/custom/{voice_name}/save to make it permanent."
+                            }
+                        else:
+                            raise HTTPException(
+                                status_code=500,
+                                detail="Voice file not found after creation"
+                            )
+                    else:
+                        # Create permanent voice (original behavior)
+                        clone_result = self.voice_cloner.clone_voice(temp_path, voice_name, description)
+
+                        if not clone_result.success:
+                            raise HTTPException(
+                                status_code=400,
+                                detail=f"Voice cloning failed: {clone_result.error_message}"
+                            )
+
+                        # Register the custom voice with the metadata manager
+                        try:
+                            voice_metadata = VoiceMetadata(
+                                name=voice_name,
+                                gender="unknown",  # Could be enhanced with voice analysis
+                                accent="custom",
+                                voice_type="cloned",
+                                quality_rating=clone_result.similarity_score * 5.0 if clone_result.similarity_score else 4.0,
+                                language="en-us",  # Could be detected from audio
+                                description=description or f"Custom cloned voice: {voice_name}"
+                            )
+                            self.metadata_manager.add_custom_voice(voice_name, voice_metadata)
+                            logger.info(f"Registered custom voice metadata for: {voice_name}")
+                        except Exception as e:
+                            logger.warning(f"Failed to register voice metadata for {voice_name}: {e}")
+
+                        # Refresh the main app's voice list so the new voice is available for synthesis
+                        try:
+                            import app
+                            app_instance = getattr(app, 'app_instance', None)
+                            if app_instance and hasattr(app_instance, 'refresh_available_voices'):
+                                # Force a comprehensive refresh
+                                success = app_instance.refresh_available_voices()
+                                if success:
+                                    logger.info(f"✅ Refreshed main app voice list after creating: {voice_name}")
+                                    # Verify the voice is now available
+                                    if hasattr(app_instance, 'available_voices') and voice_name in app_instance.available_voices:
+                                        logger.info(f"✅ Voice '{voice_name}' confirmed available for synthesis")
+                                    else:
+                                        logger.warning(f"⚠️ Voice '{voice_name}' not found after refresh - may need manual restart")
                                 else:
-                                    logger.warning(f"⚠️ Voice '{voice_name}' not found after refresh - may need manual restart")
-                            else:
-                                logger.warning(f"❌ Voice list refresh failed for: {voice_name}")
-                    except Exception as e:
-                        logger.warning(f"Failed to refresh main app voice list: {e}")
+                                    logger.warning(f"❌ Voice list refresh failed for: {voice_name}")
+                        except Exception as e:
+                            logger.warning(f"Failed to refresh main app voice list: {e}")
 
-                    # Return success response
-                    return {
-                        'status': 'success',
-                        'voice': {
-                            'name': clone_result.voice_name,
-                            'file_path': clone_result.voice_file_path,
-                            'similarity_score': clone_result.similarity_score,
-                            'metadata': clone_result.metadata
-                        },
-                        'message': f"Voice '{voice_name}' created successfully"
-                    }
+                        # Return success response
+                        return {
+                            'status': 'success',
+                            'voice': {
+                                'name': clone_result.voice_name,
+                                'file_path': clone_result.voice_file_path,
+                                'similarity_score': clone_result.similarity_score,
+                                'metadata': clone_result.metadata,
+                                'temporary': False
+                            },
+                            'message': f"Voice '{voice_name}' created successfully"
+                        }
                     
                 finally:
                     # Clean up temporary file
@@ -237,6 +286,8 @@ class VoiceCloningRouter:
             voice_name: str = Form(..., description="Name for the custom voice"),
             description: str = Form("", description="Optional description for the voice"),
             enable_segmentation: bool = Form(True, description="Enable intelligent audio segmentation for long clips"),
+            temporary: bool = Form(True, description="Create as temporary voice (default: true)"),
+            session_id: str = Form(None, description="Session ID for temporary voice grouping"),
             background_tasks: BackgroundTasks = None
         ):
             """
@@ -462,6 +513,15 @@ class VoiceCloningRouter:
                     except Exception as e:
                         logger.warning(f"Failed to remove voice metadata for {voice_name}: {e}")
 
+                    # Force refresh of voice discovery to update cache
+                    try:
+                        from ..voice.discovery import VoiceDiscovery
+                        discovery = VoiceDiscovery(str(self.voice_cloner.voices_dir))
+                        discovery.discover_voices()
+                        logger.info(f"Refreshed voice discovery cache after deleting: {voice_name}")
+                    except Exception as e:
+                        logger.warning(f"Failed to refresh voice discovery cache: {e}")
+
                     # Refresh the main app's voice list so the deleted voice is removed
                     try:
                         import app
@@ -490,7 +550,98 @@ class VoiceCloningRouter:
                     status_code=500,
                     content={"error": f"Failed to delete voice {voice_name}", "detail": str(e)}
                 )
-        
+
+        @self.router.post("/v1/voices/custom/{voice_name}/save")
+        async def save_temporary_voice(voice_name: str, session_id: str = None):
+            """
+            Save a temporary voice to permanent storage
+            """
+            try:
+                from ..voice.temporary_storage import TemporaryVoiceManager
+                temp_manager = TemporaryVoiceManager()
+
+                success = temp_manager.save_voice_permanently(voice_name, session_id)
+
+                if success:
+                    # Refresh voice discovery to include the new permanent voice
+                    try:
+                        from ..voice.discovery import VoiceDiscovery
+                        discovery = VoiceDiscovery(str(self.voice_cloner.voices_dir))
+                        discovery.discover_voices()
+                        logger.info(f"Refreshed voice discovery after saving: {voice_name}")
+                    except Exception as e:
+                        logger.warning(f"Failed to refresh voice discovery: {e}")
+
+                    return {
+                        "status": "success",
+                        "message": f"Voice '{voice_name}' saved permanently"
+                    }
+                else:
+                    return JSONResponse(
+                        status_code=404,
+                        content={"error": f"Temporary voice '{voice_name}' not found"}
+                    )
+
+            except Exception as e:
+                logger.error(f"Failed to save voice {voice_name}: {e}")
+                return JSONResponse(
+                    status_code=500,
+                    content={"error": f"Failed to save voice {voice_name}", "detail": str(e)}
+                )
+
+        @self.router.get("/v1/voices/temporary")
+        async def list_temporary_voices(session_id: str = None):
+            """
+            List temporary voices
+            """
+            try:
+                from ..voice.temporary_storage import TemporaryVoiceManager
+                temp_manager = TemporaryVoiceManager()
+
+                voices = temp_manager.list_temporary_voices(session_id)
+
+                return {
+                    "status": "success",
+                    "temporary_voices": voices,
+                    "total_count": len(voices)
+                }
+
+            except Exception as e:
+                logger.error(f"Failed to list temporary voices: {e}")
+                return JSONResponse(
+                    status_code=500,
+                    content={"error": "Failed to list temporary voices", "detail": str(e)}
+                )
+
+        @self.router.delete("/v1/voices/temporary/{voice_name}")
+        async def delete_temporary_voice(voice_name: str, session_id: str = None):
+            """
+            Delete a temporary voice
+            """
+            try:
+                from ..voice.temporary_storage import TemporaryVoiceManager
+                temp_manager = TemporaryVoiceManager()
+
+                success = temp_manager.delete_temporary_voice(voice_name, session_id)
+
+                if success:
+                    return {
+                        "status": "success",
+                        "message": f"Temporary voice '{voice_name}' deleted successfully"
+                    }
+                else:
+                    return JSONResponse(
+                        status_code=404,
+                        content={"error": f"Temporary voice '{voice_name}' not found"}
+                    )
+
+            except Exception as e:
+                logger.error(f"Failed to delete temporary voice {voice_name}: {e}")
+                return JSONResponse(
+                    status_code=500,
+                    content={"error": f"Failed to delete temporary voice {voice_name}", "detail": str(e)}
+                )
+
         @self.router.post("/v1/audio/clone")
         async def generate_with_cloned_voice(
             text: str = Form(..., description="Text to synthesize"),

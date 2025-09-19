@@ -20,7 +20,10 @@
     "performance_mode": "balanced"
   },
   "repository": {
-    "huggingface_repo": "TaskWizer/LiteTTS",
+    "huggingface_repo": "onnx-community/Kokoro-82M-v1.0-ONNX",
+    "models_path": "onnx",
+    "voices_path": "voices",
+    "base_url": "https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main",
     "model_branch": "main",
     "cache_dir": "models"
   },

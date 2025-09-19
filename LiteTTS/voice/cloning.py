@@ -519,24 +519,90 @@ class VoiceCloner:
     def delete_custom_voice(self, voice_name: str) -> bool:
         """
         Delete a custom voice
-        
+
         Args:
             voice_name: Name of the voice to delete
-            
+
         Returns:
             True if deleted successfully, False otherwise
         """
         try:
             voice_file_path = self.voices_dir / f"{voice_name}.bin"
-            
+
             if voice_file_path.exists():
                 voice_file_path.unlink()
-                logger.info(f"Deleted custom voice: {voice_name}")
+                logger.info(f"Deleted custom voice file: {voice_name}")
+
+                # Invalidate all related caches
+                self._invalidate_voice_caches(voice_name)
+
                 return True
             else:
                 logger.warning(f"Voice file not found: {voice_name}")
                 return False
-                
+
         except Exception as e:
             logger.error(f"Failed to delete custom voice {voice_name}: {e}")
             return False
+
+    def _invalidate_voice_caches(self, voice_name: str):
+        """Invalidate all caches related to a deleted voice"""
+        try:
+            # Clear from voice discovery cache
+            from .discovery import VoiceDiscovery
+            discovery = VoiceDiscovery(str(self.voices_dir))
+            if hasattr(discovery, 'voice_cache') and voice_name in discovery.voice_cache:
+                del discovery.voice_cache[voice_name]
+                discovery._save_cache()
+                logger.info(f"Removed {voice_name} from discovery cache")
+
+            # Clear from voice manager cache if available
+            try:
+                from .manager import VoiceManager
+                # Try to get existing voice manager instance
+                if hasattr(self, '_voice_manager'):
+                    voice_manager = self._voice_manager
+                    if hasattr(voice_manager, 'cache'):
+                        voice_manager.cache.evict_voice(voice_name)
+                        logger.info(f"Evicted {voice_name} from voice manager cache")
+            except Exception as e:
+                logger.debug(f"Could not clear voice manager cache: {e}")
+
+            # Clear from audio cache if available
+            try:
+                from ..cache.audio_cache import AudioCache
+                # Clear any cached audio for this voice
+                # This would require access to the audio cache instance
+                logger.debug(f"Audio cache invalidation for {voice_name} - would need cache instance")
+            except Exception as e:
+                logger.debug(f"Could not clear audio cache: {e}")
+
+            # CRITICAL FIX: Recreate combined_voices.npz file to remove deleted voice
+            try:
+                from .simple_combiner import SimplifiedVoiceCombiner
+                combiner = SimplifiedVoiceCombiner(str(self.voices_dir))
+                if not combiner.disabled:
+                    logger.info(f"Recreating combined_voices.npz to remove deleted voice: {voice_name}")
+                    success = combiner.create_combined_file()
+                    if success:
+                        logger.info(f"Successfully updated combined_voices.npz after deleting {voice_name}")
+                    else:
+                        logger.error(f"Failed to update combined_voices.npz after deleting {voice_name}")
+                else:
+                    logger.info("Combined voice file usage is disabled, skipping NPZ update")
+            except Exception as e:
+                logger.error(f"Failed to update combined_voices.npz for {voice_name}: {e}")
+
+            # CRITICAL FIX: Force metadata file cleanup
+            try:
+                from .metadata import VoiceMetadataManager
+                metadata_manager = VoiceMetadataManager()
+                metadata_manager.remove_voice(voice_name)
+                logger.info(f"Force-removed {voice_name} from metadata manager")
+            except Exception as e:
+                logger.error(f"Failed to force-remove metadata for {voice_name}: {e}")
+
+            logger.info(f"Cache invalidation completed for voice: {voice_name}")
+
+        except Exception as e:
+            logger.warning(f"Failed to invalidate caches for {voice_name}: {e}")

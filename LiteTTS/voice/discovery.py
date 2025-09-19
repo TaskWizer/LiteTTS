@@ -139,35 +139,53 @@ class VoiceDiscovery:
         """Discover voice files in the voices directory"""
         discovered = 0
         updated = 0
-        
+        removed = 0
+
+        # Get current voice files on disk
+        current_voice_files = set()
+        for voice_file in self.voices_dir.glob("*.bin"):
+            current_voice_files.add(voice_file.stem)
+
+        # Remove voices from cache that no longer exist on disk
+        voices_to_remove = []
+        for voice_name in self.voice_cache.keys():
+            if voice_name not in current_voice_files:
+                voices_to_remove.append(voice_name)
+
+        for voice_name in voices_to_remove:
+            del self.voice_cache[voice_name]
+            removed += 1
+            logger.info(f"Removed deleted voice from cache: {voice_name}")
+
+        # Process current voice files
         for voice_file in self.voices_dir.glob("*.bin"):
             voice_name = voice_file.stem
-            
+
             # Get file stats
             stat = voice_file.stat()
             file_size = stat.st_size
             last_modified = stat.st_mtime
-            
+
             # Check if voice is in cache and up to date
             if voice_name in self.voice_cache:
                 cached = self.voice_cache[voice_name]
-                if (cached.file_size == file_size and 
+                if (cached.file_size == file_size and
                     cached.last_modified == last_modified):
                     continue  # Voice is up to date
                 updated += 1
             else:
                 discovered += 1
-            
+
             # Calculate checksum for new/changed files
             checksum = self._calculate_checksum(voice_file)
-            
+
             # Determine source and metadata
             source = "custom"
             metadata = {}
             if voice_name in self.known_voices:
                 source = "huggingface"
                 metadata = self.known_voices[voice_name]
-            
+
             # Create voice info
             voice_info = VoiceInfo(
                 name=voice_name,
@@ -181,13 +199,13 @@ class VoiceDiscovery:
                 nationality=metadata.get("nationality"),
                 discovered_at=datetime.now().isoformat()
             )
-            
+
             self.voice_cache[voice_name] = voice_info
-        
-        if discovered > 0 or updated > 0:
-            logger.info(f"Voice discovery: {discovered} new, {updated} updated")
+
+        if discovered > 0 or updated > 0 or removed > 0:
+            logger.info(f"Voice discovery: {discovered} new, {updated} updated, {removed} removed")
             self._save_cache()
-        
+
         return discovered, updated
     
     def get_available_voices(self) -> List[str]:
