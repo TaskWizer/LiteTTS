@@ -1,0 +1,65 @@
+[Unit]
+Description=LiteTTS API Server
+Documentation=https://github.com/mkinney/LiteTTS
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/mkinney/repos/LiteTTS
+Environment="PATH=/home/mkinney/repos/LiteTTS/.venv/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PYTHONPATH=/home/mkinney/repos/LiteTTS"
+Environment="PYTHONUNBUFFERED=1"
+Environment="PYTHONDONTWRITEBYTECODE=1"
+Environment="ENVIRONMENT=production"
+Environment="LOG_LEVEL=INFO"
+Environment="HOST=0.0.0.0"
+Environment="PORT=8354"
+
+# Performance optimizations
+Environment="OMP_NUM_THREADS=4"
+Environment="ONNX_DISABLE_SPARSE_TENSORS=1"
+Environment="ENABLE_PERFORMANCE_OPTIMIZATION=true"
+Environment="MAX_MEMORY_MB=4096"
+Environment="TARGET_RTF=0.25"
+
+# Dynamic CPU allocation
+Environment="DYNAMIC_CPU_ALLOCATION_ENABLED=true"
+Environment="CPU_TARGET=75.0"
+Environment="AGGRESSIVE_MODE=true"
+Environment="THERMAL_PROTECTION=true"
+
+# ONNX Runtime settings
+Environment="ORT_DISABLE_ALL_OPTIMIZATION=0"
+Environment="ORT_ENABLE_CPU_FP16_OPS=1"
+Environment="ORT_GRAPH_OPTIMIZATION_LEVEL=all"
+Environment="ORT_EXECUTION_MODE=parallel"
+
+# Memory allocation optimizations
+Environment="MALLOC_ARENA_MAX=4"
+Environment="MALLOC_MMAP_THRESHOLD_=131072"
+Environment="MALLOC_TRIM_THRESHOLD_=131072"
+
+# Restart policy
+Restart=always
+RestartSec=10
+StartLimitInterval=60
+StartLimitBurst=3
+
+# Security settings
+PrivateTmp=true
+
+# Resource limits
+LimitNOFILE=65536
+MemoryMax=4G
+CPUQuota=800%
+
+# Service execution
+ExecStart=/home/mkinney/repos/LiteTTS/.venv/bin/python /home/mkinney/repos/LiteTTS/app.py
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=mixed
+KillSignal=SIGINT
+TimeoutStopSec=30
+
+[Install]
+WantedBy=default.target

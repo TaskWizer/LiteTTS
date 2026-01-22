@@ -307,9 +307,7 @@ class LiteTTSApplication:
             target_memory = min(env_memory_limit, 2048)  # Cap at 2GB for safety
 
             # Run comprehensive memory optimization
-            # DISABLED: Blocks startup for 90+ seconds
-            # memory_results = memory_optimizer.run_comprehensive_optimization(target_memory)
-            memory_results = {"success": False, "error": "Skipped for fast startup"}
+            memory_results = memory_optimizer.run_comprehensive_optimization(target_memory)
 
             if memory_results.get("success", False):
                 baseline_mb = memory_results.get("baseline_memory_mb", 0)
@@ -330,8 +328,36 @@ class LiteTTSApplication:
             self.logger.info("Continuing without advanced memory optimization...")
 
         # Run comprehensive performance optimization
-        # DISABLED: Skip blocking performance optimizations for fast startup
-        self.logger.info("⚡ Skipping performance optimizations for fast startup...")
+        self.logger.info("⚡ Running performance optimization...")
+        try:
+            optimization_results = self.performance_optimizer.run_comprehensive_optimization()
+            if optimization_results.memory_optimized:
+                self.logger.info(f"✅ Memory optimized: {optimization_results.memory_reduction_mb:.1f}MB saved ({optimization_results.memory_reduction_percent:.1f}%)")
+            if optimization_results.cpu_optimized:
+                self.logger.info("✅ CPU optimization applied")
+            if optimization_results.cache_optimized:
+                self.logger.info("✅ Cache optimization applied")
+
+            self.logger.info(f"🎯 Performance optimization completed in {optimization_results.optimization_time:.2f}s")
+
+            # Apply SIMD optimizations
+            simd_env_vars = self.simd_optimizer.apply_environment_optimizations()
+            if simd_env_vars:
+                self.logger.info(f"⚡ SIMD optimizations applied: {self.simd_optimizer.capabilities.optimal_instruction_set}")
+
+            # Log batch optimizer status
+            batch_status = self.batch_optimizer.get_status()
+            self.logger.info(f"📦 Batch optimizer ready: {batch_status['current_batch_sizes']}")
+
+            # Apply cold start optimizations
+            self.logger.info("❄️ Applying cold start optimizations...")
+            cold_start_results = self.cold_start_optimizer.run_comprehensive_cold_start_optimization()
+            if cold_start_results.get("target_achieved", False):
+                improvement = cold_start_results.get("improvement_results", {})
+                self.logger.info(f"✅ Cold start optimized: {improvement.get('baseline_ms', 0):.1f}ms → {improvement.get('optimized_ms', 0):.1f}ms")
+
+        except Exception as e:
+            self.logger.warning(f"⚠️ Performance optimization failed: {e}")
 
         # Initialize configuration hot reload
         self.config_hot_reload_manager = None
