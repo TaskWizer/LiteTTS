@@ -6,11 +6,38 @@ and replace the broken TTS.cpp phonemizer with misaki
 
 import numpy as np
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
 # Global misaki G2P instance (lazy initialized)
 _misaki_g2p = None
+
+# Global pre-processor instances for pronunciation fixes (lazy initialized)
+_symbol_processor_instance = None
+_text_normalizer_instance = None
+
+def _get_symbol_processor():
+    """Lazy load symbol processor"""
+    global _symbol_processor_instance
+    if _symbol_processor_instance is None:
+        try:
+            from LiteTTS.nlp.advanced_symbol_processor import AdvancedSymbolProcessor
+            _symbol_processor_instance = AdvancedSymbolProcessor()
+        except ImportError:
+            pass
+    return _symbol_processor_instance
+
+def _get_text_normalizer():
+    """Lazy load text normalizer"""
+    global _text_normalizer_instance
+    if _text_normalizer_instance is None:
+        try:
+            from LiteTTS.nlp.text_normalizer import TextNormalizer
+            _text_normalizer_instance = TextNormalizer()
+        except ImportError:
+            pass
+    return _text_normalizer_instance
 
 def _get_misaki_g2p():
     """Get or create the misaki G2P instance"""
@@ -274,6 +301,51 @@ def patch_kokoro_onnx_phonemizer():
             """Check if text contains IPA phoneme characters"""
             return any(c in IPA_CHARS for c in text)
 
+        def _preprocess_for_misaki(text: str) -> str:
+            """Pre-process text before misaki phonemization to fix known issues"""
+            original_text = text
+            logger.info(f"_preprocess_for_misaki INPUT: '{text[:60]}...'")
+
+            # Fix JSON → Jason FIRST (pronounce as word, not spell out)
+            # This must happen before any other processing
+            if 'JSON' in text:
+                text = text.replace('JSON', 'Jason')
+                logger.info(f"Fixed JSON -> Jason in: '{text[:50]}...'")
+            elif 'json' in text.lower():
+                text = text.replace(text[text.lower().find('json'):text.lower().find('json')+4], 'Jason')
+                logger.info(f"Fixed json -> Jason (case insensitive) in: '{text[:50]}...'")
+
+            # Fix compound symbols (C#, OAuth, IPv6, SHA-256) BEFORE misaki
+            # C# programming language - "C sharp", not "C hash"
+            if 'C#' in text:
+                text = text.replace('C#', 'C sharp')
+                logger.info(f"Fixed C# -> C sharp in: '{text[:50]}...'")
+
+            # OAuth authentication
+            if 'OAuth' in text:
+                text = re.sub(r'OAuth\s*2\.0', 'OAuth two point zero', text)
+                logger.info(f"Fixed OAuth 2.0 in: '{text[:50]}...'")
+
+            # IPv6
+            if 'IPv6' in text:
+                text = text.replace('IPv6', 'I P V six')
+                logger.info(f"Fixed IPv6 in: '{text[:50]}...'")
+
+            # SHA-256
+            if 'SHA' in text:
+                text = re.sub(r'SHA-?256', 'SHA two fifty six', text)
+                logger.info(f"Fixed SHA-256 in: '{text[:50]}...'")
+
+            # Fix SQL pronunciation - default to "sequel"
+            if 'SQL' in text:
+                text = text.replace('SQL', 'sequel')
+                logger.info(f"Fixed SQL -> sequel in: '{text[:50]}...'")
+
+            if text != original_text:
+                logger.debug(f"Preprocessed: '{original_text[:50]}...' -> '{text[:50]}...'")
+
+            return text
+
         # Store original create method
         original_create = kokoro_onnx.Kokoro.create
 
@@ -286,13 +358,16 @@ def patch_kokoro_onnx_phonemizer():
                 logger.info(f"Text already contains IPA phonemes, using directly: '{text[:50]}...'")
                 phonemes = text
             else:
+                # Pre-process text to fix JSON→Jason, C#→C sharp, etc.
+                processed_text = _preprocess_for_misaki(text)
+
                 # Try to use misaki for phonemization
                 g2p = _get_misaki_g2p()
                 if g2p is not None:
                     try:
-                        # Use misaki to phonemize the text
-                        phonemes, _ = g2p(text)
-                        logger.info(f"Misaki phonemized: '{text[:50]}...' -> '{phonemes[:50]}...'")
+                        # Use misaki to phonemize the PRE-PROCESSED text
+                        phonemes, _ = g2p(processed_text)
+                        logger.info(f"Misaki phonemized: '{processed_text[:50]}...' -> '{phonemes[:50]}...'")
                     except Exception as e:
                         logger.warning(f"Misaki phonemization failed: {e}, falling back to internal")
                         # Fall back to internal phonemizer

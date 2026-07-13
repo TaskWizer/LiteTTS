@@ -94,8 +94,8 @@ class ProperNamePronunciationProcessor:
             # Technology terms - ALL CAPS so they're clearly abbreviations
             "API": "A P I",
             "GUI": "G U I",
-            "SQL": "S Q L",
-            "JSON": "J S O N",
+            "SQL": "sequel",  # Pronounced "sequel", not S-Q-L
+            "JSON": "Jason",  # Pronounced "Jason", not J-S-O-N
             "XML": "X M L",
             "HTTP": "H T T P",
             "URL": "U R L",
