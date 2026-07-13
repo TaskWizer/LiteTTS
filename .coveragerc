@@ -1,5 +1,5 @@
 # Coverage configuration for LiteTTS
-# Focus on achieving 99% on testable modules
+# Focus on achieving high coverage on testable modules
 
 [run]
 source = LiteTTS
@@ -19,10 +19,15 @@ omit =
     */websocket/endpoints.py
     */websocket/performance_streamer.py
     */websocket/websocket_manager.py
-    # Standalone test scripts (not library code)
+    # Standalone test/benchmark scripts (not library)
     */tests/scripts/*
     */tests/validate_*.py
     */tests/simple_performance_test.py
+    */benchmarks/*
+    # Third-party backends (TTS.cpp)
+    */backends/TTS.cpp/*
+    # Examples
+    */examples/*
 
 [report]
 exclude_lines =
@@ -31,3 +36,4 @@ exclude_lines =
     raise NotImplementedError
     if __name__ == .__main__.:
     if TYPE_CHECKING:
+    @abstractmethod

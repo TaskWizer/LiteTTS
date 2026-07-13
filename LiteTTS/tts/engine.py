@@ -149,23 +149,51 @@ class KokoroTTSEngine:
     def _load_tokenizer(self):
         """Load the tokenizer"""
         try:
+            # Initialize misaki G2P for phonemization
+            self._init_misaki_g2p()
+
             # Try to load tokenizer from the same directory as the model
             model_dir = Path(self.config.model_path).parent
             tokenizer_path = model_dir / "tokenizer.json"
-            
+
             if tokenizer_path.exists():
                 import json
                 with open(tokenizer_path, 'r') as f:
                     self.tokenizer = json.load(f)
                 logger.info(f"Loaded tokenizer from {tokenizer_path}")
             else:
-                # Use a simple character-based tokenizer as fallback
-                self.tokenizer = self._create_simple_tokenizer()
-                logger.warning("Using simple character-based tokenizer")
-                
+                # Try to use kokoro_onnx's built-in phoneme tokenizer
+                self._init_kokoro_tokenizer()
+
         except Exception as e:
             logger.error(f"Failed to load tokenizer: {e}")
             self.tokenizer = self._create_simple_tokenizer()
+
+    def _init_misaki_g2p(self):
+        """Initialize misaki G2P for proper phonemization"""
+        try:
+            from misaki import en
+            self.misaki_g2p = en.G2P(trf=False, british=False)
+            logger.info("✅ Misaki G2P initialized for phonemization")
+        except ImportError as e:
+            logger.warning(f"⚠️ Misaki not available: {e}")
+            self.misaki_g2p = None
+
+    def _init_kokoro_tokenizer(self):
+        """Initialize kokoro_onnx's built-in phoneme tokenizer"""
+        try:
+            from kokoro_onnx.tokenizer import Tokenizer
+            self.kokoro_tokenizer = Tokenizer()
+            self.tokenizer = {
+                'type': 'phoneme',
+                'phoneme_based': True
+            }
+            logger.info("✅ Kokoro phoneme tokenizer initialized")
+        except ImportError as e:
+            logger.warning(f"⚠️ Kokoro tokenizer not available: {e}")
+            self.kokoro_tokenizer = None
+            self.tokenizer = self._create_simple_tokenizer()
+            logger.warning("Using simple character-based tokenizer")
     
     def _create_simple_tokenizer(self) -> Dict[str, Any]:
         """Create a simple character-based tokenizer"""
@@ -299,14 +327,38 @@ class KokoroTTSEngine:
             raise    
 
     def _tokenize_text(self, text: str) -> np.ndarray:
-        """Tokenize input text"""
+        """Tokenize input text using phoneme-based tokenization
+
+        Kokoro is a phoneme-based model, so we first convert text to phonemes
+        using misaki G2P, then tokenize using kokoro's phoneme tokenizer.
+        """
         if not text or not text.strip():
             logger.warning("Empty or whitespace-only text provided for tokenization")
-            # Return a minimal token sequence for empty text
-            return np.array([0], dtype=np.int64)  # Just the pad token
+            return np.array([0], dtype=np.int64)
 
+        # Use phoneme-based tokenization if misaki and kokoro tokenizer are available
+        if self.tokenizer.get('type') == 'phoneme' and self.kokoro_tokenizer is not None:
+            try:
+                # First phonemize using misaki
+                if self.misaki_g2p is not None:
+                    phonemes, _ = self.misaki_g2p(text)
+                    logger.debug(f"Phonemized '{text[:50]}...' -> '{phonemes[:50]}...'")
+                else:
+                    # Fallback: use kokoro's internal phonemizer
+                    phonemes = self.kokoro_tokenizer.phonemize(text)
+                    logger.debug(f"Kokoro phonemized '{text[:50]}...' -> '{phonemes[:50]}...'")
+
+                # Tokenize phonemes using kokoro's tokenizer
+                tokens = self.kokoro_tokenizer.tokenize(phonemes)
+                tokens = np.array(tokens, dtype=np.int64)
+                logger.debug(f"Tokenized to {len(tokens)} phoneme tokens")
+                return tokens
+
+            except Exception as e:
+                logger.warning(f"Phoneme tokenization failed: {e}, falling back to character-based")
+
+        # Fallback to character-based tokenization
         if self.tokenizer['type'] == 'character':
-            # Character-based tokenization
             char_to_id = self.tokenizer['char_to_id']
             unk_id = self.tokenizer['unk_token_id']
 
@@ -314,16 +366,15 @@ class KokoroTTSEngine:
             for char in text:
                 token_ids.append(char_to_id.get(char, unk_id))
 
-            # Ensure we have at least one token
             if not token_ids:
                 logger.warning("No valid tokens generated from text, using unknown token")
                 token_ids = [unk_id]
 
             tokens = np.array(token_ids, dtype=np.int64)
-            logger.debug(f"Tokenized '{text[:50]}...' to {len(tokens)} tokens")
+            logger.debug(f"Tokenized '{text[:50]}...' to {len(tokens)} tokens (character-based)")
             return tokens
         else:
-            # Fallback to character-based tokenization for unknown types
+            # Unknown tokenizer type fallback
             logger.warning(f"Unknown tokenizer type '{self.tokenizer['type']}', falling back to character-based")
             char_to_id = self.tokenizer.get('char_to_id', {})
             unk_id = self.tokenizer.get('unk_token_id', 0)

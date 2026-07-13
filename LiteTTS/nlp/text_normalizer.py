@@ -184,15 +184,16 @@ class TextNormalizer:
             except Exception as e:
                 logger.warning(f"RIME AI processing failed: {e}")
 
-        # Step 2: Apply standard normalizations in order - URLs/emails before symbols to preserve protocols
-        text = self._normalize_urls_emails(text)  # MOVED: Process URLs before symbols
+        # Step 2: Apply standard normalizations in order
+        # CRITICAL: Dates/times MUST be processed BEFORE numbers to avoid '8:03' -> 'eight:three'
+        text = self._normalize_urls_emails(text)  # URLs/emails before symbols
         text = self._normalize_currency(text)
+        text = self._normalize_dates_times(text)  # Process times BEFORE numbers
         text = self._normalize_numbers(text)
-        text = self._normalize_dates_times(text)
-        text = self._normalize_contractions(text)  # ADDED: Process contractions first
-        text = self._normalize_abbreviations(text)  # Process abbreviations
-        text = self._normalize_symbols(text)  # Then symbols (to avoid conflicts)
-        text = self._normalize_possessives(text)  # ADDED: Possessive normalization
+        text = self._normalize_contractions(text)
+        text = self._normalize_abbreviations(text)
+        text = self._normalize_symbols(text)
+        text = self._normalize_possessives(text)
         text = self._normalize_punctuation(text)
         text = self._clean_whitespace(text)
         

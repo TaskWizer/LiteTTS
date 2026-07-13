@@ -256,9 +256,19 @@ def patch_kokoro_onnx_phonemizer():
 
     This replaces the rule-based TTS.cpp phonemizer (which has broken vocabulary
     for common English patterns like -tion, -sion, etc.) with misaki's neural G2P.
+
+    If text already contains IPA phoneme characters (ʃ, ʒ, etc.), skip phonemization
+    and use the existing phonemes directly since they came from phonetic dictionaries.
     """
     try:
         import kokoro_onnx
+
+        # Characters that indicate text is already phonemized with IPA
+        IPA_CHARS = set('ʃʒʔʜʢʡɕɧɑɐɒæβɔɕçɖðʤəɚɛɜɟɡɥɨɪʝɯɰŋɳɲɴøɸθœɹɾɻʁɽʂʃʈʧʊʋʌɣɤχʎʒθðŋɱ')
+
+        def contains_ipa(text: str) -> bool:
+            """Check if text contains IPA phoneme characters"""
+            return any(c in IPA_CHARS for c in text)
 
         # Store original create method
         original_create = kokoro_onnx.Kokoro.create
@@ -267,20 +277,25 @@ def patch_kokoro_onnx_phonemizer():
             """Patched create method that uses misaki for phonemization"""
             log = logging.getLogger('kokoro_onnx')
 
-            # Try to use misaki for phonemization
-            g2p = _get_misaki_g2p()
-            if g2p is not None:
-                try:
-                    # Use misaki to phonemize the text
-                    phonemes, _ = g2p(text)
-                    log.debug(f"Misaki phonemized: '{text[:50]}...' -> '{phonemes[:50]}...'")
-                except Exception as e:
-                    log.warning(f"Misaki phonemization failed: {e}, falling back to internal")
-                    # Fall back to internal phonemizer
-                    return original_create(self, text, voice, speed, lang)
+            # Check if text already contains IPA phonemes
+            if contains_ipa(text):
+                logger.info(f"Text already contains IPA phonemes, using directly: '{text[:50]}...'")
+                phonemes = text
             else:
-                # Misaki not available, use internal phonemizer
-                return original_create(self, text, voice, speed, lang)
+                # Try to use misaki for phonemization
+                g2p = _get_misaki_g2p()
+                if g2p is not None:
+                    try:
+                        # Use misaki to phonemize the text
+                        phonemes, _ = g2p(text)
+                        logger.info(f"Misaki phonemized: '{text[:50]}...' -> '{phonemes[:50]}...'")
+                    except Exception as e:
+                        logger.warning(f"Misaki phonemization failed: {e}, falling back to internal")
+                        # Fall back to internal phonemizer
+                        return original_create(self, text, voice, speed, lang)
+                else:
+                    # Misaki not available, use internal phonemizer
+                    return original_create(self, text, voice, speed, lang)
 
             # Resolve voice name to voice array if needed
             voice_array = voice
@@ -291,7 +306,7 @@ def patch_kokoro_onnx_phonemizer():
                     log.warning(f"Voice '{voice}' not found, falling back to internal")
                     return original_create(self, text, voice, speed, lang)
 
-            # Use the phonemes from misaki to generate audio
+            # Use the phonemes to generate audio
             return self._create_audio(phonemes, voice_array, speed)
 
         # Apply the patch

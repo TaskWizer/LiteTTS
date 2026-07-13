@@ -159,15 +159,19 @@ class RIMEAIIntegration:
                 "bt": "t",  # debt, doubt
                 "mn": "m",  # autumn, column
                 "gn": "n",  # sign, design
-                "st": "s",  # castle, listen (in some contexts)
+                # REMOVED: "st": "s" - incorrectly converts test→tes, best→bes, etc.
+                # This rule was meant for castle/listen but fires too broadly
             },
-            "vowel_clusters": {
-                "ough": ["ʌf", "oʊ", "ɔf", "uː", "ɑf"],  # tough, though, cough, through, trough
-                "augh": ["ɔf", "æf"],  # laugh, caught
-                "eigh": ["eɪ", "aɪ"],  # eight, height
-                "tion": ["ʃən", "tʃən"],  # nation, question
-                "sion": ["ʃən", "ʒən"],  # mission, vision
-            },
+            # DISABLED: These vowel cluster rules corrupt normal English text
+            # They convert "eight" -> "eɪt", "tion" -> "ʃən" which breaks TTS
+            # The TTS model handles pronunciation, not text preprocessing
+            # "vowel_clusters": {
+            #     "ough": ["ʌf", "oʊ", "ɔf", "uː", "ɑf"],
+            #     "augh": ["ɔf", "æf"],
+            #     "eigh": ["eɪ", "aɪ"],
+            #     "tion": ["ʃən", "tʃən"],
+            #     "sion": ["ʃən", "ʒən"],
+            # },
             "stress_patterns": {
                 "compound_words": "first_element",
                 "prefixed_words": "root",
@@ -301,8 +305,9 @@ class RIMEAIIntegration:
                         word = new_word
                     break
             
-            # Apply vowel cluster rules
-            for cluster, pronunciations in self.context_rules["vowel_clusters"].items():
+            # Apply vowel cluster rules (if defined)
+            vowel_clusters = self.context_rules.get("vowel_clusters", {})
+            for cluster, pronunciations in vowel_clusters.items():
                 if cluster in word.lower():
                     # Use first pronunciation as default
                     pronunciation = pronunciations[0] if pronunciations else cluster
