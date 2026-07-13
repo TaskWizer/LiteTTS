@@ -18,7 +18,7 @@ class ModelOptimizationConfig:
     """Configuration for model optimizations"""
     reduce_mel_bins: bool = True
     target_mel_bins: int = 64  # Reduce from 80 to 64
-    max_phoneme_duration: Optional[int] = 510  # Limit phoneme sequence length
+    max_phoneme_duration: Optional[int] = 500  # Limit phoneme sequence length (keep under voice vector size of 510)
     enable_quantization: bool = True
     prefer_q4_model: bool = True
     enable_warm_up: bool = True

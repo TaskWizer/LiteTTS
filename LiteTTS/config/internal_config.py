@@ -109,7 +109,7 @@ class InternalConfig:
         """Internal performance optimization defaults"""
         return {
             "processing": {
-                "chunk_size": 80,
+                "chunk_size": 15,  # Very small to keep phonemes under 500 limit
                 "max_text_length": 3000,
                 "timeout_seconds": 25,
                 "max_retry_attempts": 2,

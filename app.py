@@ -1121,12 +1121,10 @@ with open("hello.mp3", "wb") as f:
             generation_time = 0
 
             # Try different text preprocessing strategies if initial attempts fail
-            # Start with conservative approaches to preserve word count, then get more aggressive
+            # Using only safe variants that don't corrupt text
             text_variants = [
                 preprocessing_result.processed_text,  # Conservative preprocessed text (preserve word count)
                 request.input.strip() + '.',  # Minimal processing (original text)
-                phonemizer_preprocessor.preprocess_text(request.input, aggressive=False, preserve_word_count=False).processed_text,  # Standard preprocessing
-                phonemizer_preprocessor.preprocess_text(request.input, aggressive=True, preserve_word_count=False).processed_text  # Aggressive preprocessing
             ]
 
             for attempt in range(max_retries):

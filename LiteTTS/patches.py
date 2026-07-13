@@ -155,7 +155,11 @@ def patch_kokoro_onnx():
         
         # Store original _create_audio method
         original_create_audio = kokoro_onnx.Kokoro._create_audio
-        
+
+        # Note: MAX_PHONEME_LENGTH is kept at kokoro's default 510
+        # Voice vectors are sized for 510 phonemes, so we keep chunks small (30 chars)
+        # to ensure phoneme expansion stays under the limit
+
         def patched_create_audio(self, phonemes, voice, speed):
             """Patched version of _create_audio with aggressive performance optimizations"""
             log = logging.getLogger('kokoro_onnx')
