@@ -8,7 +8,7 @@ to prevent JSON serialization errors in dashboard and API responses.
 
 import math
 import json
-from typing import Any, Dict, List, Union
+from typing import Any, Dict
 
 
 def sanitize_float(value: float, default: float = 0.0) -> float:

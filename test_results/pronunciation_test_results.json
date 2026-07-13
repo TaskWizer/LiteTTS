@@ -1,0 +1,216 @@
+{
+  "results": [
+    {
+      "status": "fail",
+      "phrase": "Take Directions from here.",
+      "description": "Directions",
+      "transcription": "Take D-I-R-E-C-S-Schwa-N-S from here.",
+      "confidence": 1,
+      "normalized_expected": "take directions from here",
+      "normalized_transcription": "take direcsschwans from here"
+    },
+    {
+      "status": "fail",
+      "phrase": "It's important because we need to.",
+      "description": "because",
+      "transcription": "It is important because we need to.",
+      "confidence": 1,
+      "normalized_expected": "its important because we need to",
+      "normalized_transcription": "it is important because we need to"
+    },
+    {
+      "status": "pass",
+      "phrase": "I know what you mean.",
+      "description": "know",
+      "transcription": "I know what you mean.",
+      "confidence": 1,
+      "normalized_expected": "i know what you mean",
+      "normalized_transcription": "i know what you mean"
+    },
+    {
+      "status": "fail",
+      "phrase": "Run the tests first.",
+      "description": "tests",
+      "transcription": "Run the test first.",
+      "confidence": 1,
+      "normalized_expected": "run the tests first",
+      "normalized_transcription": "run the test first"
+    },
+    {
+      "status": "fail",
+      "phrase": "Do you have any questions?",
+      "description": "any",
+      "transcription": "Do you have any QES as Shua NS?",
+      "confidence": 1,
+      "normalized_expected": "do you have any questions",
+      "normalized_transcription": "do you have any qes as shua ns"
+    },
+    {
+      "status": "pass",
+      "phrase": "Their house is nearby.",
+      "description": "their",
+      "transcription": "Their house is nearby.",
+      "confidence": 1,
+      "normalized_expected": "their house is nearby",
+      "normalized_transcription": "their house is nearby"
+    },
+    {
+      "status": "pass",
+      "phrase": "The book is over there.",
+      "description": "there",
+      "transcription": "The book is over there.",
+      "confidence": 1,
+      "normalized_expected": "the book is over there",
+      "normalized_transcription": "the book is over there"
+    },
+    {
+      "status": "fail",
+      "phrase": "God Damn It!",
+      "description": "God Damn It",
+      "transcription": "God dammit.",
+      "confidence": 1,
+      "normalized_expected": "god damn it",
+      "normalized_transcription": "god dammit"
+    },
+    {
+      "status": "fail",
+      "phrase": "Because it's right.",
+      "description": "Because",
+      "transcription": "because it is right.",
+      "confidence": 1,
+      "normalized_expected": "because its right",
+      "normalized_transcription": "because it is right"
+    },
+    {
+      "status": "fail",
+      "phrase": "You should know by now.",
+      "description": "Know",
+      "transcription": "You should now, by now.",
+      "confidence": 1,
+      "normalized_expected": "you should know by now",
+      "normalized_transcription": "you should now by now"
+    },
+    {
+      "status": "pass",
+      "phrase": "The tests all passed.",
+      "description": "Tests",
+      "transcription": "The tests all passed.",
+      "confidence": 1,
+      "normalized_expected": "the tests all passed",
+      "normalized_transcription": "the tests all passed"
+    },
+    {
+      "status": "fail",
+      "phrase": "Any direction will work.",
+      "description": "Any",
+      "transcription": "Any DIR-ECS-Schwan will work.",
+      "confidence": 1,
+      "normalized_expected": "any direction will work",
+      "normalized_transcription": "any direcsschwan will work"
+    },
+    {
+      "status": "fail",
+      "phrase": "God/Damn/It",
+      "description": "Slash",
+      "transcription": "God slash damn slash it.",
+      "confidence": 1,
+      "normalized_expected": "goddamnit",
+      "normalized_transcription": "god slash damn slash it"
+    },
+    {
+      "status": "pass",
+      "phrase": "Half of it is broken.",
+      "description": "Half",
+      "transcription": "Half of it is broken.",
+      "confidence": 1,
+      "normalized_expected": "half of it is broken",
+      "normalized_transcription": "half of it is broken"
+    },
+    {
+      "status": "fail",
+      "phrase": "The acquisition was completed.",
+      "description": "acquisition",
+      "transcription": "the ACQ-UIS-I-S-Schwa and was completed.",
+      "confidence": 1,
+      "normalized_expected": "the acquisition was completed",
+      "normalized_transcription": "the acquisisschwa and was completed"
+    },
+    {
+      "status": "pass",
+      "phrase": "Study philosophy.",
+      "description": "philosophy",
+      "transcription": "Study philosophy.",
+      "confidence": 1,
+      "normalized_expected": "study philosophy",
+      "normalized_transcription": "study philosophy"
+    },
+    {
+      "status": "pass",
+      "phrase": "I really mean it.",
+      "description": "really",
+      "transcription": "I really mean it.",
+      "confidence": 1,
+      "normalized_expected": "i really mean it",
+      "normalized_transcription": "i really mean it"
+    },
+    {
+      "status": "pass",
+      "phrase": "I wouldn't do that.",
+      "description": "wouldn't",
+      "transcription": "I wouldn't do that.",
+      "confidence": 1,
+      "normalized_expected": "i wouldnt do that",
+      "normalized_transcription": "i wouldnt do that"
+    },
+    {
+      "status": "pass",
+      "phrase": "I couldn't agree more.",
+      "description": "couldn't",
+      "transcription": "I couldn't agree more.",
+      "confidence": 1,
+      "normalized_expected": "i couldnt agree more",
+      "normalized_transcription": "i couldnt agree more"
+    },
+    {
+      "status": "pass",
+      "phrase": "I read books every day.",
+      "description": "read present",
+      "transcription": "I read books every day.",
+      "confidence": 1,
+      "normalized_expected": "i read books every day",
+      "normalized_transcription": "i read books every day"
+    },
+    {
+      "status": "pass",
+      "phrase": "I read that book yesterday.",
+      "description": "read past",
+      "transcription": "I read that book yesterday.",
+      "confidence": 1,
+      "normalized_expected": "i read that book yesterday",
+      "normalized_transcription": "i read that book yesterday"
+    },
+    {
+      "status": "pass",
+      "phrase": "Lead the way please.",
+      "description": "lead present",
+      "transcription": "Lead the way, please.",
+      "confidence": 1,
+      "normalized_expected": "lead the way please",
+      "normalized_transcription": "lead the way please"
+    },
+    {
+      "status": "pass",
+      "phrase": "The lead pipe leaked.",
+      "description": "lead metal",
+      "transcription": "The lead pipe leaked.",
+      "confidence": 1,
+      "normalized_expected": "the lead pipe leaked",
+      "normalized_transcription": "the lead pipe leaked"
+    }
+  ],
+  "summary": {
+    "passed": 13,
+    "failed": 10,
+    "errors": 0
+  }
+}

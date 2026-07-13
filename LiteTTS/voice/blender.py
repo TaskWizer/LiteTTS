@@ -6,7 +6,7 @@ Allows blending multiple voices with customizable weights
 
 import numpy as np
 import logging
-from typing import Dict, List, Tuple, Optional, Union
+from typing import Dict, List, Union, Tuple
 from dataclasses import dataclass
 import sys
 import os

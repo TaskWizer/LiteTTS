@@ -3,7 +3,6 @@
 Model management system for Kokoro ONNX TTS API with multi-model support
 """
 
-import os
 import json
 import time
 import hashlib

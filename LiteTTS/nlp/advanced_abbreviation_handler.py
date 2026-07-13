@@ -5,7 +5,7 @@ Fixes ASAP pronunciation and implements configurable abbreviation processing
 """
 
 import re
-from typing import Dict, List, Tuple, Optional, Union
+from typing import Dict, List, Optional
 from enum import Enum
 import logging
 

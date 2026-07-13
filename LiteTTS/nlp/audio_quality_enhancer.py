@@ -6,7 +6,7 @@ Implements state-of-the-art prosodic modeling and emotional speech synthesis
 
 import re
 import logging
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 from enum import Enum
 

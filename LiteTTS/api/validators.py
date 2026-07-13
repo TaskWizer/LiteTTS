@@ -3,7 +3,7 @@
 Request validation for TTS API
 """
 
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 import re
 import logging
 

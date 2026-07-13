@@ -6,7 +6,7 @@ Caching system for Kokoro ONNX TTS API
 import hashlib
 import time
 import threading
-from typing import Optional, Any, Dict, Tuple
+from typing import Optional, Any, Dict
 from dataclasses import dataclass
 from collections import OrderedDict
 import logging

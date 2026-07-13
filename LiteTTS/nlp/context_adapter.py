@@ -7,12 +7,12 @@ for optimal speech quality and appropriateness in different situations.
 """
 
 import re
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Tuple, Optional, Any
 from dataclasses import dataclass
 from enum import Enum
 import logging
 
-from .emotion_detector import EmotionProfile, EmotionCategory
+from .emotion_detector import EmotionProfile
 
 logger = logging.getLogger(__name__)
 

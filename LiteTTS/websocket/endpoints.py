@@ -5,11 +5,8 @@ This module provides WebSocket endpoint implementations for the FastAPI
 application, including dashboard connectivity and real-time communication.
 """
 
-import asyncio
 import logging
-import time
 from typing import Optional
-from dataclasses import asdict
 from fastapi import WebSocket, WebSocketDisconnect, HTTPException
 
 from .websocket_manager import WebSocketManager, WebSocketMessage, MessageType, get_websocket_manager

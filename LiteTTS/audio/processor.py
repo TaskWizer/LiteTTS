@@ -4,7 +4,7 @@ Main audio processor that orchestrates all audio processing
 """
 
 import numpy as np
-from typing import List, Dict, Any, Optional, Iterator, AsyncIterator
+from typing import List, Dict, Any, Iterator, AsyncIterator
 import logging
 
 from .audio_segment import AudioSegment

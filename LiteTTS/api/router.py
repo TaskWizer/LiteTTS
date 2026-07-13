@@ -3,13 +3,12 @@
 FastAPI router for TTS API endpoints
 """
 
-from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
-from fastapi.responses import StreamingResponse, JSONResponse
-from typing import Dict, List, Any, Optional
+from fastapi import APIRouter, HTTPException, BackgroundTasks
+from typing import List, Optional
 import logging
 import time
 
-from LiteTTS.models import TTSRequest, TTSResponse, TTSConfiguration
+from LiteTTS.models import TTSRequest, TTSConfiguration
 from ..tts.synthesizer import TTSSynthesizer
 from ..cache.audio_cache import AudioCache, TextCache
 from .validators import RequestValidator

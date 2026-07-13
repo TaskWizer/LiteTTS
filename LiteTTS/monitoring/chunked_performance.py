@@ -7,7 +7,7 @@ Tracks and compares performance metrics between chunked and non-chunked generati
 import time
 import logging
 import statistics
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
 from enum import Enum
 import json

@@ -6,7 +6,7 @@ Audio format conversion utilities
 import io
 import wave
 import numpy as np
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 import logging
 
 logger = logging.getLogger(__name__)

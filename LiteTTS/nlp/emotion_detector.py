@@ -7,8 +7,7 @@ human-like speech synthesis with appropriate emotional expression.
 """
 
 import re
-import json
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path

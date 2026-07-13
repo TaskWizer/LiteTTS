@@ -21,10 +21,10 @@ This guide will help you integrate the Kokoro ONNX TTS API with OpenWebUI to add
 
 ## 📋 Prerequisites
 
-### 1. **Kokoro ONNX TTS API Running**
+### 1. **LiteTTS API Running**
 ```bash
-# Ensure Kokoro TTS is running
-cd kokoro_onnx_tts_api
+# Ensure LiteTTS is running
+cd LiteTTS
 uv run uvicorn app:app
 
 # Verify it's working

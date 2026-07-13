@@ -5,8 +5,7 @@ Intelligent Caching System for RTF Optimization
 import hashlib
 import time
 import json
-from typing import Optional, Dict, Any, Tuple
-from pathlib import Path
+from typing import Optional, Dict, Any
 import threading
 
 class IntelligentCache:

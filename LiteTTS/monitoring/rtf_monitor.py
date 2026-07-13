@@ -4,7 +4,7 @@ Enhanced Performance Monitoring for RTF Optimization
 
 import time
 import threading
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any
 from collections import deque
 import statistics
 

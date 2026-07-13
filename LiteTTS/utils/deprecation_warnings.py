@@ -7,7 +7,6 @@ Handles suppression of known deprecation warnings from third-party libraries
 import warnings
 import logging
 from typing import List, Dict, Any
-import sys
 
 logger = logging.getLogger(__name__)
 

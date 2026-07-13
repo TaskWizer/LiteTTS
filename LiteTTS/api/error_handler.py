@@ -5,7 +5,7 @@ Error handling for TTS API
 
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 import logging
 import traceback
 

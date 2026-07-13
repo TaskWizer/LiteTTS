@@ -7,9 +7,8 @@ without generating malformed markup or corrupted output.
 
 import re
 import logging
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple
 from dataclasses import dataclass
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -97,7 +96,7 @@ class CleanTextNormalizer:
             '^': ' caret ',
             '|': ' pipe ',
             '\\': ' backslash ',
-            '/': ' slash ',
+            # REMOVED: '/' -> ' slash ' (slashes should be silent per user request)
             '<': ' less than ',
             '>': ' greater than ',
             
@@ -178,58 +177,28 @@ class CleanTextNormalizer:
         }
     
     def _load_pronunciation_fixes(self) -> Dict[str, str]:
-        """Load specific pronunciation fixes"""
+        """Load specific pronunciation fixes
+
+        NOTE: These phonetic spellings use non-IPA notation and may interfere with
+        kokoro's character-based tokenizer. Only add entries here if they are
+        actually needed and verified to work with the ONNX model.
+        """
         return {
-            # From conversation history
-            # 'Asterisk': 'AS-ter-isk',  # DISABLED: Conflicts with symbol processing
-            'Hedonism': 'HEE-duh-niz-um',  # /ˈhiːdənɪzəm/
-            'Inherently': 'in-HAIR-ent-lee',  # proper /ɛnt/ ending
-            'acquisition': 'ak-wih-ZIH-shuhn',  # Not "equisition"
-            'Elon': 'EE-lahn',  # Not "alon"
-            'resume': 'REZ-oo-may',  # Document context (default)
-            'joy': 'JOY',  # Not "ju-ie"
-            'hmm': 'hum',  # Interjection handling
-            'umm': 'um',
-            'ahh': 'ah',
-            'ohh': 'oh',
-
-            # NEW CRITICAL PRONUNCIATION FIXES
-            'religions': 'ri-LIJ-uhns',  # Not "really-gram-ions"
-            'existentialism': 'eg-zi-STEN-shuhl-iz-uhm',  # Not "Exi-stential-ism"
-
-            # Proper name pronunciation - systematic surname spelling
-            'Carl Sagan': 'Carl S-A-gan',  # Apply letter-by-letter spelling to surnames
-            'Sagan': 'S-A-gan',  # Standalone surname
-
-            # Additional complex pronunciations
-            'philosophy': 'fi-LOS-uh-fee',
-            'psychology': 'sy-KOL-uh-jee',
-            'sociology': 'so-see-OL-uh-jee',
-            'anthropology': 'an-thruh-POL-uh-jee',
-
             # Stock symbols - spell out letter-by-letter for universal compatibility
             # Only include major, commonly referenced ticker symbols to avoid over-processing
-            'TSLA': 'T-S-L-A',
-            'AAPL': 'A-A-P-L',
-            'MSFT': 'M-S-F-T',
-            'GOOGL': 'G-O-O-G-L',
-            'AMZN': 'A-M-Z-N',
-            'NVDA': 'N-V-D-A',
-            'META': 'M-E-T-A',
-            'NFLX': 'N-F-L-X',
-            'GOOG': 'G-O-O-G',
-            'COIN': 'C-O-I-N',
-            'VTI': 'V-T-I',
+            # These are ALL CAPS so they're clearly ticker symbols, not regular words
+            'TSLA': 'T S L A',
+            'AAPL': 'A A P L',
+            'MSFT': 'M S F T',
+            'GOOGL': 'G O O G L',
+            'AMZN': 'A M Z N',
+            'NVDA': 'N V D A',
+            'META': 'M E T A',
+            'NFLX': 'N F L X',
+            'GOOG': 'G O O G',
+            'COIN': 'C O I N',
+            'VTI': 'V T I',
             # Note: Removed less common tickers to avoid conflicts with common words
-
-            # Common word pronunciation fixes (prevents grapheme-to-phoneme errors)
-            'because': 'be-CAUZ',  # Prevents "be-swah-s-e" pronunciation
-            'know': 'NOH',  # Prevents confusion with "now"
-            'tests': 'TESTS',  # Prevents "tess" pronunciation (preserves 'e')
-            'Directions': 'di-REK-shuns',  # Prevents letter-by-letter spelling
-            'any': 'EN-ee',  # Prevents "e-n-turn-v" pronunciation
-            'their': 'THAIR',  # Distinct from "there" and "they're"
-            'there': 'THAIR',  # Distinct pronunciation for location
         }
     
     def normalize_text(self, text: str) -> NormalizationResult:

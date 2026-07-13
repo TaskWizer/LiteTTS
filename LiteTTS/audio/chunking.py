@@ -6,7 +6,7 @@ Implements intelligent text segmentation for real-time TTS streaming
 
 import re
 import logging
-from typing import List, Tuple, Optional, Dict, Any
+from typing import List, Optional, Dict, Any
 from dataclasses import dataclass
 from enum import Enum
 

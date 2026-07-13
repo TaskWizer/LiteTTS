@@ -3,12 +3,12 @@
 Dynamic voice manager with HuggingFace integration and smart caching
 """
 
-import numpy as np
 import logging
 import json
 import re
+import numpy as np
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Set
+from typing import Dict, List, Optional, Set, Any
 from dataclasses import dataclass
 
 from .downloader import VoiceDownloader

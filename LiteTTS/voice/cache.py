@@ -6,10 +6,11 @@ Voice caching system with preloading capabilities
 import threading
 import numpy as np
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Any
+from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
 from dataclasses import dataclass
 import logging
+import torch
 
 try:
     from ..models import VoiceEmbedding, VoiceMetadata

@@ -5,7 +5,6 @@ Advanced text normalization for TTS processing
 
 import re
 from typing import Dict, List, Tuple
-from datetime import datetime
 import logging
 
 try:
@@ -58,7 +57,7 @@ class TextNormalizer:
             try:
                 from ..config import config
                 self.expand_problematic_only = config.performance.expand_problematic_contractions_only
-            except:
+            except Exception:
                 self.expand_problematic_only = True
 
         except Exception as e:
@@ -548,7 +547,7 @@ class TextNormalizer:
             # Years 1900-1999
             elif 1900 <= year <= 1999:
                 if year % 100 == 0:
-                    return f"nineteen hundred"
+                    return "nineteen hundred"
                 else:
                     return f"nineteen {self._integer_to_words(year % 100)}"
             

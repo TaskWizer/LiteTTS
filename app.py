@@ -532,6 +532,15 @@ class LiteTTSApplication:
             self.logger.error(f"Failed to initialize voice cloning router: {e}")
             self.voice_cloning_router = None
 
+        # Initialize debug router
+        try:
+            from LiteTTS.api.debug_router import DebugRouter
+            self.debug_router = DebugRouter(self.config)
+            self.logger.info("Debug router initialized successfully")
+        except Exception as e:
+            self.logger.error(f"Failed to initialize debug router: {e}")
+            self.debug_router = None
+
     def _include_routers(self):
         """Include routers in the main app with organized grouping."""
 
@@ -551,6 +560,13 @@ class LiteTTSApplication:
         # Legacy Compatibility Endpoints
         # ============================================
         self.app.include_router(self.legacy_router)
+
+        # ============================================
+        # Debug/Development Endpoints
+        # ============================================
+        if self.debug_router:
+            self.app.include_router(self.debug_router.get_router(), prefix="/debug-api", tags=["debug"])
+            self.logger.info("Debug endpoints included")
 
         # Note: Utility/Debug endpoints are defined directly on main app
         # and don't require separate router inclusion

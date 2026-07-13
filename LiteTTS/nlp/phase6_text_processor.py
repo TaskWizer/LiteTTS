@@ -14,6 +14,8 @@ from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, field
 from enum import Enum
 
+logger = logging.getLogger(__name__)
+
 # Import the enhanced contraction processor
 try:
     from .enhanced_contraction_processor_v2 import EnhancedContractionProcessorV2

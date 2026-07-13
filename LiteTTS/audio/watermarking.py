@@ -6,7 +6,7 @@ Responsible AI watermarking for generated audio content
 
 import numpy as np
 import logging
-from typing import Dict, Any, Optional, Union, Tuple
+from typing import Dict, Any, Optional
 from dataclasses import dataclass
 from pathlib import Path
 import time

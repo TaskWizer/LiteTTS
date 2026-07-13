@@ -4,16 +4,13 @@ Progressive Response Handler for Chunked Audio Generation
 Handles streaming responses for real-time TTS
 """
 
-import asyncio
 import json
 import logging
 import time
 from typing import AsyncIterator, Dict, Any, Optional
-from fastapi import Response
 from fastapi.responses import StreamingResponse
-import io
 
-from ..audio.progressive_generator import ProgressiveAudioGenerator, ChunkResult, GenerationMode
+from ..audio.progressive_generator import ProgressiveAudioGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -261,7 +258,7 @@ class ProgressiveResponseHandler:
             chunk_count = 0
             
             # Send initial event
-            yield f"event: start\n"
+            yield "event: start\n"
             yield f"data: {json.dumps({'generation_id': generation_id, 'status': 'started'})}\n\n"
             
             async for chunk_result in self.progressive_generator.generate_progressive(
@@ -288,7 +285,7 @@ class ProgressiveResponseHandler:
                     "metadata": chunk_result.metadata
                 }
                 
-                yield f"event: chunk\n"
+                yield "event: chunk\n"
                 yield f"data: {json.dumps(event_data)}\n\n"
                 
                 # Send progress event
@@ -302,12 +299,12 @@ class ProgressiveResponseHandler:
                         "total_chunks": total_chunks
                     }
                     
-                    yield f"event: progress\n"
+                    yield "event: progress\n"
                     yield f"data: {json.dumps(progress_data)}\n\n"
                 
                 if chunk_result.is_final:
                     # Send completion event
-                    yield f"event: complete\n"
+                    yield "event: complete\n"
                     yield f"data: {json.dumps({'generation_id': generation_id, 'status': 'completed'})}\n\n"
                     break
                     
@@ -319,7 +316,7 @@ class ProgressiveResponseHandler:
                 "status": "error",
                 "error": str(e)
             }
-            yield f"event: error\n"
+            yield "event: error\n"
             yield f"data: {json.dumps(error_data)}\n\n"
     
     def get_stream_status(self, generation_id: str) -> Optional[Dict[str, Any]]:

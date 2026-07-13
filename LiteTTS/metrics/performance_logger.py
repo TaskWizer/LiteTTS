@@ -8,13 +8,12 @@ import time
 import logging
 import json
 import threading
-from typing import Dict, List, Optional, Any
+from typing import Dict, Optional, Any
 from dataclasses import dataclass, asdict
 from datetime import datetime, timezone
 from collections import defaultdict, deque
 import statistics
 import psutil
-import os
 
 logger = logging.getLogger(__name__)
 

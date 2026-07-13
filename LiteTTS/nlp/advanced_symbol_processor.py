@@ -100,7 +100,7 @@ class AdvancedSymbolProcessor:
             '^': ' caret ',
             '|': ' pipe ',
             '\\': ' backslash ',
-            '/': ' slash ',
+            # REMOVED: '/' -> ' slash ' (slashes should be silent per user request)
 
             # Arrows and directional symbols (ENHANCED)
             '→': ' right arrow ',

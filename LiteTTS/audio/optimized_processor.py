@@ -3,8 +3,6 @@ Audio Processing Optimizations for RTF Improvement
 """
 
 import numpy as np
-import torch
-from typing import Optional, Tuple
 import time
 
 class OptimizedAudioProcessor:

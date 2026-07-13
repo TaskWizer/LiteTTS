@@ -5,12 +5,10 @@ Ensures voice characteristics remain consistent across audio chunks
 """
 
 import logging
-import hashlib
 import time
 from typing import Dict, Any, Optional, List, Tuple
 from dataclasses import dataclass
 from enum import Enum
-import numpy as np
 
 logger = logging.getLogger(__name__)
 

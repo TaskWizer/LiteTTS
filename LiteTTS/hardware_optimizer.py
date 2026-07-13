@@ -6,14 +6,13 @@ Automatically detects hardware capabilities and optimizes configuration settings
 for the best performance on the user's system.
 """
 
-import os
 import json
 import time
 import psutil
 import platform
 import logging
 from pathlib import Path
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional
 from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)

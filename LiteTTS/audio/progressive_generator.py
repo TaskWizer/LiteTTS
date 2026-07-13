@@ -7,8 +7,7 @@ Implements chunked audio synthesis for real-time streaming
 import asyncio
 import logging
 import time
-import io
-from typing import AsyncIterator, List, Optional, Dict, Any, Tuple
+from typing import AsyncIterator, List, Optional, Dict, Any
 from dataclasses import dataclass
 from enum import Enum
 

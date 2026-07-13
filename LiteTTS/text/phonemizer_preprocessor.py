@@ -9,7 +9,7 @@ import unicodedata
 import html
 import json
 import logging
-from typing import List, Dict, Tuple, Optional
+from typing import List, Dict, Tuple
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -90,7 +90,7 @@ class PhonemizationPreprocessor:
                 self.filter_emojis = config.performance.filter_emojis
                 self.emoji_replacement = config.performance.emoji_replacement
                 self.preserve_word_count_config = config.performance.preserve_word_count
-            except:
+            except Exception:
                 self.expand_problematic_only = True
                 self.filter_emojis = True
                 self.emoji_replacement = ""
@@ -258,11 +258,12 @@ class PhonemizationPreprocessor:
             '<': 'less than', '>': 'greater than', '©': 'copyright',
             '®': 'registered', '™': 'trademark', '°': 'degrees',
             # Quote handling - CRITICAL FIX for "in quat" pronunciation issue
-            '"': '',  # Double quotes should be silent (empty string)
-            '"': '',  # Left double quotation mark
-            '"': '',  # Right double quotation mark
-            ''': '',  # Left single quotation mark (for non-contraction quotes)
-            ''': '',  # Right single quotation mark (for non-contraction quotes)
+            # Use actual unicode characters to avoid duplicate key issues
+            '"': '',  # " Double quote (ASCII)
+            '“': '',  # " Left double quotation mark
+            '”': '',  # " Right double quotation mark
+            '‘': '',  # ' Left single quotation mark
+            '’': '',  # ' Right single quotation mark
         }
     
     def _build_problematic_patterns(self) -> List[Tuple[str, str, str]]:
@@ -371,7 +372,7 @@ class PhonemizationPreprocessor:
         # Skip terminal punctuation for time expressions
         is_time_expression = self._is_time_expression(text)
 
-        if text and not text[-1] in '.!?' and not is_time_expression:
+        if text and text[-1] not in '.!?' and not is_time_expression:
             text += '.'
             changes_made.append("Added terminal punctuation")
 
@@ -579,7 +580,7 @@ class PhonemizationPreprocessor:
                 original_text = text
                 text = text.replace(pattern, replacement)
                 if text != original_text:
-                    changes.append(f"Removed quote characters to prevent 'in quat' pronunciation")
+                    changes.append("Removed quote characters to prevent 'in quat' pronunciation")
                     logger.debug(f"Removed quote character '{pattern}' from text")
 
         # Only convert symbols that consistently cause phonemizer word count mismatches
@@ -659,7 +660,6 @@ class PhonemizationPreprocessor:
         Uses Unicode ranges to detect and remove emoji characters
         """
         changes = []
-        original_text = text
 
         # Unicode ranges for emojis (comprehensive coverage)
         emoji_patterns = [

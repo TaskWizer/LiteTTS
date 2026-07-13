@@ -1,0 +1,110 @@
+{
+  "passed": [
+    {
+      "name": "Know context",
+      "input": "I know what you mean.",
+      "transcription": "I know what you mean.",
+      "expected": "i know what you mean"
+    },
+    {
+      "name": "Tests plural",
+      "input": "Run the tests.",
+      "transcription": "Run the tests.",
+      "expected": "run the tests"
+    },
+    {
+      "name": "Their possessive",
+      "input": "Their house is here.",
+      "transcription": "Their house is here.",
+      "expected": "their house is here"
+    },
+    {
+      "name": "There location",
+      "input": "The book is there.",
+      "transcription": "The book is there.",
+      "expected": "the book is there"
+    },
+    {
+      "name": "Read present tense",
+      "input": "I read books daily.",
+      "transcription": "I read books daily.",
+      "expected": "i read books daily"
+    },
+    {
+      "name": "Lead verb",
+      "input": "Lead the way.",
+      "transcription": "Lead the way.",
+      "expected": "lead the way"
+    },
+    {
+      "name": "Wouldn't contraction",
+      "input": "I wouldn't go.",
+      "transcription": "I wouldn't go.",
+      "expected": "i wouldnt go"
+    },
+    {
+      "name": "Couldn't contraction",
+      "input": "I couldn't agree.",
+      "transcription": "I couldn't agree.",
+      "expected": "i couldnt agree"
+    },
+    {
+      "name": "Philosophy",
+      "input": "Study philosophy.",
+      "transcription": "Study philosophy.",
+      "expected": "study philosophy"
+    }
+  ],
+  "failed": [
+    {
+      "name": "Directions spelled",
+      "input": "Take Directions from here.",
+      "transcription": "Take D-I-R-E-C-S-Schwa-N-S from here.",
+      "expected": "take directions from here",
+      "normalized_got": "take direcsschwans from here"
+    },
+    {
+      "name": "Directions standalone",
+      "input": "Directions please.",
+      "transcription": "D-I-R-E-C-S-Schwanis, please.",
+      "expected": "directions please",
+      "normalized_got": "direcsschwanis please"
+    },
+    {
+      "name": "Slash removed",
+      "input": "God Damn It",
+      "transcription": "God dammit.",
+      "expected": "god damn it",
+      "normalized_got": "god dammit"
+    },
+    {
+      "name": "Slash inline",
+      "input": "God/Damn/It",
+      "transcription": "God slash damn slash it.",
+      "expected": "god damn it",
+      "normalized_got": "god slash damn slash it"
+    },
+    {
+      "name": "Because natural",
+      "input": "It's important because.",
+      "transcription": "It is important because...",
+      "expected": "its important because",
+      "normalized_got": "it is important because"
+    },
+    {
+      "name": "Any natural",
+      "input": "Do you have any questions?",
+      "transcription": "Do you have any QES as Shua NS?",
+      "expected": "do you have any questions",
+      "normalized_got": "do you have any qes as shua ns"
+    },
+    {
+      "name": "Acquisition",
+      "input": "The acquisition completed.",
+      "transcription": "The ACQ-UIS-I-S-Schwa and completed.",
+      "expected": "the acquisition completed",
+      "normalized_got": "the acquisisschwa and completed"
+    }
+  ],
+  "errors": []
+}

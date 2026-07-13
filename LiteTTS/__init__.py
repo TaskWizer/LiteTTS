@@ -25,43 +25,34 @@ from .exceptions import (
 from .logging_config import setup_logging, get_request_logger
 
 # Conditional imports to avoid dependency issues during structure validation
-try:
-    # Main API components
-    from .api import TTSAPIRouter, RequestValidator, ErrorHandler, ResponseFormatter
-    _API_AVAILABLE = True
-except ImportError:
-    _API_AVAILABLE = False
+import importlib.util
 
-try:
-    # Core processing engines
-    from .tts import KokoroTTSEngine, EmotionController, ChunkProcessor, TTSSynthesizer
-    _TTS_AVAILABLE = True
-except ImportError:
-    _TTS_AVAILABLE = False
+def _is_available(module_name: str) -> bool:
+    """Check if a module is available without importing it."""
+    # Handle both relative (".api") and absolute ("LiteTTS.api") module names
+    if module_name.startswith('.'):
+        # Relative import - resolve from this package
+        return importlib.util.find_spec(module_name, package="LiteTTS") is not None
+    else:
+        return importlib.util.find_spec(module_name) is not None
 
-try:
-    from .nlp import NLPProcessor, TextNormalizer, HomographResolver, PhoneticProcessor
-    _NLP_AVAILABLE = True
-except ImportError:
-    _NLP_AVAILABLE = False
+# Main API components
+_API_AVAILABLE = _is_available(".api")
 
-try:
-    from .voice import VoiceManager, VoiceDownloader, VoiceValidator, VoiceMetadataManager
-    _VOICE_AVAILABLE = True
-except ImportError:
-    _VOICE_AVAILABLE = False
+# Core processing engines
+_TTS_AVAILABLE = _is_available(".tts")
 
-try:
-    from .audio import AudioProcessor, AudioSegment, AudioFormatConverter, AudioStreamer
-    _AUDIO_AVAILABLE = True
-except ImportError:
-    _AUDIO_AVAILABLE = False
+# NLP components
+_NLP_AVAILABLE = _is_available(".nlp")
 
-try:
-    from .cache import EnhancedCacheManager, AudioCache, TextCache
-    _CACHE_AVAILABLE = True
-except ImportError:
-    _CACHE_AVAILABLE = False
+# Voice components
+_VOICE_AVAILABLE = _is_available(".voice")
+
+# Audio components
+_AUDIO_AVAILABLE = _is_available(".audio")
+
+# Cache components
+_CACHE_AVAILABLE = _is_available(".cache")
 
 # Build __all__ dynamically based on available imports
 __all__ = [

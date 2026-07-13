@@ -3,10 +3,9 @@
 Voice model validator for integrity checking
 """
 
-import torch
 import numpy as np
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional
 from dataclasses import dataclass
 import logging
 

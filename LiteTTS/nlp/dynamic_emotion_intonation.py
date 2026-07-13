@@ -5,14 +5,16 @@ Enhances question/exclamation intonation, italics emphasis, and context analysis
 """
 
 import re
+import logging
 from typing import Dict, List, Tuple, Optional, Union, Any
 from dataclasses import dataclass
 from enum import Enum
-import logging
+
+logger = logging.getLogger(__name__)
 
 # Import LLM context analyzer
 try:
-    from .llm_context_analyzer import LLMContextAnalyzer, LLMContextAnalysis, EmotionalContext, ProsodyContext
+    from .llm_context_analyzer import LLMContextAnalyzer, LLMContextAnalysis
     LLM_ANALYZER_AVAILABLE = True
 except ImportError:
     LLM_ANALYZER_AVAILABLE = False

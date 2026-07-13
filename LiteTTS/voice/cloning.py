@@ -9,7 +9,7 @@ import logging
 import tempfile
 import os
 from pathlib import Path
-from typing import Optional, Dict, Any, Tuple
+from typing import Optional, Dict, Any
 from dataclasses import dataclass
 import hashlib
 import json

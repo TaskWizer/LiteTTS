@@ -20,7 +20,7 @@
 ```bash
 # Clone and run in one go
 git clone https://github.com/TaskWizer/LiteTTS.git && \
-cd kokoro_onnx_tts_api && \
+cd LiteTTS && \
 python app.py
 ```
 
@@ -31,7 +31,7 @@ python app.py
 ### 1. **Clone the Repository**
 ```bash
 git clone https://github.com/TaskWizer/LiteTTS.git
-cd kokoro_onnx_tts_api
+cd LiteTTS
 ```
 
 ### 2. **Start the Server**
@@ -221,7 +221,7 @@ docker run -p 8354:8354 kokoro-tts
 # OpenWebUI Settings → Audio:
 # TTS Engine: OpenAI
 # API Base URL: http://YOUR_IP:8354/v1
-# TTS Model: kokoro
+# TTS Model: litetts
 # TTS Voice: af_heart
 ```
 
@@ -352,15 +352,15 @@ uv run uvicorn app:app --port 8354
 ### Benchmarking
 ```bash
 # Run performance benchmark
-python kokoro/benchmarks/quick_benchmark.py
+python LiteTTS/benchmarks/quick_benchmark.py
 
 # Detailed performance analysis
-python kokoro/benchmarks/performance_analysis.py
+python LiteTTS/benchmarks/performance_analysis.py
 ```
 
 ## 🔗 Next Steps
 
-1. **Explore Voices**: [Voice Showcase](voices/README.md)
+1. **Explore Voices**: [Voice Showcase](../VOICES.md)
 2. **OpenWebUI Setup**: [Integration Guide](usage/OPENWEBUI-INTEGRATION.md)
 3. **Advanced Features**: [SSML Guide](usage/SSML-GUIDE.md)
 4. **Production Deployment**: [Docker Guide](usage/DOCKER-DEPLOYMENT.md)

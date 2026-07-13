@@ -8,7 +8,7 @@ import os
 import json
 import logging
 from pathlib import Path
-from typing import Dict, Any, Optional, Union
+from typing import Dict, Any, Union, Optional
 from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
@@ -246,7 +246,7 @@ class WhisperConfigLoader:
             if self.settings.cpu_threads > max_threads:
                 logger.warning(f"CPU threads ({self.settings.cpu_threads}) exceeds available cores ({max_threads})")
                 self.settings.cpu_threads = max_threads
-        except:
+        except Exception:
             pass
             
         # Ensure memory threshold is reasonable

@@ -6,13 +6,12 @@ Provides startup validation, runtime monitoring, and automatic recovery
 for dependencies in the LiteTTS system.
 """
 
-import sys
 import importlib
 import subprocess
 import logging
 import time
 import threading
-from typing import Dict, List, Any, Optional, Callable
+from typing import Dict, List, Any, Callable, Optional
 from dataclasses import dataclass
 from enum import Enum
 

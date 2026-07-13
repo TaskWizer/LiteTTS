@@ -9,8 +9,7 @@ import logging
 import threading
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, asdict
-from datetime import datetime, timedelta
-from pathlib import Path
+from datetime import datetime
 import json
 
 logger = logging.getLogger(__name__)
@@ -176,7 +175,7 @@ class HealthMonitor:
                     'packets_sent': network_io.packets_sent,
                     'packets_recv': network_io.packets_recv
                 }
-            except:
+            except Exception:
                 network_stats = None
             
             return {

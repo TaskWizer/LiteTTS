@@ -3,7 +3,6 @@
 Simple model and voice downloader for Kokoro ONNX TTS API
 """
 
-import os
 import requests
 from pathlib import Path
 import logging

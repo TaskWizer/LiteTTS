@@ -5,7 +5,7 @@ Addresses specific contraction pronunciation issues like I'll→ill, you'll→ya
 """
 
 import re
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Optional, Tuple
 import logging
 
 logger = logging.getLogger(__name__)

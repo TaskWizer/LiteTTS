@@ -28,8 +28,8 @@ Thank you for your interest in contributing to the Kokoro ONNX TTS API! This doc
 
 ```bash
 # Clone your fork
-git clone https://github.com/YOUR_USERNAME/kokoro_onnx_tts_api.git
-cd kokoro_onnx_tts_api
+git clone https://github.com/YOUR_USERNAME/LiteTTS.git
+cd LiteTTS
 
 # Install dependencies
 uv sync

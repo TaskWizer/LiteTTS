@@ -11,13 +11,11 @@ Provides real-time monitoring and analytics for the TTS API including:
 """
 
 import time
-import json
 from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional
 from collections import defaultdict, deque
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 import threading
-import asyncio
 
 @dataclass
 class RequestMetric:

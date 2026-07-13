@@ -7,17 +7,15 @@ Provides comprehensive monitoring, alerting, and continuous optimization for Whi
 import time
 import json
 import logging
-import threading
 import psutil
 import numpy as np
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Callable
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, timedelta
-from collections import deque, defaultdict
+from collections import deque
 import sqlite3
 from concurrent.futures import ThreadPoolExecutor
-import asyncio
 
 logger = logging.getLogger(__name__)
 

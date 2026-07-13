@@ -3,7 +3,7 @@
 Custom exceptions for Kokoro ONNX TTS API with enhanced error handling
 """
 
-from typing import Optional, Dict, Any, Union
+from typing import Optional, Dict, Any
 import traceback
 from datetime import datetime
 

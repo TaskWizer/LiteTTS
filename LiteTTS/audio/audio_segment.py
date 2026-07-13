@@ -4,8 +4,7 @@ Enhanced AudioSegment class with format conversion and streaming support
 """
 
 import numpy as np
-import io
-from typing import Dict, Any, Optional, Union, Iterator
+from typing import Dict, Any, Optional, Iterator
 from dataclasses import dataclass, field
 import logging
 

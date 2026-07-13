@@ -4,12 +4,11 @@ Intelligent pre-caching system for TTS optimization
 Implements cache warming during idle time for near-instant response
 """
 
-import asyncio
-import threading
 import time
-from typing import Dict, List, Optional, Set, Tuple, Any
+import threading
+from typing import Dict, List, Optional, Set, Any
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 from pathlib import Path
 import json

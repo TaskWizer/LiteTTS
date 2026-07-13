@@ -7,7 +7,7 @@ Bridges user-friendly config.json with internal technical configuration
 import json
 import os
 import sys
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 import logging
 
 # Add the parent directory to the path for imports

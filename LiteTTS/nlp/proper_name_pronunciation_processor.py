@@ -53,120 +53,76 @@ class ProperNamePronunciationProcessor:
                 .get('enabled', True))
     
     def _load_proper_name_fixes(self) -> Dict[str, str]:
-        """Load proper name pronunciation fixes"""
+        """Load proper name pronunciation fixes
+
+        NOTE: These phonetic spellings use non-IPA notation and interfere with
+        kokoro's character-based tokenizer. Only ALL CAPS entries (like stock tickers)
+        and entries verified to work with the ONNX model should be added here.
+        """
         default_fixes = {
-            # Names with specific pronunciation issues
-            "Elon": "EE-lawn",  # Fix Elon→alon to EE-lawn
-            "Tesla": "TESS-lah",  # Ensure correct pronunciation
-            "Bezos": "BAY-zohss",  # Jeff Bezos
-            "Musk": "MUHSK",  # Elon Musk
-            "Zuckerberg": "ZUHK-er-berg",  # Mark Zuckerberg
-            "Pichai": "pih-CHIGH",  # Sundar Pichai
-            "Nadella": "nah-DELL-ah",  # Satya Nadella
-            "Cook": "KOOK",  # Tim Cook (when referring to Apple CEO)
-            "Wojcicki": "woh-JIT-skee",  # Susan Wojcicki
-            "Dorsey": "DOR-see",  # Jack Dorsey
-            
-            # Geographic names
-            "Nevada": "neh-VAD-ah",
-            "Oregon": "OR-eh-gun", 
-            "Illinois": "ill-ih-NOY",
-            "Arkansas": "AR-kan-saw",
-            "Qatar": "KAH-tar",
-            "Dubai": "doo-BYE",
-            
-            # Brand names
-            "Nike": "NYE-kee",
-            "Adidas": "ah-DEE-dahs",
-            "Porsche": "POR-shuh",
-            "Hyundai": "HUN-day",
-            "Xiaomi": "SHAO-mee",
-            
-            # Common name fixes
-            "Joy": "JOI",  # Fix Joy→joie to JOI (phonetic spelling)
-            "Sean": "SHAWN",
-            "Siobhan": "shih-VAWN",
-            "Niamh": "NEEV",
-            "Aoife": "EE-fah"
+            # Stock tickers - ALL CAPS so kokoro's tokenizer spells them out
+            "TSLA": "T S L A",
+            "AAPL": "A A P L",
+            "MSFT": "M S F T",
+            "GOOGL": "G O O G L",
+            "AMZN": "A M Z N",
+            "NVDA": "N V D A",
+            "META": "M E T A",
+            "NFLX": "N F L X",
+            "COIN": "C O I N",
         }
-        
+
         # Get fixes from config, fall back to defaults
         config_fixes = (self.config.get('text_processing', {})
                        .get('proper_name_handling', {})
                        .get('name_pronunciations', {}))
-        
+
         # Merge config fixes with defaults
         fixes = default_fixes.copy()
         fixes.update(config_fixes)
-        
+
         return fixes
     
     def _load_word_pronunciation_fixes(self) -> Dict[str, str]:
-        """Load general word pronunciation fixes"""
+        """Load general word pronunciation fixes
+
+        NOTE: These phonetic spellings use non-IPA notation and interfere with
+        kokoro's character-based tokenizer. Only ALL CAPS entries (like ticker symbols)
+        and entries verified to work with the ONNX model should be added here.
+        """
         default_fixes = {
-            # Business/technical terms
-            "acquisition": "ak-wih-ZISH-un",  # Fix acquisition→ek-wah-zi·shn to a·kwuh·zi·shn
-            "merger": "MUR-jer",
-            "synergy": "SIN-er-jee",
-            "paradigm": "PAIR-ah-dime",
-            "epitome": "ih-PIT-oh-mee",
-            "hyperbole": "hy-PUR-boh-lee",
-            "cache": "KASH",
-            "niche": "NEESH",
-            "suite": "SWEET",
-            "segue": "SEG-way",
-            
-            # Financial terms
-            "finance": "fye-NANS",
-            "economic": "ee-kah-NOM-ik",
-            "fiscal": "FIS-kal",
-            "revenue": "REV-eh-noo",
-            "dividend": "DIV-ih-dend",
-            
-            # Technology terms
-            "algorithm": "AL-goh-rith-um",
-            "API": "A-P-I",
-            "GUI": "GOO-ee",
-            "SQL": "SEE-kwel",
-            "JSON": "JAY-sahn",
-            "XML": "X-M-L",
-            "HTTP": "H-T-T-P",
-            "URL": "U-R-L",
-            
-            # Common mispronunciations
-            "often": "OF-en",  # Not "OF-ten"
-            "nuclear": "NOO-klee-er",  # Not "NOO-kyuh-ler"
-            "library": "LYE-brer-ee",  # Not "LYE-berry"
-            "February": "FEB-roo-er-ee",  # Not "FEB-yoo-er-ee"
-            "comfortable": "KUMF-ter-bul",
-            "vegetable": "VEJ-tah-bul",
-            "temperature": "TEM-per-ah-chur"
+            # Technology terms - ALL CAPS so they're clearly abbreviations
+            "API": "A P I",
+            "GUI": "G U I",
+            "SQL": "S Q L",
+            "JSON": "J S O N",
+            "XML": "X M L",
+            "HTTP": "H T T P",
+            "URL": "U R L",
+            "PDF": "P D F",
+            "CSS": "C S S",
+            "HTML": "H T M L",
         }
-        
+
         # Get fixes from config
         config_fixes = (self.config.get('text_processing', {})
                        .get('proper_name_handling', {})
                        .get('word_pronunciations', {}))
-        
+
         # Merge config fixes with defaults
         fixes = default_fixes.copy()
         fixes.update(config_fixes)
-        
+
         return fixes
     
     def _load_context_sensitive_fixes(self) -> List[Tuple[str, str, str, str]]:
-        """Load context-sensitive pronunciation fixes"""
-        return [
-            # (word, context_pattern, pronunciation, description)
-            ("resume", r"\b(my|your|his|her|their)\s+resume\b", "REZ-oo-may", "Resume document context"),
-            ("resume", r"\bresume\s+(work|working|operations|activities)", "rih-ZOOM", "Resume activity context"),
-            ("live", r"\blive\s+(stream|broadcast|show|event)", "LYVE", "Live event context"),
-            ("live", r"\bwhere\s+do\s+you\s+live", "LIV", "Live residence context"),
-            ("read", r"\b(I|you|we|they)\s+read\s+(yesterday|last)", "RED", "Past tense read"),
-            ("read", r"\b(will|going\s+to|plan\s+to)\s+read", "REED", "Future tense read"),
-            ("lead", r"\blead\s+(singer|guitarist|developer|engineer)", "LEED", "Lead role context"),
-            ("lead", r"\blead\s+(pipe|paint|poisoning|metal)", "LED", "Lead metal context"),
-        ]
+        """Load context-sensitive pronunciation fixes
+
+        NOTE: These phonetic spellings use non-IPA notation and interfere with
+        kokoro's character-based tokenizer. Kokoro handles homographs through its
+        built-in grapheme-to-phoneme system, so context-sensitive fixes are disabled.
+        """
+        return []
     
     def process_proper_name_pronunciation(self, text: str) -> str:
         """Apply proper name and word pronunciation fixes"""

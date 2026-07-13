@@ -3,8 +3,8 @@
 Voice cloning API endpoints for LiteTTS
 """
 
-from fastapi import APIRouter, HTTPException, UploadFile, File, Form, BackgroundTasks, Request
-from fastapi.responses import JSONResponse, Response
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form, BackgroundTasks
+from fastapi.responses import JSONResponse
 from typing import Dict, List, Any, Optional
 import logging
 import tempfile
@@ -13,7 +13,7 @@ from pathlib import Path
 import shutil
 
 try:
-    from ..voice.cloning import VoiceCloner, VoiceCloneResult, AudioAnalysisResult
+    from ..voice.cloning import VoiceCloner, AudioAnalysisResult
     from ..voice.metadata import VoiceMetadataManager
     from ..models import VoiceMetadata
 except ImportError:
@@ -21,7 +21,7 @@ except ImportError:
     import sys
     from pathlib import Path
     sys.path.insert(0, str(Path(__file__).parent.parent))
-    from voice.cloning import VoiceCloner, VoiceCloneResult, AudioAnalysisResult
+    from voice.cloning import VoiceCloner, AudioAnalysisResult
     from voice.metadata import VoiceMetadataManager
 
 try:

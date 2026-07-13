@@ -4,8 +4,7 @@ Response formatting for TTS API
 """
 
 from fastapi.responses import StreamingResponse, Response
-from typing import Dict, Any, Iterator, AsyncIterator
-import io
+from typing import Dict, Any, Iterator
 import logging
 
 from LiteTTS.models import AudioSegment

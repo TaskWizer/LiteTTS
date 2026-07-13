@@ -50,7 +50,7 @@ class EspeakEnhancedSymbolProcessor:
             "-": "minus",
             "=": "equals",
             "*": "asterisk",  # Fix "astrisk" pronunciation
-            "/": "slash",
+            # REMOVED: "/" -> "slash" (slashes should be silent per user request)
             "\\": "backslash",
             "%": "percent",
 

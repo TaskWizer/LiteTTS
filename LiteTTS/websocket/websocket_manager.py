@@ -11,7 +11,7 @@ import logging
 import time
 import uuid
 from typing import Dict, List, Set, Any, Optional, Callable
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 

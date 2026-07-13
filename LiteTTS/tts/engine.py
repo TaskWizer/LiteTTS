@@ -3,14 +3,12 @@
 Kokoro TTS engine wrapper with ONNX runtime integration
 """
 
-import torch
 import onnxruntime as ort
 import numpy as np
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Union, Tuple
 import logging
 import threading
-import queue
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 

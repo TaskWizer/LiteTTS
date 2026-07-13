@@ -10,7 +10,7 @@ import logging
 import tempfile
 import os
 from pathlib import Path
-from typing import Optional, Dict, Any, Tuple, List
+from typing import Optional, Dict, Any, List
 from dataclasses import dataclass, field
 import hashlib
 import json

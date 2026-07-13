@@ -6,10 +6,8 @@ Core data models and type definitions for Kokoro ONNX TTS API
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Any, Protocol
 from datetime import datetime
-from pathlib import Path
 import numpy as np
 from pydantic import BaseModel, Field
-from enum import Enum
 
 # Configuration Models
 @dataclass

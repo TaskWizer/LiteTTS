@@ -7,10 +7,10 @@ Analyzes logs to extract common phrases and pre-generates audio for faster respo
 import json
 import re
 import logging
-from typing import List, Dict, Set, Tuple, Optional
+from typing import List, Dict, Tuple
 from pathlib import Path
 from collections import Counter, defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime
 import hashlib
 import asyncio
 import time
@@ -137,7 +137,7 @@ class IntelligentPreCaching:
                     dt = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
                     hour = dt.hour
                     self.time_patterns[hour].append(text)
-                except:
+                except Exception:
                     pass
     
     def _extract_phrases(self, text: str) -> List[str]:
