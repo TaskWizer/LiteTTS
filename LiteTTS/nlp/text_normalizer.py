@@ -129,7 +129,8 @@ class TextNormalizer:
             # Asterisk handling - FIXED: asterisk pronunciation
             (r'\s*\*\s*', ' asterisk '),    # Asterisk symbol with optional spaces
             # Other symbols - FIXED: avoid processing abbreviations like w/
-            (r'(?<!w)\s*/\s*', ' slash '), # Slash with optional spaces, but not after 'w'
+            # CHANGED: Slashes should be ignored/silent, not spoken as "slash"
+            (r'(?<!w)\s*/\s*', ' '), # Slash removed - replaced with space, not "slash"
             (r'\s*\|\s*', ' pipe '), # Pipe symbol with optional spaces
             (r'\s*\^\s*', ' caret '), # Caret symbol with optional spaces
             (r'~', ' tilde '),        # Tilde symbol

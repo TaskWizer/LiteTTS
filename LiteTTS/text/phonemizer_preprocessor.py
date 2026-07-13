@@ -252,7 +252,8 @@ class PhonemizationPreprocessor:
         return {
             '&': 'and', '+': 'plus', '=': 'equals', '%': 'percent',
             '$': 'dollars', '€': 'euros', '£': 'pounds', '¥': 'yen',
-            '@': 'at', '#': 'hash', '*': 'star', '/': 'slash',
+            '@': 'at', '#': 'hash', '*': 'star',
+            # REMOVED: '/' -> 'slash' (slashes should be silent/ignored per user request)
             '\\': 'backslash', '|': 'pipe', '^': 'caret', '~': 'tilde',
             '<': 'less than', '>': 'greater than', '©': 'copyright',
             '®': 'registered', '™': 'trademark', '°': 'degrees',
@@ -277,11 +278,12 @@ class PhonemizationPreprocessor:
             (r'\b(\w+)\.(\w+)\b', r'\1 dot \2', 'Domain names and file extensions'),
             (r'\b(\w+)@(\w+)\b', r'\1 at \2', 'Email addresses'),
             (r'\b(\d+)-(\d+)\b', r'\1 to \2', 'Number ranges'),  # Keep this for "1-10" -> "1 to 10"
-            (r'\b(\d+)/(\d+)\b', r'\1 slash \2', 'Fractions and dates'),
+            # REMOVED: Fraction slash pattern - let natural number processing handle "1/2" etc.
             (r'\b(\d+):(\d+)\b', r'\1 colon \2', 'Time expressions'),
             (r'\b(\w+)_(\w+)\b', r'\1 underscore \2', 'Underscored words'),
-            # REMOVED: (r'\b(\w+)-(\w+)\b', r'\1 dash \2', 'Hyphenated words') - breaks natural speech
-            (r'([A-Z]{2,})', lambda m: ' '.join(m.group(1).lower()), 'Acronyms'),
+            # FIXED: Only convert TRUE acronyms (all caps sequences like FBI, NASA, CEO)
+            # Preserves natural words like "Directions", "Any", "Know"
+            (r'\b[A-Z]{2,}(?:\s+[A-Z]{2,})*\b', lambda m: ' '.join(m.group(0).lower()), 'True acronyms only'),
             (r'\b(\d+)([A-Za-z]+)\b', r'\1 \2', 'Number-letter combinations'),
         ]
     

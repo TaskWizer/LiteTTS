@@ -206,7 +206,7 @@ class CleanTextNormalizer:
             'psychology': 'sy-KOL-uh-jee',
             'sociology': 'so-see-OL-uh-jee',
             'anthropology': 'an-thruh-POL-uh-jee',
-            
+
             # Stock symbols - spell out letter-by-letter for universal compatibility
             # Only include major, commonly referenced ticker symbols to avoid over-processing
             'TSLA': 'T-S-L-A',
@@ -221,6 +221,15 @@ class CleanTextNormalizer:
             'COIN': 'C-O-I-N',
             'VTI': 'V-T-I',
             # Note: Removed less common tickers to avoid conflicts with common words
+
+            # Common word pronunciation fixes (prevents grapheme-to-phoneme errors)
+            'because': 'be-CAUZ',  # Prevents "be-swah-s-e" pronunciation
+            'know': 'NOH',  # Prevents confusion with "now"
+            'tests': 'TESTS',  # Prevents "tess" pronunciation (preserves 'e')
+            'Directions': 'di-REK-shuns',  # Prevents letter-by-letter spelling
+            'any': 'EN-ee',  # Prevents "e-n-turn-v" pronunciation
+            'their': 'THAIR',  # Distinct from "there" and "they're"
+            'there': 'THAIR',  # Distinct pronunciation for location
         }
     
     def normalize_text(self, text: str) -> NormalizationResult:
