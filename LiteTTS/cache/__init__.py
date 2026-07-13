@@ -11,9 +11,9 @@ def _is_available(module_name: str) -> bool:
     return importlib.util.find_spec(module_name) is not None
 
 _ENHANCED_AVAILABLE = (
-    _is_available(".manager") and
-    _is_available(".audio_cache") and
-    _is_available(".preloader")
+    _is_available("LiteTTS.cache.manager") and
+    _is_available("LiteTTS.cache.audio_cache") and
+    _is_available("LiteTTS.cache.preloader")
 )
 
 # Build exports list

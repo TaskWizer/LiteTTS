@@ -5,7 +5,7 @@ Voice model validator for integrity checking
 
 import numpy as np
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from dataclasses import dataclass
 import logging
 

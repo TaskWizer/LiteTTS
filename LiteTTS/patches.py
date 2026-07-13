@@ -1,12 +1,31 @@
 #!/usr/bin/env python3
 """
 Patches for kokoro_onnx library to fix tensor rank issues
+and replace the broken TTS.cpp phonemizer with misaki
 """
 
 import numpy as np
 import logging
 
 logger = logging.getLogger(__name__)
+
+# Global misaki G2P instance (lazy initialized)
+_misaki_g2p = None
+
+def _get_misaki_g2p():
+    """Get or create the misaki G2P instance"""
+    global _misaki_g2p
+    if _misaki_g2p is None:
+        try:
+            from misaki import en
+            # Use British=False for American English (Kokoro default)
+            # trf=False uses rule-based mode (faster, no neural overhead)
+            _misaki_g2p = en.G2P(trf=False, british=False)
+            logger.info("✅ Misaki G2P initialized for phonemizer patch")
+        except ImportError as e:
+            logger.warning(f"⚠️ Misaki not available for phonemizer patch: {e}")
+            return None
+    return _misaki_g2p
 
 def patch_kokoro_onnx():
     """Apply patches to kokoro_onnx library to fix tensor rank issues and optimize performance"""
@@ -232,15 +251,67 @@ def patch_kokoro_onnx():
         logger.error(f"❌ Failed to apply kokoro_onnx patches: {e}")
         return False
 
+def patch_kokoro_onnx_phonemizer():
+    """Patch kokoro_onnx to use misaki instead of the broken TTS.cpp phonemizer
+
+    This replaces the rule-based TTS.cpp phonemizer (which has broken vocabulary
+    for common English patterns like -tion, -sion, etc.) with misaki's neural G2P.
+    """
+    try:
+        import kokoro_onnx
+
+        # Store original create method
+        original_create = kokoro_onnx.Kokoro.create
+
+        def patched_create(self, text, voice, speed=1.0, lang='en-us'):
+            """Patched create method that uses misaki for phonemization"""
+            log = logging.getLogger('kokoro_onnx')
+
+            # Try to use misaki for phonemization
+            g2p = _get_misaki_g2p()
+            if g2p is not None:
+                try:
+                    # Use misaki to phonemize the text
+                    phonemes, _ = g2p(text)
+                    log.debug(f"Misaki phonemized: '{text[:50]}...' -> '{phonemes[:50]}...'")
+                except Exception as e:
+                    log.warning(f"Misaki phonemization failed: {e}, falling back to internal")
+                    # Fall back to internal phonemizer
+                    return original_create(self, text, voice, speed, lang)
+            else:
+                # Misaki not available, use internal phonemizer
+                return original_create(self, text, voice, speed, lang)
+
+            # Use the phonemes from misaki to generate audio
+            return self._create_audio(phonemes, voice, speed)
+
+        # Apply the patch
+        kokoro_onnx.Kokoro.create = patched_create
+
+        logger.info("✅ Applied misaki phonemizer patch")
+        return True
+
+    except Exception as e:
+        logger.error(f"❌ Failed to apply misaki phonemizer patch: {e}")
+        return False
+
 def apply_all_patches():
     """Apply all necessary patches"""
     logger.info("🔧 Applying kokoro_onnx patches...")
-    
+
     success = patch_kokoro_onnx()
-    
+
     if success:
-        logger.info("✅ All patches applied successfully")
+        logger.info("✅ Performance patches applied successfully")
     else:
         logger.error("❌ Some patches failed to apply")
-    
-    return success
+
+    # Also apply the misaki phonemizer patch
+    logger.info("🔧 Applying misaki phonemizer patch...")
+    phonemizer_success = patch_kokoro_onnx_phonemizer()
+    if phonemizer_success:
+        logger.info("✅ Misaki phonemizer patch applied successfully")
+    else:
+        logger.warning("⚠️ Misaki phonemizer patch failed (will use internal phonemizer)")
+
+    return success and phonemizer_success
