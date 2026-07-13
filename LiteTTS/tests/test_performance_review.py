@@ -3,6 +3,7 @@
 Performance optimization review and benchmarking script
 """
 
+import pytest
 import requests
 import time
 import statistics
@@ -10,6 +11,9 @@ import psutil
 import threading
 from typing import List, Dict, Any
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+# Skip - requires running server
+pytestmark = pytest.mark.skip(reason="Requires running TTS server")
 
 def benchmark_single_requests():
     """Benchmark single TTS requests"""

@@ -8,6 +8,9 @@ import json
 import requests
 from typing import Dict, Any
 
+# Skip - integration tests that require running server
+pytestmark = pytest.mark.skip(reason="Integration tests that require running TTS server")
+
 class TestBackwardCompatibility:
     """Test backward compatibility of API endpoints"""
 

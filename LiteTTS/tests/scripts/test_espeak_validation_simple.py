@@ -11,9 +11,13 @@ import sys
 import time
 import requests
 from pathlib import Path
+import pytest
 
 # Add the project root to the path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+# Skip - manual validation script
+pytestmark = pytest.mark.skip(reason="Manual validation script - not proper pytest test")
 
 def test_text_processing_pipeline():
     """Test the text processing pipeline with eSpeak enhancements"""

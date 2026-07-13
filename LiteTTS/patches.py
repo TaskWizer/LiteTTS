@@ -282,8 +282,17 @@ def patch_kokoro_onnx_phonemizer():
                 # Misaki not available, use internal phonemizer
                 return original_create(self, text, voice, speed, lang)
 
+            # Resolve voice name to voice array if needed
+            voice_array = voice
+            if isinstance(voice, str):
+                if hasattr(self, 'voices') and voice in self.voices:
+                    voice_array = self.voices[voice]
+                else:
+                    log.warning(f"Voice '{voice}' not found, falling back to internal")
+                    return original_create(self, text, voice, speed, lang)
+
             # Use the phonemes from misaki to generate audio
-            return self._create_audio(phonemes, voice, speed)
+            return self._create_audio(phonemes, voice_array, speed)
 
         # Apply the patch
         kokoro_onnx.Kokoro.create = patched_create
