@@ -74,7 +74,8 @@ class TextNormalizer:
             'ordinal': re.compile(r'\b(\d+)(?:st|nd|rd|th)\b', re.IGNORECASE),
             'decimal': re.compile(r'\b\d+\.\d+\b'),
             'percentage': re.compile(r'\b\d+(?:\.\d+)?%\b'),
-            'fraction': re.compile(r'\b\d+/\d+\b'),
+            # Match both standard fractions (2/3) and Unicode fractions (2½, 2¼, 2¾)
+            'fraction': re.compile(r'\b\d+\s*[½¼¾⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞/]\d*\b'),
             'phone': re.compile(r'\b(?:\+?1[-.]?)?\(?([0-9]{3})\)?[-.]?([0-9]{3})[-.]?([0-9]{4})\b'),
             'time': re.compile(r'\b([0-1]?[0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9]))?\s*(AM|PM|a\.m\.|p\.m\.)?(?=\s|$|[^\w.])', re.IGNORECASE),
             'date': re.compile(r'\b(\d{1,2})/(\d{1,2})/(\d{2,4})\b'),
@@ -560,10 +561,49 @@ class TextNormalizer:
   
     def _fraction_to_words(self, fraction_str: str) -> str:
         """Convert fraction to words"""
+        # Handle Unicode fractions like ½ (U+00BD), ¼ (U+00BC), ¾ (U+00BE)
+        unicode_fractions = {
+            '½': ('one', 'half'),    # ½
+            '¼': ('one', 'quarter'), # ¼
+            '¾': ('three', 'quarters'), # ¾
+            '⅓': ('one', 'third'),   # ⅓
+            '⅔': ('two', 'thirds'),  # ⅔
+            '⅕': ('one', 'fifth'),   # ⅕
+            '⅖': ('two', 'fifths'),  # ⅖
+            '⅗': ('three', 'fifths'), # ⅗
+            '⅘': ('four', 'fifths'), # ⅘
+            '⅙': ('one', 'sixth'),   # ⅙
+            '⅚': ('five', 'sixths'), # ⅚
+            '⅛': ('one', 'eighth'),   # ⅛
+            '⅜': ('three', 'eighths'), # ⅜
+            '⅝': ('five', 'eighths'), # ⅝
+            '⅞': ('seven', 'eighths'), # ⅞
+        }
+
+        # Check if the fraction string starts with a number followed by a Unicode fraction
+        match = re.match(r'^(\d+)\s*([½¼¾⅓-⅞])$', fraction_str)
+        if match:
+            numerator = int(match.group(1))
+            fraction_char = match.group(2)
+            if fraction_char in unicode_fractions:
+                base_num, base_denom = unicode_fractions[fraction_char]
+                num_word = self._integer_to_words(numerator)
+                # Handle plural: "1 half" vs "2 halves"
+                if numerator == 1:
+                    return f"{num_word} {base_denom}"
+                else:
+                    # "two halves", "three quarters", etc.
+                    if base_denom == 'half':
+                        return f"{num_word} halves"
+                    elif base_denom == 'quarter':
+                        return f"{num_word} quarters"
+                    else:
+                        return f"{num_word} {base_denom}"
+
         try:
             numerator, denominator = fraction_str.split('/')
             num_word = self._integer_to_words(int(numerator))
-            
+
             # Special denominators
             if denominator == "2":
                 denom_word = "half" if numerator == "1" else "halves"
@@ -575,7 +615,7 @@ class TextNormalizer:
                 denom_word = self._ordinal_to_words(denominator)
                 if numerator != "1":
                     denom_word += "s"
-            
+
             return f"{num_word} {denom_word}"
         except ValueError:
             return fraction_str

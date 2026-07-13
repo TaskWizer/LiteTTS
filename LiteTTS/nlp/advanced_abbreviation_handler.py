@@ -278,6 +278,7 @@ class AdvancedAbbreviationHandler:
             'WIFI': 'wifi',
             'BLUETOOTH': 'bluetooth',
             'ETHERNET': 'ethernet',
+            'JSON': 'Jason',  # Pronounced as "Jason", not spelled out
         }
     
     def process_abbreviations(self, text: str, mode: Optional[AbbreviationMode] = None) -> str:

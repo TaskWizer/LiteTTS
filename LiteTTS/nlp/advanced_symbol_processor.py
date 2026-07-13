@@ -225,6 +225,10 @@ class AdvancedSymbolProcessor:
         """Process symbols and punctuation for natural TTS pronunciation"""
         logger.debug(f"Processing symbols in: {text[:100]}...")
 
+        # Step 0: Pre-process compound symbols BEFORE single-character symbols
+        # This MUST happen first to avoid C# → "C hash" and OAuth issues
+        text = self._process_compound_symbols(text)
+
         # Step 1: Handle HTML entities first (critical for apostrophe issues)
         if self.fix_html_entities:
             text = self._fix_html_entities(text)
@@ -250,7 +254,42 @@ class AdvancedSymbolProcessor:
 
         logger.debug(f"Symbol processing result: {text[:100]}...")
         return text
-    
+
+    def _process_compound_symbols(self, text: str) -> str:
+        """Pre-process compound symbols BEFORE single-character symbol processing
+
+        This MUST happen before _process_regular_symbols to avoid issues like:
+        - C# being mangled to "C hash"
+        - OAuth being corrupted
+        """
+        # C# programming language - "C sharp", not "C hash"
+        text = re.sub(r'\bC#\b', 'C sharp', text)
+
+        # F# programming language
+        text = re.sub(r'\bF#\b', 'F sharp', text)
+
+        # G# music note
+        text = re.sub(r'\bG#\b', 'G sharp', text)
+
+        # D# music note
+        text = re.sub(r'\bD#\b', 'D sharp', text)
+
+        # A# music note
+        text = re.sub(r'\bA#\b', 'A sharp', text)
+
+        # OAuth authentication
+        text = re.sub(r'\bOAuth\b', 'OAuth', text)
+        text = re.sub(r'\bOAuth\s*2\.0\b', 'OAuth two point zero', text)
+
+        # IPv6
+        text = re.sub(r'\bIPv6\b', 'I P V six', text)
+
+        # SHA-256
+        text = re.sub(r'\bSHA-?256\b', 'SHA two fifty six', text)
+        text = re.sub(r'\bSHA-?(\d+)\b', r'SHA \1', text)
+
+        return text
+
     def _fix_html_entities(self, text: str) -> str:
         """Fix HTML entities that cause pronunciation issues"""
         # Handle specific problematic entities
