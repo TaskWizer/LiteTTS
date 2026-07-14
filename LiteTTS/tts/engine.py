@@ -339,6 +339,10 @@ class KokoroTTSEngine:
         # Use phoneme-based tokenization if misaki and kokoro tokenizer are available
         if self.tokenizer.get('type') == 'phoneme' and self.kokoro_tokenizer is not None:
             try:
+                # First preprocess text to fix JSON→Jason, C#→C sharp, etc.
+                from LiteTTS.patches import _preprocess_for_misaki
+                text = _preprocess_for_misaki(text)
+
                 # First phonemize using misaki
                 if self.misaki_g2p is not None:
                     phonemes, _ = self.misaki_g2p(text)
