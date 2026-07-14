@@ -308,37 +308,35 @@ def patch_kokoro_onnx_phonemizer():
 
             # Fix JSON → Jason FIRST (pronounce as word, not spell out)
             # This must happen before any other processing
-            if 'JSON' in text:
-                text = text.replace('JSON', 'Jason')
+            # Handle all case variations: JSON, Jason, json, JASON
+            import re
+            if re.search(r'\bJSON\b', text, re.IGNORECASE):
+                text = re.sub(r'\bJSON\b', 'Jason', text, flags=re.IGNORECASE)
                 logger.info(f"Fixed JSON -> Jason in: '{text[:50]}...'")
-            elif 'json' in text.lower():
-                text = text.replace(text[text.lower().find('json'):text.lower().find('json')+4], 'Jason')
-                logger.info(f"Fixed json -> Jason (case insensitive) in: '{text[:50]}...'")
 
-            # Fix compound symbols (C#, OAuth, IPv6, SHA-256) BEFORE misaki
-            # C# programming language - "C sharp", not "C hash"
-            if 'C#' in text:
-                text = text.replace('C#', 'C sharp')
+            # Fix C# programming language - "C sharp", not "C hash"
+            if re.search(r'\bC#\b', text, re.IGNORECASE):
+                text = re.sub(r'\bC#\b', 'C sharp', text, flags=re.IGNORECASE)
                 logger.info(f"Fixed C# -> C sharp in: '{text[:50]}...'")
 
             # OAuth authentication
-            if 'OAuth' in text:
-                text = re.sub(r'OAuth\s*2\.0', 'OAuth two point zero', text)
+            if re.search(r'\bOAuth\b', text, re.IGNORECASE):
+                text = re.sub(r'OAuth\s*2\.0', 'OAuth two point zero', text, flags=re.IGNORECASE)
                 logger.info(f"Fixed OAuth 2.0 in: '{text[:50]}...'")
 
             # IPv6
-            if 'IPv6' in text:
-                text = text.replace('IPv6', 'I P V six')
+            if re.search(r'\bIPv6\b', text, re.IGNORECASE):
+                text = re.sub(r'\bIPv6\b', 'I P V six', text, flags=re.IGNORECASE)
                 logger.info(f"Fixed IPv6 in: '{text[:50]}...'")
 
             # SHA-256
-            if 'SHA' in text:
-                text = re.sub(r'SHA-?256', 'SHA two fifty six', text)
+            if re.search(r'\bSHA-?256\b', text, re.IGNORECASE):
+                text = re.sub(r'\bSHA-?256\b', 'SHA two fifty six', text, flags=re.IGNORECASE)
                 logger.info(f"Fixed SHA-256 in: '{text[:50]}...'")
 
             # Fix SQL pronunciation - default to "sequel"
-            if 'SQL' in text:
-                text = text.replace('SQL', 'sequel')
+            if re.search(r'\bSQL\b', text, re.IGNORECASE):
+                text = re.sub(r'\bSQL\b', 'sequel', text, flags=re.IGNORECASE)
                 logger.info(f"Fixed SQL -> sequel in: '{text[:50]}...'")
 
             if text != original_text:
