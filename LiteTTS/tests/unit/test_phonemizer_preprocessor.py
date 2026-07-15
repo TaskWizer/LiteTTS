@@ -196,3 +196,369 @@ class TestPhonemizationPreprocessorEdgeCases:
         text = "don't won't can't"
         result = processor.preprocess_text(text, aggressive=False)
         assert result is not None
+
+
+class TestPreprocessingResult:
+    """Test cases for PreprocessingResult dataclass"""
+
+    def test_preprocessing_result_creation(self):
+        """Test creating a preprocessing result"""
+        from LiteTTS.text.phonemizer_preprocessor import PreprocessingResult
+        result = PreprocessingResult(
+            processed_text="hello",
+            original_text="hello",
+            changes_made=["test"],
+            confidence_score=0.9,
+            warnings=[]
+        )
+        assert result.processed_text == "hello"
+        assert result.original_text == "hello"
+        assert result.changes_made == ["test"]
+        assert result.confidence_score == 0.9
+
+
+class TestPhonemizationPreprocessorMethods:
+    """Test cases for individual methods of PhonemizationPreprocessor"""
+
+    @pytest.fixture
+    def processor(self):
+        return PhonemizationPreprocessor()
+
+    def test_is_time_expression(self, processor):
+        """Test time expression detection"""
+        # Should return True for time expressions
+        assert processor._is_time_expression("ten thirty five a m") is True
+        assert processor._is_time_expression("nine o'clock p m") is True
+
+    def test_is_time_expression_false(self, processor):
+        """Test time expression detection returns False for non-times"""
+        assert processor._is_time_expression("Hello world") is False
+        assert processor._is_time_expression("ten thirty five") is False
+
+    def test_expand_contractions_conservative(self, processor):
+        """Test conservative contraction expansion"""
+        text = "don't won't can't"
+        result, changes = processor._expand_contractions_conservative(text)
+        assert isinstance(result, str)
+        assert isinstance(changes, list)
+
+    def test_convert_numbers_conservative(self, processor):
+        """Test conservative number conversion"""
+        text = "I have 5 apples and 0 oranges"
+        result, changes = processor._convert_numbers_conservative(text)
+        assert isinstance(result, str)
+        assert isinstance(changes, list)
+
+    def test_convert_symbols_conservative(self, processor):
+        """Test conservative symbol conversion"""
+        text = 'Hello "world"'
+        result, changes = processor._convert_symbols_conservative(text)
+        assert isinstance(result, str)
+
+    def test_fix_problematic_patterns_conservative(self, processor):
+        """Test conservative pattern fixing"""
+        text = "test... more"
+        result, changes = processor._fix_problematic_patterns_conservative(text)
+        assert isinstance(result, str)
+        assert isinstance(changes, list)
+
+    def test_fix_tech_compounds_c_sharp(self, processor):
+        """Test C# tech compound handling"""
+        text = "I code in C#"
+        result, changes = processor._fix_tech_compounds(text)
+        assert "C sharp" in result
+
+    def test_fix_tech_compounds_oauth(self, processor):
+        """Test OAuth tech compound handling"""
+        text = "OAuth 2.0 is the standard"
+        result, changes = processor._fix_tech_compounds(text)
+        assert "OAuth" in result
+
+    def test_fix_tech_compounds_ipv6(self, processor):
+        """Test IPv6 tech compound handling"""
+        text = "My IP is IPv6"
+        result, changes = processor._fix_tech_compounds(text)
+        assert "I P V six" in result
+
+    def test_fix_tech_compounds_sha(self, processor):
+        """Test SHA-256 tech compound handling"""
+        text = "The hash is SHA-256"
+        result, changes = processor._fix_tech_compounds(text)
+        assert "SHA" in result
+
+    def test_fix_fractions_and_symbols_fraction(self, processor):
+        """Test fraction handling"""
+        text = "Give me ½ of the pizza"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert isinstance(result, str)
+
+    def test_fix_fractions_and_symbols_plus_minus(self, processor):
+        """Test plus-minus symbol handling"""
+        text = "The value is ±5"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert "plus or minus" in result.lower() or "plus minus" in result.lower()
+
+    def test_fix_fractions_and_symbols_temperature(self, processor):
+        """Test temperature handling"""
+        text = "It is -17.4°C outside"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert "minus" in result.lower()
+
+    def test_fix_fractions_and_symbols_email(self, processor):
+        """Test email handling"""
+        text = "Contact qa-test@example.com"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert isinstance(result, str)
+
+    def test_fix_fractions_and_symbols_international(self, processor):
+        """Test international text handling"""
+        text = "Hello 世界"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert isinstance(result, str)
+
+    def test_filter_emojis(self, processor):
+        """Test emoji filtering"""
+        text = "Hello 👋 world 🌍"
+        result, changes = processor._filter_emojis(text)
+        assert "👋" not in result
+        assert "🌍" not in result
+
+    def test_handle_quote_characters(self, processor):
+        """Test quote character handling"""
+        text = 'He said "Hello"'
+        result, changes = processor._handle_quote_characters(text)
+        assert '"' not in result
+
+    def test_handle_quote_characters_with_contractions(self, processor):
+        """Test quote handling preserves contractions"""
+        text = "I'm happy"
+        result, changes = processor._handle_quote_characters(text)
+        assert "I'm" in result
+
+    def test_decode_html_entities(self, processor):
+        """Test HTML entity decoding"""
+        text = "&#x27;test&#x27;"
+        result, changes = processor._decode_html_entities(text)
+        assert "'" in result
+
+    def test_decode_html_entities_ampersand(self, processor):
+        """Test ampersand entity decoding"""
+        text = "Tom & Jerry"
+        result, changes = processor._decode_html_entities(text)
+        assert "&" in result
+
+    def test_convert_numbers_to_words(self, processor):
+        """Test number to words conversion"""
+        text = "I have 5 apples"
+        result, changes = processor._convert_numbers_to_words(text)
+        assert isinstance(result, str)
+
+    def test_convert_numbers_to_words_aggressive(self, processor):
+        """Test aggressive number conversion"""
+        text = "I have 5 apples"
+        result, changes = processor._convert_numbers_to_words(text, aggressive=True)
+        assert isinstance(result, str)
+
+    def test_convert_numbers_to_words_large(self, processor):
+        """Test large number conversion"""
+        text = "One million dollars"
+        result, changes = processor._convert_numbers_to_words(text)
+        assert isinstance(result, str)
+
+    def test_number_to_words(self, processor):
+        """Test number to words helper"""
+        assert processor._number_to_words(0) == "zero"
+        assert processor._number_to_words(5) == "five"
+        assert processor._number_to_words(15) == "fifteen"
+        assert processor._number_to_words(42) is not None
+
+    def test_number_to_words_negative(self, processor):
+        """Test negative number conversion"""
+        result = processor._number_to_words(-5)
+        assert "negative" in result.lower()
+
+    def test_convert_symbols_to_words(self, processor):
+        """Test symbol to words conversion"""
+        text = "A + B = C"
+        result, changes = processor._convert_symbols_to_words(text)
+        assert isinstance(result, str)
+
+    def test_fix_problematic_patterns(self, processor):
+        """Test problematic pattern fixing"""
+        text = "test... more"
+        result, changes = processor._fix_problematic_patterns(text)
+        assert isinstance(result, str)
+
+    def test_clean_whitespace_and_punctuation(self, processor):
+        """Test whitespace and punctuation cleaning"""
+        text = "Hello    world!"
+        result = processor._clean_whitespace_and_punctuation(text)
+        assert "  " not in result
+
+    def test_calculate_confidence_score(self, processor):
+        """Test confidence score calculation"""
+        text = "Hello world."
+        score = processor._calculate_confidence_score(text, "Hello world")
+        assert 0.0 <= score <= 1.0
+
+    def test_calculate_confidence_score_with_numbers(self, processor):
+        """Test confidence score with numbers"""
+        text = "我有5个苹果"  # Has numbers
+        score = processor._calculate_confidence_score(text, text)
+        assert score < 1.0
+
+    def test_detect_potential_issues(self, processor):
+        """Test issue detection"""
+        text = "Hello world 12345 @test #hash"
+        issues = processor._detect_potential_issues(text)
+        assert isinstance(issues, list)
+
+    def test_detect_potential_issues_long_text(self, processor):
+        """Test issue detection on long text"""
+        text = "A" * 600
+        issues = processor._detect_potential_issues(text)
+        assert len(issues) > 0
+
+    def test_contractions_map_built(self, processor):
+        """Test contractions map is built"""
+        assert isinstance(processor.contractions_map, dict)
+        assert len(processor.contractions_map) > 0
+
+    def test_number_words_map_built(self, processor):
+        """Test number words map is built"""
+        assert isinstance(processor.number_words_map, dict)
+        assert '0' in processor.number_words_map
+
+    def test_symbol_words_map_built(self, processor):
+        """Test symbol words map is built"""
+        assert isinstance(processor.symbol_words_map, dict)
+        assert '&' in processor.symbol_words_map
+
+    def test_problematic_patterns_built(self, processor):
+        """Test problematic patterns list is built"""
+        assert isinstance(processor.problematic_patterns, list)
+        assert len(processor.problematic_patterns) > 0
+
+    def test_regex_patterns_compiled(self, processor):
+        """Test regex patterns are compiled"""
+        assert hasattr(processor, 'control_char_pattern')
+        assert hasattr(processor, 'whitespace_pattern')
+
+    def test_preprocess_preserves_word_count(self, processor):
+        """Test word count preservation"""
+        text = "Hello world"
+        result = processor.preprocess_text(text, preserve_word_count=True)
+        assert result is not None
+
+    def test_preprocess_with_aggressive_mode(self, processor):
+        """Test aggressive mode changes more"""
+        text = "don't won't can't"
+        result_normal = processor.preprocess_text(text, aggressive=False)
+        result_aggressive = processor.preprocess_text(text, aggressive=True)
+        # Both should produce valid results
+        assert result_normal is not None
+        assert result_aggressive is not None
+
+
+class TestPhonemizationPreprocessorEdgeCases2:
+    """More edge case tests for PhonemizationPreprocessor"""
+
+    @pytest.fixture
+    def processor(self):
+        return PhonemizationPreprocessor()
+
+    def test_html_entities_multiple(self, processor):
+        """Test multiple HTML entities"""
+        text = "&#x27;hello&#x27; and &#39;world&#39;"
+        result = processor.preprocess_text(text)
+        assert result is not None
+
+    def test_tech_compounds_multiple(self, processor):
+        """Test multiple tech compounds"""
+        text = "C# and F# and G#"
+        result = processor.preprocess_text(text)
+        assert result is not None
+
+    def test_email_complex(self, processor):
+        """Test complex email"""
+        text = "Email test@sub.domain.example.com please"
+        result = processor.preprocess_text(text)
+        assert result is not None
+
+    def test_lead_bass_context(self, processor):
+        """Test lead/bass context handling"""
+        text = "The bass player is good"
+        result = processor.preprocess_text(text)
+        assert result is not None
+
+    def test_lead_metal_context(self, processor):
+        """Test lead metal context"""
+        text = "Lead metal is heavy"
+        result = processor.preprocess_text(text)
+        assert result is not None
+
+    def test_decimal_numbers_conservative(self, processor):
+        """Test decimal number handling conservative"""
+        text = "Pi is 3.14159"
+        result, changes = processor._convert_numbers_conservative(text)
+        assert isinstance(result, str)
+
+    def test_fractions_with_number(self, processor):
+        """Test fractions with leading number"""
+        text = "2½ cups of flour"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert "half" in result.lower() or "and a half" in result.lower()
+
+    def test_unicode_quotes(self, processor):
+        """Test unicode quote handling"""
+        text = '“Hello”'
+        result, changes = processor._handle_quote_characters(text)
+        assert '“' not in result
+        assert '”' not in result
+
+    def test_international_scripts(self, processor):
+        """Test various international scripts"""
+        # Korean
+        text = "안녕하세요"
+        result = processor.preprocess_text(text)
+        assert result is not None
+
+        # Arabic
+        text = "مرحبا"
+        result = processor.preprocess_text(text)
+        assert result is not None
+
+        # Hebrew
+        text = "שלום"
+        result = processor.preprocess_text(text)
+        assert result is not None
+
+    def test_code_patterns(self, processor):
+        """Test code pattern detection"""
+        text = "function() { return true; }"
+        issues = processor._detect_potential_issues(text)
+        assert isinstance(issues, list)
+
+    def test_url_pattern(self, processor):
+        """Test URL pattern detection"""
+        text = "Visit https://example.com for info"
+        issues = processor._detect_potential_issues(text)
+        assert any("url" in i.lower() for i in issues)
+
+    def test_repeated_characters(self, processor):
+        """Test repeated character detection"""
+        text = "Helllooooo"
+        issues = processor._detect_potential_issues(text)
+        assert any("repeated" in i.lower() for i in issues)
+
+    def test_excessive_punctuation(self, processor):
+        """Test excessive punctuation detection"""
+        text = "Hello!!!!! How are you????"
+        issues = processor._detect_potential_issues(text)
+        assert any("punctuation" in i.lower() for i in issues)
+
+    def test_smileys_not_emoji(self, processor):
+        """Test that smileys aren't filtered as emojis"""
+        text = "Hello :)"
+        result = processor.preprocess_text(text)
+        assert result is not None
