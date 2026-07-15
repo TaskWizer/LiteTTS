@@ -2,6 +2,16 @@
 """
 Synthesis Performance Optimizer
 Optimizes the TTS synthesis pipeline for consistent RTF performance
+
+ARCHITECTURE NOTE: This module contains caching (voice_embedding_cache,
+tokenization_cache, fast_path_cache) that could benefit from consolidation
+with:
+- EnhancedCacheManager in LiteTTS/cache/manager.py
+- VoiceCache in LiteTTS/voice/cache.py
+
+All three caches use similar patterns (LRU with OrderedDict) but have
+independent implementations. A future refactoring could create a unified
+cache base class to reduce duplication.
 """
 
 import time

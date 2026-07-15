@@ -58,7 +58,7 @@ class KokoroTTSEngine:
         # Initialize the engine
         self._initialize_engine()
     
-    def _initialize_chunked_generation(self):
+    def _initialize_chunked_generation(self) -> None:
         """Initialize chunked generation components"""
         try:
             # Get chunked generation config
@@ -106,7 +106,7 @@ class KokoroTTSEngine:
             self.voice_consistency_manager = None
             self.performance_monitor = None
 
-    def _initialize_engine(self):
+    def _initialize_engine(self) -> None:
         """Initialize the TTS engine"""
         logger.info("Initializing Kokoro TTS engine")
         
@@ -127,7 +127,7 @@ class KokoroTTSEngine:
             logger.error(f"Failed to initialize TTS engine: {e}")
             self.model_loaded = False
     
-    def _load_onnx_model(self):
+    def _load_onnx_model(self) -> None:
         """Load the ONNX model"""
         model_path = Path(self.config.model_path)
         
@@ -153,7 +153,7 @@ class KokoroTTSEngine:
         logger.info(f"Loaded ONNX model from {model_path}")
         logger.info(f"Using providers: {self.onnx_session.get_providers()}")
     
-    def _load_tokenizer(self):
+    def _load_tokenizer(self) -> None:
         """Load the tokenizer"""
         try:
             # Initialize misaki G2P for phonemization
@@ -176,7 +176,7 @@ class KokoroTTSEngine:
             logger.error(f"Failed to load tokenizer: {e}")
             self.tokenizer = self._create_simple_tokenizer()
 
-    def _init_misaki_g2p(self):
+    def _init_misaki_g2p(self) -> None:
         """Initialize misaki G2P for proper phonemization"""
         try:
             from misaki import en
@@ -186,7 +186,7 @@ class KokoroTTSEngine:
             logger.warning(f"⚠️ Misaki not available: {e}")
             self.misaki_g2p = None
 
-    def _init_kokoro_tokenizer(self):
+    def _init_kokoro_tokenizer(self) -> None:
         """Initialize kokoro_onnx's built-in phoneme tokenizer"""
         try:
             from kokoro_onnx.tokenizer import Tokenizer
@@ -230,7 +230,7 @@ class KokoroTTSEngine:
             'unk_token_id': unk_token_id
         }
     
-    def _setup_voice_system(self):
+    def _setup_voice_system(self) -> None:
         """Setup the voice management system"""
         # Ensure default voices are available
         setup_results = self.voice_manager.setup_system(download_all=False)
@@ -1028,7 +1028,7 @@ class KokoroTTSEngine:
 
         return results
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """Clean up engine resources"""
         logger.info("Cleaning up TTS engine")
         
