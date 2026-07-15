@@ -94,11 +94,11 @@
 **Date:** 2026-07-15
 
 ### Completed Fixes:
-1. **Audio quality enhancer disabled** (audio_quality_enhancer.py)
-   - NOT FIXED: Emotional/prosodic markers remain disabled
-   - Reason: Previous implementation caused SSML corruption with nested/broken tags
-   - The system generated malformed SSML like `<emphasis level=<break time="0.1s"/>`
-   - Leaving disabled prevents text processing corruption
+1. **Audio quality enhancer** (audio_quality_enhancer.py)
+   - Reimplemented _apply_emotional_markers with safe <emphasis> tags
+   - Reimplemented _apply_prosodic_markers with minimal safe marking
+   - Disabled natural_pauses by default (Kokoro handles pauses naturally)
+   - Uses word-boundary matching to avoid nested SSML corruption
 
 2. **ThreadPoolExecutor ONNX contention** (engine.py)
    - Added `_inference_semaphore` to limit concurrent ONNX inference calls
@@ -122,4 +122,17 @@
    - Created `_normalize_voice_embedding_shape()` helper method
    - Extracted 6-case shape handling into well-documented method
    - Improved _prepare_model_inputs() to use the helper
+
+7. **Type hints added** (engine.py)
+   - Added return type hints to void methods: _initialize_chunked_generation,
+     _initialize_engine, _load_onnx_model, _load_tokenizer, _init_misaki_g2p,
+     _init_kokoro_tokenizer, _setup_voice_system, cleanup
+
+8. **Cache consolidation documented** (synthesis_optimizer.py)
+   - Added ARCHITECTURE NOTE documenting the three-cache duplication issue
+   - Full consolidation would require significant refactoring
+
+### Remaining Low-Priority Items:
+- Combined voice file loading disabled (use_combined_file=False in config.py)
+- Full type hint coverage (would require extensive effort across all classes)
 
