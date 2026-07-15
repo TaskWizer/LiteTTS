@@ -381,17 +381,17 @@ class ProgressiveAudioGenerator:
         """Determine if text should be chunked"""
         if not self.text_chunker.config.enabled:
             return False
-        
+
         # Check minimum text length
-        min_length = self.text_chunker.config.min_text_length_for_chunking or 100
+        min_length = self.text_chunker.config.min_chunk_size or 50
         if len(text) < min_length:
             return False
-        
+
         # Check if text has natural break points
         if self.text_chunker.config.strategy == ChunkingStrategy.SENTENCE:
             sentence_count = len(self.text_chunker.sentence_endings.findall(text))
             return sentence_count > 1
-        
+
         return True
     
     def get_generation_status(self, generation_id: str) -> Optional[Dict[str, Any]]:
