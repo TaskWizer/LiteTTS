@@ -9,6 +9,7 @@ import logging
 import threading
 from typing import Dict, Any, Optional, Tuple
 from dataclasses import dataclass
+from collections import OrderedDict
 import numpy as np
 
 logger = logging.getLogger(__name__)
@@ -31,7 +32,11 @@ class SynthesisPerformanceConfig:
     use_cached_voice_embeddings: bool = True
     optimize_audio_processing: bool = True
     enable_parallel_processing: bool = True
-    
+
+    # Cache settings
+    max_voice_embedding_cache: int = 100  # Max voice embeddings to cache
+    max_tokenization_cache: int = 1000    # Max tokenization results to cache
+
     # Timeout settings
     synthesis_timeout: float = 10.0
     fast_path_timeout: float = 2.0
@@ -54,10 +59,10 @@ class SynthesisOptimizer:
         }
         self.stats_lock = threading.RLock()
         
-        # Performance caches
-        self.voice_embedding_cache = {}
-        self.tokenization_cache = {}
-        self.fast_path_cache = {}
+        # Performance caches - use OrderedDict for LRU behavior
+        self.voice_embedding_cache: OrderedDict = OrderedDict()
+        self.tokenization_cache: OrderedDict = OrderedDict()
+        self.fast_path_cache: OrderedDict = OrderedDict()
         
         logger.info("Synthesis optimizer initialized")
     
@@ -86,20 +91,23 @@ class SynthesisOptimizer:
                 optimization_strategy['use_fast_path'] = True
                 optimization_strategy['expected_rtf'] = 0.1  # Very fast for short text
                 
-                # Check fast path cache
+                # Check fast path cache (move to end for LRU)
                 fast_cache_key = f"{text}:{voice}"
                 if fast_cache_key in self.fast_path_cache:
+                    self.fast_path_cache.move_to_end(fast_cache_key)
                     optimization_strategy['cached_audio'] = self.fast_path_cache[fast_cache_key]
                     with self.stats_lock:
                         self.performance_stats['cache_hits'] += 1
             
-            # Check for cached voice embedding
+            # Check for cached voice embedding (move to end for LRU)
             if self.config.use_cached_voice_embeddings and voice in self.voice_embedding_cache:
+                self.voice_embedding_cache.move_to_end(voice)
                 optimization_strategy['cached_voice_embedding'] = self.voice_embedding_cache[voice]
             
-            # Check for cached tokenization
-            token_cache_key = f"{text}:{voice}"
+            # Check for cached tokenization (move to end for LRU)
+            token_cache_key = f"{text}:{voice}:{speed}:{emotion}:{emotion_strength}"
             if token_cache_key in self.tokenization_cache:
+                self.tokenization_cache.move_to_end(token_cache_key)
                 optimization_strategy['cached_tokens'] = self.tokenization_cache[token_cache_key]
             
             # Enable pipeline optimization for longer text
@@ -165,22 +173,50 @@ class SynthesisOptimizer:
         return performance_data
     
     def cache_voice_embedding(self, voice: str, embedding: Any):
-        """Cache voice embedding for faster access"""
+        """Cache voice embedding for faster access with LRU eviction"""
         if self.config.use_cached_voice_embeddings:
+            # Move to end if already exists (most recently used)
+            if voice in self.voice_embedding_cache:
+                self.voice_embedding_cache.move_to_end(voice)
+
             self.voice_embedding_cache[voice] = embedding
+
+            # LRU eviction: remove oldest entry if over capacity
+            max_size = self.config.max_voice_embedding_cache
+            while len(self.voice_embedding_cache) > max_size:
+                oldest_key, _ = self.voice_embedding_cache.popitem(last=False)
+                logger.debug(f"LRU evicted voice embedding for: {oldest_key}")
+
             logger.debug(f"Cached voice embedding for: {voice}")
     
-    def cache_tokenization(self, text: str, voice: str, tokens: Any):
-        """Cache tokenization result"""
-        cache_key = f"{text}:{voice}"
+    def cache_tokenization(self, cache_key: str, tokens: Any):
+        """Cache tokenization result with LRU eviction"""
+        if cache_key in self.tokenization_cache:
+            self.tokenization_cache.move_to_end(cache_key)
         self.tokenization_cache[cache_key] = tokens
-        logger.debug(f"Cached tokenization for: {text[:30]}...")
+
+        # LRU eviction
+        max_size = self.config.max_tokenization_cache
+        while len(self.tokenization_cache) > max_size:
+            oldest_key, _ = self.tokenization_cache.popitem(last=False)
+            logger.debug(f"LRU evicted tokenization for: {oldest_key[:50]}...")
+
+        logger.debug(f"Cached tokenization for key: {cache_key[:50]}...")
     
     def cache_fast_path_result(self, text: str, voice: str, audio_segment: Any):
-        """Cache fast path synthesis result"""
+        """Cache fast path synthesis result with LRU eviction"""
         if len(text) <= self.config.fast_path_text_length:
             cache_key = f"{text}:{voice}"
+            if cache_key in self.fast_path_cache:
+                self.fast_path_cache.move_to_end(cache_key)
             self.fast_path_cache[cache_key] = audio_segment
+
+            # LRU eviction for fast path cache (same limit as tokenization)
+            max_size = self.config.max_tokenization_cache
+            while len(self.fast_path_cache) > max_size:
+                oldest_key, _ = self.fast_path_cache.popitem(last=False)
+                logger.debug(f"LRU evicted fast path for: {oldest_key[:30]}...")
+
             logger.debug(f"Cached fast path result for: {text}")
     
     def get_performance_stats(self) -> Dict[str, Any]:

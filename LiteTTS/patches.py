@@ -223,9 +223,16 @@ def patch_kokoro_onnx():
             token_length = len(tokens)
             voice_size = len(voice)
 
+            # Validate voice vector size (should normally be 510 for Kokoro)
+            if voice_size != 510:
+                logger.error(f"Unexpected voice vector size: {voice_size} (expected 510)")
+                # Still try to proceed but log the error
+
             # Ensure we don't exceed voice vector bounds
             if token_length >= voice_size:
-                logger.warning(f"Token length {token_length} exceeds voice vector size {voice_size}, using last available index")
+                logger.warning(f"Token length {token_length} >= voice vector size {voice_size}, "
+                             f"using last available style vector at index {voice_size - 1}. "
+                             f"This may produce suboptimal voice quality.")
                 style_vector = voice[voice_size - 1]  # Use the last available style vector
             else:
                 style_vector = voice[token_length]

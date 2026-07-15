@@ -165,17 +165,18 @@ class EmotionController:
         modified_embedding = voice_embedding.copy()
         
         # Apply weight adjustments
-        for weight_type, adjustment in emotion_mapping.weight_adjustments.items():
+        # Use deterministic indexing instead of hash() which is randomized in Python 3.3+
+        for idx, (weight_type, adjustment) in enumerate(emotion_mapping.weight_adjustments.items()):
             # This is a simplified approach - in a real implementation,
             # you would need to know which dimensions of the embedding
             # correspond to which emotional characteristics
             adjustment_factor = 1.0 + (adjustment * strength)
-            
-            # Apply adjustment to a portion of the embedding
-            # (This is a placeholder - actual implementation would depend on embedding structure)
-            start_idx = hash(weight_type) % len(modified_embedding)
+
+            # Deterministic index calculation using enumerate index
+            # Multiply by prime (37) and use modulo for even distribution
+            start_idx = (idx * 37 + len(weight_type)) % len(modified_embedding)
             end_idx = min(start_idx + len(modified_embedding) // 10, len(modified_embedding))
-            
+
             modified_embedding[start_idx:end_idx] *= adjustment_factor
         
         # Normalize to prevent extreme values

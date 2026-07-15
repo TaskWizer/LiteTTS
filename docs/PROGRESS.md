@@ -29,3 +29,24 @@
 - "FBI", "NASA" still correctly match acronym pattern ✓
 - Slash "/" now replaced with space instead of "slash" ✓
 - New pronunciation fixes loaded correctly ✓
+
+## 2026-07-14
+- [x] Created OPTIMIZATION_REPORT.md with comprehensive analysis
+- [x] 34 issues identified across 4 severity levels
+- [x] Deep analysis of Kokoro ONNX limitations
+- [x] Testing gaps documented
+- [x] Prioritized fix roadmap created
+
+### Key Findings:
+| Category | Count |
+|----------|-------|
+| Critical | 4 |
+| High | 8 |
+| Medium | 12 |
+| Low | 10 |
+
+### Top Immediate Actions:
+1. Add ONNX input validation before inference
+2. Fix tokenization cache key to include all parameters
+3. Implement voice embedding cache eviction policy
+4. Remove or fix pipeline parallelism dead code

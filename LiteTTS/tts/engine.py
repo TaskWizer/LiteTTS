@@ -295,14 +295,14 @@ class KokoroTTSEngine:
                 # Cache for future use
                 synthesis_optimizer.cache_voice_embedding(voice, voice_embedding)
 
-            # Tokenize text with caching
-            token_cache_key = f"{text}:{voice}"
+            # Tokenize text with caching - include all parameters that affect tokenization
+            token_cache_key = f"{text}:{voice}:{speed}:{emotion}:{emotion_strength}"
             if token_cache_key in synthesis_optimizer.tokenization_cache:
                 tokens = synthesis_optimizer.tokenization_cache[token_cache_key]
                 logger.debug(f"Using cached tokenization for: {text[:30]}...")
             else:
                 tokens = self._tokenize_text(text)
-                synthesis_optimizer.cache_tokenization(text, voice, tokens)
+                synthesis_optimizer.cache_tokenization(token_cache_key, tokens)
 
             # Prepare inputs for ONNX model
             model_inputs = self._prepare_model_inputs(tokens, voice_embedding, speed, emotion, emotion_strength)
@@ -437,34 +437,50 @@ class KokoroTTSEngine:
         return inputs
     
     def _run_inference(self, model_inputs: Dict[str, np.ndarray]) -> np.ndarray:
-        """Run ONNX model inference"""
+        """Run ONNX model inference with comprehensive validation"""
         try:
-            # Get input names from the model
-            input_names = [input.name for input in self.onnx_session.get_inputs()]
+            # Get input names and shapes from the model
+            model_input_info = {inp.name: inp for inp in self.onnx_session.get_inputs()}
+            input_names = list(model_input_info.keys())
             logger.debug(f"Model expects inputs: {input_names}")
             logger.debug(f"Provided inputs: {list(model_inputs.keys())}")
 
-            # Prepare inputs for ONNX session
-            onnx_inputs = {}
-            missing_inputs = []
-
-            for name in input_names:
-                if name in model_inputs:
-                    onnx_inputs[name] = model_inputs[name]
-                    logger.debug(f"Input '{name}' shape: {model_inputs[name].shape}, dtype: {model_inputs[name].dtype}")
-                else:
-                    missing_inputs.append(name)
-                    logger.warning(f"Missing required input: {name}")
-
+            # Validate all required inputs are present
+            missing_inputs = set(input_names) - set(model_inputs.keys())
             if missing_inputs:
                 raise ValueError(f"Missing required model inputs: {missing_inputs}")
+
+            # Validate extra inputs provided (may indicate an issue)
+            extra_inputs = set(model_inputs.keys()) - set(input_names)
+            if extra_inputs:
+                logger.warning(f"Extra inputs provided but not expected by model: {extra_inputs}")
+
+            # Prepare and validate inputs for ONNX session
+            onnx_inputs = {}
+            for name in input_names:
+                input_data = model_inputs[name]
+                expected_type = model_input_info[name].type
+
+                # Validate shape is present
+                if input_data.shape == ():
+                    logger.error(f"Input '{name}' has empty shape (scalar). Expected at least 1D array.")
+                    raise ValueError(f"Input '{name}' has invalid shape: {input_data.shape}")
+
+                # Validate dtype
+                if not np.issubdtype(input_data.dtype, np.number):
+                    logger.error(f"Input '{name}' has non-numeric dtype: {input_data.dtype}")
+                    raise ValueError(f"Input '{name}' must have numeric dtype, got {input_data.dtype}")
+
+                onnx_inputs[name] = input_data
+                logger.debug(f"Input '{name}' validated: shape={input_data.shape}, dtype={input_data.dtype}")
 
             # Run inference
             logger.debug("Running ONNX inference...")
             outputs = self.onnx_session.run(None, onnx_inputs)
 
-            # Check output
+            # Validate output
             if not outputs or len(outputs) == 0:
+                logger.error("ONNX model returned no outputs")
                 raise RuntimeError("ONNX model returned no outputs")
 
             audio_output = outputs[0]
@@ -472,12 +488,18 @@ class KokoroTTSEngine:
 
             # Validate output
             if audio_output.size == 0:
+                logger.error("ONNX model returned empty audio output")
                 raise RuntimeError("ONNX model returned empty audio output")
 
             return audio_output
 
         except Exception as e:
-            logger.error(f"ONNX inference failed: {e}")
+            if isinstance(e, ValueError):
+                logger.error(f"ONNX input validation failed: {e}")
+            elif isinstance(e, RuntimeError):
+                logger.error(f"ONNX inference runtime error: {e}")
+            else:
+                logger.error(f"ONNX inference failed: {e}")
             logger.error(f"Model inputs were: {[(k, v.shape, v.dtype) for k, v in model_inputs.items()]}")
             raise
     
@@ -972,122 +994,6 @@ class KokoroTTSEngine:
                         chunk_callback(error_segment, index, completed_count, len(requests))
 
         return results
-
-    def synthesize_with_pipeline_parallelism(self, text: str, voice: str, speed: float = 1.0,
-                                           emotion: Optional[str] = None,
-                                           emotion_strength: float = 1.0) -> AudioSegment:
-        """
-        Synthesize with pipeline parallelism for maximum performance
-        Overlaps phonemization, inference, and audio processing stages
-        """
-        try:
-            from concurrent.futures import ThreadPoolExecutor
-            import queue
-
-            # Pipeline stages
-            phoneme_queue = queue.Queue(maxsize=2)
-            inference_queue = queue.Queue(maxsize=2)
-
-            def phonemization_stage():
-                """Stage 1: Text to phonemes"""
-                try:
-                    # Apply model optimizations for phonemization
-                    from LiteTTS.performance.model_optimizer import get_model_optimizer
-                    model_optimizer = get_model_optimizer()
-
-                    # Check cache first
-                    cached_phonemes = model_optimizer.optimize_phoneme_processing(text, voice)
-                    if cached_phonemes:
-                        phoneme_queue.put(cached_phonemes)
-                        return
-
-                    # Phonemize text
-                    phonemes = self.phonemizer.phonemize(text)
-
-                    # Cache result
-                    model_optimizer.cache_phoneme_result(text, voice, phonemes)
-
-                    phoneme_queue.put(phonemes)
-
-                except Exception as e:
-                    phoneme_queue.put(e)
-
-            def inference_stage():
-                """Stage 2: Phonemes to mel-spectrogram"""
-                try:
-                    phonemes = phoneme_queue.get(timeout=5.0)
-                    if isinstance(phonemes, Exception):
-                        raise phonemes
-
-                    # Convert to tokens
-                    tokens = self.phonemizer.phonemes_to_tokens(phonemes)
-
-                    # Get voice embedding
-                    voice_embedding = self.voice_manager.get_voice_embedding(voice)
-
-                    # Apply model optimizations
-                    from LiteTTS.performance.model_optimizer import get_model_optimizer
-                    model_optimizer = get_model_optimizer()
-
-                    # Optimize inputs
-                    inputs = model_optimizer.optimize_input_preparation(
-                        tokens, voice_embedding.data, speed
-                    )
-
-                    # Run inference
-                    outputs = self.model.run(None, inputs)
-                    mel_spectrogram = outputs[0]
-
-                    inference_queue.put(mel_spectrogram)
-
-                except Exception as e:
-                    inference_queue.put(e)
-
-            def audio_processing_stage():
-                """Stage 3: Mel-spectrogram to audio"""
-                try:
-                    mel_spectrogram = inference_queue.get(timeout=10.0)
-                    if isinstance(mel_spectrogram, Exception):
-                        raise mel_spectrogram
-
-                    # Convert to audio
-                    audio_data = self.vocoder.mel_to_audio(mel_spectrogram)
-
-                    # Apply post-processing
-                    if emotion and emotion != "neutral":
-                        audio_data = self._apply_emotion_processing(audio_data, emotion, emotion_strength)
-
-                    return AudioSegment(
-                        audio_data=audio_data,
-                        sample_rate=self.sample_rate,
-                        metadata={
-                            'voice': voice,
-                            'speed': speed,
-                            'emotion': emotion,
-                            'emotion_strength': emotion_strength,
-                            'pipeline_mode': 'parallel'
-                        }
-                    )
-
-                except Exception as e:
-                    raise e
-
-            # Execute pipeline stages in parallel
-            with ThreadPoolExecutor(max_workers=3) as executor:
-                # Start all stages
-                phoneme_future = executor.submit(phonemization_stage)
-                inference_future = executor.submit(inference_stage)
-                audio_future = executor.submit(audio_processing_stage)
-
-                # Wait for completion
-                result = audio_future.result(timeout=15.0)
-
-                return result
-
-        except Exception as e:
-            logger.error(f"Pipeline parallelism failed, falling back to sequential: {e}")
-            # Fallback to regular synthesis
-            return self.synthesize(text, voice, speed, emotion, emotion_strength)
 
     def cleanup(self):
         """Clean up engine resources"""

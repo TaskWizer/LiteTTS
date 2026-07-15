@@ -44,6 +44,13 @@
   - New `_split_text_for_synthesis()` chunks at sentence boundaries
   - **Result**: 900-word text now generates 247s audio (was 29s) - **8.5x improvement**
 
+### 📊 Analysis & Reports
+
+- **Optimization Report**: Created comprehensive `docs/OPTIMIZATION_REPORT.md`
+  - 4 critical, 8 high, 12 medium, 10 low severity issues identified
+  - Covers performance bottlenecks, quality improvements, architecture gaps, testing gaps
+  - Kokoro ONNX limitations documented with recommended mitigations
+
 ### 🐛 Bug Fixes
 
 - Fixed regex for C# (and F#, D#, A#, G#) - `#` is not a word character
