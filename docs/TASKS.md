@@ -88,3 +88,38 @@
    - Added shape validation (cannot be scalar)
    - Improved error messages for different failure modes
    - Validates extra inputs (may indicate configuration issues)
+
+## Task 7: Additional Optimization Fixes
+**Status:** COMPLETED
+**Date:** 2026-07-15
+
+### Completed Fixes:
+1. **Audio quality enhancer disabled** (audio_quality_enhancer.py)
+   - NOT FIXED: Emotional/prosodic markers remain disabled
+   - Reason: Previous implementation caused SSML corruption with nested/broken tags
+   - The system generated malformed SSML like `<emphasis level=<break time="0.1s"/>`
+   - Leaving disabled prevents text processing corruption
+
+2. **ThreadPoolExecutor ONNX contention** (engine.py)
+   - Added `_inference_semaphore` to limit concurrent ONNX inference calls
+   - Added `_inference_lock` for thread-safe state access
+   - Semaphore limit based on CPU count: `max(2, cpu_count // 2)`
+
+3. **Documented text processing pipeline** (unified_text_processor.py)
+   - Added comprehensive docstring to `_process_enhanced()`
+   - Explains Stage Group 1 (Enhanced Processors) vs Stage Group 2 (Core Processing)
+   - Documents all 17+ stages and their ordering dependencies
+
+4. **Replaced silent pass blocks** (cpu_optimizer.py)
+   - Changed `except Exception: pass` to `except Exception as e: logger.warning(...)`
+   - Improved error visibility for debugging
+
+5. **CPU thermal throttling** (cpu_optimizer.py)
+   - ALREADY IMPLEMENTED: `get_thermal_status()` method properly detects throttling
+   - Uses psutil to get CPU temps, flags >85°C as throttling
+
+6. **Standardized voice embedding shape handling** (engine.py)
+   - Created `_normalize_voice_embedding_shape()` helper method
+   - Extracted 6-case shape handling into well-documented method
+   - Improved _prepare_model_inputs() to use the helper
+
