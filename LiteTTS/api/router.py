@@ -68,16 +68,23 @@ class TTSAPIRouter:
                 if cached_audio:
                     logger.info(f"Cache hit for request: {request.input[:50]}...")
                     processing_time = time.time() - start_time
-                    
+
                     return await self.response_formatter.format_audio_response(
                         cached_audio, request.response_format, processing_time,
                         request.stream
                     )
-                
-                # Synthesize audio
+
+                # Check if streaming is requested for low-latency playback
+                if getattr(request, 'stream', False):
+                    # Use streaming synthesis for low-latency
+                    return await self._handle_streaming_synthesis(
+                        request, start_time, background_tasks
+                    )
+
+                # Synthesize audio (standard non-streaming)
                 audio_segment = self.synthesizer.synthesize(request)
                 processing_time = time.time() - start_time
-                
+
                 # Cache the result
                 background_tasks.add_task(
                     self.audio_cache.cache_audio,
@@ -86,7 +93,7 @@ class TTSAPIRouter:
                     getattr(request, 'emotion', None),
                     getattr(request, 'emotion_strength', 1.0)
                 )
-                
+
                 # Return response
                 return await self.response_formatter.format_audio_response(
                     audio_segment, request.response_format, processing_time,
@@ -98,7 +105,105 @@ class TTSAPIRouter:
             except Exception as e:
                 logger.error(f"Speech synthesis failed: {e}")
                 return self.error_handler.handle_synthesis_error(e)
-        
+
+        async def _handle_streaming_synthesis(self, request, start_time, background_tasks):
+            """Handle streaming synthesis for low-latency audio playback"""
+            from fastapi.responses import StreamingResponse
+            import io
+
+            # Check if synthesizer supports streaming
+            if not hasattr(self.synthesizer, 'synthesize_streaming'):
+                # Fall back to standard synthesis if streaming not available
+                logger.warning("Streaming not supported, falling back to standard synthesis")
+                audio_segment = self.synthesizer.synthesize(request)
+                processing_time = time.time() - start_time
+                return await self.response_formatter.format_audio_response(
+                    audio_segment, request.response_format, processing_time,
+                    request.stream
+                )
+
+            async def stream_audio_generator():
+                """Async generator that yields audio chunks as they become available"""
+                first_chunk = True
+                total_duration = 0.0
+                chunks_sent = 0
+
+                try:
+                    async for chunk_result in self.synthesizer.synthesize_streaming(
+                        request.input,
+                        request.voice,
+                        request.response_format,
+                        request.speed,
+                        getattr(request, 'emotion', None),
+                        getattr(request, 'emotion_strength', 1.0)
+                    ):
+                        chunks_sent += 1
+                        total_duration += chunk_result.duration
+
+                        # For first chunk, include proper headers for streaming
+                        if first_chunk:
+                            first_chunk = False
+                            # MP3 streaming needs ID3 header stripped for raw PCM, or proper container
+                            # For now, yield the raw audio data
+                            logger.info(f"Streaming first chunk: {len(chunk_result.audio_data)} bytes, "
+                                       f"duration: {chunk_result.duration:.2f}s")
+
+                        yield chunk_result.audio_data
+
+                    logger.info(f"Streaming complete: {chunks_sent} chunks, "
+                               f"total duration: {total_duration:.2f}s")
+
+                except Exception as e:
+                    logger.error(f"Streaming synthesis error: {e}")
+                    raise
+
+            processing_time = time.time() - start_time
+
+            # Determine content type based on format
+            content_type = {
+                "mp3": "audio/mpeg",
+                "wav": "audio/wav",
+                "ogg": "audio/ogg",
+                "flac": "audio/flac",
+            }.get(request.response_format, "application/octet-stream")
+
+            # Cache the complete audio in background for future non-streaming requests
+            background_tasks.add_task(
+                self._cache_streaming_result,
+                request.input, request.voice, request.speed, request.response_format,
+                getattr(request, 'emotion', None), getattr(request, 'emotion_strength', 1.0)
+            )
+
+            return StreamingResponse(
+                stream_audio_generator(),
+                media_type=content_type,
+                headers={
+                    "X-Processing-Time": f"{processing_time:.3f}",
+                    "X-Streaming": "true",
+                    "Transfer-Encoding": "chunked",
+                }
+            )
+
+        async def _cache_streaming_result(self, text, voice, speed, response_format, emotion, emotion_strength):
+            """Cache the complete streaming result for future non-streaming requests"""
+            try:
+                # Re-synthesize the complete audio for caching
+                from LiteTTS.models import TTSRequest
+                cache_request = TTSRequest(
+                    input=text,
+                    voice=voice,
+                    response_format=response_format,
+                    speed=speed,
+                    emotion=emotion,
+                    emotion_strength=emotion_strength
+                )
+                audio_segment = self.synthesizer.synthesize(cache_request)
+                self.audio_cache.cache_audio(
+                    audio_segment, text, voice, speed, response_format, emotion, emotion_strength
+                )
+            except Exception as e:
+                logger.error(f"Failed to cache streaming result: {e}")
+
         @self.router.get("/voices")
         async def list_voices():
             """List available voices"""

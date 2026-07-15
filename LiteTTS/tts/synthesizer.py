@@ -112,8 +112,52 @@ class TTSSynthesizer:
 
         # Initialize time-stretching (beta feature)
         self.time_stretcher = self._initialize_time_stretcher(config)
-        
+
+        # Initialize progressive audio generator for low-latency streaming
+        self._initialize_progressive_generator(config)
+
         logger.info("TTS Synthesizer initialized")
+
+    def _initialize_progressive_generator(self, config: TTSConfiguration) -> None:
+        """Initialize progressive audio generator for streaming synthesis"""
+        try:
+            from ..audio.progressive_generator import (
+                ProgressiveAudioGenerator,
+                ProgressiveGenerationConfig,
+                GenerationMode,
+                ChunkingConfig,
+                ChunkingStrategy
+            )
+
+            # Configure chunking
+            chunking_config = ChunkingConfig(
+                enabled=True,
+                strategy=ChunkingStrategy.ADAPTIVE,
+                max_chunk_size=200,  # ~200 chars per chunk for low latency
+                min_chunk_size=50,
+                overlap_size=20,
+                respect_sentence_boundaries=True,
+                respect_paragraph_boundaries=True
+            )
+
+            # Configure progressive generation
+            progressive_config = ProgressiveGenerationConfig(
+                mode=GenerationMode.STREAMING,  # True streaming for lowest latency
+                chunking_config=chunking_config,
+                max_concurrent_chunks=2,  # Limit concurrent for responsiveness
+                chunk_timeout=15.0,  # 15s timeout per chunk
+                enable_voice_consistency=True,
+                enable_prosody_continuity=True,
+                buffer_size=4096,  # Smaller buffer for lower latency
+                streaming_delay=0.05  # Minimal delay between chunks
+            )
+
+            self.progressive_generator = ProgressiveAudioGenerator(self.engine, progressive_config)
+            logger.info("Progressive audio generator initialized for streaming")
+
+        except Exception as e:
+            logger.warning(f"Failed to initialize progressive generator: {e}. Streaming will use fallback.")
+            self.progressive_generator = None
 
     def _initialize_time_stretcher(self, config: TTSConfiguration) -> TimeStretcher:
         """Initialize time-stretching feature from configuration"""
@@ -346,7 +390,73 @@ class TTSSynthesizer:
             request.emotion_strength = 1.0
         
         return self.synthesize(request)
-    
+
+    async def synthesize_streaming(
+        self,
+        text: str,
+        voice: str,
+        response_format: str = "mp3",
+        speed: float = 1.0,
+        emotion: str = None,
+        emotion_strength: float = 1.0
+    ):
+        """
+        Synthesize audio with true streaming for low latency.
+
+        This method returns an async iterator that yields audio chunks as they
+        are generated, allowing playback to start within seconds rather than
+        waiting for the entire audio to be generated.
+
+        Args:
+            text: Input text to synthesize
+            voice: Voice name
+            response_format: Audio format (mp3, wav, etc.)
+            speed: Speech speed multiplier
+            emotion: Optional emotion to apply
+            emotion_strength: Emotion intensity (0.0-2.0)
+
+        Yields:
+            ChunkResult objects containing audio data as it's generated
+        """
+        if self.progressive_generator is None:
+            logger.warning("Progressive generator not available, falling back to standard synthesis")
+            # Fall back to regular synthesis (no streaming)
+            request = TTSRequest(
+                input=text,
+                voice=voice,
+                speed=speed,
+                response_format=response_format
+            )
+            if emotion:
+                request.emotion = emotion
+                request.emotion_strength = emotion_strength
+            audio = self.synthesize(request)
+            # Yield single chunk
+            from ..audio.progressive_generator import ChunkResult
+            yield ChunkResult(
+                chunk_id=0,
+                audio_data=audio.audio_data.tobytes() if hasattr(audio.audio_data, 'tobytes') else bytes(audio.audio_data),
+                duration=audio.duration,
+                generation_time=0.0,
+                chunk_text=text,
+                is_final=True
+            )
+            return
+
+        # Use progressive generator for streaming
+        try:
+            async for chunk in self.progressive_generator.generate_progressive(
+                text=text,
+                voice=voice,
+                response_format=response_format,
+                speed=speed,
+                generation_id=None
+            ):
+                yield chunk
+        except Exception as e:
+            logger.error(f"Streaming synthesis failed: {e}")
+            raise
+
     def get_available_voices(self) -> List[str]:
         """Get list of available voices"""
         return self.engine.get_available_voices()

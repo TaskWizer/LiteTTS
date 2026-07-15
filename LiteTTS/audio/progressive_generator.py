@@ -357,7 +357,7 @@ class ProgressiveAudioGenerator:
         try:
             # Call the TTS engine's synthesis method
             if hasattr(self.tts_engine, 'synthesize'):
-                return self.tts_engine.synthesize(text, voice, response_format, speed)
+                return self.tts_engine.synthesize(text, voice, speed)
             else:
                 # Fallback for different engine interfaces
                 return self.tts_engine.generate_audio(text, voice)
