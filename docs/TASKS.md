@@ -136,3 +136,24 @@
 - Combined voice file loading disabled (use_combined_file=False in config.py)
 - Full type hint coverage (would require extensive effort across all classes)
 
+## Task 8: Streaming Audio Implementation
+**Status:** COMPLETED
+**Date:** 2026-07-15
+
+### Completed Implementation:
+1. **Router streaming endpoint** (LiteTTS/api/router.py)
+   - Added `_handle_streaming_synthesis()` method for low-latency playback
+   - Returns `StreamingResponse` that yields audio chunks as they become available
+   - Checks `request.stream` flag to enable streaming mode
+   - Background caching of complete audio for future requests
+
+2. **Synthesizer streaming method** (LiteTTS/tts/synthesizer.py)
+   - Added `synthesize_streaming()` async method
+   - Uses `ProgressiveAudioGenerator` for chunked audio generation
+   - Yields `ChunkResult` objects with audio data and metadata
+   - Falls back to standard synthesis if progressive generator unavailable
+
+3. **Progressive generator fix** (LiteTTS/audio/progressive_generator.py)
+   - Fixed `_sync_synthesize()` to pass correct parameters to engine
+   - Changed from 4 args (text, voice, response_format, speed) to 3 args (text, voice, speed)
+

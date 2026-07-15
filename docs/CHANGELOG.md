@@ -44,6 +44,12 @@
   - New `_split_text_for_synthesis()` chunks at sentence boundaries
   - **Result**: 900-word text now generates 247s audio (was 29s) - **8.5x improvement**
 
+- **Streaming Audio**: Implemented low-latency streaming for faster playback start
+  - Audio chunks are yielded as they become available
+  - Clients can start playback within seconds instead of waiting for entire generation
+  - Falls back to standard synthesis when streaming not requested
+  - Background caching of complete audio for future non-streaming requests
+
 ### 📊 Analysis & Reports
 
 - **Optimization Report**: Created comprehensive `docs/OPTIMIZATION_REPORT.md`
