@@ -801,6 +801,27 @@ class PhonemizationPreprocessor:
             text = re.sub(r'(\d+):(\d+)\s*a\.?m\.?', lambda m: f'{m.group(1)}:{m.group(2)} A M', text, flags=re.IGNORECASE)
             text = re.sub(r'(\d+):(\d+)\s*p\.?m\.?', lambda m: f'{m.group(1)}:{m.group(2)} P M', text, flags=re.IGNORECASE)
 
+        # Fix temperature formats: -17.4°C → minus seventeen point four degrees C
+        # and 23.9°C → twenty-three point nine degrees C
+        def temp_to_words(m):
+            sign = m.group(1) or ''
+            temp_val = m.group(2)
+            unit = m.group(3)
+            # Convert temperature digits to words
+            digit_words = {'0': 'zero', '1': 'one', '2': 'two', '3': 'three', '4': 'four',
+                          '5': 'five', '6': 'six', '7': 'seven', '8': 'eight', '9': 'nine'}
+            words = ''
+            for c in temp_val:
+                if c == '.':
+                    words += 'point '
+                else:
+                    words += digit_words.get(c, c) + ' '
+            sign_word = 'minus ' if sign == '-' else ''
+            unit_word = f' degrees {unit[-1]}'  # Get just C or F
+            return sign_word + words.strip() + unit_word
+
+        text = re.sub(r'(-?)(\d+\.?\d*)(°?[CF])', temp_to_words, text)
+
         if text != original_text and changes:
             logger.debug(f"Fixed fractions/symbols: {changes}")
 
