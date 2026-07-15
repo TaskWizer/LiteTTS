@@ -99,8 +99,8 @@ class CPUOptimizer:
                         if cpu_freq:
                             base_frequency = cpu_freq.current
                             max_frequency = cpu_freq.max
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        logger.warning(f"Could not get CPU frequency: {e}")
 
                     # Get NUMA information
                     try:
@@ -111,8 +111,8 @@ class CPUOptimizer:
                     except Exception:
                         numa_nodes = 1
 
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.warning(f"Could not get detailed CPU info: {e}")
             else:
                 model_name = platform.processor()
 

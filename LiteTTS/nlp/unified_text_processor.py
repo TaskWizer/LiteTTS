@@ -379,7 +379,34 @@ class UnifiedTextProcessor:
         return text
 
     def _process_enhanced(self, text: str, options: ProcessingOptions, result: ProcessingResult) -> str:
-        """Enhanced processing pipeline with advanced processors"""
+        """
+        Enhanced processing pipeline with advanced processors.
+
+        Pipeline Stage Ordering (CRITICAL - do not reorder without understanding dependencies):
+
+        STAGE GROUP 1 - ENHANCED PROCESSORS (before standard normalization):
+          1. Phase 6 processing - comprehensive text enhancement
+          2. Pronunciation rules - natural contraction pronunciation
+          3. Legacy phonetic contractions (optional)
+          4. Interjection fixes - after contractions
+          5. Ticker symbols - TSLA→T-S-L-A
+          6. Proper name pronunciation - Elon→alon, Joy→joie
+          7. Phonemizer preprocessing - email, special chars
+          8. Advanced currency (before standard)
+          9. Enhanced datetime (before standard)
+          10. Advanced symbols (before standard)
+          11. eSpeak-enhanced symbols (before standard)
+
+        STAGE GROUP 2 - CORE PROCESSING (after enhanced):
+          12. Spell functions handling
+          13. Phonetic processing (beta)
+          14. Homograph resolution
+          15. Standard text normalization
+          16. Prosody analysis
+          17. Clean normalization
+
+        Note: Many stages are conditional based on options and config flags.
+        """
         stage_start = time.perf_counter()
 
         # Check if text processing is enabled at all

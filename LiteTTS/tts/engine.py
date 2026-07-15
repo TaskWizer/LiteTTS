@@ -43,7 +43,14 @@ class KokoroTTSEngine:
         # ONNX session
         self.onnx_session = None
         self.tokenizer = None
-        
+
+        # Concurrency control for thread-safe ONNX inference
+        # Use a semaphore to limit concurrent inference calls
+        import os
+        max_concurrent_inference = getattr(config, 'max_concurrent_inference', max(2, (os.cpu_count() or 4) // 2))
+        self._inference_semaphore = threading.Semaphore(max_concurrent_inference)
+        self._inference_lock = threading.Lock()  # Additional lock for thread-safe state access
+
         # Model state
         self.model_loaded = False
         self.available_voices = []
@@ -394,35 +401,53 @@ class KokoroTTSEngine:
             tokens = np.array(token_ids, dtype=np.int64)
             logger.debug(f"Tokenized '{text[:50]}...' to {len(tokens)} tokens (fallback)")
             return tokens
-    
+
+    def _normalize_voice_embedding_shape(self, voice_data: np.ndarray) -> np.ndarray:
+        """
+        Normalize voice embedding data to the expected [1, 256] shape for ONNX model.
+
+        Supported input shapes:
+        - (510, 256): Full voice matrix - use first style vector
+        - (256,): Single vector - reshape to (1, 256)
+        - (1, 256): Already correct shape
+        - Other: Attempt reshape from first 256 elements
+
+        Returns:
+            np.ndarray with shape (1, 256)
+
+        Raises:
+            ValueError: If voice data is too small (< 256 elements)
+        """
+        # Handle different voice data formats
+        if hasattr(voice_data, 'numpy'):
+            voice_data = voice_data.numpy()
+
+        # Normalize to expected shape [1, 256]
+        if voice_data.shape == (510, 256):
+            # Full voice matrix - use first style vector
+            return voice_data[0:1, :]
+        elif voice_data.shape == (256,):
+            # Single style vector, add batch dimension
+            return voice_data.reshape(1, 256)
+        elif voice_data.shape == (1, 256):
+            # Already correct shape
+            return voice_data
+        else:
+            # Try to reshape to expected format
+            logger.warning(f"Unexpected voice data shape: {voice_data.shape}, attempting reshape to (1, 256)")
+            if voice_data.size >= 256:
+                return voice_data.flatten()[:256].reshape(1, 256)
+            else:
+                raise ValueError(f"Voice data too small: {voice_data.shape}, need at least 256 elements")
+
     def _prepare_model_inputs(self, tokens: np.ndarray, voice_embedding: VoiceEmbedding,
                             speed: float, emotion: Optional[str], emotion_strength: float) -> Dict[str, np.ndarray]:
         """Prepare inputs for the ONNX model"""
         # Get voice embedding data
         voice_data = voice_embedding.embedding_data
 
-        # Handle different voice data formats
-        if hasattr(voice_data, 'numpy'):
-            voice_data = voice_data.numpy()
-
-        # Ensure voice data is the right shape for the model
-        # Model expects style input with shape [1, 256]
-        if voice_data.shape == (510, 256):
-            # Use the first style vector (or could be averaged/selected differently)
-            style_vector = voice_data[0:1, :]  # Shape: (1, 256)
-        elif voice_data.shape == (256,):
-            # Single style vector, add batch dimension
-            style_vector = voice_data.reshape(1, 256)
-        elif voice_data.shape == (1, 256):
-            # Already correct shape
-            style_vector = voice_data
-        else:
-            # Try to reshape to expected format
-            logger.warning(f"Unexpected voice data shape: {voice_data.shape}, attempting to reshape")
-            if voice_data.size >= 256:
-                style_vector = voice_data.flatten()[:256].reshape(1, 256)
-            else:
-                raise ValueError(f"Voice data too small: {voice_data.shape}, need at least 256 elements")
+        # Normalize voice embedding to [1, 256]
+        style_vector = self._normalize_voice_embedding_shape(voice_data)
 
         # Basic input preparation with correct input names for ONNX model
         inputs = {
@@ -474,9 +499,17 @@ class KokoroTTSEngine:
                 onnx_inputs[name] = input_data
                 logger.debug(f"Input '{name}' validated: shape={input_data.shape}, dtype={input_data.dtype}")
 
-            # Run inference
+            # Run inference with semaphore to limit concurrent ONNX calls
+            # ONNX Runtime is thread-safe for inference but we limit concurrency
+            # to prevent resource exhaustion on CPU-based inference
             logger.debug("Running ONNX inference...")
-            outputs = self.onnx_session.run(None, onnx_inputs)
+            acquired = self._inference_semaphore.acquire(timeout=30.0)
+            if not acquired:
+                raise RuntimeError("Timeout waiting for inference slot - too many concurrent requests")
+            try:
+                outputs = self.onnx_session.run(None, onnx_inputs)
+            finally:
+                self._inference_semaphore.release()
 
             # Validate output
             if not outputs or len(outputs) == 0:
