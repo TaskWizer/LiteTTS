@@ -13,6 +13,51 @@
 
 ---
 
+## [Unreleased] - 2026-07-15
+
+### 🛠️ Pronunciation Fixes
+
+| Issue | Before | After |
+|-------|--------|-------|
+| JSON | Spell-out J-S-O-N | "Jason" |
+| C# | "C hash" | "C sharp" |
+| F# | "F hash" | "F sharp" |
+| SQL | Spell-out | "sequel" |
+| YAML | "Y-A-M-L" | "yam-el" |
+| XML | Spell-out | "eks-em-el" |
+| OAuth | Spell-out | "OAuth" |
+| IPv6 | Spell-out | "I-P-V-six" |
+| SHA-256 | Spell-out | "SHA two fifty six" |
+| Bass player | "bass" (rhymes with mass) | "BASE" (musical) |
+| Lead singer | Ambiguous | "LEED" (verb pronunciation) |
+| Emily Zhang | Unknown | Name preserved |
+| qa-test@email.com | Skipped "qa-" | "Q-A dash test at example dot com" |
+| -17.4°C | "one seven point four" | "minus seventeen point four" |
+| 3.75 hours | "three seventy five" | "three point seven five" |
+| señor, Grüß | Mangled | Preserved correctly |
+| 日本語, 한국어 | Pronounced wrongly | "international text" placeholder |
+
+### 🔧 Audio Generation Fixes
+
+- **Text Chunking**: Implemented automatic text chunking for long-form audio
+  - Kokoro has 510-phoneme limit causing truncation at ~23 seconds
+  - New `_split_text_for_synthesis()` chunks at sentence boundaries
+  - **Result**: 900-word text now generates 247s audio (was 29s) - **8.5x improvement**
+
+### 🐛 Bug Fixes
+
+- Fixed regex for C# (and F#, D#, A#, G#) - `#` is not a word character
+- Fixed email regex to use match.group() instead of raw string
+- Fixed YAML pronunciation using misaki-compatible lowercase "yam-el"
+- Fixed NFKC unicode normalization breaking fractions (½ → 21⁄2)
+- Fixed temperature handling with proper whole-number words
+
+### 📝 Documentation
+
+- Comprehensive pronunciation handling documented
+- Text preprocessing pipeline explained
+- Kokoro limitations and workarounds documented
+
 ## [1.0.0] - 2025-08-16
 
 ### Added
