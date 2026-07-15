@@ -54,3 +54,37 @@
 3. Emotion controller non-deterministic indexing (emotion_controller.py:168-179)
 4. Voice vector bounds edge case (patches.py:224-231)
 5. ThreadPoolExecutor contention on ONNX (engine.py:885)
+
+## Task 6: Optimization Fixes Implemented
+**Status:** COMPLETED
+**Date:** 2026-07-15
+
+### Completed Fixes:
+1. **Tokenization cache key** (engine.py:299)
+   - Changed from `f"{text}:{voice}"` to `f"{text}:{voice}:{speed}:{emotion}:{emotion_strength}"`
+
+2. **LRU eviction for all caches** (synthesis_optimizer.py)
+   - Added `max_voice_embedding_cache: int = 100`
+   - Added `max_tokenization_cache: int = 1000`
+   - Changed `voice_embedding_cache`, `tokenization_cache`, `fast_path_cache` from `dict` to `OrderedDict`
+   - Implemented LRU eviction in `cache_voice_embedding()`, `cache_tokenization()`, `cache_fast_path_result()`
+   - Cache access now calls `move_to_end()` for LRU tracking
+
+3. **Emotion controller deterministic indexing** (emotion_controller.py:168-179)
+   - Replaced `hash(weight_type) % len()` with `(idx * 37 + len(weight_type)) % len()`
+   - Uses enumerate index for deterministic behavior
+
+4. **Removed dead pipeline parallelism code** (engine.py:976-1090)
+   - Removed `synthesize_with_pipeline_parallelism()` method
+   - References non-existent `self.phonemizer`, `self.model`, `self.vocoder`
+
+5. **Improved voice vector bounds handling** (patches.py:224-231)
+   - Enhanced warning message to be more descriptive
+   - Added validation that voice_size should be 510
+
+6. **Enhanced ONNX input validation** (engine.py:439-482)
+   - Added validation for empty/missing inputs before inference
+   - Added dtype validation (must be numeric)
+   - Added shape validation (cannot be scalar)
+   - Improved error messages for different failure modes
+   - Validates extra inputs (may indicate configuration issues)
