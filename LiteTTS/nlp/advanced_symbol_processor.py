@@ -262,20 +262,23 @@ class AdvancedSymbolProcessor:
         - C# being mangled to "C hash"
         - OAuth being corrupted
         """
+        # NOTE: # is NOT a word character in regex, so \bC#\b doesn't work!
+        # We use \bC#(?!\w) to match C# not followed by a word character
+
         # C# programming language - "C sharp", not "C hash"
-        text = re.sub(r'\bC#\b', 'C sharp', text)
+        text = re.sub(r'\bC#(?!\w)', 'C sharp', text)
 
         # F# programming language
-        text = re.sub(r'\bF#\b', 'F sharp', text)
+        text = re.sub(r'\bF#(?!\w)', 'F sharp', text)
 
         # G# music note
-        text = re.sub(r'\bG#\b', 'G sharp', text)
+        text = re.sub(r'\bG#(?!\w)', 'G sharp', text)
 
         # D# music note
-        text = re.sub(r'\bD#\b', 'D sharp', text)
+        text = re.sub(r'\bD#(?!\w)', 'D sharp', text)
 
         # A# music note
-        text = re.sub(r'\bA#\b', 'A sharp', text)
+        text = re.sub(r'\bA#(?!\w)', 'A sharp', text)
 
         # OAuth authentication
         text = re.sub(r'\bOAuth\b', 'OAuth', text)

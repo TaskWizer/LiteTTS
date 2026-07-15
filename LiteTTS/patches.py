@@ -315,9 +315,19 @@ def patch_kokoro_onnx_phonemizer():
                 logger.info(f"Fixed JSON -> Jason in: '{text[:50]}...'")
 
             # Fix C# programming language - "C sharp", not "C hash"
-            if re.search(r'\bC#\b', text, re.IGNORECASE):
-                text = re.sub(r'\bC#\b', 'C sharp', text, flags=re.IGNORECASE)
+            # NOTE: # is NOT a word char, so use (?!\w) instead of \b at end
+            if re.search(r'\bC#(?!\w)', text, re.IGNORECASE):
+                text = re.sub(r'\bC#(?!\w)', 'C sharp', text, flags=re.IGNORECASE)
                 logger.info(f"Fixed C# -> C sharp in: '{text[:50]}...'")
+
+            # ALSO fix "C hash" -> "C sharp" (in case # was already converted)
+            if re.search(r'\bC hash\b', text, re.IGNORECASE):
+                text = re.sub(r'\bC hash\b', 'C sharp', text, flags=re.IGNORECASE)
+                logger.info(f"Fixed C hash -> C sharp in: '{text[:50]}...'")
+
+            # Fix F# -> F sharp (if already mangled)
+            if re.search(r'\bF hash\b', text, re.IGNORECASE):
+                text = re.sub(r'\bF hash\b', 'F sharp', text, flags=re.IGNORECASE)
 
             # OAuth authentication
             if re.search(r'\bOAuth\b', text, re.IGNORECASE):

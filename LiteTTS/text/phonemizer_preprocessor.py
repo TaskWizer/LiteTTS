@@ -309,6 +309,12 @@ class PhonemizationPreprocessor:
         text, html_changes = self._decode_html_entities(text)
         changes_made.extend(html_changes)
 
+        # Step 1.5: Handle compound tech terms BEFORE symbol replacement
+        # This MUST happen before _convert_symbols_conservative which converts # to "hash"
+        # C#, OAuth, IPv6, SHA-256 would otherwise become "C hash", etc.
+        text, compound_changes = self._fix_tech_compounds(text)
+        changes_made.extend(compound_changes)
+
         # Step 2: Unicode normalization
         text = unicodedata.normalize('NFKC', text)
         if text != original_text and "HTML entity decoding" not in changes_made:
@@ -651,6 +657,67 @@ class PhonemizationPreprocessor:
                     # Revert if word count changed too much
                     text = original_text
                     logger.debug(f"Skipped fixing {description} to preserve word count")
+
+        return text, changes
+
+    def _fix_tech_compounds(self, text: str) -> Tuple[str, List[str]]:
+        """
+        Fix compound tech terms that would otherwise be mangled by symbol replacement.
+        This MUST run before _convert_symbols_conservative which converts # to "hash".
+
+        Handles: C#, OAuth, IPv6, SHA-256, and similar tech terms.
+        """
+        changes = []
+        original_text = text
+
+        # C# programming language - "C sharp", not "C hash"
+        # NOTE: # is NOT a word char in regex, so \bC#\b doesn't work - use (?!\w)
+        if re.search(r'\bC#(?!\w)', text, re.IGNORECASE):
+            text = re.sub(r'\bC#(?!\w)', 'C sharp', text, flags=re.IGNORECASE)
+            changes.append("C# -> C sharp")
+
+        # F# programming language
+        if re.search(r'\bF#(?!\w)', text, re.IGNORECASE):
+            text = re.sub(r'\bF#(?!\w)', 'F sharp', text, flags=re.IGNORECASE)
+            changes.append("F# -> F sharp")
+
+        # G# music note
+        if re.search(r'\bG#(?!\w)', text, re.IGNORECASE):
+            text = re.sub(r'\bG#(?!\w)', 'G sharp', text, flags=re.IGNORECASE)
+            changes.append("G# -> G sharp")
+
+        # D# music note
+        if re.search(r'\bD#(?!\w)', text, re.IGNORECASE):
+            text = re.sub(r'\bD#(?!\w)', 'D sharp', text, flags=re.IGNORECASE)
+            changes.append("D# -> D sharp")
+
+        # A# music note
+        if re.search(r'\bA#(?!\w)', text, re.IGNORECASE):
+            text = re.sub(r'\bA#(?!\w)', 'A sharp', text, flags=re.IGNORECASE)
+            changes.append("A# -> A sharp")
+
+        # OAuth 2.0 - must handle before # replacement
+        if re.search(r'\bOAuth\s*2\.0\b', text, re.IGNORECASE):
+            text = re.sub(r'\bOAuth\s*2\.0\b', 'OAuth two point zero', text, flags=re.IGNORECASE)
+            changes.append("OAuth 2.0 -> OAuth two point zero")
+
+        # IPv6 - must handle before # replacement
+        if re.search(r'\bIPv6\b', text, re.IGNORECASE):
+            text = re.sub(r'\bIPv6\b', 'I P V six', text, flags=re.IGNORECASE)
+            changes.append("IPv6 -> I P V six")
+
+        # SHA-256 and similar
+        if re.search(r'\bSHA-?256\b', text, re.IGNORECASE):
+            text = re.sub(r'\bSHA-?256\b', 'SHA two fifty six', text, flags=re.IGNORECASE)
+            changes.append("SHA-256 -> SHA two fifty six")
+
+        # OAuth (standalone, without 2.0) - preserve but don't change
+        if re.search(r'\bOAuth\b', text, re.IGNORECASE):
+            text = re.sub(r'\bOAuth\b', 'OAuth', text, flags=re.IGNORECASE)
+            # No change in sound, just ensuring it's preserved
+
+        if text != original_text and changes:
+            logger.debug(f"Fixed tech compounds: {changes}")
 
         return text, changes
 
