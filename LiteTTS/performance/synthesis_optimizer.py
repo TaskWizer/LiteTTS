@@ -48,7 +48,7 @@ class SynthesisPerformanceConfig:
     max_tokenization_cache: int = 1000    # Max tokenization results to cache
 
     # Timeout settings
-    synthesis_timeout: float = 10.0
+    synthesis_timeout: float = 30.0  # 30s timeout for synthesis (increased for long texts)
     fast_path_timeout: float = 2.0
 
 class SynthesisOptimizer:

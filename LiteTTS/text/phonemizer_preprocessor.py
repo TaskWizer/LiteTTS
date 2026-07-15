@@ -559,13 +559,24 @@ class PhonemizationPreprocessor:
             changes.append(f"Found comma-separated numbers that may be read digit-by-digit: {', '.join(comma_matches)}")
             logger.debug(f"Conservative mode: preserving comma-separated numbers to maintain word count: {comma_matches}")
 
-        # For decimal numbers, same approach - preserve word count
+        # For decimal numbers, convert them properly so phonemizer doesn't read digit-by-digit
+        # e.g., 3.14159 -> "three point one four one five nine"
         decimal_pattern = r'\b\d+\.\d+\b'
         decimal_matches = re.findall(decimal_pattern, text)
-        if decimal_matches:
-            # Just warn about them, don't convert
-            changes.append(f"Found decimal numbers that may be read digit-by-digit: {', '.join(decimal_matches)}")
-            logger.debug(f"Conservative mode: preserving decimal numbers to maintain word count: {decimal_matches}")
+        for match in decimal_matches:
+            try:
+                parts = match.split('.')
+                integer_part = int(parts[0])
+                decimal_part = parts[1]
+
+                integer_words = self._number_to_words(integer_part)
+                decimal_words = ' '.join(self.number_words_map.get(digit, digit) for digit in decimal_part)
+
+                word_form = f"{integer_words} point {decimal_words}"
+                text = text.replace(match, word_form, 1)
+                changes.append(f"Converted decimal '{match}' to '{word_form}'")
+            except (ValueError, IndexError, KeyError) as e:
+                logger.warning(f"Could not convert decimal number '{match}': {e}")
 
         return text, changes
 
@@ -847,10 +858,16 @@ class PhonemizationPreprocessor:
             unit = m.group(3)
             sign_word = 'minus ' if sign == '-' else ''
             number_word = number_to_words(temp_val)
-            unit_word = f' degrees {unit[-1]}'  # Get just C or F
+            # Convert C/F to Celsius/Fahrenheit
+            if unit[-1] == 'C':
+                unit_word = ' degrees Celsius'
+            else:
+                unit_word = ' degrees Fahrenheit'
             return sign_word + number_word + unit_word
 
-        text = re.sub(r'(-?)(\d+\.?\d*)(°?[CF])', temp_to_words, text)
+        # Only match temperature patterns with degree symbol (°C, °F)
+        # Don't match plain C or F which might be used for other purposes
+        text = re.sub(r'(-?)(\d+\.?\d*)(°[CF])', temp_to_words, text)
 
         # NOTE: YAML and XML are handled by unified_text_processor which correctly
         # converts them to "yam-el" and "ex-em-el" - no need to process here

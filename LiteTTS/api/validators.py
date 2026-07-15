@@ -14,12 +14,23 @@ logger = logging.getLogger(__name__)
 
 class RequestValidator:
     """Validates TTS API requests"""
-    
-    def __init__(self, synthesizer: TTSSynthesizer):
+
+    # Default validation limits - these should be overridden by config in production
+    DEFAULT_MAX_TEXT_LENGTH = 5000  # Standard limit
+
+    def __init__(self, synthesizer: TTSSynthesizer, max_text_length: int = None):
         self.synthesizer = synthesizer
-        
+
+        # Use provided max_text_length or fall back to config/safe default
+        if max_text_length is None:
+            # Try to get from synthesizer config, otherwise use safe default
+            try:
+                max_text_length = getattr(synthesizer.config, 'max_text_length', self.DEFAULT_MAX_TEXT_LENGTH)
+            except (AttributeError, TypeError):
+                max_text_length = self.DEFAULT_MAX_TEXT_LENGTH
+
         # Validation rules
-        self.max_text_length = 10000
+        self.max_text_length = max_text_length
         self.min_text_length = 1
         self.max_speed = 3.0
         self.min_speed = 0.1

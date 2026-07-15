@@ -341,7 +341,7 @@ class KokoroTTSEngine:
         """
         if not text or not text.strip():
             logger.warning("Empty or whitespace-only text provided for tokenization")
-            return np.array([0], dtype=np.int64)
+            raise ValueError("Empty text provided for synthesis. Please provide non-empty text.")
 
         # Use phoneme-based tokenization if misaki and kokoro tokenizer are available
         if self.tokenizer.get('type') == 'phoneme' and self.kokoro_tokenizer is not None:

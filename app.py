@@ -247,7 +247,7 @@ class LiteTTSApplication:
                 use_cached_voice_embeddings=True,  # Cache voice embeddings
                 optimize_audio_processing=True,  # Optimize audio processing
                 enable_parallel_processing=True,  # Enable parallel processing
-                synthesis_timeout=10.0,  # 10s timeout for synthesis
+                synthesis_timeout=30.0,  # 30s timeout for synthesis (increased for long texts)
                 fast_path_timeout=2.0  # 2s timeout for fast path
             )
 
@@ -1050,11 +1050,11 @@ with open("hello.mp3", "wb") as f:
             else:
                 raise HTTPException(status_code=404, detail="Favicon not found")
 
-    def _split_text_for_synthesis(self, text: str, max_chunk_size: int = 350) -> List[str]:
+    def _split_text_for_synthesis(self, text: str, max_chunk_size: int = 300) -> List[str]:
         """Split long text into chunks that fit within Kokoro's phoneme limit.
 
         Kokoro has a ~510 phoneme limit. Since phonemes are roughly 1.2-1.5x
-        the character count, we use max_chunk_size to keep phonemes under limit.
+        the character count, we use max_chunk_size=300 to keep phonemes safely under limit.
         """
         if len(text) <= max_chunk_size:
             return [text]
@@ -1208,8 +1208,9 @@ with open("hello.mp3", "wb") as f:
                             processed_text = current_text
 
                     # Split long text into chunks to prevent phoneme truncation
-                    # Kokoro has a ~510 phoneme limit, ~400 chars of text ≈ 500 phonemes
-                    MAX_TEXT_CHUNK = 350  # characters per chunk (conservative)
+                    # Kokoro has a ~510 phoneme limit
+                    # At ~1.2-1.5x char-to-phoneme ratio, 300 chars could produce 360-450 phonemes
+                    MAX_TEXT_CHUNK = 300  # characters per chunk (conservative for 510 phoneme limit)
                     if len(processed_text) > MAX_TEXT_CHUNK * 1.5:
                         chunks = self._split_text_for_synthesis(processed_text, MAX_TEXT_CHUNK)
                         self.logger.info(f"📝 Split text into {len(chunks)} chunks to prevent truncation")

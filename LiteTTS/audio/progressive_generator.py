@@ -295,6 +295,9 @@ class ProgressiveAudioGenerator:
                         
                 except Exception as e:
                     logger.error(f"Streaming task failed: {e}")
+                    if generation_id in self.active_generations:
+                        self.active_generations[generation_id]["errors"] += 1
+                        self.active_generations[generation_id]["error_messages"].append(str(e))
                     tasks.remove(task)
                     continue
             
