@@ -1050,6 +1050,62 @@ with open("hello.mp3", "wb") as f:
             else:
                 raise HTTPException(status_code=404, detail="Favicon not found")
 
+    def _split_text_for_synthesis(self, text: str, max_chunk_size: int = 350) -> List[str]:
+        """Split long text into chunks that fit within Kokoro's phoneme limit.
+
+        Kokoro has a ~510 phoneme limit. Since phonemes are roughly 1.2-1.5x
+        the character count, we use max_chunk_size to keep phonemes under limit.
+        """
+        if len(text) <= max_chunk_size:
+            return [text]
+
+        chunks = []
+        # Try to split at sentence boundaries first
+        import re
+        sentence_endings = re.compile(r'[.!?]+\s+')
+        paragraphs = text.split('\n')
+
+        for para in paragraphs:
+            if not para.strip():
+                continue
+            if len(para) <= max_chunk_size:
+                chunks.append(para)
+            else:
+                # Split within paragraph
+                sentences = sentence_endings.split(para)
+                current_chunk = ""
+                for sentence in sentences:
+                    sentence = sentence.strip()
+                    if not sentence:
+                        continue
+                    # If adding this sentence would exceed limit
+                    if len(current_chunk) + len(sentence) + 1 > max_chunk_size:
+                        if current_chunk:
+                            chunks.append(current_chunk.strip())
+                        # Handle very long sentences that exceed limit
+                        if len(sentence) > max_chunk_size:
+                            # Split at word boundaries
+                            words = sentence.split()
+                            current_chunk = ""
+                            for word in words:
+                                if len(current_chunk) + len(word) + 1 > max_chunk_size:
+                                    if current_chunk:
+                                        chunks.append(current_chunk.strip())
+                                    current_chunk = word
+                                else:
+                                    current_chunk = (current_chunk + " " + word).strip()
+                            if current_chunk:
+                                chunks.append(current_chunk.strip())
+                                current_chunk = ""
+                        else:
+                            current_chunk = sentence
+                    else:
+                        current_chunk = (current_chunk + " " + sentence).strip()
+                if current_chunk:
+                    chunks.append(current_chunk.strip())
+
+        return [c for c in chunks if c]
+
 
     async def _generate_speech_internal(self, request: TTSRequest):
         """Internal speech generation logic shared by all endpoints"""
@@ -1151,13 +1207,33 @@ with open("hello.mp3", "wb") as f:
                             self.logger.warning(f"⚠️ Advanced text processing failed, using original text: {e}")
                             processed_text = current_text
 
-                    # Generate audio with processed text
-                    audio, sample_rate = self.model.create(
-                        processed_text,
-                        voice=voice_name,
-                        speed=speed,
-                        lang=config.audio.default_language
-                    )
+                    # Split long text into chunks to prevent phoneme truncation
+                    # Kokoro has a ~510 phoneme limit, ~400 chars of text ≈ 500 phonemes
+                    MAX_TEXT_CHUNK = 350  # characters per chunk (conservative)
+                    if len(processed_text) > MAX_TEXT_CHUNK * 1.5:
+                        chunks = self._split_text_for_synthesis(processed_text, MAX_TEXT_CHUNK)
+                        self.logger.info(f"📝 Split text into {len(chunks)} chunks to prevent truncation")
+                        # Generate audio for each chunk and concatenate
+                        all_audio = []
+                        for i, chunk in enumerate(chunks):
+                            chunk_audio, chunk_sr = self.model.create(
+                                chunk,
+                                voice=voice_name,
+                                speed=speed,
+                                lang=config.audio.default_language
+                            )
+                            all_audio.append(chunk_audio)
+                            self.logger.info(f"  Chunk {i+1}/{len(chunks)}: {len(chunk)} chars -> {len(chunk_audio)} samples")
+                        audio = np.concatenate(all_audio) if all_audio else np.array([])
+                        sample_rate = chunk_sr if all_audio else 24000
+                    else:
+                        # Generate audio with processed text
+                        audio, sample_rate = self.model.create(
+                            processed_text,
+                            voice=voice_name,
+                            speed=speed,
+                            lang=config.audio.default_language
+                        )
 
                     generation_time = time.time() - start_time
 

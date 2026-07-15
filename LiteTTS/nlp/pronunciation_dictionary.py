@@ -130,7 +130,7 @@ class PronunciationDictionary:
             'ubuntu': 'oo-BOON-too',
             'wifi': 'WY-fy',
             'xml': 'eks-em-el',
-            'yaml': 'YAM-ul',
+            'yaml': 'yam-el',
             
             # Scientific terms
             'genome': 'JEE-nohm',
