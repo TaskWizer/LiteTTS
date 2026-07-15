@@ -237,3 +237,235 @@ class TestVoiceLoader:
         assert result.success is False
         assert result.error_message is not None
         assert isinstance(result.error_message, str)
+
+    def test_load_with_torch_file_not_found(self, tmp_path):
+        """Test _load_with_torch when file doesn't exist"""
+        loader = VoiceLoader(voices_dir=str(tmp_path))
+        loader.torch_available = True
+
+        result = loader._load_with_torch("nonexistent")
+
+        assert result.success is False
+        assert "not found" in result.error_message.lower()
+
+    def test_load_with_torch_torch_unavailable(self, tmp_path):
+        """Test _load_with_torch when torch is unavailable"""
+        loader = VoiceLoader(voices_dir=str(tmp_path))
+        loader.torch_available = False
+
+        result = loader._load_with_torch("any_voice")
+
+        assert result.success is False
+        assert "not available" in result.error_message.lower()
+
+    def test_load_with_torch_success(self, tmp_path):
+        """Test _load_with_torch successful loading"""
+        import torch
+        loader = VoiceLoader(voices_dir=str(tmp_path))
+        loader.torch_available = True
+
+        # Create a valid .pt file
+        pt_file = tmp_path / "test_voice.pt"
+        embedding_data = torch.randn(10, 256)
+        torch.save({'embedding': embedding_data}, pt_file)
+
+        result = loader._load_with_torch("test_voice")
+
+        assert result.success is True
+        assert result.loader_used == "torch"
+
+    def test_load_with_torch_dict_format(self, tmp_path):
+        """Test _load_with_torch with dictionary format"""
+        import torch
+        loader = VoiceLoader(voices_dir=str(tmp_path))
+        loader.torch_available = True
+
+        # Create a .pt file with dict format containing style_vector
+        pt_file = tmp_path / "test_voice.pt"
+        embedding_data = torch.randn(10, 256)
+        torch.save({'style_vector': embedding_data, 'name': 'test'}, pt_file)
+
+        result = loader._load_with_torch("test_voice")
+
+        assert result.success is True
+
+    def test_load_with_torch_no_tensor_found(self, tmp_path):
+        """Test _load_with_torch when no tensor key is found"""
+        import torch
+        loader = VoiceLoader(voices_dir=str(tmp_path))
+        loader.torch_available = True
+
+        # Create a .pt file with no tensor data - just strings
+        pt_file = tmp_path / "test_voice.pt"
+        torch.save({'name': 'test', 'description': 'no tensor here'}, pt_file)
+
+        result = loader._load_with_torch("test_voice")
+
+        # No embedding, style_vector, or tensor data -> should fail
+        assert result.success is False
+
+    def test_load_with_torch_exception(self, tmp_path):
+        """Test _load_with_torch handles exceptions"""
+        loader = VoiceLoader(voices_dir=str(tmp_path))
+        loader.torch_available = True
+
+        # Create a corrupt .pt file
+        pt_file = tmp_path / "test_voice.pt"
+        pt_file.write_bytes(b'corrupt data')
+
+        result = loader._load_with_torch("test_voice")
+
+        assert result.success is False
+        assert result.loader_used == "torch"
+
+    def test_load_with_numpy_file_not_found(self, tmp_path):
+        """Test _load_with_numpy when file doesn't exist"""
+        loader = VoiceLoader(voices_dir=str(tmp_path))
+
+        result = loader._load_with_numpy("nonexistent")
+
+        assert result.success is False
+        assert "not found" in result.error_message.lower()
+
+    def test_load_with_numpy_success(self, tmp_path):
+        """Test _load_with_numpy successful loading"""
+        loader = VoiceLoader(voices_dir=str(tmp_path))
+
+        # Create a valid .bin file
+        bin_file = tmp_path / "test_voice.bin"
+        voice_data = np.random.randn(512).astype(np.float32)  # 512 = 2 * 256
+        voice_data.tofile(str(bin_file))
+
+        result = loader._load_with_numpy("test_voice")
+
+        assert result.success is True
+        assert result.loader_used == "numpy"
+        assert isinstance(result.embedding_data, np.ndarray)
+
+    def test_load_with_numpy_unusual_size(self, tmp_path):
+        """Test _load_with_numpy with unusual size"""
+        loader = VoiceLoader(voices_dir=str(tmp_path))
+
+        # Create a .bin file with size not divisible by 256
+        bin_file = tmp_path / "test_voice.bin"
+        voice_data = np.random.randn(500).astype(np.float32)  # Not divisible by 256
+        voice_data.tofile(str(bin_file))
+
+        result = loader._load_with_numpy("test_voice")
+
+        # Should still succeed but with warning
+        assert result.success is True
+
+    def test_load_with_numpy_exception(self, tmp_path):
+        """Test _load_with_numpy handles exceptions"""
+        loader = VoiceLoader(voices_dir=str(tmp_path))
+
+        # Create a file that will cause an error when loading
+        bin_file = tmp_path / "test_voice.bin"
+        bin_file.write_bytes(b'partial')
+
+        # Override to make numpy fail
+        with patch('numpy.fromfile', side_effect=Exception("Test error")):
+            result = loader._load_with_numpy("test_voice")
+
+        assert result.success is False
+
+    def test_load_mock_data_success(self, tmp_path):
+        """Test _load_mock_data successful generation"""
+        loader = VoiceLoader(voices_dir=str(tmp_path))
+
+        result = loader._load_mock_data("test_voice")
+
+        assert result.success is True
+        assert result.loader_used == "mock"
+        assert isinstance(result.embedding_data, np.ndarray)
+
+    def test_load_mock_data_returns_consistent(self, tmp_path):
+        """Test _load_mock_data returns consistent data for same voice"""
+        loader = VoiceLoader(voices_dir=str(tmp_path))
+
+        result1 = loader._load_mock_data("test_voice")
+        result2 = loader._load_mock_data("test_voice")
+
+        assert result1.success is True
+        assert result2.success is True
+        assert np.array_equal(result1.embedding_data, result2.embedding_data)
+
+    def test_load_mock_data_different_for_different_voices(self, tmp_path):
+        """Test _load_mock_data returns different data for different voices"""
+        loader = VoiceLoader(voices_dir=str(tmp_path))
+
+        result1 = loader._load_mock_data("voice1")
+        result2 = loader._load_mock_data("voice2")
+
+        assert result1.success is True
+        assert result2.success is True
+        assert not np.array_equal(result1.embedding_data, result2.embedding_data)
+
+    def test_load_voice_numpy_fallback_after_torch_fails(self, tmp_path):
+        """Test loading falls back to numpy after torch fails"""
+        with patch('LiteTTS.voice.loader._TORCH_AVAILABLE', True):
+            loader = VoiceLoader(voices_dir=str(tmp_path))
+
+            # Create only a .bin file, no .pt file
+            bin_file = tmp_path / "test_voice.bin"
+            voice_data = np.random.randn(256).astype(np.float32)
+            voice_data.tofile(str(bin_file))
+
+            result = loader.load_voice("test_voice")
+
+            assert result.success is True
+            assert result.loader_used == "numpy"
+
+    def test_load_voice_uses_mock_when_enabled(self, tmp_path):
+        """Test loading uses mock data when enabled and no file exists"""
+        loader = VoiceLoader(voices_dir=str(tmp_path), enable_mock=True)
+
+        result = loader.load_voice("nonexistent_voice")
+
+        assert result.success is True
+        assert result.loader_used == "mock"
+
+    def test_load_voice_all_methods_fail(self, tmp_path):
+        """Test loading when all methods fail"""
+        loader = VoiceLoader(voices_dir=str(tmp_path), enable_mock=False)
+        loader.torch_available = False
+
+        result = loader.load_voice("nonexistent")
+
+        assert result.success is False
+        assert "failed" in result.error_message.lower()
+
+    def test_load_voice_with_pt_file_dict_with_data_key(self, tmp_path):
+        """Test loading .pt file with 'data' key"""
+        import torch
+        loader = VoiceLoader(voices_dir=str(tmp_path))
+        loader.torch_available = True
+
+        # Create a .pt file with 'data' key
+        pt_file = tmp_path / "test_voice.pt"
+        embedding_data = torch.randn(10, 256)
+        torch.save({'data': embedding_data}, pt_file)
+
+        result = loader._load_with_torch("test_voice")
+
+        assert result.success is True
+
+    def test_load_voice_with_pt_file_multiple_tensors(self, tmp_path):
+        """Test loading .pt file with multiple tensors"""
+        import torch
+        loader = VoiceLoader(voices_dir=str(tmp_path))
+        loader.torch_available = True
+
+        # Create a .pt file with multiple tensors
+        pt_file = tmp_path / "test_voice.pt"
+        embedding_data = torch.randn(10, 256)
+        torch.save({
+            'embedding': embedding_data,
+            'style_vector': torch.randn(10, 256),
+            'name': 'test'
+        }, pt_file)
+
+        result = loader._load_with_torch("test_voice")
+
+        assert result.success is True
