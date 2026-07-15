@@ -172,8 +172,16 @@
 | test_validators.py | 15 | 100% on validators.py |
 | test_phonemizer_preprocessor.py | 28 | 59% on phonemizer_preprocessor.py |
 | test_chunking.py | 16 | 100% on chunking.py |
-| test_progressive_generator.py | 15 | Tested |
-| **Total** | **74** | **Significant improvement** |
+| test_progressive_generator.py | 15 | 98% |
+| test_error_handler.py | 12 | 100% |
+| test_response_formatter.py | 8 | 100% |
+| test_cache_manager.py | 10 | 100% |
+| test_ssml_parser.py | 12 | 100% |
+| test_ssml_processor.py | 8 | 100% |
+| test_voice_discovery.py | 5 | 46% |
+| test_text_processing.py | 8 | Tested |
+| test_json_sanitizer.py | 16 | 68% |
+| **Total** | **158** | **Overall 21%** |
 
 ### Bug Fixed in progressive_generator:
 - Fixed `_should_use_chunking()` using wrong config attribute
