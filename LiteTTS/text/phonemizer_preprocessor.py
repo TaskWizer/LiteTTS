@@ -315,6 +315,11 @@ class PhonemizationPreprocessor:
         text, compound_changes = self._fix_tech_compounds(text)
         changes_made.extend(compound_changes)
 
+        # Step 1.6: Handle fractions and special symbols BEFORE unicode normalization
+        # Unicode NFKC breaks ½ → 21⁄2 and ± → ±
+        text, fraction_changes = self._fix_fractions_and_symbols(text)
+        changes_made.extend(fraction_changes)
+
         # Step 2: Unicode normalization
         text = unicodedata.normalize('NFKC', text)
         if text != original_text and "HTML entity decoding" not in changes_made:
@@ -718,6 +723,86 @@ class PhonemizationPreprocessor:
 
         if text != original_text and changes:
             logger.debug(f"Fixed tech compounds: {changes}")
+
+        return text, changes
+
+    def _fix_fractions_and_symbols(self, text: str) -> Tuple[str, List[str]]:
+        """
+        Fix fractions and special symbols that get mangled by unicode normalization.
+        Must run BEFORE Step 2 (Unicode normalization).
+        """
+        changes = []
+        original_text = text
+
+        # Handle fractions BEFORE unicode normalization breaks them
+        # Pattern: number + fraction (e.g., 2½, 3¾, 1½)
+        def fraction_to_words(match):
+            num = match.group(1)
+            frac = match.group(2)
+            fraction_words = {
+                '½': 'and a half', '¼': 'and a quarter', '¾': 'and three quarters',
+                '⅓': 'and a third', '⅔': 'and two thirds',
+                '⅛': 'and an eighth', '⅜': 'and three eighths',
+                '⅝': 'and five eighths', '⅞': 'and seven eighths',
+            }
+            frac_word = fraction_words.get(frac, f'and {frac}')
+            # Convert leading number to words if it's a single digit
+            num_words = {'0': 'zero', '1': 'one', '2': 'two', '3': 'three',
+                        '4': 'four', '5': 'five', '6': 'six', '7': 'seven',
+                        '8': 'eight', '9': 'nine'}
+            if num in num_words:
+                num = num_words[num]
+            return f' {num} {frac_word} '
+
+        text = re.sub(r'(\d+)([½¼¾⅓⅔⅛⅜⅝⅞])', fraction_to_words, text)
+
+        # Vulgar fractions without leading number (½ alone)
+        fraction_map = {
+            '½': 'half', '⅓': 'third', '⅔': 'two thirds', '¼': 'quarter',
+            '¾': 'three quarters', '⅛': 'eighth', '⅜': 'three eighths',
+            '⅝': 'five eighths', '⅞': 'seven eighths',
+        }
+
+        for frac, word in fraction_map.items():
+            if frac in text:
+                text = text.replace(frac, f' {word} ')
+                changes.append(f"Fraction {frac} -> {word}")
+
+        # Plus-minus sign (±) - MUST be before the simple replace, order matters!
+        # First handle ±number% patterns, then handle standalone ±
+        def decimal_to_words(m):
+            val = m.group(1)
+            digit_words = {'0': 'zero', '1': 'one', '2': 'two', '3': 'three', '4': 'four',
+                          '5': 'five', '6': 'six', '7': 'seven', '8': 'eight', '9': 'nine'}
+            if '.' in val:
+                whole, dec = val.split('.')
+                dec_words = ' '.join([digit_words.get(d, d) for d in dec])
+                if whole and whole != '0':
+                    whole_words = ' '.join([digit_words.get(d, d) for d in whole])
+                    return f' plus or minus {whole_words} point {dec_words} percent'
+                else:
+                    return f' plus or minus point {dec_words} percent'
+            else:
+                whole_words = ' '.join([digit_words.get(d, d) for d in val])
+                return f' plus or minus {whole_words} percent'
+
+        # Handle ±number% BEFORE replacing standalone ±
+        if re.search(r'±\d+\.?\d*%', text):
+            text = re.sub(r'±(\d+\.?\d*)%', decimal_to_words, text)
+            changes.append("Plus-minus with percent")
+
+        # Handle standalone ± (without number or with non-percent suffix)
+        if '±' in text:
+            text = text.replace('±', ' plus or minus ')
+            changes.append("Plus-minus sign")
+
+        # Fix a.m. and p.m. time abbreviations
+        if re.search(r'\d+:\d+\s*[ap]\.?m\.?', text, re.IGNORECASE):
+            text = re.sub(r'(\d+):(\d+)\s*a\.?m\.?', lambda m: f'{m.group(1)}:{m.group(2)} A M', text, flags=re.IGNORECASE)
+            text = re.sub(r'(\d+):(\d+)\s*p\.?m\.?', lambda m: f'{m.group(1)}:{m.group(2)} P M', text, flags=re.IGNORECASE)
+
+        if text != original_text and changes:
+            logger.debug(f"Fixed fractions/symbols: {changes}")
 
         return text, changes
 
