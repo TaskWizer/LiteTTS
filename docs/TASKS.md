@@ -157,3 +157,25 @@
    - Fixed `_sync_synthesize()` to pass correct parameters to engine
    - Changed from 4 args (text, voice, response_format, speed) to 3 args (text, voice, speed)
 
+## Task 9: Test Coverage Improvement
+**Status:** COMPLETED
+**Date:** 2026-07-15
+
+### Critical Bug Fix:
+- **Fixed circular import** (LiteTTS/models/__init__.py)
+  - Changed from `from models import ...` to dynamic import using importlib
+  - This was blocking all unit tests from running
+
+### Unit Tests Added:
+| File | Tests | Coverage |
+|------|-------|----------|
+| test_validators.py | 15 | 100% on validators.py |
+| test_phonemizer_preprocessor.py | 28 | 59% on phonemizer_preprocessor.py |
+| test_chunking.py | 16 | 100% on chunking.py |
+| test_progressive_generator.py | 15 | Tested |
+| **Total** | **74** | **Significant improvement** |
+
+### Bug Fixed in progressive_generator:
+- Fixed `_should_use_chunking()` using wrong config attribute
+- Changed `min_text_length_for_chunking` to `min_chunk_size` (correct attribute name)
+

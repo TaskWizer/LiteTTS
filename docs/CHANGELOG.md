@@ -71,6 +71,18 @@
 - Text preprocessing pipeline explained
 - Kokoro limitations and workarounds documented
 
+### ✅ Testing
+
+- **Fixed critical circular import** in models/__init__.py
+  - Was preventing all unit tests from running
+  - Changed to dynamic import using importlib.util
+
+- **Added comprehensive unit tests** (74 tests now passing):
+  - test_validators.py: 15 tests for API validation
+  - test_phonemizer_preprocessor.py: 28 tests for text preprocessing
+  - test_chunking.py: 16 tests for text chunking
+  - test_progressive_generator.py: 15 tests for progressive audio
+
 ## [1.0.0] - 2025-08-16
 
 ### Added
