@@ -559,6 +559,49 @@ class PhonemizationPreprocessor:
         # In ULTRA-CONSERVATIVE mode, we choose option 2 to preserve word count
         # The user can use aggressive mode if they want number conversion
 
+        # CRITICAL FIX: Handle currency patterns like $12,345.67 BEFORE general decimal handling
+        # Pattern: dollar sign followed by comma-separated number with optional decimal cents
+        # Fix: allow 1-3 digits before first comma (e.g., $12,345 or $123,456,789)
+        currency_pattern = r'\$\d{1,3}(?:,\d{3}){1,5}(?:\.\d{1,2})?(?:\s*(?:dollars?|cents?))?'
+        currency_matches = re.findall(currency_pattern, text)
+
+        # Also check for currency WITHOUT commas (e.g., $12345.67) in case they were stripped
+        # This is a fallback for cases where commas get removed before we process currency
+        currency_pattern_no_comma = r'\$\d+(?:\.\d{1,2})?(?:\s*(?:dollars?|cents?))?'
+        for match in re.findall(currency_pattern_no_comma, text):
+            # Only process if not already matched by the comma pattern
+            if match not in currency_matches:
+                currency_matches.append(match)
+
+        for match in currency_matches:
+            original_match = match
+            # Extract the numeric parts
+            # Remove $ sign
+            num_part = match.replace('$', '')
+            # Check for decimal (cents)
+            has_cents = '.' in num_part
+            if has_cents:
+                num_part, cent_part = num_part.split('.')
+                cent_part = cent_part.rstrip('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ')
+            else:
+                cent_part = None
+
+            # Convert the main number (remove commas)
+            main_num = int(num_part.replace(',', ''))
+            main_words = self._number_to_words(main_num)
+
+            if has_cents and cent_part:
+                # Format: "twelve thousand three hundred forty-five dollars and sixty-seven cents"
+                cent_num = int(cent_part)
+                cent_words = self._number_to_words(cent_num)
+                word_form = f"{main_words} dollars and {cent_words} cents"
+            else:
+                # Format: "twelve thousand three hundred forty-five dollars"
+                word_form = f"{main_words} dollars"
+
+            text = text.replace(original_match, word_form, 1)
+            changes.append(f"Converted currency '{match}' to '{word_form}'")
+
         comma_number_pattern = r'\b\d{1,3}(?:,\d{3})+\b'
         comma_matches = re.findall(comma_number_pattern, text)
         if comma_matches:
@@ -735,6 +778,19 @@ class PhonemizationPreprocessor:
             text = re.sub(r'\bOAuth\b', 'OAuth', text, flags=re.IGNORECASE)
             # No change in sound, just ensuring it's preserved
 
+        # A.I., A.P.I., G.P.S., etc. - period-separated acronyms
+        # Convert to space-separated: A.I. -> A I, A.P.I. -> A P I
+        if re.search(r'\b[A-Z]\.[A-Z](?:\.[A-Z])*\.?', text):
+            def acronym_to_words(match):
+                acronym = match.group()
+                # Remove trailing dot if present
+                acronym = acronym.rstrip('.')
+                # Split by dots and join with spaces
+                letters = acronym.split('.')
+                return ' '.join(letters)
+            text = re.sub(r'\b[A-Z]\.[A-Z](?:\.[A-Z])*\.?', acronym_to_words, text)
+            changes.append("Period-separated acronyms to spaced letters")
+
         if text != original_text and changes:
             logger.debug(f"Fixed tech compounds: {changes}")
 
@@ -870,84 +926,200 @@ class PhonemizationPreprocessor:
         # Don't match plain C or F which might be used for other purposes
         text = re.sub(r'(-?)(\d+\.?\d*)(°[CF])', temp_to_words, text)
 
-        # NOTE: YAML and XML are handled by unified_text_processor which correctly
-        # converts them to "yam-el" and "ex-em-el" - no need to process here
+        # CRITICAL: Fix URLs FIRST before any acronym replacements break them
+        # URLs like https://example.org/api/v2 would become broken if API is expanded first
+        if re.search(r'https?://[^\s]+', text):
+            def url_to_words(match):
+                url = match.group()
+                # Remove trailing punctuation
+                while url and url[-1] in '.,;:!?)':
+                    url = url[:-1]
 
-        # However, we need to protect hyphenated tech terms from being broken apart
-        # by later processing. Use a placeholder marker that won't be affected.
-        # Actually, unified_processor handles YAML/XML correctly, so skip here
+                result = []
+
+                # Protocol
+                if url.startswith('https://'):
+                    result.extend('H T T P S'.split())
+                    url = url[8:]
+                elif url.startswith('http://'):
+                    result.extend('H T T P'.split())
+                    url = url[7:]
+
+                # Split by /
+                parts = url.split('/')
+                domain = parts[0]
+                path_parts = parts[1:] if len(parts) > 1 else []
+
+                # Domain
+                domain_parts = domain.split('.')
+                for i, dp in enumerate(domain_parts):
+                    if i > 0:
+                        result.append('dot')
+                    result.extend(list(dp.upper()))
+
+                # Path
+                for pp in path_parts:
+                    result.append('forward slash')
+                    if '?' in pp:
+                        path_seg, query = pp.split('?', 1)
+                        result.extend(list(path_seg.upper()))
+                        result.append('question mark')
+                        for param in query.split('&'):
+                            if '=' in param:
+                                k, v = param.split('=', 1)
+                                for j, c in enumerate(k):
+                                    if c.isalpha():
+                                        result.append(c.upper())
+                                        if j < len(k) - 1:
+                                            result.append('dash')
+                                    elif c.isdigit():
+                                        result.append(c)
+                                result.append('equals')
+                                result.extend(list(v.upper()))
+                            result.append('and')
+                        result.pop()  # Remove trailing 'and'
+                    else:
+                        result.extend(list(pp.upper()))
+
+                return ' '.join(result)
+
+            text = re.sub(r'https?://[^\s]+', url_to_words, text)
+            changes.append("URL to words")
+
+        # FIX: Handle YAML and XML explicitly before the acronym pattern converts them
+        # YAML -> yam el, XML -> ex em el
+        text = re.sub(r'\bYAML\b', 'yam el', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bXML\b', 'ex em el', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bJSON\b', 'jay son', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bSQL\b', 'sequel', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bAPI\b', 'A P I', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bGPS\b', 'G P S', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bCEO\b', 'C E O', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bCFO\b', 'C F O', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bCTO\b', 'C T O', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bCOO\b', 'C O O', text, flags=re.IGNORECASE)
 
         # Fix email addresses like qa-test+tts@example.com
-        # Convert to spell-out format: qa-dash-test-plus-tts-at-example-dot-com
+        # Convert to spell-out format: Q-A dash test plus tts at example dot com
         if re.search(r'\b[\w.+-]+@[\w.-]+\.\w+\b', text):
             def email_to_words(match):
                 email = match.group()
                 # Handle qa-test+tts@example.com format
-                local = email.split('@')[0]
-                domain = email.split('@')[1] if '@' in email else ''
-                # Replace special chars with words
-                local = re.sub(r'[-+]', ' ', local)  # hyphens and plus become spaces
-                local = re.sub(r'\.', ' ', local)  # dots become spaces
-                local_parts = local.split()
-                local_words = ' '.join(list(local))  # spell each part
+                at_idx = email.rfind('@')
+                local = email[:at_idx]
+                domain = email[at_idx+1:] if '@' in email else ''
+
+                # Process local part: spell out each character, but convert special chars to words
+                local_words_parts = []
+                for char in local:
+                    if char == '-':
+                        local_words_parts.append('dash')
+                    elif char == '+':
+                        local_words_parts.append('plus')
+                    elif char == '.':
+                        pass  # dots in local are typically not common, skip
+                    else:
+                        local_words_parts.append(char.upper())
+                local_words = ' '.join(local_words_parts)
+
                 if domain:
-                    domain_words = ' dot '.join(domain.split('.'))
+                    # Process domain: spell out each part, dots become "dot"
+                    domain_parts = domain.split('.')
+                    domain_words = ' dot '.join(domain_parts)
                     return f'{local_words} at {domain_words}'
-                return local_words  # pragma: no cover - email always has domain per regex
+                return local_words
             text = re.sub(r'\b[\w.+-]+@[\w.-]+\.\w+\b', email_to_words, text)
             changes.append("Email address to words")
 
         # Fix international/multilingual text - convert non-Latin scripts to placeholders
         # The TTS cannot pronounce CJK, Arabic, Hebrew, Korean, etc.
         # This must happen BEFORE unicode normalization to avoid NFKC issues
-        if re.search(r'[^\x00-\x7F]', text):
-            def replace_non_latin_char(c):
-                """Replace non-Latin characters while keeping accented Latin (á, é, ñ, ü, etc.)"""
-                code = ord(c)
-                # CJK (Chinese, Japanese, Korean, etc.) - code points 0x3000-0x9FFF, 0xF900-0xFAFF, etc.
-                if (0x3000 <= code <= 0x9FFF or  # CJK Unified Ideographs and extensions
-                    0xF900 <= code <= 0xFAFF or  # CJK Compatibility Ideographs
-                    0xFE30 <= code <= 0xFE4F or  # CJK Compatibility Forms
-                    0x1F200 <= code <= 0x1F9FF):  # Emoji/symbols
-                    return ' international text '
-                # Korean Hangul
-                if 0xAC00 <= code <= 0xD7AF:
-                    return ' international text '
-                # Arabic
-                if 0x0600 <= code <= 0x06FF or 0x0750 <= code <= 0x077F or 0x08A0 <= code <= 0x08FF:
-                    return ' international text '
-                # Hebrew
-                if 0x0590 <= code <= 0x05FF:
-                    return ' international text '
-                # Devanagari and other Indic scripts
-                if 0x0900 <= code <= 0x097F or 0x0980 <= code <= 0x09FF:
-                    return ' international text '
-                # Thai
-                if 0x0E00 <= code <= 0x0E7F:
-                    return ' international text '
-                # Georgian
-                if 0x10A0 <= code <= 0x10FF:
-                    return ' international text '
-                # Armenian
-                if 0x0530 <= code <= 0x058F:
-                    return ' international text '
-                # Cyrillic (keep it - TTS can handle Russian)
-                # Tibetan
-                if 0x0F00 <= code <= 0x0FFF:
-                    return ' international text '
-                # Keep all Latin extended characters (á, é, ñ, ü, etc.)
-                # These are pronounceable in various languages
-                if code >= 0xC0:  # Latin Extended-A and above (except the specific non-Latin ranges above)
-                    return c
-                return c  # Keep ASCII as-is
+        def is_non_latin_char(c):
+            """Check if character is non-Latin and should be replaced"""
+            code = ord(c)
+            # CJK (Chinese, Japanese, Korean, etc.)
+            if (0x3000 <= code <= 0x9FFF or
+                0xF900 <= code <= 0xFAFF or
+                0xFE30 <= code <= 0xFE4F or
+                0x1F200 <= code <= 0x1F9FF):
+                return True
+            # Korean Hangul
+            if 0xAC00 <= code <= 0xD7AF:
+                return True
+            # Arabic
+            if 0x0600 <= code <= 0x06FF or 0x0750 <= code <= 0x077F or 0x08A0 <= code <= 0x08FF:
+                return True
+            # Hebrew
+            if 0x0590 <= code <= 0x05FF:
+                return True
+            # Devanagari and other Indic scripts
+            if 0x0900 <= code <= 0x097F or 0x0980 <= code <= 0x09FF:
+                return True
+            # Thai
+            if 0x0E00 <= code <= 0x0E7F:
+                return True
+            # Georgian
+            if 0x10A0 <= code <= 0x10FF:
+                return True
+            # Armenian
+            if 0x0530 <= code <= 0x058F:
+                return True
+            # Tibetan
+            if 0x0F00 <= code <= 0x0FFF:
+                return True
+            return False
 
-            result_chars = []
+        if re.search(r'[^\x00-\x7F]', text):
+            result_parts = []
+            current_group = []
+            in_international = False
+            last_was_comma = False
+
             for c in text:
-                if ord(c) < 128:
-                    result_chars.append(c)
+                if ord(c) < 128 or not is_non_latin_char(c):
+                    # Latin or ASCII character
+                    if c == ',':
+                        # Commas between international text segments - skip them to merge groups
+                        if in_international and current_group:
+                            last_was_comma = True
+                            continue  # Skip the comma
+                    else:
+                        # Non-comma ASCII/Latin character
+                        if in_international and current_group:
+                            # End of international text group
+                            result_parts.append('international text')
+                            current_group = []
+                            in_international = False
+                        last_was_comma = False
+                        result_parts.append(c)
                 else:
-                    result_chars.append(replace_non_latin_char(c))
-            text = ''.join(result_chars)
+                    # Non-Latin character
+                    if last_was_comma:
+                        # We skipped a comma before this group - add space separator
+                        if result_parts and result_parts[-1] != ' ':
+                            result_parts.append(' ')
+                    in_international = True
+                    current_group.append(c)
+                    last_was_comma = False
+
+            # Don't forget the last group
+            if in_international and current_group:
+                result_parts.append('international text')
+
+            text = ''.join(result_parts)
+
+            # Clean up: merge consecutive international text entries into one (repeat until stable)
+            while re.search(r'international text\s+international text', text):
+                text = re.sub(r'international text\s+international text', ' international text', text)
+            # Clean up: remove commas between international text segments
+            text = re.sub(r'international text\s*,\s*', 'international text ', text)
+            # Also clean up commas before international text
+            text = re.sub(r'\s*,\s*international text', ' international text', text)
+            # Clean up trailing comma after international text at end of text
+            text = re.sub(r'international text\s*,\s*$', ' international text', text)
+            # Clean up any remaining double spaces
+            text = re.sub(r'\s+', ' ', text)
+
             changes.append("International text to placeholders")
 
         # Fix bass player → BASE player (context: music)
@@ -955,20 +1127,19 @@ class PhonemizationPreprocessor:
             text = re.sub(r'\bbass player\b', 'BASE player', text, flags=re.IGNORECASE)
             changes.append("bass player -> BASE player")
 
-        # Fix "read lead as the metal" → "led" (noun, material)
-        # and "read lead as the verb" → contextually "leed"
-        # Handle explicit context hints
-        if re.search(r'\blead\b.*\bmetal\b|\bmetal\b.*\blead\b', text, re.IGNORECASE):
-            text = re.sub(r'\blead\b', 'led', text, flags=re.IGNORECASE)
+        # Fix "read lead as the metal" vs "lead the verb"
+        # Handle both quoted and unquoted versions (quotes may or may not be removed yet)
+        # Pattern matches: not 'lead' the verb OR not lead the verb
+        if re.search(r"not\s+'?\blead\b'?\s+the\s+verb", text, re.IGNORECASE):
+            # "not lead the verb" -> "not to lead the verb"
+            text = re.sub(r"not\s+'?\blead\b'?\s+the\s+verb", "not to lead the verb", text, flags=re.IGNORECASE)
+            changes.append("lead verb context -> to lead")
+
+        # General "lead" handling for metal context
+        # Handle both quoted and unquoted versions
+        if re.search(r"'?\blead\b'?\s+(as\s+the\s+metal|the\s+metal)", text, re.IGNORECASE):
+            text = re.sub(r"'?\blead\b'?\s+(as\s+the\s+metal|the\s+metal)", r'led \1', text, flags=re.IGNORECASE)
             changes.append("lead (metal) -> led")
-        elif re.search(r'\blead\b.*\bverb\b|\bverb\b.*\blead\b', text, re.IGNORECASE):
-            text = re.sub(r'\blead\b', 'leed', text, flags=re.IGNORECASE)
-            changes.append("lead (verb) -> leed")
-        elif re.search(r'\bread\b.*\blead\b', text, re.IGNORECASE):
-            # "read lead as..." - likely verb context
-            text = re.sub(r'\bread lead\b', 'reed led', text, flags=re.IGNORECASE)
-            text = re.sub(r'\bread\b', 'reed', text, flags=re.IGNORECASE)
-            changes.append("read lead context -> reed led")
 
         if text != original_text and changes:
             logger.debug(f"Fixed fractions/symbols: {changes}")
