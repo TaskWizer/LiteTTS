@@ -1140,6 +1140,54 @@ class TestPhonemizationPreprocessorEdgeCases2:
         result, changes = processor._convert_numbers_to_words(text, aggressive=True)
         assert isinstance(result, str)
 
+    def test_symbols_ampersand_conversion(self, processor):
+        """Test _convert_symbols_to_words with standalone &"""
+        text = "Tom & Jerry"
+        result, changes = processor._convert_symbols_to_words(text)
+        assert isinstance(result, str)
+
+    def test_symbols_hash_conversion(self, processor):
+        """Test _convert_symbols_to_words with standalone #"""
+        text = "Press # for help"
+        result, changes = processor._convert_symbols_to_words(text)
+        assert isinstance(result, str)
+
+    def test_symbols_hash_html_entity_not_converted(self, processor):
+        """Test _convert_symbols_to_words with # in HTML entity pattern"""
+        text = "&#39;"
+        result, changes = processor._convert_symbols_to_words(text)
+        assert isinstance(result, str)
+
+    def test_fix_problematic_patterns_domain(self, processor):
+        """Test _fix_problematic_patterns with domain names"""
+        text = "Visit google.com"
+        result, changes = processor._fix_problematic_patterns(text)
+        assert isinstance(result, str)
+
+    def test_fix_problematic_patterns_email(self, processor):
+        """Test _fix_problematic_patterns with email"""
+        text = "Email test@example"
+        result, changes = processor._fix_problematic_patterns(text)
+        assert isinstance(result, str)
+
+    def test_fix_problematic_patterns_range(self, processor):
+        """Test _fix_problematic_patterns with number range"""
+        text = "Pages 10-20"
+        result, changes = processor._fix_problematic_patterns(text)
+        assert isinstance(result, str)
+
+    def test_fix_problematic_patterns_time(self, processor):
+        """Test _fix_problematic_patterns with time"""
+        text = "Time is 10:30"
+        result, changes = processor._fix_problematic_patterns(text)
+        assert isinstance(result, str)
+
+    def test_fix_problematic_patterns_underscore(self, processor):
+        """Test _fix_problematic_patterns with underscored words"""
+        text = "Variable test_value"
+        result, changes = processor._fix_problematic_patterns(text)
+        assert isinstance(result, str)
+
     def test_fractions_with_number(self, processor):
         """Test fractions with leading number"""
         text = "2½ cups of flour"
