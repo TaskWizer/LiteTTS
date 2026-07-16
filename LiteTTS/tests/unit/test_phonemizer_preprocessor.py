@@ -1408,6 +1408,14 @@ class TestPhonemizationPreprocessorEdgeCases2:
         # The accented characters should be preserved
         assert "café" in result or "español" in result
 
+    def test_international_text_fallback_return(self, processor):
+        """Test international text fallback return (line 941)"""
+        # Characters in 0x80-0xBF range (like ¡) fall through to line 941
+        text = "¡Hola!"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        # The character should be preserved (not replaced with 'international text')
+        assert "¡" in result
+
     def test_load_config_cache_triggers_exception_fallback(self):
         """Test that _load_config_cache uses fallback when config causes exception (lines 100-111)"""
         # Pass a config object that will cause an exception when accessed
