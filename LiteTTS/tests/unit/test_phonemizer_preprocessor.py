@@ -1074,6 +1074,24 @@ class TestPhonemizationPreprocessorEdgeCases2:
         result = processor.preprocess_text(text)
         assert result is not None
 
+    def test_preprocess_preserve_false_aggressive_numbers(self, processor):
+        """Test preprocessing with preserve_word_count=False triggers aggressive number conversion"""
+        text = "I have 1,000 apples"
+        result = processor.preprocess_text(text, preserve_word_count=False)
+        assert result is not None
+
+    def test_preprocess_preserve_false_aggressive_decimal(self, processor):
+        """Test preprocessing with preserve_word_count=False converts decimals"""
+        text = "Pi is 3.14"
+        result = processor.preprocess_text(text, preserve_word_count=False)
+        assert result is not None
+
+    def test_preprocess_preserve_false_aggressive_simple_numbers(self, processor):
+        """Test preprocessing with preserve_word_count=False converts simple numbers"""
+        text = "I have 5 apples"
+        result = processor.preprocess_text(text, preserve_word_count=False)
+        assert result is not None
+
     def test_decimal_numbers_conservative(self, processor):
         """Test decimal number handling conservative"""
         text = "Pi is 3.14159"
