@@ -362,3 +362,82 @@ class TestInputValidatorHasPhonemizerIssues:
         """Test detection of excessive punctuation"""
         result = InputValidator.validate_text("Hello..........World")
         assert result.is_valid is True
+
+
+class TestValidationEdgeCases:
+    """Test edge cases for validation module"""
+
+    def test_validate_text_becomes_empty_after_sanitization(self):
+        """Test that text becoming empty after sanitization is rejected"""
+        # Text that is ONLY dangerous content should fail
+        result = InputValidator.validate_text("<script></script>")
+        assert result.is_valid is False
+        assert "empty after sanitization" in result.error_message.lower()
+
+    def test_validate_format_conversion_error(self):
+        """Test format validation with object that can't be converted to string"""
+        class Unstringable:
+            def __str__(self):
+                raise ValueError("Cannot convert to string")
+
+        result = InputValidator.validate_format(Unstringable())
+        assert result.is_valid is False
+        assert "convertible" in result.error_message.lower()
+
+    def test_validate_speed_not_a_number_type(self):
+        """Test speed validation with non-numeric type"""
+        class NotANumber:
+            pass
+
+        result = InputValidator.validate_speed(NotANumber())
+        assert result.is_valid is False
+        assert "number" in result.error_message.lower()
+
+    def test_validate_voice_becomes_empty_after_sanitization(self):
+        """Test voice name becomes empty after sanitization"""
+        # Voice name with only invalid characters
+        result = InputValidator.validate_voice("!!!@@@", ["af_heart"])
+        assert result.is_valid is False
+        assert "empty after sanitization" in result.error_message.lower()
+
+    def test_validate_speed_with_list(self):
+        """Test speed validation with list type"""
+        result = InputValidator.validate_speed([1.0])
+        assert result.is_valid is False
+
+    def test_validate_speed_with_dict(self):
+        """Test speed validation with dict type"""
+        result = InputValidator.validate_speed({"speed": 1.0})
+        assert result.is_valid is False
+
+    def test_validate_format_with_complex_object(self):
+        """Test format validation with complex object"""
+        class ComplexFormat:
+            pass
+
+        result = InputValidator.validate_format(ComplexFormat())
+        assert result.is_valid is False
+
+    def test_validate_text_with_unicode_normalization(self):
+        """Test text validation with various unicode forms"""
+        # Test with unicode that's different after NFKC normalization
+        result = InputValidator.validate_text("café")
+        assert result.is_valid is True
+
+    def test_validate_tts_request_invalid_voice(self):
+        """Test TTS request with invalid voice"""
+        request_data = {"input": "Hello", "voice": "invalid_voice_xyz"}
+        result = InputValidator.validate_tts_request(request_data, ["af_heart", "am_puck"])
+        assert result.is_valid is False
+
+    def test_validate_tts_request_invalid_format(self):
+        """Test TTS request with invalid format"""
+        request_data = {"input": "Hello", "voice": "af_heart", "response_format": "invalid_format"}
+        result = InputValidator.validate_tts_request(request_data, ["af_heart"])
+        assert result.is_valid is False
+
+    def test_validate_tts_request_invalid_speed(self):
+        """Test TTS request with invalid speed"""
+        request_data = {"input": "Hello", "voice": "af_heart", "speed": 99.0}
+        result = InputValidator.validate_tts_request(request_data, ["af_heart"])
+        assert result.is_valid is False
