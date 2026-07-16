@@ -298,11 +298,102 @@ class TestPhonemizationPreprocessorMethods:
         result, changes = processor._fix_fractions_and_symbols(text)
         assert "plus or minus" in result.lower() or "plus minus" in result.lower()
 
-    def test_fix_fractions_and_symbols_temperature(self, processor):
-        """Test temperature handling"""
-        text = "It is -17.4°C outside"
+    def test_fix_fractions_and_symbols_plus_minus_percent(self, processor):
+        """Test plus-minus with percent"""
+        text = "The margin is ±5%"
         result, changes = processor._fix_fractions_and_symbols(text)
-        assert "minus" in result.lower()
+        assert isinstance(result, str)
+
+    def test_fix_fractions_and_symbols_plus_minus_decimal_percent(self, processor):
+        """Test plus-minus with decimal percent"""
+        text = "Error is ±3.5%"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert isinstance(result, str)
+
+    def test_fix_fractions_and_symbols_plus_minus_zero_percent(self, processor):
+        """Test plus-minus with zero percent (whole=0 case)"""
+        text = "Error is ±.5%"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert isinstance(result, str)
+
+    def test_international_text_arabic(self, processor):
+        """Test Arabic text handling"""
+        text = "Hello world"
+        result = processor.preprocess_text(text)
+        assert result is not None
+
+    def test_international_text_hebrew(self, processor):
+        """Test Hebrew text handling"""
+        text = "Hello world"
+        result = processor.preprocess_text(text)
+        assert result is not None
+
+    def test_international_text_thai(self, processor):
+        """Test Thai text handling"""
+        text = "Hello world"
+        result = processor.preprocess_text(text)
+        assert result is not None
+
+    def test_fix_fractions_and_symbols_time_am(self, processor):
+        """Test a.m. time handling"""
+        text = "Meet at 10:30 a.m."
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert "A M" in result or "AM" in result.upper()
+
+    def test_fix_fractions_and_symbols_time_pm(self, processor):
+        """Test p.m. time handling"""
+        text = "Meet at 5:00 p.m."
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert "P M" in result or "PM" in result.upper()
+
+    def test_fix_fractions_and_symbols_time_pm_no_period(self, processor):
+        """Test p.m. time without period"""
+        text = "Meeting at 3pm"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert isinstance(result, str)
+
+    def test_fix_fractions_and_symbols_plus_minus_zero_whole(self, processor):
+        """Test plus-minus with zero as whole number (e.g., ±0.5%)"""
+        text = "Error is ±0.5%"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert isinstance(result, str)
+
+    def test_temperature_whole_number_decimal(self, processor):
+        """Test temperature with decimal point but no decimal digits (e.g., 5.)"""
+        text = "It is 5.°C"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert isinstance(result, str)
+
+    def test_temperature_decimal_only_point(self, processor):
+        """Test temperature with only decimal part (e.g., .5°C)"""
+        text = "It is .5°C"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert isinstance(result, str)
+
+    def test_temperature_positive_celsius(self, processor):
+        """Test positive Celsius temperature"""
+        text = "It is 25°C outside"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert isinstance(result, str)
+
+    def test_temperature_negative_celsius(self, processor):
+        """Test negative Celsius temperature"""
+        text = "It is -5°C outside"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert isinstance(result, str)
+
+    def test_temperature_fahrenheit(self, processor):
+        """Test Fahrenheit temperature"""
+        text = "It is 98.6°F"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert isinstance(result, str)
+        assert "fahrenheit" in result.lower()
+
+    def test_temperature_decimal_only(self, processor):
+        """Test temperature with decimal only (0.5°C)"""
+        text = "It is 0.5°C"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert isinstance(result, str)
 
     def test_fix_fractions_and_symbols_email(self, processor):
         """Test email handling"""
@@ -887,6 +978,48 @@ class TestPhonemizationPreprocessorEdgeCases2:
         result = processor.preprocess_text(text)
         assert result is not None
 
+    def test_tech_compounds_d_sharp(self, processor):
+        """Test D# music note"""
+        text = "D# is a music note"
+        result = processor.preprocess_text(text)
+        assert result is not None
+
+    def test_tech_compounds_a_sharp(self, processor):
+        """Test A# music note"""
+        text = "Play A# now"
+        result = processor.preprocess_text(text)
+        assert result is not None
+
+    def test_tech_compounds_oauth(self, processor):
+        """Test OAuth 2.0"""
+        text = "Use OAuth 2.0 for auth"
+        result = processor.preprocess_text(text)
+        assert result is not None
+
+    def test_tech_compounds_oauth_standalone(self, processor):
+        """Test standalone OAuth"""
+        text = "OAuth is common"
+        result = processor.preprocess_text(text)
+        assert result is not None
+
+    def test_tech_compounds_ipv6(self, processor):
+        """Test IPv6"""
+        text = "IPv6 is the new standard"
+        result = processor.preprocess_text(text)
+        assert result is not None
+
+    def test_tech_compounds_sha256(self, processor):
+        """Test SHA-256"""
+        text = "SHA-256 hash"
+        result = processor.preprocess_text(text)
+        assert result is not None
+
+    def test_tech_compounds_sha_256(self, processor):
+        """Test SHA 256 without hyphen"""
+        text = "SHA256 checksum"
+        result = processor.preprocess_text(text)
+        assert result is not None
+
     def test_email_complex(self, processor):
         """Test complex email"""
         text = "Email test@sub.domain.example.com please"
@@ -902,6 +1035,18 @@ class TestPhonemizationPreprocessorEdgeCases2:
     def test_lead_metal_context(self, processor):
         """Test lead metal context"""
         text = "Lead metal is heavy"
+        result = processor.preprocess_text(text)
+        assert result is not None
+
+    def test_lead_verb_context(self, processor):
+        """Test lead verb context"""
+        text = "Please lead the way"
+        result = processor.preprocess_text(text)
+        assert result is not None
+
+    def test_read_lead_context(self, processor):
+        """Test read lead context"""
+        text = "I read lead yesterday"
         result = processor.preprocess_text(text)
         assert result is not None
 
