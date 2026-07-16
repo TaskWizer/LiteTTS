@@ -1134,6 +1134,12 @@ class TestPhonemizationPreprocessorEdgeCases2:
         result, changes = processor._convert_numbers_to_words(text, aggressive=False)
         assert isinstance(result, str)
 
+    def test_convert_numbers_to_words_aggressive_converts_digits(self, processor):
+        """Test _convert_numbers_to_words with aggressive=True converts remaining digits"""
+        text = "abc5xyz"  # digit not surrounded by word boundaries
+        result, changes = processor._convert_numbers_to_words(text, aggressive=True)
+        assert isinstance(result, str)
+
     def test_fractions_with_number(self, processor):
         """Test fractions with leading number"""
         text = "2½ cups of flour"
