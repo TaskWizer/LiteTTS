@@ -379,6 +379,13 @@ class TestPhonemizationPreprocessorMethods:
         result, changes = processor._fix_fractions_and_symbols(text)
         assert isinstance(result, str)
 
+    def test_international_text_tibetan_script(self, processor):
+        """Test Tibetan script handling (lines 935-936)"""
+        # Tibetan range: 0x0F00-0x0FFF
+        text = "Hello ༄ world"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert isinstance(result, str)
+
     def test_international_text_devanagari_script(self, processor):
         """Test Devanagari script handling (lines 922-923)"""
         # Devanagari range: 0x0900-0x097F, 0x0980-0x09FF
@@ -1328,6 +1335,40 @@ class TestPhonemizationPreprocessorEdgeCases2:
         result = processor._number_to_words(40)
         assert "forty" in result.lower()
         assert " " not in result  # Should be single word
+
+    def test_number_to_words_exact_tens_70_80_90(self, processor):
+        """Test _number_to_words with exact tens 70, 80, 90 (line 1269)"""
+        result70 = processor._number_to_words(70)
+        result80 = processor._number_to_words(80)
+        result90 = processor._number_to_words(90)
+        assert "seventy" in result70.lower()
+        assert "eighty" in result80.lower()
+        assert "ninety" in result90.lower()
+
+    def test_number_to_words_large_number_fallback(self, processor):
+        """Test _number_to_words with large number that falls back to digit-by-digit (line 853)"""
+        # Numbers >= 10000 fall through to this fallback
+        result = processor._number_to_words(12345)
+        assert isinstance(result, str)
+        # Should still produce a result (digit-by-digit fallback)
+        assert len(result) > 0
+
+    def test_convert_numbers_to_words_aggressive_single_digit(self, processor):
+        """Test _convert_numbers_to_words with aggressive mode converting single digit (lines 1204-1205, 1210)"""
+        # Word boundaries are between word chars (\w) and non-word chars
+        text = "I have 5 apples"
+        result, changes = processor._convert_numbers_to_words(text, aggressive=True)
+        # Single digit should be converted
+        assert "five" in result.lower()
+        # The digit may or may not be in changes depending on whether it was in the map
+
+    def test_international_text_latin_extended_preserved(self, processor):
+        """Test Latin extended characters are preserved (line 941)"""
+        # Characters like à, ñ, ü should be kept as-is
+        text = "café español"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        # The accented characters should be preserved
+        assert "café" in result or "español" in result
 
     def test_unicode_quotes(self, processor):
         """Test unicode quote handling"""
