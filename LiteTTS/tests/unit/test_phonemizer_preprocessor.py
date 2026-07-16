@@ -2178,6 +2178,22 @@ class TestPhonemizationPreprocessorGlobalConfig:
             # Restore original performance
             config_obj.performance = original_performance
 
+    def test_decimal_no_integer_part(self):
+        """Test decimal with no integer part (.5) triggers line 828"""
+        from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+        proc = PhonemizationPreprocessor()
+        # .5 has no integer part before decimal
+        text = "The value is .5"
+        result, changes = proc._convert_numbers_to_words(text, aggressive=False)
+        # Should handle .5 correctly (line 828: return f'point {dec_word}')
+
+    def test_number_to_words_zero(self):
+        """Test _number_to_words with 0"""
+        from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+        proc = PhonemizationPreprocessor()
+        result = proc._number_to_words(0)
+        assert result == 'zero'  # 0 is handled specially at line 1216
+
 
 
 
