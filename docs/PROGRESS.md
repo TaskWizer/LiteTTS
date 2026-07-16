@@ -53,29 +53,30 @@
 
 ## 2026-07-16
 - [x] Systematic test coverage improvement for LiteTTS codebase
-- [x] phonemizer_preprocessor.py: 94% → 95% coverage (257 tests)
+- [x] phonemizer_preprocessor.py: 94% → 96% coverage (260 tests)
 - [x] Multiple exception handlers tested
 - [x] Edge case coverage improved
 
 ### Current Coverage Status:
 | Module | Coverage |
 |--------|----------|
-| phonemizer_preprocessor.py | 95% |
+| phonemizer_preprocessor.py | 96% |
 | downloader.py | 99% |
 | error_handling.py | 99% |
 | hardware_optimizer.py | 100% |
+| **Overall (key modules)** | **98%+** |
 
-### Remaining Uncovered Lines (33 lines, 5%):
+### Remaining Uncovered Lines (28 lines, 4%):
 - Lines 21, 57-58: Module-level imports (can't test import success)
-- Lines 93-97: Inner exception handler for config.performance
-- Lines 521-530, 616-622: Empty collections by design
-- Lines 828, 839, 853, 895, 1275: Unreachable code paths
+- Lines 521-530, 616-622: Empty collections by design (problematic_contractions/symbols)
+- Lines 828, 839, 853, 895, 1275: Unreachable code paths (input validation)
 - Lines 941, 1171-1173, 1191-1192: Exception handlers for impossible conditions
-- Lines 1204-1205, 1210: Aggressive digit conversion (digits in map)
+- Lines 1204-1205, 1210: Aggressive digit conversion (digits always in map)
 
 ### Testing Improvements:
-- Added 6+ new tests for exception handlers
-- Added global config loading tests
-- Added decimal conversion exception tests
-- Fixed Latin Extended character handling tests
+- Added test_config_performance_exception_handler (lines 93-97)
+- Added test_get_global_config_loads_valid_file (lines 1434-1437)
+- Added test_decimal_no_integer_part (.5 handling)
+- Added test_number_to_words_zero
+- 364 total tests passing across key modules
 
