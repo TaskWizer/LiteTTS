@@ -3,6 +3,7 @@
 Unit tests for error handling module
 """
 
+import time
 import pytest
 from LiteTTS.error_handling import (
     ErrorSeverity,
@@ -198,3 +199,37 @@ class TestErrorHandler:
         error = TTSError("Test error", severity=ErrorSeverity.MEDIUM)
         result = handler._generate_error_response(error)
         assert isinstance(result, dict)
+
+    def test_should_circuit_break_triggered(self):
+        """Test _should_circuit_break when threshold exceeded"""
+        handler = ErrorHandler()
+        # Set up error count > 5
+        error_key = "TTSError:test_op"
+        handler.error_counts[error_key] = 6
+        handler.last_errors[error_key] = time.time()
+        error = TTSError("Circuit test", severity=ErrorSeverity.CRITICAL)
+        error.context = ErrorContext(operation="test_op")
+        assert handler._should_circuit_break(error) is True
+
+    def test_should_circuit_break_low_severity(self):
+        """Test _should_circuit_break not triggered for low severity"""
+        handler = ErrorHandler()
+        error_key = "TTSError:test_op"
+        handler.error_counts[error_key] = 6
+        handler.last_errors[error_key] = time.time()
+        error = TTSError("Low severity", severity=ErrorSeverity.LOW)
+        error.context = ErrorContext(operation="test_op")
+        assert handler._should_circuit_break(error) is False
+
+    def test_handle_error_triggers_circuit_breaker(self):
+        """Test handle_error triggers circuit breaker when threshold exceeded"""
+        handler = ErrorHandler()
+        # Set up error count > 5 for circuit breaker
+        error_key = "MemoryError:test_op"
+        handler.error_counts[error_key] = 6
+        handler.last_errors[error_key] = time.time()
+        error = MemoryError("Out of memory")
+        error.context = ErrorContext(operation="test_op")
+        result = handler.handle_error(error)
+        # Circuit breaker returns specific response
+        assert "error" in result
