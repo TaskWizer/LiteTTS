@@ -1296,7 +1296,7 @@ class PhonemizationPreprocessor:
                     if self.html_entity_hash_pattern.search(text):
                         text = self.html_entity_hash_pattern.sub(f' {word} ', text)
                         changes.append(f"Converted standalone symbol '{symbol}' to '{word}'")
-                elif symbol in ['"', '"', '"', ''', ''']:
+                elif symbol in ['“', '”', '‘', '’']:
                     # Special handling for quotes - remove them entirely (they should be silent)
                     # Don't add spaces when removing quotes to avoid changing word count
                     original_text = text

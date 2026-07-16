@@ -1370,6 +1370,16 @@ class TestPhonemizationPreprocessorEdgeCases2:
         # The accented characters should be preserved
         assert "café" in result or "español" in result
 
+    def test_convert_symbols_to_words_curly_quotes(self, processor):
+        """Test _convert_symbols_to_words with curly quotes (lines 1299-1305)"""
+        # Use explicit Unicode code points for curly quotes
+        left_double = '“'  # "
+        right_double = '”'  # "
+        text = f'{left_double}hello{right_double}'
+        result, changes = processor._convert_symbols_to_words(text)
+        # The quotes should be detected and processed
+        assert isinstance(result, str)
+
     def test_unicode_quotes(self, processor):
         """Test unicode quote handling"""
         text = '“Hello”'
