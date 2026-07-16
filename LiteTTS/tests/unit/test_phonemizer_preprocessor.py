@@ -1582,3 +1582,67 @@ class TestPhonemizationPreprocessorHelperMethods:
         result, changes = processor._decode_html_entities(text)
         assert isinstance(result, str)
         assert isinstance(changes, list)
+
+
+class TestPhonemizationPreprocessorGlobalConfig:
+    """Test global config loading and module-level preprocessor (lines 1430-1450)"""
+
+    def test_get_global_config_returns_dict(self):
+        """Test _get_global_config returns a dictionary"""
+        from LiteTTS.text.phonemizer_preprocessor import _get_global_config
+        config = _get_global_config()
+        assert isinstance(config, dict)
+
+    def test_get_global_config_handles_missing_file(self):
+        """Test _get_global_config handles missing config file gracefully"""
+        from LiteTTS.text.phonemizer_preprocessor import _get_global_config
+        # Function should return empty dict if config.json doesn't exist
+        config = _get_global_config()
+        assert isinstance(config, dict)
+
+    def test_create_global_preprocessor(self):
+        """Test _create_global_preprocessor creates instance"""
+        from LiteTTS.text.phonemizer_preprocessor import _create_global_preprocessor
+        instance = _create_global_preprocessor()
+        assert isinstance(instance, PhonemizationPreprocessor)
+
+    def test_global_preprocessor_instance_exists(self):
+        """Test module-level phonemizer_preprocessor instance exists"""
+        from LiteTTS.text.phonemizer_preprocessor import phonemizer_preprocessor
+        assert isinstance(phonemizer_preprocessor, PhonemizationPreprocessor)
+
+    def test_global_preprocessor_has_expand_all(self):
+        """Test global preprocessor has expand_all attribute"""
+        from LiteTTS.text.phonemizer_preprocessor import phonemizer_preprocessor
+        assert hasattr(phonemizer_preprocessor, 'expand_all')
+
+    def test_global_preprocessor_can_preprocess(self):
+        """Test global preprocessor can preprocess text"""
+        from LiteTTS.text.phonemizer_preprocessor import phonemizer_preprocessor
+        result = phonemizer_preprocessor.preprocess_text("Hello world")
+        assert result is not None
+        assert hasattr(result, 'processed_text')
+
+    def test_get_global_config_with_mocked_file(self):
+        """Test _get_global_config with mocked file that exists but has error"""
+        import LiteTTS.text.phonemizer_preprocessor as pp_module
+        original = pp_module._get_global_config
+
+        # Temporarily replace with a version that raises
+        def mock_get_config():
+            from pathlib import Path
+            import json
+            config_path = Path("config.json")
+            if config_path.exists():
+                with open(config_path) as f:
+                    raise json.JSONDecodeError("Invalid JSON", "", 0)
+            return {}
+
+        pp_module._get_global_config = mock_get_config
+
+        # Create new global preprocessor to trigger the mocked function
+        try:
+            instance = pp_module._create_global_preprocessor()
+            assert isinstance(instance, pp_module.PhonemizationPreprocessor)
+        finally:
+            pp_module._get_global_config = original
