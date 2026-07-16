@@ -2224,6 +2224,25 @@ class TestPhonemizationPreprocessorGlobalConfig:
         result = proc.preprocess_text(text)
         assert isinstance(result.processed_text, str)
 
+    def test_temperature_negative_decimal(self):
+        """Test temperature with negative decimal like -.5C triggers nested function lines"""
+        from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+        proc = PhonemizationPreprocessor()
+        # Temperature -.5C should trigger the nested number_to_words function
+        text = "It's -.5C outside"
+        result = proc.preprocess_text(text)
+        assert isinstance(result.processed_text, str)
+
+    def test_temperature_positive_decimal(self):
+        """Test temperature with positive decimal like .5C triggers nested function lines"""
+        from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+        proc = PhonemizationPreprocessor()
+        # Temperature .5C should trigger the nested number_to_words function
+        text = "It's .5C outside"
+        result = proc.preprocess_text(text)
+        assert isinstance(result.processed_text, str)
+
+
     def test_comma_number_exception_handler(self):
         """Test comma-separated number exception handler (lines 1164-1166)"""
         import sys
