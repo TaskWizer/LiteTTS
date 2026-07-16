@@ -334,6 +334,24 @@ class TestPhonemizationPreprocessorMethods:
         result = processor.preprocess_text(text)
         assert result is not None
 
+    def test_international_text_thai_script(self, processor):
+        """Test Thai script handling in _fix_fractions_and_symbols"""
+        text = "Hello สวัสดี world"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert isinstance(result, str)
+
+    def test_international_text_georgian_script(self, processor):
+        """Test Georgian script handling"""
+        text = "Hello გამარჯობა world"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert isinstance(result, str)
+
+    def test_international_text_armenian_script(self, processor):
+        """Test Armenian script handling"""
+        text = "Hello ողջ world"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert isinstance(result, str)
+
     def test_fix_fractions_and_symbols_time_am(self, processor):
         """Test a.m. time handling"""
         text = "Meet at 10:30 a.m."
@@ -398,6 +416,12 @@ class TestPhonemizationPreprocessorMethods:
     def test_fix_fractions_and_symbols_email(self, processor):
         """Test email handling"""
         text = "Contact qa-test@example.com"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert isinstance(result, str)
+
+    def test_fix_fractions_and_symbols_email_simple(self, processor):
+        """Test simple email with subdomain"""
+        text = "Email test@mail.example.com"
         result, changes = processor._fix_fractions_and_symbols(text)
         assert isinstance(result, str)
 
