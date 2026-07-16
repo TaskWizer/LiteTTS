@@ -288,7 +288,17 @@ class PhonemizationPreprocessor:
             (r'\b[A-Z]{2,}(?:\s+[A-Z]{2,})*\b', lambda m: ' '.join(m.group(0).lower()), 'True acronyms only'),
             (r'\b(\d+)([A-Za-z]+)\b', r'\1 \2', 'Number-letter combinations'),
         ]
-    
+
+    def _safe_int(self, value):
+        """
+        Convert value to integer. This is a wrapper around int() that can be
+        overridden in tests to simulate failures.
+
+        Note: Python integers have arbitrary precision, so OverflowError is
+        effectively impossible in practice.
+        """
+        return int(value)
+
     def preprocess_text(self, text: str, aggressive: bool = False, preserve_word_count: bool = True) -> PreprocessingResult:
         """
         Main preprocessing function with multiple strategies
@@ -563,7 +573,7 @@ class PhonemizationPreprocessor:
         for match in decimal_matches:
             try:
                 parts = match.split('.')
-                integer_part = int(parts[0])
+                integer_part = self._safe_int(parts[0])
                 decimal_part = parts[1]
 
                 integer_words = self._number_to_words(integer_part)
@@ -830,7 +840,7 @@ class PhonemizationPreprocessor:
             """Convert a positive integer to words"""
             if not n:
                 return ''
-            n = int(n)
+            n = self._safe_int(n)  # Use mockable wrapper for testing
             if n < 10:
                 return _digit_to_word(str(n))
             elif n < 20:
@@ -1157,7 +1167,7 @@ class PhonemizationPreprocessor:
         for match in comma_matches:
             try:
                 # Remove commas and convert to int, then to words
-                number_value = int(match.replace(',', ''))
+                number_value = self._safe_int(match.replace(',', ''))
                 word_form = self._number_to_words(number_value)
                 text = text.replace(match, word_form)
                 changes.append(f"Converted comma-separated number '{match}' to '{word_form}'")
@@ -1172,7 +1182,7 @@ class PhonemizationPreprocessor:
         for match in decimal_matches:
             try:
                 parts = match.split('.')
-                integer_part = int(parts[0])
+                integer_part = self._safe_int(parts[0])
                 decimal_part = parts[1]
 
                 integer_words = self._number_to_words(integer_part)

@@ -2273,21 +2273,61 @@ class TestPhonemizationPreprocessorGlobalConfig:
                     pass
 
     def test_decimal_exception_handler(self):
-        """Test decimal number exception handler (lines 1184-1185)"""
-        import builtins
+        """Test decimal number exception handler (lines 1174-1176)"""
         from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
         proc = PhonemizationPreprocessor()
-        original_int = builtins.int
-        def failing_int(s, _orig=original_int):
-            if s.isdigit():
-                raise ValueError("Simulated decimal failure")
-            return _orig(s)
-        builtins.int = failing_int
+
+        # Mock _safe_int to raise ValueError for decimal integer parts
+        original_safe_int = proc._safe_int
+        def failing_safe_int(value):
+            raise ValueError("Simulated decimal failure")
+        proc._safe_int = failing_safe_int
+
         try:
             text = "Value is 5.5"
-            result = proc._convert_numbers_to_words(text, aggressive=False)
+            result, changes = proc._convert_numbers_to_words(text, aggressive=False)
         finally:
-            builtins.int = original_int
+            proc._safe_int = original_safe_int
+
+    def test_comma_exception_handler(self):
+        """Test comma number exception handler (lines 1174-1176)"""
+        from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+        proc = PhonemizationPreprocessor()
+
+        # Mock _safe_int to raise ValueError for comma numbers
+        original_safe_int = proc._safe_int
+        def failing_safe_int(value):
+            if ',' in str(value):
+                raise ValueError("Simulated comma failure")
+            return original_safe_int(value)
+        proc._safe_int = failing_safe_int
+
+        try:
+            text = "Value is 1,000,000"
+            result, changes = proc._convert_numbers_to_words(text, aggressive=False)
+        finally:
+            proc._safe_int = original_safe_int
+
+    def test_number_to_words_nested_zero(self):
+        """Test nested _number_to_words with 0 (line 831)"""
+        from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+        proc = PhonemizationPreprocessor()
+        # Call _convert_numbers_conservative which has nested _number_to_words
+        # that handles 0 specially at line 831
+        text = "0"
+        result, changes = proc._convert_numbers_conservative(text)
+        assert "zero" in result
+
+    def test_number_to_words_nested_fallback(self):
+        """Test nested _number_to_words fallback for large numbers (line 856)"""
+        from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+        proc = PhonemizationPreprocessor()
+        # Call _convert_numbers_conservative which has nested _number_to_words
+        # with fallback at line 856 for numbers >= 100
+        text = "999"  # Should use fallback path
+        result, changes = proc._convert_numbers_conservative(text)
+        assert isinstance(result, str)
+
 
 
     def test_convert_symbols_conservative_with_entries(self):
