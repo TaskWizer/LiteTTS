@@ -1074,6 +1074,18 @@ class TestPhonemizationPreprocessorEdgeCases2:
         result = processor.preprocess_text(text)
         assert result is not None
 
+    def test_lead_verb_direct_context(self, processor):
+        """Test lead verb direct context"""
+        text = "lead verb is different"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert isinstance(result, str)
+
+    def test_verb_lead_direct_context(self, processor):
+        """Test verb lead direct context"""
+        text = "verb lead context"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert isinstance(result, str)
+
     def test_preprocess_preserve_false_aggressive_numbers(self, processor):
         """Test preprocessing with preserve_word_count=False triggers aggressive number conversion"""
         text = "I have 1,000 apples"
@@ -1114,6 +1126,12 @@ class TestPhonemizationPreprocessorEdgeCases2:
         """Test _convert_numbers_to_words with aggressive=True"""
         text = "Room 101"
         result, changes = processor._convert_numbers_to_words(text, aggressive=True)
+        assert isinstance(result, str)
+
+    def test_convert_numbers_to_words_very_large_number(self, processor):
+        """Test _convert_numbers_to_words with very large number that overflows"""
+        text = "Number is 99999999999999999999999999999"
+        result, changes = processor._convert_numbers_to_words(text, aggressive=False)
         assert isinstance(result, str)
 
     def test_fractions_with_number(self, processor):
