@@ -1224,6 +1224,42 @@ class TestPhonemizationPreprocessorEdgeCases2:
         result = processor._number_to_words(0)
         assert "zero" in result.lower()
 
+    def test_number_to_words_billions_with_remainder(self, processor):
+        """Test _number_to_words with billions and remainder"""
+        result = processor._number_to_words(1000000001)
+        assert "billion" in result.lower()
+
+    def test_number_to_words_millions_with_remainder(self, processor):
+        """Test _number_to_words with millions and remainder"""
+        result = processor._number_to_words(1000001)
+        assert "million" in result.lower()
+
+    def test_number_to_words_thousands_with_remainder(self, processor):
+        """Test _number_to_words with thousands and remainder"""
+        result = processor._number_to_words(1001)
+        assert "thousand" in result.lower()
+
+    def test_number_to_words_hundreds_with_remainder(self, processor):
+        """Test _number_to_words with hundreds and remainder"""
+        result = processor._number_to_words(101)  # 101 = 100 + 1
+        assert "hundred" in result.lower()
+
+    def test_number_to_words_21_to_99_exact_tens(self, processor):
+        """Test _number_to_words with exact tens (like 30, 40, 50)"""
+        result = processor._number_to_words(30)
+        assert "thirty" in result.lower()
+
+    def test_number_to_words_21_to_99_with_ones(self, processor):
+        """Test _number_to_words with tens and ones (like 31)"""
+        result = processor._number_to_words(31)
+        assert "thirty" in result.lower() and "one" in result.lower()
+
+    def test_number_to_words_exact_tens_no_remainder(self, processor):
+        """Test _number_to_words with exact tens (30, 40, 50)"""
+        result = processor._number_to_words(40)
+        assert "forty" in result.lower()
+        assert " " not in result  # Should be single word
+
     def test_unicode_quotes(self, processor):
         """Test unicode quote handling"""
         text = '“Hello”'
