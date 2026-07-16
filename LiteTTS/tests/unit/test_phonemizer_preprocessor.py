@@ -1098,11 +1098,59 @@ class TestPhonemizationPreprocessorEdgeCases2:
         result, changes = processor._convert_numbers_conservative(text)
         assert isinstance(result, str)
 
+    def test_convert_numbers_to_words_comma_separated(self, processor):
+        """Test _convert_numbers_to_words with comma-separated numbers"""
+        text = "Number is 1,000"
+        result, changes = processor._convert_numbers_to_words(text, aggressive=False)
+        assert isinstance(result, str)
+
+    def test_convert_numbers_to_words_decimal(self, processor):
+        """Test _convert_numbers_to_words with decimal"""
+        text = "Pi is 3.14"
+        result, changes = processor._convert_numbers_to_words(text, aggressive=False)
+        assert isinstance(result, str)
+
+    def test_convert_numbers_to_words_aggressive(self, processor):
+        """Test _convert_numbers_to_words with aggressive=True"""
+        text = "Room 101"
+        result, changes = processor._convert_numbers_to_words(text, aggressive=True)
+        assert isinstance(result, str)
+
     def test_fractions_with_number(self, processor):
         """Test fractions with leading number"""
         text = "2½ cups of flour"
         result, changes = processor._fix_fractions_and_symbols(text)
         assert "half" in result.lower() or "and a half" in result.lower()
+
+    def test_number_to_words_billions(self, processor):
+        """Test _number_to_words with billions"""
+        result = processor._number_to_words(1000000000)
+        assert "billion" in result.lower()
+
+    def test_number_to_words_millions(self, processor):
+        """Test _number_to_words with millions"""
+        result = processor._number_to_words(2000000)
+        assert "million" in result.lower()
+
+    def test_number_to_words_thousands(self, processor):
+        """Test _number_to_words with thousands"""
+        result = processor._number_to_words(5000)
+        assert "thousand" in result.lower()
+
+    def test_number_to_words_hundreds(self, processor):
+        """Test _number_to_words with hundreds"""
+        result = processor._number_to_words(300)
+        assert "hundred" in result.lower()
+
+    def test_number_to_words_negative(self, processor):
+        """Test _number_to_words with negative number"""
+        result = processor._number_to_words(-5)
+        assert "negative" in result.lower()
+
+    def test_number_to_words_zero(self, processor):
+        """Test _number_to_words with zero"""
+        result = processor._number_to_words(0)
+        assert "zero" in result.lower()
 
     def test_unicode_quotes(self, processor):
         """Test unicode quote handling"""
