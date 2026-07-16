@@ -379,6 +379,34 @@ class TestPhonemizationPreprocessorMethods:
         result, changes = processor._fix_fractions_and_symbols(text)
         assert isinstance(result, str)
 
+    def test_international_text_devanagari_script(self, processor):
+        """Test Devanagari script handling (lines 922-923)"""
+        # Devanagari range: 0x0900-0x097F, 0x0980-0x09FF
+        text = "Hello नमस्ते world"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert isinstance(result, str)
+
+    def test_international_text_arabic_script(self, processor):
+        """Test Arabic script handling (lines 916-917)"""
+        # Arabic range: 0x0600-0x06FF, 0x0750-0x077F, 0x08A0-0x08FF
+        text = "Hello مرحبا world"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert isinstance(result, str)
+
+    def test_international_text_hebrew_script(self, processor):
+        """Test Hebrew script handling (lines 919-920)"""
+        # Hebrew range: 0x0590-0x05FF
+        text = "Hello שלום world"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert isinstance(result, str)
+
+    def test_international_text_korean_script(self, processor):
+        """Test Korean Hangul script handling (lines 913-914)"""
+        # Korean Hangul range: 0xAC00-0xD7AF
+        text = "Hello 안녕하세요 world"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert isinstance(result, str)
+
     def test_fix_fractions_and_symbols_time_am(self, processor):
         """Test a.m. time handling"""
         text = "Meet at 10:30 a.m."
@@ -457,6 +485,14 @@ class TestPhonemizationPreprocessorMethods:
         text = "Hello 世界"
         result, changes = processor._fix_fractions_and_symbols(text)
         assert isinstance(result, str)
+
+    def test_decode_html_entities_additional(self, processor):
+        """Test _decode_html_entities with numeric entities that trigger additional HTML entities handling (lines 1141-1143)"""
+        # &#65; is decimal 65 = 'A' which html.unescape will decode
+        text = 'Hello &#65; world &amp; test'
+        result, changes = processor._decode_html_entities(text)
+        assert 'A' in result  # numeric entity decoded
+        assert any('additional' in c.lower() for c in changes)  # additional changes detected
 
     def test_filter_emojis(self, processor):
         """Test emoji filtering"""
@@ -1598,13 +1634,15 @@ class TestPhonemizationPreprocessorEnhancedPath:
         # Ensure no enhanced processor (use base processor)
         proc.enhanced_contraction_processor = None
         proc.expand_all = False
+        proc.expand_problematic_only = False
         proc.preserve_natural = True
 
         # Text with contractions
         text = "I'm happy"
         result, changes = proc._expand_contractions(text)
 
-        # Since expand_all=False and preserve_natural=True, no changes should be made
+        # Since expand_all=False, expand_problematic_only=False, and preserve_natural=True,
+        # no changes should be made (lines 482-485: else branch preserves all contractions)
         assert len(changes) == 0
 
     def test_expand_contractions_expand_problematic_only(self):
