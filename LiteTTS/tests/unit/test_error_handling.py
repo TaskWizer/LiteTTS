@@ -14,7 +14,8 @@ from LiteTTS.error_handling import (
     AudioGenerationError,
     ValidationError,
     SystemResourceError,
-    ErrorHandler
+    ErrorHandler,
+    GracefulDegradation
 )
 
 
@@ -233,3 +234,114 @@ class TestErrorHandler:
         result = handler.handle_error(error)
         # Circuit breaker returns specific response
         assert "error" in result
+
+    def test_generate_error_response_validation_error(self):
+        """Test _generate_error_response with ValidationError"""
+        handler = ErrorHandler()
+        error = ValidationError("Invalid input")
+        result = handler._generate_error_response(error)
+        assert result["error_code"] == "VALIDATION_ERROR"
+
+    def test_generate_error_response_voice_not_found(self):
+        """Test _generate_error_response with VoiceNotFoundError"""
+        handler = ErrorHandler()
+        error = VoiceNotFoundError("Voice not found")
+        result = handler._generate_error_response(error)
+        assert result["error_code"] == "VOICE_NOT_FOUND"
+
+    def test_generate_error_response_audio_generation(self):
+        """Test _generate_error_response with AudioGenerationError"""
+        handler = ErrorHandler()
+        error = AudioGenerationError("Generation failed")
+        result = handler._generate_error_response(error)
+        assert result["error_code"] == "GENERATION_ERROR"
+
+    def test_generate_error_response_model_load(self):
+        """Test _generate_error_response with ModelLoadError"""
+        handler = ErrorHandler()
+        error = ModelLoadError("Model load failed")
+        result = handler._generate_error_response(error)
+        assert result["error_code"] == "MODEL_ERROR"
+
+    def test_generate_error_response_system_resource(self):
+        """Test _generate_error_response with SystemResourceError"""
+        handler = ErrorHandler()
+        error = SystemResourceError("Resource unavailable")
+        result = handler._generate_error_response(error)
+        assert result["error_code"] == "RESOURCE_ERROR"
+
+    def test_generate_error_response_with_context(self):
+        """Test _generate_error_response includes context info"""
+        handler = ErrorHandler()
+        error = TTSError("Test error", severity=ErrorSeverity.MEDIUM)
+        error.context = ErrorContext(operation="test_op", request_id="req123")
+        result = handler._generate_error_response(error)
+        assert result["operation"] == "test_op"
+        assert result["request_id"] == "req123"
+
+    def test_log_error_high_severity(self):
+        """Test _log_error with HIGH severity logs error"""
+        handler = ErrorHandler()
+        error = TTSError("High severity error", severity=ErrorSeverity.HIGH)
+        error.context = ErrorContext(operation="test_op")
+        # Should not raise, just logs
+        handler._log_error(error)
+
+    def test_log_error_low_severity(self):
+        """Test _log_error with LOW severity logs info"""
+        handler = ErrorHandler()
+        error = TTSError("Low severity error", severity=ErrorSeverity.LOW)
+        error.context = ErrorContext(operation="test_op")
+        # Should not raise, just logs
+        handler._log_error(error)
+
+
+class TestGracefulDegradation:
+    """Test cases for GracefulDegradation"""
+
+    def test_fallback_voice_af(self):
+        """Test fallback_voice with American female voice"""
+        result = GracefulDegradation.fallback_voice("af_heart", ["af_heart", "am_ben"])
+        assert result == "af_heart"
+
+    def test_fallback_voice_am(self):
+        """Test fallback_voice with American male voice"""
+        result = GracefulDegradation.fallback_voice("am_ben", ["af_heart", "am_ben"])
+        assert result == "am_ben"
+
+    def test_fallback_voice_bf(self):
+        """Test fallback_voice with British female voice"""
+        result = GracefulDegradation.fallback_voice("bf_emma", ["bf_emma", "bm_george"])
+        assert result == "bf_emma"
+
+    def test_fallback_voice_bm(self):
+        """Test fallback_voice with British male voice"""
+        result = GracefulDegradation.fallback_voice("bm_george", ["bf_emma", "bm_george"])
+        assert result == "bm_george"
+
+    def test_fallback_voice_unknown_pattern(self):
+        """Test fallback_voice with unknown voice pattern"""
+        result = GracefulDegradation.fallback_voice("custom_voice", ["af_heart", "am_ben"])
+        # Falls back to first available
+        assert result in ["af_heart", "am_ben"]
+
+    def test_fallback_voice_empty_list_raises(self):
+        """Test fallback_voice with empty list raises error"""
+        with pytest.raises(VoiceNotFoundError):
+            GracefulDegradation.fallback_voice("af_heart", [])
+
+    def test_fallback_format_mp3(self):
+        """Test fallback_format with mp3"""
+        result = GracefulDegradation.fallback_format("mp3")
+        assert result == "mp3"
+
+    def test_fallback_format_unknown(self):
+        """Test fallback_format with unknown format returns mp3"""
+        result = GracefulDegradation.fallback_format("unknown")
+        assert result == "mp3"
+
+    def test_simplify_text(self):
+        """Test simplify_text removes complex punctuation"""
+        text = "Hello world! How are you? (Fine.)"
+        result = GracefulDegradation.simplify_text(text)
+        assert isinstance(result, str)
