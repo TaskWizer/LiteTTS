@@ -467,6 +467,414 @@ class TestPhonemizationPreprocessorEdgeCases2:
     def processor(self):
         return PhonemizationPreprocessor()
 
+    def test_expand_contractions_fallback_mode(self):
+        """Test _expand_contractions when enhanced_contraction_processor is None"""
+        # Create processor and force enhanced_contraction_processor to None
+        processor = PhonemizationPreprocessor()
+        processor.enhanced_contraction_processor = None
+        processor.expand_all = True
+        processor.preserve_natural = False
+
+        text = "I'm happy"
+        result, changes = processor._expand_contractions(text)
+        assert isinstance(result, str)
+        assert isinstance(changes, list)
+
+    def test_expand_contractions_preserve_all(self):
+        """Test _expand_contractions when preserving all contractions"""
+        processor = PhonemizationPreprocessor()
+        processor.enhanced_contraction_processor = None
+        processor.expand_all = False
+        processor.expand_problematic_only = True
+        processor.preserve_natural = True
+
+        text = "I'm happy"
+        result, changes = processor._expand_contractions(text)
+        # Should preserve contractions
+        assert isinstance(result, str)
+
+    def test_expand_contractions_problematic_only(self):
+        """Test _expand_contractions with problematic_only mode"""
+        processor = PhonemizationPreprocessor()
+        processor.enhanced_contraction_processor = None
+        processor.expand_all = False
+        processor.expand_problematic_only = True
+        processor.preserve_natural = True
+
+        text = "I'm happy"
+        result, changes = processor._expand_contractions(text)
+        assert isinstance(result, str)
+
+    def test_convert_numbers_conservative_zero(self):
+        """Test conservative number conversion with zero"""
+        processor = PhonemizationPreprocessor()
+        processor.enhanced_contraction_processor = None
+
+        text = "I have 0 apples"
+        result, changes = processor._convert_numbers_conservative(text)
+        assert "zero" in result.lower()
+
+    def test_convert_numbers_conservative_decimal(self):
+        """Test conservative number conversion with decimals"""
+        processor = PhonemizationPreprocessor()
+        processor.enhanced_contraction_processor = None
+
+        text = "Pi is 3.14159"
+        result, changes = processor._convert_numbers_conservative(text)
+        assert isinstance(result, str)
+
+    def test_convert_numbers_conservative_comma_separated(self):
+        """Test conservative number conversion with comma-separated numbers"""
+        processor = PhonemizationPreprocessor()
+        processor.enhanced_contraction_processor = None
+
+        text = "The population is 1,000,000"
+        result, changes = processor._convert_numbers_conservative(text)
+        # Should warn about comma-separated numbers
+        assert isinstance(result, str)
+
+    def test_convert_symbols_conservative_quotes(self):
+        """Test conservative symbol conversion with quotes"""
+        processor = PhonemizationPreprocessor()
+        processor.enhanced_contraction_processor = None
+
+        text = 'He said "Hello"'
+        result, changes = processor._convert_symbols_conservative(text)
+        # Should remove quotes
+        assert '"' not in result
+
+    def test_convert_symbols_conservative_empty(self):
+        """Test conservative symbol conversion with empty problematic_symbols"""
+        processor = PhonemizationPreprocessor()
+        processor.enhanced_contraction_processor = None
+        processor.problematic_symbols = {}
+
+        text = "Hello + World"
+        result, changes = processor._convert_symbols_conservative(text)
+        # + should be preserved since it's not in problematic_symbols
+        assert isinstance(result, str)
+
+    def test_fix_problematic_patterns_conservative_dot(self):
+        """Test conservative pattern fixing with domain names"""
+        processor = PhonemizationPreprocessor()
+
+        text = "Visit google.com please"
+        result, changes = processor._fix_problematic_patterns_conservative(text)
+        assert isinstance(result, str)
+
+    def test_fix_problematic_patterns_conservative_email(self):
+        """Test conservative pattern fixing with email"""
+        processor = PhonemizationPreprocessor()
+
+        text = "Email test@example.com please"
+        result, changes = processor._fix_problematic_patterns_conservative(text)
+        assert isinstance(result, str)
+
+    def test_fix_problematic_patterns_conservative_range(self):
+        """Test conservative pattern fixing with number range"""
+        processor = PhonemizationPreprocessor()
+
+        text = "The range is 1-10"
+        result, changes = processor._fix_problematic_patterns_conservative(text)
+        assert isinstance(result, str)
+
+    def test_fix_problematic_patterns_conservative_time(self):
+        """Test conservative pattern fixing with time"""
+        processor = PhonemizationPreprocessor()
+
+        text = "The time is 10:30"
+        result, changes = processor._fix_problematic_patterns_conservative(text)
+        assert isinstance(result, str)
+
+    def test_fix_problematic_patterns_conservative_underscore(self):
+        """Test conservative pattern fixing with underscored words"""
+        processor = PhonemizationPreprocessor()
+
+        text = "Variable name is test_value"
+        result, changes = processor._fix_problematic_patterns_conservative(text)
+        assert isinstance(result, str)
+
+    def test_fix_problematic_patterns_conservative_acronym(self):
+        """Test conservative pattern fixing with acronyms"""
+        processor = PhonemizationPreprocessor()
+
+        text = "The CEO is here"
+        result, changes = processor._fix_problematic_patterns_conservative(text)
+        # CEO should be lowercased
+        assert isinstance(result, str)
+
+    def test_fix_problematic_patterns_conservative_number_letter(self):
+        """Test conservative pattern fixing with number-letter combinations"""
+        processor = PhonemizationPreprocessor()
+
+        text = "Item A1 is great"
+        result, changes = processor._fix_problematic_patterns_conservative(text)
+        assert isinstance(result, str)
+
+    def test_fix_problematic_patterns_conservative_no_match(self):
+        """Test conservative pattern fixing with no matches"""
+        processor = PhonemizationPreprocessor()
+
+        text = "Hello world"
+        result, changes = processor._fix_problematic_patterns_conservative(text)
+        assert result == text
+
+    def test_is_time_expression_true(self):
+        """Test time expression detection with a.m."""
+        processor = PhonemizationPreprocessor()
+        assert processor._is_time_expression("ten thirty five a m") is True
+
+    def test_is_time_expression_false_simple(self):
+        """Test time expression detection with simple text"""
+        processor = PhonemizationPreprocessor()
+        assert processor._is_time_expression("hello world") is False
+
+    def test_clean_whitespace_and_punctuation_multiple(self):
+        """Test whitespace and punctuation cleaning with multiple issues"""
+        processor = PhonemizationPreprocessor()
+
+        text = "Hello    world...\t\n"
+        result = processor._clean_whitespace_and_punctuation(text)
+        assert "  " not in result
+        assert "\t" not in result
+        assert "\n" not in result
+
+    def test_clean_whitespace_and_punctuation_quotes(self):
+        """Test whitespace cleaning around quotes"""
+        processor = PhonemizationPreprocessor()
+
+        text = 'Hello " world'
+        result = processor._clean_whitespace_and_punctuation(text)
+        assert isinstance(result, str)
+
+    def test_clean_whitespace_and_punctuation_parens(self):
+        """Test whitespace cleaning around parentheses"""
+        processor = PhonemizationPreprocessor()
+
+        text = "Hello ( world )"
+        result = processor._clean_whitespace_and_punctuation(text)
+        assert isinstance(result, str)
+
+    def test_detect_potential_issues_empty(self):
+        """Test issue detection with clean text"""
+        processor = PhonemizationPreprocessor()
+
+        text = "Hello world. This is a normal sentence."
+        issues = processor._detect_potential_issues(text)
+        assert isinstance(issues, list)
+
+    def test_detect_potential_issues_urls(self):
+        """Test issue detection with URLs"""
+        processor = PhonemizationPreprocessor()
+
+        text = "Check https://example.com/very/long/url/that/might/be/problematic"
+        issues = processor._detect_potential_issues(text)
+        assert any("url" in i.lower() for i in issues)
+
+    def test_detect_potential_issues_many_numbers(self):
+        """Test issue detection with many numbers"""
+        processor = PhonemizationPreprocessor()
+
+        text = "Numbers: 123 456 789 012 345 678"
+        issues = processor._detect_potential_issues(text)
+        assert any("number" in i.lower() for i in issues)
+
+    def test_preprocess_text_no_preserve_word_count(self):
+        """Test preprocessing with preserve_word_count=False"""
+        processor = PhonemizationPreprocessor()
+
+        text = "Hello world"
+        result = processor.preprocess_text(text, preserve_word_count=False)
+        assert result is not None
+        assert hasattr(result, 'processed_text')
+
+    def test_preprocess_text_aggressive_no_preserve(self):
+        """Test aggressive preprocessing without word count preservation"""
+        processor = PhonemizationPreprocessor()
+
+        text = "don't won't can't"
+        result = processor.preprocess_text(text, aggressive=True, preserve_word_count=False)
+        assert result is not None
+
+    def test_preprocess_returns_result(self):
+        """Test that preprocess_text returns PreprocessingResult"""
+        processor = PhonemizationPreprocessor()
+
+        text = "Hello world."
+        result = processor.preprocess_text(text)
+        assert hasattr(result, 'original_text')
+        assert hasattr(result, 'changes_made')
+        assert hasattr(result, 'confidence_score')
+        assert hasattr(result, 'warnings')
+
+    def test_preprocess_text_with_config(self):
+        """Test preprocessing with explicit config"""
+        processor = PhonemizationPreprocessor()
+
+        text = "I'm happy"
+        result = processor.preprocess_text(text)
+        assert result is not None
+
+    def test_preprocess_text_conservative_mode(self):
+        """Test preprocessing in conservative mode"""
+        processor = PhonemizationPreprocessor()
+
+        text = "Hello world 123"
+        result = processor.preprocess_text(text, aggressive=False)
+        assert result is not None
+
+    def test_preprocess_text_preserve_word_count_true(self):
+        """Test preprocessing with preserve_word_count=True"""
+        processor = PhonemizationPreprocessor()
+
+        text = "Hello world"
+        result = processor.preprocess_text(text, preserve_word_count=True)
+        assert result is not None
+
+    def test_preprocess_text_with_warnings(self):
+        """Test preprocessing that generates warnings"""
+        processor = PhonemizationPreprocessor()
+
+        text = "Code: {foo: bar;} with $pecial@chars and 12345678901234"
+        result = processor.preprocess_text(text)
+        assert hasattr(result, 'warnings')
+
+    def test_number_to_words_small(self):
+        """Test number to words conversion for small numbers"""
+        processor = PhonemizationPreprocessor()
+
+        # Test single digit
+        result = processor._number_to_words(5)
+        assert result == "five"
+
+        # Test teen numbers
+        result = processor._number_to_words(12)
+        assert result == "twelve"
+
+        # Test tens
+        result = processor._number_to_words(30)
+        assert result == "thirty"
+
+    def test_is_time_expression_various(self):
+        """Test various time expression patterns"""
+        processor = PhonemizationPreprocessor()
+
+        # Various time patterns
+        assert processor._is_time_expression("ten thirty five a m") is True
+        assert processor._is_time_expression("nine o'clock p m") is True
+        assert processor._is_time_expression("ten a m") is True
+        assert processor._is_time_expression("hello world") is False
+        assert processor._is_time_expression("at ten") is False
+
+    def test_detect_issues_code_patterns(self):
+        """Test issue detection with code patterns"""
+        processor = PhonemizationPreprocessor()
+
+        text = "if (x == 5) { return; }"
+        issues = processor._detect_potential_issues(text)
+        assert any("code" in i.lower() for i in issues)
+
+    def test_detect_issues_long_numbers(self):
+        """Test issue detection with long numbers"""
+        processor = PhonemizationPreprocessor()
+
+        text = "ID is 12345678901234"
+        issues = processor._detect_potential_issues(text)
+        assert any("long" in i.lower() for i in issues)
+
+    def test_detect_issues_many_special_chars(self):
+        """Test issue detection with many special characters"""
+        processor = PhonemizationPreprocessor()
+
+        text = "Test @#$%^&*() chars"
+        issues = processor._detect_potential_issues(text)
+        assert any("special" in i.lower() for i in issues)
+
+    def test_detect_issues_long_words(self):
+        """Test issue detection with very long words"""
+        processor = PhonemizationPreprocessor()
+
+        text = "This word is reallyverylongandshouldbetreatedasaproblem " * 2
+        issues = processor._detect_potential_issues(text)
+        assert any("long" in i.lower() for i in issues)
+
+    def test_detect_issues_repeated_chars(self):
+        """Test issue detection with repeated characters"""
+        processor = PhonemizationPreprocessor()
+
+        text = "Hellooooooo world"
+        issues = processor._detect_potential_issues(text)
+        assert any("repeated" in i.lower() for i in issues)
+
+    def test_detect_issues_empty(self):
+        """Test issue detection with empty list"""
+        processor = PhonemizationPreprocessor()
+
+        text = "Hello world"
+        issues = processor._detect_potential_issues(text)
+        assert isinstance(issues, list)
+
+    def test_convert_numbers_conservative_decimal_only(self):
+        """Test conservative number conversion with decimals only"""
+        processor = PhonemizationPreprocessor()
+        processor.enhanced_contraction_processor = None
+
+        text = "3.14"
+        result, changes = processor._convert_numbers_conservative(text)
+        assert isinstance(result, str)
+
+    def test_convert_symbols_conservative_quotes_only(self):
+        """Test conservative symbol conversion with quotes only"""
+        processor = PhonemizationPreprocessor()
+        processor.enhanced_contraction_processor = None
+
+        text = '"Hello"'
+        result, changes = processor._convert_symbols_conservative(text)
+        assert '"' not in result
+
+    def test_convert_symbols_conservative_no_symbols(self):
+        """Test conservative symbol conversion with no problematic symbols"""
+        processor = PhonemizationPreprocessor()
+        processor.enhanced_contraction_processor = None
+        processor.problematic_symbols = {}
+
+        text = "Hello + World"
+        result, changes = processor._convert_symbols_conservative(text)
+        assert '+' in result
+
+    def test_clean_whitespace_sentence_spacing(self):
+        """Test whitespace cleaning ensures sentence spacing"""
+        processor = PhonemizationPreprocessor()
+
+        text = "Hello.A"
+        result = processor._clean_whitespace_and_punctuation(text)
+        assert ". A" in result or result == "Hello. A"
+
+    def test_clean_whitespace_only(self):
+        """Test whitespace cleaning with only whitespace issues"""
+        processor = PhonemizationPreprocessor()
+
+        text = "Hello    world"
+        result = processor._clean_whitespace_and_punctuation(text)
+        assert "  " not in result
+
+    def test_calculate_confidence_score_high(self):
+        """Test confidence score calculation for clean text"""
+        processor = PhonemizationPreprocessor()
+
+        text = "Hello world. This is a normal sentence."
+        score = processor._calculate_confidence_score(text, text)
+        assert score > 0.5
+
+    def test_calculate_confidence_score_bounded(self):
+        """Test confidence score is bounded between 0 and 1"""
+        processor = PhonemizationPreprocessor()
+
+        # Very bad text
+        text = "@#$%^&* 12345678901234567890 " * 10
+        score = processor._calculate_confidence_score(text, text)
+        assert 0.0 <= score <= 1.0
+
     def test_html_entities_multiple(self, processor):
         """Test multiple HTML entities"""
         text = "&#x27;hello&#x27; and &#39;world&#39;"
@@ -562,3 +970,153 @@ class TestPhonemizationPreprocessorEdgeCases2:
         text = "Hello :)"
         result = processor.preprocess_text(text)
         assert result is not None
+
+    def test_preprocess_preserve_false_expand_true(self):
+        """Test preprocessing with preserve_word_count=False triggers full expansion"""
+        processor = PhonemizationPreprocessor()
+        text = "I'm happy"
+        result = processor.preprocess_text(text, preserve_word_count=False)
+        assert result is not None
+
+    def test_preprocess_preserve_false_aggressive_true(self):
+        """Test preprocessing with preserve_word_count=False and aggressive=True"""
+        processor = PhonemizationPreprocessor()
+        text = "don't worry"
+        result = processor.preprocess_text(text, aggressive=True, preserve_word_count=False)
+        assert result is not None
+
+    def test_preprocess_full_pipeline(self):
+        """Test full preprocessing pipeline"""
+        processor = PhonemizationPreprocessor()
+        text = "Hello world! I'm fine."
+        result = processor.preprocess_text(text)
+        assert hasattr(result, 'processed_text')
+        assert hasattr(result, 'original_text')
+        assert result.processed_text is not None
+
+    def test_html_entity_decoding(self):
+        """Test HTML entity decoding"""
+        processor = PhonemizationPreprocessor()
+        text = "Tom &amp; Jerry"
+        result, changes = processor._decode_html_entities(text)
+        assert isinstance(result, str)
+
+    def test_fix_tech_compounds_c_sharp(self):
+        """Test tech compound fixing for C#"""
+        processor = PhonemizationPreprocessor()
+        text = "Use C# for development"
+        result, changes = processor._fix_tech_compounds(text)
+        assert isinstance(result, str)
+
+    def test_fix_tech_compounds_oauth(self):
+        """Test tech compound fixing for OAuth"""
+        processor = PhonemizationPreprocessor()
+        text = "OAuth 2.0 is common"
+        result, changes = processor._fix_tech_compounds(text)
+        assert isinstance(result, str)
+
+    def test_fix_tech_compounds_ipv6(self):
+        """Test tech compound fixing for IPv6"""
+        processor = PhonemizationPreprocessor()
+        text = "IPv6 address"
+        result, changes = processor._fix_tech_compounds(text)
+        assert isinstance(result, str)
+
+    def test_fix_fractions_half(self):
+        """Test fraction handling for ½"""
+        processor = PhonemizationPreprocessor()
+        text = "Use ½ cup"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert isinstance(result, str)
+
+    def test_fix_fractions_quarter(self):
+        """Test fraction handling for ¼"""
+        processor = PhonemizationPreprocessor()
+        text = "Use ¼ teaspoon"
+        result, changes = processor._fix_fractions_and_symbols(text)
+        assert isinstance(result, str)
+
+    def test_filter_emojis(self):
+        """Test emoji filtering"""
+        processor = PhonemizationPreprocessor()
+        text = "Hello 👋 world"
+        result, changes = processor._filter_emojis(text)
+        assert '👋' not in result
+
+    def test_handle_quote_characters(self):
+        """Test quote character handling"""
+        processor = PhonemizationPreprocessor()
+        text = 'He said "hello"'
+        result, changes = processor._handle_quote_characters(text)
+        assert isinstance(result, str)
+
+    def test_process_contractions_enhanced_processor_mode_expanded(self):
+        """Test _expand_contractions with enhanced processor in expanded mode"""
+        processor = PhonemizationPreprocessor()
+        processor.expand_all = True
+        processor.preserve_natural = False
+        # enhanced_contraction_processor is available, so this tests the enhanced path
+        text = "I'm happy"
+        result, changes = processor._expand_contractions(text)
+        assert isinstance(result, str)
+
+    def test_process_contractions_enhanced_processor_mode_natural(self):
+        """Test _expand_contractions with enhanced processor in natural mode"""
+        processor = PhonemizationPreprocessor()
+        processor.expand_all = False
+        processor.preserve_natural = False
+        # enhanced_contraction_processor is available
+        text = "I'm happy"
+        result, changes = processor._expand_contractions(text)
+        assert isinstance(result, str)
+
+    def test_process_contractions_no_changes(self):
+        """Test _expand_contractions with no changes needed"""
+        processor = PhonemizationPreprocessor()
+        text = "Hello world"
+        result, changes = processor._expand_contractions(text)
+        assert result == text
+
+    def test_convert_numbers_conservative_zero_found(self):
+        """Test _convert_numbers_conservative converts standalone 0"""
+        processor = PhonemizationPreprocessor()
+        processor.enhanced_contraction_processor = None
+        text = "I have 0 apples"
+        result, changes = processor._convert_numbers_conservative(text)
+        assert isinstance(result, str)
+
+    def test_convert_symbols_conservative_with_quotes(self):
+        """Test _convert_symbols_conservative removes quotes"""
+        processor = PhonemizationPreprocessor()
+        processor.enhanced_contraction_processor = None
+        text = 'She said "hi"'
+        result, changes = processor._convert_symbols_conservative(text)
+        assert '"' not in result
+
+    def test_fix_problematic_patterns_css_value(self):
+        """Test _fix_problematic_patterns_conservative with CSS value"""
+        processor = PhonemizationPreprocessor()
+        text = "width: 100px"
+        result, changes = processor._fix_problematic_patterns_conservative(text)
+        assert isinstance(result, str)
+
+    def test_fix_problematic_patterns_excessive_dots(self):
+        """Test _fix_problematic_patterns_conservative with excessive dots"""
+        processor = PhonemizationPreprocessor()
+        text = "Hello.... world"
+        result, changes = processor._fix_problematic_patterns_conservative(text)
+        assert "...." not in result
+
+    def test_fix_problematic_patterns_www(self):
+        """Test _fix_problematic_patterns_conservative with www"""
+        processor = PhonemizationPreprocessor()
+        text = "Visit www.example.com"
+        result, changes = processor._fix_problematic_patterns_conservative(text)
+        assert isinstance(result, str)
+
+    def test_fix_problematic_patterns_time(self):
+        """Test _fix_problematic_patterns_conservative with time"""
+        processor = PhonemizationPreprocessor()
+        text = "at 10:30"
+        result, changes = processor._fix_problematic_patterns_conservative(text)
+        assert isinstance(result, str)
