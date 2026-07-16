@@ -12,7 +12,8 @@ from LiteTTS.error_handling import (
     VoiceNotFoundError,
     AudioGenerationError,
     ValidationError,
-    SystemResourceError
+    SystemResourceError,
+    ErrorHandler
 )
 
 
@@ -100,3 +101,100 @@ class TestSystemResourceError:
         """Test creating system resource error"""
         error = SystemResourceError("Out of memory")
         assert str(error) == "Out of memory"
+
+
+class TestErrorHandler:
+    """Test cases for ErrorHandler"""
+
+    def test_initialization(self):
+        """Test ErrorHandler initialization"""
+        handler = ErrorHandler()
+        assert handler.error_counts == {}
+        assert handler.last_errors == {}
+        assert handler.circuit_breakers == {}
+
+    def test_handle_error_with_tts_error(self):
+        """Test handle_error with already wrapped TTSError"""
+        handler = ErrorHandler()
+        error = TTSError("Test error", severity=ErrorSeverity.MEDIUM)
+        context = ErrorContext(operation="test")
+        result = handler.handle_error(error, context)
+        assert isinstance(result, dict)
+
+    def test_handle_error_with_regular_exception(self):
+        """Test handle_error wrapping regular exception"""
+        handler = ErrorHandler()
+        error = ValueError("Test value error")
+        context = ErrorContext(operation="test")
+        result = handler.handle_error(error, context)
+        assert isinstance(result, dict)
+
+    def test_handle_error_without_context(self):
+        """Test handle_error without context"""
+        handler = ErrorHandler()
+        error = ValueError("Test error")
+        result = handler.handle_error(error)
+        assert isinstance(result, dict)
+
+    def test_determine_severity_critical(self):
+        """Test _determine_severity with critical errors"""
+        handler = ErrorHandler()
+        error = MemoryError("Out of memory")
+        severity = handler._determine_severity(error)
+        assert severity == ErrorSeverity.CRITICAL
+
+    def test_determine_severity_high(self):
+        """Test _determine_severity with high severity errors"""
+        handler = ErrorHandler()
+        error = ModelLoadError("Failed to load")
+        severity = handler._determine_severity(error)
+        assert severity == ErrorSeverity.HIGH
+
+    def test_determine_severity_medium(self):
+        """Test _determine_severity with medium severity errors"""
+        handler = ErrorHandler()
+        error = AudioGenerationError("Audio failed")
+        severity = handler._determine_severity(error)
+        assert severity == ErrorSeverity.MEDIUM
+
+    def test_determine_severity_low(self):
+        """Test _determine_severity with low severity errors"""
+        handler = ErrorHandler()
+        error = KeyError("Key not found")
+        severity = handler._determine_severity(error)
+        assert severity == ErrorSeverity.LOW
+
+    def test_track_error(self):
+        """Test _track_error updates error tracking"""
+        handler = ErrorHandler()
+        error = TTSError("Test error", severity=ErrorSeverity.MEDIUM)
+        handler._track_error(error)
+        # Key format is "TTSError:unknown" when no context
+        assert any("TTSError" in k for k in handler.error_counts.keys())
+
+    def test_should_circuit_break_not_triggered(self):
+        """Test _should_circuit_break when threshold not met"""
+        handler = ErrorHandler()
+        error = TTSError("Test error", severity=ErrorSeverity.LOW)
+        assert handler._should_circuit_break(error) is False
+
+    def test_log_error(self):
+        """Test _log_error doesn't raise exceptions"""
+        handler = ErrorHandler()
+        error = TTSError("Test error", severity=ErrorSeverity.MEDIUM)
+        # Should not raise
+        handler._log_error(error)
+
+    def test_circuit_breaker_response(self):
+        """Test _circuit_breaker_response returns dict"""
+        handler = ErrorHandler()
+        error = TTSError("Circuit broken", severity=ErrorSeverity.HIGH)
+        result = handler._circuit_breaker_response(error)
+        assert isinstance(result, dict)
+
+    def test_generate_error_response(self):
+        """Test _generate_error_response returns dict"""
+        handler = ErrorHandler()
+        error = TTSError("Test error", severity=ErrorSeverity.MEDIUM)
+        result = handler._generate_error_response(error)
+        assert isinstance(result, dict)
