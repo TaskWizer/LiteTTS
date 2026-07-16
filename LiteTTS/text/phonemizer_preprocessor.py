@@ -779,17 +779,17 @@ class PhonemizationPreprocessor:
             # No change in sound, just ensuring it's preserved
 
         # A.I., A.P.I., G.P.S., etc. - period-separated acronyms
-        # Convert to space-separated: A.I. -> A I, A.P.I. -> A P I
+        # Convert to hyphen-separated: A.I. -> A-I, A.P.I. -> A-P-I
         if re.search(r'\b[A-Z]\.[A-Z](?:\.[A-Z])*\.?', text):
             def acronym_to_words(match):
                 acronym = match.group()
                 # Remove trailing dot if present
                 acronym = acronym.rstrip('.')
-                # Split by dots and join with spaces
+                # Split by dots and join with hyphens
                 letters = acronym.split('.')
-                return ' '.join(letters)
+                return '-'.join(letters)
             text = re.sub(r'\b[A-Z]\.[A-Z](?:\.[A-Z])*\.?', acronym_to_words, text)
-            changes.append("Period-separated acronyms to spaced letters")
+            changes.append("Period-separated acronyms to hyphenated letters")
 
         if text != original_text and changes:
             logger.debug(f"Fixed tech compounds: {changes}")
@@ -937,12 +937,12 @@ class PhonemizationPreprocessor:
 
                 result = []
 
-                # Protocol
+                # Protocol - spell out with hyphens: HTTPS -> H-T-T-P-S
                 if url.startswith('https://'):
-                    result.extend('H T T P S'.split())
+                    result.append('H-T-T-P-S')
                     url = url[8:]
                 elif url.startswith('http://'):
-                    result.extend('H T T P'.split())
+                    result.append('H-T-T-P')
                     url = url[7:]
 
                 # Split by /
@@ -950,36 +950,31 @@ class PhonemizationPreprocessor:
                 domain = parts[0]
                 path_parts = parts[1:] if len(parts) > 1 else []
 
-                # Domain
+                # Domain - spell out with hyphens between letters
                 domain_parts = domain.split('.')
                 for i, dp in enumerate(domain_parts):
                     if i > 0:
                         result.append('dot')
-                    result.extend(list(dp.upper()))
+                    # Hyphenate each letter in domain part
+                    result.append('-'.join(list(dp.upper())))
 
                 # Path
                 for pp in path_parts:
-                    result.append('forward slash')
+                    result.append('slash')
                     if '?' in pp:
                         path_seg, query = pp.split('?', 1)
-                        result.extend(list(path_seg.upper()))
+                        result.append('-'.join(list(path_seg.upper())))
                         result.append('question mark')
                         for param in query.split('&'):
                             if '=' in param:
                                 k, v = param.split('=', 1)
-                                for j, c in enumerate(k):
-                                    if c.isalpha():
-                                        result.append(c.upper())
-                                        if j < len(k) - 1:
-                                            result.append('dash')
-                                    elif c.isdigit():
-                                        result.append(c)
+                                result.append('-'.join(list(k.upper())))
                                 result.append('equals')
-                                result.extend(list(v.upper()))
-                            result.append('and')
-                        result.pop()  # Remove trailing 'and'
+                                result.append('-'.join(list(v.upper())))
+                            else:
+                                result.append('-'.join(list(param.upper())))
                     else:
-                        result.extend(list(pp.upper()))
+                        result.append('-'.join(list(pp.upper())))
 
                 return ' '.join(result)
 
@@ -987,9 +982,9 @@ class PhonemizationPreprocessor:
             changes.append("URL to words")
 
         # FIX: Handle YAML and XML explicitly before the acronym pattern converts them
-        # YAML -> yam el, XML -> ex em el
-        text = re.sub(r'\bYAML\b', 'yam el', text, flags=re.IGNORECASE)
-        text = re.sub(r'\bXML\b', 'ex em el', text, flags=re.IGNORECASE)
+        # YAML -> yam-el, XML -> ex-em-el (with hyphens for better TTS)
+        text = re.sub(r'\bYAML\b', 'yam-el', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bXML\b', 'ex-em-el', text, flags=re.IGNORECASE)
         text = re.sub(r'\bJSON\b', 'jay son', text, flags=re.IGNORECASE)
         text = re.sub(r'\bSQL\b', 'sequel', text, flags=re.IGNORECASE)
         text = re.sub(r'\bAPI\b', 'A P I', text, flags=re.IGNORECASE)
