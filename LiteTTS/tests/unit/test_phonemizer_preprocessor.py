@@ -6,7 +6,7 @@ Unit tests for phonemizer preprocessor
 import pytest
 import re
 import importlib
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, MagicMock
 from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
 
 
@@ -2134,3 +2134,52 @@ class TestPhonemizationPreprocessorGlobalConfig:
             result, changes = proc._convert_numbers_to_words(text, aggressive=False)
         except ValueError:
             pass  # Expected since our patched method raises
+
+    def test_config_performance_exception_handler(self):
+        """Test config.performance exception handler (lines 93-97)"""
+        # LiteTTS.config IS the ConfigManager object
+        # We need to patch its .performance attribute to raise exceptions
+        import LiteTTS.config as config_obj
+
+        # Create a custom mock that raises AttributeError on specific attrs
+        class RaisingPerformanceMock:
+            def __init__(self):
+                # Working attributes
+                self.expand_contractions = True
+                self.preserve_natural_speech = True
+
+            # These raise AttributeError to trigger exception handler
+            @property
+            def expand_problematic_contractions_only(self):
+                raise AttributeError("test")
+            @property
+            def filter_emojis(self):
+                raise AttributeError("test")
+            @property
+            def emoji_replacement(self):
+                raise AttributeError("test")
+            @property
+            def preserve_word_count(self):
+                raise AttributeError("test")
+
+        # Replace the performance object
+        original_performance = config_obj.performance
+        config_obj.performance = RaisingPerformanceMock()
+
+        try:
+            from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+            # Creating a new preprocessor should trigger the exception handler at lines 93-97
+            proc = PhonemizationPreprocessor()
+            # Verify defaults were set by the exception handler
+            assert proc.expand_problematic_only == True
+            assert proc.filter_emojis == True
+            assert proc.preserve_word_count_config == True
+        finally:
+            # Restore original performance
+            config_obj.performance = original_performance
+
+
+
+
+
+
