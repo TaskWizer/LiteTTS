@@ -1188,6 +1188,12 @@ class TestPhonemizationPreprocessorEdgeCases2:
         result, changes = processor._fix_problematic_patterns(text)
         assert isinstance(result, str)
 
+    def test_handle_quote_characters_unicode_single(self, processor):
+        """Test _handle_quote_characters with Unicode single quotes"""
+        text = "Hello ‘world’"
+        result, changes = processor._handle_quote_characters(text)
+        assert isinstance(result, str)
+
     def test_fractions_with_number(self, processor):
         """Test fractions with leading number"""
         text = "2½ cups of flour"
