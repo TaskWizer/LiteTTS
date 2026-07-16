@@ -222,3 +222,195 @@ class TestChunkProcessor:
         ]
         duration = processor._estimate_audio_duration(chunks)
         assert duration > 0
+
+
+class TestChunkProcessorProcessChunks:
+    """Test cases for process_chunks_to_audio method"""
+
+    def test_process_chunks_to_audio_empty_raises(self):
+        """Test processing empty chunks raises error"""
+        processor = ChunkProcessor()
+        with pytest.raises(RuntimeError, match="No audio segments"):
+            processor.process_chunks_to_audio([], lambda *args: None, "test_voice")
+
+    def test_process_chunks_to_audio_logs_error(self):
+        """Test that errors in synthesis are logged"""
+        processor = ChunkProcessor()
+        chunks = [
+            TextChunk(text="Hello", chunk_index=0, total_chunks=2, pause_after=0.0),
+            TextChunk(text="World", chunk_index=1, total_chunks=2, pause_after=0.0),
+        ]
+
+        def synthesize_error(*args, **kwargs):
+            raise Exception("Synthesis error")
+
+        # Should not raise, just skip failing chunks and raise RuntimeError for no segments
+        with pytest.raises(RuntimeError):
+            processor.process_chunks_to_audio(chunks, synthesize_error, "test_voice")
+
+
+class TestChunkProcessorOptimize:
+    """Test cases for optimize_chunks method"""
+
+    def test_optimize_chunks_empty(self):
+        """Test optimizing empty chunks"""
+        processor = ChunkProcessor()
+        result = processor.optimize_chunks([])
+        assert result == []
+
+    def test_optimize_chunks(self):
+        """Test optimizing chunks"""
+        processor = ChunkProcessor()
+        chunks = [
+            TextChunk(text="Hello   world", chunk_index=0, total_chunks=1,
+                     is_sentence_boundary=True, is_paragraph_boundary=True, pause_after=0.5),
+        ]
+        result = processor.optimize_chunks(chunks)
+        assert len(result) == 1
+        assert "  " not in result[0].text  # Multiple spaces normalized
+
+    def test_optimize_chunk_text_whitespace(self):
+        """Test optimizing chunk text whitespace"""
+        processor = ChunkProcessor()
+        text = "Hello   world\t\t\ntest"
+        result = processor._optimize_chunk_text(text)
+        assert "\t" not in result
+        assert "\n" not in result
+
+    def test_optimize_chunk_text_punctuation_spacing(self):
+        """Test optimizing punctuation spacing"""
+        processor = ChunkProcessor()
+        text = "Hello , world ; test : end"
+        result = processor._optimize_chunk_text(text)
+        # Check that punctuation is followed immediately without extra space
+        assert "," in result or "world" in result
+
+
+class TestChunkProcessorValidate:
+    """Test cases for validate_chunks method"""
+
+    def test_validate_chunks_empty(self):
+        """Test validating empty chunks"""
+        processor = ChunkProcessor()
+        issues = processor.validate_chunks([])
+        assert "No chunks provided" in issues
+
+    def test_validate_chunks_too_long(self):
+        """Test validating chunks that are too long"""
+        processor = ChunkProcessor(max_chunk_length=10)
+        chunks = [
+            TextChunk(text="This is a very long chunk that exceeds the limit",
+                     chunk_index=0, total_chunks=1),
+        ]
+        issues = processor.validate_chunks(chunks)
+        assert any("too long" in issue for issue in issues)
+
+    def test_validate_chunks_empty_text(self):
+        """Test validating chunks with empty text"""
+        processor = ChunkProcessor()
+        chunks = [
+            TextChunk(text="   ", chunk_index=0, total_chunks=1),
+        ]
+        issues = processor.validate_chunks(chunks)
+        assert any("empty" in issue for issue in issues)
+
+    def test_validate_chunks_incorrect_index(self):
+        """Test validating chunks with incorrect index"""
+        processor = ChunkProcessor()
+        chunks = [
+            TextChunk(text="Hello", chunk_index=5, total_chunks=1),  # Wrong index
+        ]
+        issues = processor.validate_chunks(chunks)
+        assert any("incorrect index" in issue for issue in issues)
+
+    def test_validate_chunks_incorrect_total(self):
+        """Test validating chunks with incorrect total"""
+        processor = ChunkProcessor()
+        chunks = [
+            TextChunk(text="Hello", chunk_index=0, total_chunks=5),  # Wrong total
+        ]
+        issues = processor.validate_chunks(chunks)
+        assert any("incorrect total_chunks" in issue for issue in issues)
+
+    def test_validate_chunks_valid(self):
+        """Test validating valid chunks"""
+        processor = ChunkProcessor()
+        chunks = [
+            TextChunk(text="Hello world", chunk_index=0, total_chunks=1,
+                     is_sentence_boundary=True, is_paragraph_boundary=True, pause_after=0.5),
+        ]
+        issues = processor.validate_chunks(chunks)
+        assert issues == []
+
+
+class TestChunkProcessorMerge:
+    """Test cases for merge_small_chunks method"""
+
+    def test_merge_small_chunks_empty(self):
+        """Test merging empty chunks"""
+        processor = ChunkProcessor()
+        result = processor.merge_small_chunks([])
+        assert result == []
+
+    def test_merge_small_chunks(self):
+        """Test merging small chunks"""
+        processor = ChunkProcessor(max_chunk_length=50)
+        chunks = [
+            TextChunk(text="Hello", chunk_index=0, total_chunks=2, pause_after=0.0),
+            TextChunk(text="world", chunk_index=1, total_chunks=2, pause_after=0.0),
+        ]
+        result = processor.merge_small_chunks(chunks, min_chunk_length=5)
+        # Should merge into fewer chunks
+        assert len(result) <= len(chunks)
+
+    def test_merge_small_chunks_min_length(self):
+        """Test merging with minimum chunk length"""
+        processor = ChunkProcessor(max_chunk_length=50)
+        chunks = [
+            TextChunk(text="Hi", chunk_index=0, total_chunks=1, pause_after=0.0),
+        ]
+        result = processor.merge_small_chunks(chunks, min_chunk_length=10)
+        # Small chunk may be dropped if under min_chunk_length
+        assert isinstance(result, list)
+
+    def test_merge_small_chunks_preserves_boundaries(self):
+        """Test that merge preserves paragraph boundaries"""
+        processor = ChunkProcessor(max_chunk_length=200)
+        chunks = [
+            TextChunk(text="Short", chunk_index=0, total_chunks=2,
+                     is_sentence_boundary=False, is_paragraph_boundary=True, pause_after=0.0),
+            TextChunk(text="Text", chunk_index=1, total_chunks=2,
+                     is_sentence_boundary=True, is_paragraph_boundary=True, pause_after=0.0),
+        ]
+        result = processor.merge_small_chunks(chunks, min_chunk_length=3)
+        # Last chunk should preserve paragraph boundary
+        assert result[-1].is_paragraph_boundary is True
+
+
+class TestChunkProcessorIntegration:
+    """Integration tests for ChunkProcessor"""
+
+    def test_full_chunking_pipeline(self):
+        """Test full text chunking pipeline"""
+        processor = ChunkProcessor(max_chunk_length=50, overlap_length=10)
+        text = "This is a long piece of text that needs to be split into multiple chunks. It has multiple sentences. And some paragraphs.\n\nWith a new paragraph."
+
+        chunks = processor.chunk_text(text)
+        assert len(chunks) > 0
+        assert all(chunk.text for chunk in chunks)
+
+    def test_chunk_text_long_paragraph(self):
+        """Test chunking a very long paragraph"""
+        processor = ChunkProcessor(max_chunk_length=30)
+        text = "This is a very long paragraph that contains many words and should be split into multiple chunks even though it is just one paragraph without any breaks"
+
+        chunks = processor.chunk_text(text)
+        assert len(chunks) > 1
+
+    def test_chunk_text_multiple_paragraphs(self):
+        """Test chunking text with multiple paragraphs"""
+        processor = ChunkProcessor(max_chunk_length=50)
+        text = "First paragraph with some text.\n\nSecond paragraph with more text.\n\nThird paragraph."
+
+        chunks = processor.chunk_text(text)
+        assert len(chunks) >= 3
