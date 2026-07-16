@@ -185,6 +185,31 @@ class TestPhonemizationPreprocessorEdgeCases:
         result = processor.preprocess_text(text)
         assert result is not None
 
+    def test_initialization_with_config(self):
+        """Test PhonemizationPreprocessor with config dict"""
+        config = {
+            'text_processing': {
+                'expand_contractions': True,
+                'natural_speech': False
+            }
+        }
+        processor = PhonemizationPreprocessor(config=config)
+        assert processor is not None
+        assert processor.expand_all is True
+        assert processor.preserve_natural is False
+
+    def test_initialization_with_performance_config(self):
+        """Test PhonemizationPreprocessor with full performance config"""
+        config = {
+            'text_processing': {
+                'expand_contractions': True,
+                'natural_speech': True
+            }
+        }
+        processor = PhonemizationPreprocessor(config=config)
+        # expand_problematic_only, filter_emojis, etc are loaded from config.performance
+        assert processor is not None
+
     def test_preprocess_aggressive_mode(self, processor):
         """Test aggressive processing mode"""
         text = "don't won't can't"

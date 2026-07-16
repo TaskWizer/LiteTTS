@@ -6,6 +6,7 @@ Comprehensive error handling and graceful degradation for Kokoro ONNX TTS API
 import logging
 import traceback
 import time
+import inspect
 from typing import Optional, Dict, Any, Callable
 from functools import wraps
 from dataclasses import dataclass
@@ -265,7 +266,7 @@ def error_handler(operation: str):
                 )
         
         # Return appropriate wrapper based on function type
-        if hasattr(func, '__code__') and 'async' in str(func.__code__):
+        if inspect.iscoroutinefunction(func):
             return async_wrapper
         else:
             return sync_wrapper

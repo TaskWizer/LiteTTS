@@ -15,7 +15,8 @@ from LiteTTS.error_handling import (
     ValidationError,
     SystemResourceError,
     ErrorHandler,
-    GracefulDegradation
+    GracefulDegradation,
+    error_handler
 )
 
 
@@ -48,6 +49,12 @@ class TestErrorContext:
             format="mp3"
         )
         assert context.voice == "af_heart"
+
+    def test_creation_with_explicit_timestamp(self):
+        """Test creating error context with explicit timestamp"""
+        explicit_time = 1234567890.0
+        context = ErrorContext(operation="test_op", timestamp=explicit_time)
+        assert context.timestamp == explicit_time
 
 
 class TestTTSError:
@@ -222,6 +229,18 @@ class TestErrorHandler:
         error.context = ErrorContext(operation="test_op")
         assert handler._should_circuit_break(error) is False
 
+    def test_should_circuit_break_expired(self):
+        """Test _should_circuit_break not triggered when error time has expired (>5 min)"""
+        handler = ErrorHandler()
+        error_key = "TTSError:test_op"
+        handler.error_counts[error_key] = 6
+        # Set last error time to more than 5 minutes ago
+        handler.last_errors[error_key] = time.time() - 400
+        error = TTSError("Expired error", severity=ErrorSeverity.HIGH)
+        error.context = ErrorContext(operation="test_op")
+        # Should not circuit break because error expired (time > 5 min)
+        assert handler._should_circuit_break(error) is False
+
     def test_handle_error_triggers_circuit_breaker(self):
         """Test handle_error triggers circuit breaker when threshold exceeded"""
         handler = ErrorHandler()
@@ -230,10 +249,135 @@ class TestErrorHandler:
         handler.error_counts[error_key] = 6
         handler.last_errors[error_key] = time.time()
         error = MemoryError("Out of memory")
-        error.context = ErrorContext(operation="test_op")
-        result = handler.handle_error(error)
+        # Pass context to handle_error so the circuit breaker key matches
+        context = ErrorContext(operation="test_op")
+        result = handler.handle_error(error, context)
         # Circuit breaker returns specific response
         assert "error" in result
+
+    def test_handle_error_circuit_breaker_returns_correct_code(self):
+        """Test handle_error returns CIRCUIT_BREAKER_ACTIVE when threshold exceeded"""
+        handler = ErrorHandler()
+        # Set up error count > 5 for circuit breaker
+        # Note: _track_error uses type(error).__name__ which is TTSError when
+        # handle_error wraps a regular exception, so we use TTSError as key
+        error_key = "TTSError:test_op"
+        handler.error_counts[error_key] = 6
+        handler.last_errors[error_key] = time.time()
+        error = MemoryError("Out of memory")
+        context = ErrorContext(operation="test_op")
+        result = handler.handle_error(error, context)
+        # Circuit breaker returns correct error code (line 98)
+        assert result["error_code"] == "CIRCUIT_BREAKER_ACTIVE"
+
+
+class TestErrorHandlerDecorator:
+    """Test cases for the error_handler decorator"""
+
+    def test_error_handler_sync_wrapper_success(self):
+        """Test error_handler decorator with sync function that succeeds"""
+        @error_handler(operation="test_sync")
+        def successful_func():
+            return "success"
+
+        result = successful_func()
+        assert result == "success"
+
+    def test_error_handler_sync_wrapper_raises_tts_error(self):
+        """Test error_handler decorator with sync function that raises"""
+        @error_handler(operation="test_sync_error")
+        def failing_func():
+            raise ValueError("Test error")
+
+        with pytest.raises(TTSError) as exc_info:
+            failing_func()
+
+        assert str(exc_info.value) == "Test error"
+        assert exc_info.value.context.operation == "test_sync_error"
+
+    def test_error_handler_sync_wrapper_preserves_return_value(self):
+        """Test that sync_wrapper returns the function's return value on success"""
+        @error_handler(operation="test_preserve")
+        def func_with_return():
+            return 42
+
+        result = func_with_return()
+        assert result == 42
+
+    def test_error_handler_sync_wrapper_handles_keyboard_interrupt(self):
+        """Test error_handler decorator re-raises KeyboardInterrupt"""
+        @error_handler(operation="test_interrupt")
+        def interrupt_func():
+            raise KeyboardInterrupt()
+
+        with pytest.raises(KeyboardInterrupt):
+            interrupt_func()
+
+    @pytest.mark.asyncio
+    async def test_error_handler_async_wrapper_success(self):
+        """Test error_handler decorator with async function that succeeds"""
+        @error_handler(operation="test_async")
+        async def successful_async_func():
+            return "async success"
+
+        result = await successful_async_func()
+        assert result == "async success"
+
+    @pytest.mark.asyncio
+    async def test_error_handler_async_wrapper_raises_http_exception(self):
+        """Test error_handler decorator with async function that raises"""
+        from fastapi import HTTPException
+
+        @error_handler(operation="test_async_error")
+        async def failing_async_func():
+            raise ValueError("Async test error")
+
+        with pytest.raises(HTTPException) as exc_info:
+            await failing_async_func()
+
+        assert exc_info.value.status_code == 500
+
+    @pytest.mark.asyncio
+    async def test_error_handler_async_wrapper_raises_circuit_breaker_503(self):
+        """Test async error_handler raises 503 for circuit breaker"""
+        from fastapi import HTTPException
+
+        @error_handler(operation="test_circuit_async")
+        async def circuit_breaker_func():
+            raise SystemResourceError("Resource exhausted")
+
+        with pytest.raises(HTTPException) as exc_info:
+            await circuit_breaker_func()
+
+        assert exc_info.value.status_code == 503
+
+    @pytest.mark.asyncio
+    async def test_error_handler_async_wrapper_raises_validation_400(self):
+        """Test async error_handler raises 400 for validation error"""
+        from fastapi import HTTPException
+
+        @error_handler(operation="test_validation_async")
+        async def validation_func():
+            raise ValidationError("Invalid input")
+
+        with pytest.raises(HTTPException) as exc_info:
+            await validation_func()
+
+        assert exc_info.value.status_code == 400
+
+    @pytest.mark.asyncio
+    async def test_error_handler_async_wrapper_raises_not_found_404(self):
+        """Test async error_handler raises 404 for voice not found"""
+        from fastapi import HTTPException
+
+        @error_handler(operation="test_voice_async")
+        async def voice_not_found_func():
+            raise VoiceNotFoundError("Voice not found")
+
+        with pytest.raises(HTTPException) as exc_info:
+            await voice_not_found_func()
+
+        assert exc_info.value.status_code == 404
 
     def test_generate_error_response_validation_error(self):
         """Test _generate_error_response with ValidationError"""
@@ -325,6 +469,13 @@ class TestGracefulDegradation:
         # Falls back to first available
         assert result in ["af_heart", "am_ben"]
 
+    def test_fallback_voice_no_matching_prefix(self):
+        """Test fallback_voice when no voices match the requested prefix"""
+        # Request af_heart but only bm_ and bf_ voices available
+        result = GracefulDegradation.fallback_voice("af_heart", ["bm_george", "bf_emma"])
+        # Should return first available since no af_ voices
+        assert result == "bm_george"
+
     def test_fallback_voice_empty_list_raises(self):
         """Test fallback_voice with empty list raises error"""
         with pytest.raises(VoiceNotFoundError):
@@ -345,3 +496,18 @@ class TestGracefulDegradation:
         text = "Hello world! How are you? (Fine.)"
         result = GracefulDegradation.simplify_text(text)
         assert isinstance(result, str)
+
+    def test_simplify_text_long(self):
+        """Test simplify_text limits sentence length"""
+        # Create text with more than 3 sentences
+        text = "First sentence. Second sentence. Third sentence. Fourth sentence. Fifth sentence."
+        result = GracefulDegradation.simplify_text(text)
+        # Should be limited to 3 sentences
+        assert result.count('.') <= 3
+
+    def test_simplify_text_very_long(self):
+        """Test simplify_text returns fallback for very long text"""
+        # Create very long text
+        text = "A" * 250
+        result = GracefulDegradation.simplify_text(text)
+        assert "sorry" in result.lower()
