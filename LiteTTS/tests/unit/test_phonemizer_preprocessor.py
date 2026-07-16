@@ -2190,17 +2190,19 @@ class TestPhonemizationPreprocessorGlobalConfig:
         """Test aggressive digit conversion fallback (lines 1204-1205, 1210)"""
         from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
         proc = PhonemizationPreprocessor()
-        # Empty the number_words_map so digits fall through to aggressive conversion
+        # Use a map WITHOUT digit '7' so the aggressive block catches it
         original_map = proc.number_words_map.copy()
-        proc.number_words_map = {}
+        # Remove digits 0-9 from map so aggressive fallback kicks in
+        proc.number_words_map = {k: v for k, v in original_map.items() if not k.isdigit() or int(k) > 9}
         try:
-            text = "I have 5 apples"
+            text = "I have 7 apples"
             result, changes = proc._convert_numbers_to_words(text, aggressive=True)
-            # With empty map, digit '5' should be found by regex at line 1208
-            # and digit_to_word at 1204-1205 should be called
-            assert "5" in result  # fallback returns the digit
+            # With digit 7 not in map, aggressive conversion should convert it
+            assert "7" in result  # aggressive fallback returns digit as-is
         finally:
             proc.number_words_map = original_map
+
+
 
     def test_comma_number_exception_handler(self):
         """Test comma number exception handler (lines 1171-1173)"""
