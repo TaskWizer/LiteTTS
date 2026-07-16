@@ -1524,6 +1524,120 @@ class TestPhonemizationPreprocessorEnhancedPath:
 
         proc.enhanced_contraction_processor = original_enhanced
 
+    def test_expand_contractions_enhanced_natural_mode(self):
+        """Test _expand_contractions with enhanced processor in natural mode"""
+        import LiteTTS.text.phonemizer_preprocessor as pp_module
+
+        proc = pp_module.PhonemizationPreprocessor()
+        mock_enhanced = Mock()
+        mock_enhanced.process_contractions.return_value = "I am happy"
+
+        original_enhanced = proc.enhanced_contraction_processor
+        proc.enhanced_contraction_processor = mock_enhanced
+        proc.preserve_natural = True
+        proc.expand_all = False
+
+        text = "I'm happy"
+        result, changes = proc._expand_contractions(text)
+
+        # Verify enhanced processor was called with natural mode
+        if proc.enhanced_contraction_processor is not None:
+            mock_enhanced.process_contractions.assert_called()
+
+        proc.enhanced_contraction_processor = original_enhanced
+
+    def test_expand_contractions_enhanced_expanded_mode(self):
+        """Test _expand_contractions with enhanced processor in expanded mode"""
+        import LiteTTS.text.phonemizer_preprocessor as pp_module
+
+        proc = pp_module.PhonemizationPreprocessor()
+        mock_enhanced = Mock()
+        mock_enhanced.process_contractions.return_value = "I will be happy"
+
+        original_enhanced = proc.enhanced_contraction_processor
+        proc.enhanced_contraction_processor = mock_enhanced
+        proc.preserve_natural = False
+        proc.expand_all = True
+
+        text = "I'm happy"
+        result, changes = proc._expand_contractions(text)
+
+        # Verify enhanced processor was called with expanded mode
+        if proc.enhanced_contraction_processor is not None:
+            mock_enhanced.process_contractions.assert_called()
+
+        proc.enhanced_contraction_processor = original_enhanced
+
+    def test_expand_contractions_enhanced_natural_mode(self):
+        """Test _expand_contractions with enhanced processor in natural mode"""
+        import LiteTTS.text.phonemizer_preprocessor as pp_module
+
+        proc = pp_module.PhonemizationPreprocessor()
+        mock_enhanced = Mock()
+        mock_enhanced.process_contractions.return_value = "I'm happy"  # unchanged
+
+        original_enhanced = proc.enhanced_contraction_processor
+        proc.enhanced_contraction_processor = mock_enhanced
+        proc.preserve_natural = False
+        proc.expand_all = False
+
+        text = "I'm happy"
+        result, changes = proc._expand_contractions(text)
+
+        # Verify enhanced processor was called with natural mode
+        if proc.enhanced_contraction_processor is not None:
+            mock_enhanced.process_contractions.assert_called()
+
+        proc.enhanced_contraction_processor = original_enhanced
+
+    def test_expand_contractions_preserve_all_contractions(self):
+        """Test _expand_contractions preserves all contractions when expand_all=False"""
+        import LiteTTS.text.phonemizer_preprocessor as pp_module
+
+        proc = pp_module.PhonemizationPreprocessor()
+        # Ensure no enhanced processor (use base processor)
+        proc.enhanced_contraction_processor = None
+        proc.expand_all = False
+        proc.preserve_natural = True
+
+        # Text with contractions
+        text = "I'm happy"
+        result, changes = proc._expand_contractions(text)
+
+        # Since expand_all=False and preserve_natural=True, no changes should be made
+        assert len(changes) == 0
+
+    def test_expand_contractions_expand_problematic_only(self):
+        """Test _expand_contractions with expand_problematic_only mode"""
+        import LiteTTS.text.phonemizer_preprocessor as pp_module
+
+        proc = pp_module.PhonemizationPreprocessor()
+        proc.enhanced_contraction_processor = None
+        proc.expand_all = False
+        proc.expand_problematic_only = True
+        proc.preserve_natural = True
+
+        text = "I'm happy"
+        result, changes = proc._expand_contractions(text)
+        # expand_problematic_only=True means it uses problematic_contractions_map
+        assert isinstance(changes, list)
+
+    def test_convert_numbers_conservative_no_match(self):
+        """Test _convert_numbers_conservative when no numbers to convert"""
+        processor = PhonemizationPreprocessor()
+        text = "Hello world"
+        result, changes = processor._convert_numbers_conservative(text)
+        assert result == text
+        assert len(changes) == 0
+
+    def test_convert_symbols_conservative_no_problematic(self):
+        """Test _convert_symbols_conservative with no problematic symbols"""
+        processor = PhonemizationPreprocessor()
+        text = "Hello world! No symbols here."
+        result, changes = processor._convert_symbols_conservative(text)
+        # Since there are no quote characters and no problematic symbols, no changes
+        assert len(changes) == 0
+
 
 class TestPhonemizationPreprocessorHelperMethods:
     """Test helper methods that are called internally"""
