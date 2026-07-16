@@ -51,6 +51,7 @@ class PhonemizationPreprocessor:
         self.number_words_map = self._build_number_words_map()
         self.symbol_words_map = self._build_symbol_words_map()
         self.problematic_patterns = self._build_problematic_patterns()
+        self.problematic_symbols = {}  # Symbols that cause phonemizer issues (can be modified for testing)
 
         # Initialize enhanced contraction processor for better contraction handling
         if ENHANCED_CONTRACTIONS_AVAILABLE:
@@ -508,17 +509,13 @@ class PhonemizationPreprocessor:
         changes = []
 
         # Only expand contractions that consistently cause phonemizer word count mismatches
-        problematic_contractions = {
-            # Add specific contractions here that cause issues
-            # Currently keeping this minimal to preserve natural speech
-        }
-
-        if not problematic_contractions:
+        # Use instance attribute so it can be modified for testing
+        if not self.problematic_contractions:
             logger.debug("No problematic contractions to expand in conservative mode")
             return text, changes
 
         # Sort by length (longest first) to avoid partial replacements
-        sorted_contractions = sorted(problematic_contractions.items(), key=lambda x: len(x[0]), reverse=True)
+        sorted_contractions = sorted(self.problematic_contractions.items(), key=lambda x: len(x[0]), reverse=True)
 
         for contraction, expansion in sorted_contractions:
             # Use word boundaries to avoid partial matches
@@ -607,12 +604,8 @@ class PhonemizationPreprocessor:
 
         # Only convert symbols that consistently cause phonemizer word count mismatches
         # Most symbols can be left as-is without causing issues
-        problematic_symbols = {
-            # Add specific symbols here that cause issues
-            # Currently keeping this minimal to preserve natural speech
-        }
-
-        for symbol, word in problematic_symbols.items():
+        # Use instance attribute so it can be modified for testing
+        for symbol, word in self.problematic_symbols.items():
             if symbol in text:
                 # Be very careful about word boundaries to avoid changing word count
                 # Only replace if it's truly standalone

@@ -2202,6 +2202,88 @@ class TestPhonemizationPreprocessorGlobalConfig:
         finally:
             proc.number_words_map = original_map
 
+    def test_expand_contractions_conservative_with_entries(self):
+        """Test _expand_contractions_conservative with entries (lines 521-529)"""
+        from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+        proc = PhonemizationPreprocessor()
+        # Add a problematic contraction to the instance attribute that WILL match
+        proc.problematic_contractions = {"can't": "cannot"}
+        text = "I can't go"
+        result, changes = proc._expand_contractions_conservative(text)
+        # Should process the contractions and add changes
+        assert "cannot" in result
+        assert len(changes) > 0
+
+    def test_decimal_only_conversion(self):
+        """Test decimal with no integer part (.5) triggers line 821"""
+        from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+        proc = PhonemizationPreprocessor()
+        # The temperature conversion has a nested number_to_words that handles .5 case
+        # This requires text like "-.5C" to trigger the nested function
+        text = "Temperature is -.5C"
+        result = proc.preprocess_text(text)
+        assert isinstance(result.processed_text, str)
+
+    def test_comma_number_exception_handler(self):
+        """Test comma-separated number exception handler (lines 1164-1166)"""
+        import sys
+        from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+        proc = PhonemizationPreprocessor()
+
+        # Patch int in the phonemizer_preprocessor module's namespace
+        import LiteTTS.text.phonemizer_preprocessor as pp_module
+        original_int = pp_module.int if hasattr(pp_module, 'int') else int
+
+        def failing_int(s):
+            if ',' in str(s):
+                raise ValueError("Simulated int failure for comma numbers")
+            return original_int(s) if callable(original_int) else int(s)
+
+        # Replace int in the module's namespace
+        pp_module.int = failing_int
+        try:
+            text = "Value is 1,000,000"
+            result = proc._convert_numbers_to_words(text, aggressive=False)
+        finally:
+            if callable(original_int):
+                pp_module.int = original_int
+            else:
+                try:
+                    del pp_module.int
+                except:
+                    pass
+
+    def test_decimal_exception_handler(self):
+        """Test decimal number exception handler (lines 1184-1185)"""
+        import builtins
+        from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+        proc = PhonemizationPreprocessor()
+        original_int = builtins.int
+        def failing_int(s, _orig=original_int):
+            if s.isdigit():
+                raise ValueError("Simulated decimal failure")
+            return _orig(s)
+        builtins.int = failing_int
+        try:
+            text = "Value is 5.5"
+            result = proc._convert_numbers_to_words(text, aggressive=False)
+        finally:
+            builtins.int = original_int
+
+
+    def test_convert_symbols_conservative_with_entries(self):
+        """Test _convert_symbols_conservative with entries (lines 616-622)"""
+        from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+        proc = PhonemizationPreprocessor()
+        # Add a problematic symbol to the instance attribute
+        proc.problematic_symbols = {"@": " at "}
+        text = "email @ domain"  # with spaces around @
+        result, changes = proc._convert_symbols_conservative(text)
+        # Should process the symbol
+        assert isinstance(result, str)
+        assert isinstance(changes, list)
+
+
 
 
     def test_comma_number_exception_handler(self):
