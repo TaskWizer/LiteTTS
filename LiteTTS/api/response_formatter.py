@@ -37,7 +37,7 @@ class ResponseFormatter:
             
             # Create response headers
             headers = self._create_audio_headers(
-                audio_segment, format, processing_time
+                audio_segment, format, processing_time, cache_hit
             )
             
             if stream:
@@ -59,8 +59,8 @@ class ResponseFormatter:
             logger.error(f"Failed to format audio response: {e}")
             raise
     
-    def _create_audio_headers(self, audio_segment: AudioSegment, 
-                             format: str, processing_time: float) -> Dict[str, str]:
+    def _create_audio_headers(self, audio_segment: AudioSegment,
+                             format: str, processing_time: float, cache_hit: bool = False) -> Dict[str, str]:
         """Create headers for audio response"""
         headers = {
             'X-Audio-Duration': str(audio_segment.duration),
