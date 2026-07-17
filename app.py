@@ -1677,6 +1677,40 @@ with open("hello.mp3", "wb") as f:
                 self.logger.error(f"📋 Request details: input_length={len(request.input)}, voice={request.voice}, format={request.response_format}")
                 raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
+        @self.v1_router.post("/audio/stream/sse")
+        async def stream_speech_sse(request: TTSRequest):
+            """SSE streaming TTS endpoint for real-time audio with word highlighting"""
+            try:
+                from LiteTTS.validation import validate_request
+
+                request_dict = request.model_dump()
+                is_valid, data_or_error, warnings = validate_request(
+                    request_dict,
+                    list(self.voice_manager.get_available_voices())
+                )
+
+                if not is_valid:
+                    raise HTTPException(status_code=400, detail={"error": data_or_error, "type": "validation_error"})
+
+                sanitized_request = TTSRequest(**data_or_error)
+                self.logger.info(f"🎧 SSE streaming request: '{sanitized_request.input[:50]}...' voice='{sanitized_request.voice}'")
+
+                # Use progressive handler for SSE
+                from LiteTTS.api.progressive_response import ProgressiveResponseHandler
+                progressive_handler = ProgressiveResponseHandler(self.model.progressive_generator)
+
+                return await progressive_handler.create_server_sent_events_response(
+                    text=sanitized_request.input,
+                    voice=sanitized_request.voice,
+                    response_format=sanitized_request.response_format,
+                    speed=sanitized_request.speed
+                )
+            except HTTPException:
+                raise
+            except Exception as e:
+                self.logger.error(f"❌ SSE streaming error: {e}")
+                raise HTTPException(status_code=500, detail=f"SSE streaming failed: {str(e)}")
+
         # OpenWebUI Compatibility Routes
         # OpenWebUI appends "/audio/speech" to the configured base URL
         # So if user configures "http://host/v1/audio/stream", OpenWebUI tries "http://host/v1/audio/stream/audio/speech"

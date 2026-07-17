@@ -414,6 +414,46 @@
                 grid-template-columns: repeat(2, 1fr);
             }
         }
+
+        /* Word highlighting for streaming audio */
+        .streaming-text {
+            font-size: 1.1em;
+            line-height: 2;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .streaming-word {
+            display: inline-block;
+            padding: 2px 4px;
+            border-radius: 3px;
+            transition: all 0.15s ease;
+            margin: 2px;
+        }
+        .streaming-word.active {
+            background: #667eea;
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+        }
+        .streaming-word.done {
+            background: #e8e8e8;
+            color: #888;
+        }
+        .streaming-progress {
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        .streaming-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
     </style>
 </head>
 <body>
@@ -520,6 +560,10 @@
                     </div>
                     <div id="tts-result"></div>
                     <audio id="audio-player" controls style="width: 100%; margin-top: 10px; display: none;"></audio>
+                    <div id="streaming-text" class="streaming-text" style="display: none;"></div>
+                    <div class="streaming-progress" style="display: none;">
+                        <div class="streaming-progress-bar" id="streaming-progress-bar" style="width: 0%"></div>
+                    </div>
                 </div>
             </div>
 
@@ -917,13 +961,16 @@
             document.getElementById('tts-voice').value = voiceId;
         }
 
-        // Test TTS
+        // Test TTS with SSE streaming
         async function testTTS() {
             const text = document.getElementById('tts-text').value;
             const voice = document.getElementById('tts-voice').value || selectedVoice;
             const resultDiv = document.getElementById('tts-result');
             const audioPlayer = document.getElementById('audio-player');
             const metricsDiv = document.getElementById('tts-metrics');
+            const streamingText = document.getElementById('streaming-text');
+            const streamingProgress = document.querySelector('.streaming-progress');
+            const progressBar = document.getElementById('streaming-progress-bar');
 
             if (!text.trim()) {
                 showError('Please enter some text to synthesize');
@@ -932,67 +979,156 @@
 
             // Show metrics and update status
             metricsDiv.style.display = 'flex';
-            updateLiveMetrics('Generating...', '-', '-');
-            resultDiv.innerHTML = '<div class="loading">Generating speech...</div>';
+            updateLiveMetrics('Streaming...', '-', '-');
+            resultDiv.innerHTML = '<div class="loading">Starting stream...</div>';
+
+            // Initialize streaming UI
+            const words = text.split(/(\s+)/);
+            const wordSpans = words.map((word, i) => {
+                if (word.trim() === '') return '';
+                return `<span class="streaming-word" data-index="${i}">${word}</span>`;
+            }).join('');
+            streamingText.innerHTML = wordSpans;
+            streamingText.style.display = 'block';
+            streamingProgress.style.display = 'block';
+            progressBar.style.width = '0%';
 
             const startTime = performance.now();
+            let audioChunks = [];
+            let currentWordIndex = 0;
+            let audioContext = null;
+            let sourceNode = null;
+            let isPlaying = false;
 
             try {
-                const response = await fetch('/v1/audio/speech', {
+                const response = await fetch('/v1/audio/stream/sse', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        input: text,
-                        voice: voice,
-                        response_format: 'mp3'
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ input: text, voice: voice, response_format: 'mp3' })
                 });
+
+                if (!response.ok) {
+                    throw new Error(await response.text());
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+
+                // Initialize AudioContext on first chunk
+                const initAudioContext = () => {
+                    if (!audioContext) {
+                        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    }
+                };
+
+                const playNextChunk = async () => {
+                    if (audioChunks.length > 0 && !isPlaying) {
+                        isPlaying = true;
+                        const chunk = audioChunks.shift();
+                        try {
+                            const buffer = await audioContext.decodeAudioData(chunk);
+                            sourceNode = audioContext.createBufferSource();
+                            sourceNode.buffer = buffer;
+                            sourceNode.connect(audioContext.destination);
+                            sourceNode.onended = () => {
+                                isPlaying = false;
+                                if (audioChunks.length > 0) {
+                                    playNextChunk();
+                                }
+                            };
+                            sourceNode.start();
+                        } catch (e) {
+                            console.error('Audio decode error:', e);
+                            isPlaying = false;
+                        }
+                    }
+                };
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() || '';
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+                                if (data.chunk_text) {
+                                    // Update word highlighting
+                                    const chunkWords = data.chunk_text.split(/\s+/);
+                                    chunkWords.forEach(word => {
+                                        if (word && word.trim()) {
+                                            const span = streamingText.querySelector(`[data-index="${currentWordIndex}"]`);
+                                            if (span) {
+                                                span.classList.add('active');
+                                                setTimeout(() => {
+                                                    span.classList.remove('active');
+                                                    span.classList.add('done');
+                                                }, 300);
+                                                currentWordIndex++;
+                                            }
+                                        }
+                                    });
+
+                                    // Update progress
+                                    if (data.progress !== undefined) {
+                                        progressBar.style.width = `${data.progress}%`;
+                                    }
+                                }
+                                if (data.audio_data) {
+                                    // Decode base64 audio
+                                    initAudioContext();
+                                    const binary = atob(data.audio_data);
+                                    const bytes = new Uint8Array(binary.length);
+                                    for (let i = 0; i < binary.length; i++) {
+                                        bytes[i] = binary.charCodeAt(i);
+                                    }
+                                    audioChunks.push(bytes.buffer);
+                                    playNextChunk();
+                                }
+                            } catch (e) {
+                                // Ignore parse errors for partial data
+                            }
+                        }
+                        if (line.includes('"status":"completed"') || line.includes('"is_final":true')) {
+                            break;
+                        }
+                    }
+                }
+
+                // Wait for audio to finish
+                while (audioChunks.length > 0 || isPlaying) {
+                    await new Promise(r => setTimeout(r, 100));
+                }
 
                 const endTime = performance.now();
                 const latencyMs = endTime - startTime;
+                const estimatedWords = text.split(/\s+/).length;
+                const estimatedDurationSeconds = (estimatedWords / 150) * 60;
+                const rtf = (latencyMs / 1000) / estimatedDurationSeconds;
 
-                if (response.ok) {
-                    const audioBlob = await response.blob();
-                    const audioUrl = URL.createObjectURL(audioBlob);
+                updateLiveMetrics('Complete', rtf.toFixed(3), latencyMs.toFixed(0) + 'ms');
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        Speech streamed successfully!<br>
+                        <small>RTF: ${rtf.toFixed(3)} | Latency: ${latencyMs.toFixed(0)}ms | Voice: ${voice}</small>
+                    </div>
+                `;
+                addDebugLog(`TTS Success: ${text.substring(0, 50)}... | RTF: ${rtf.toFixed(3)} | Voice: ${voice}`, 'success');
 
-                    // Estimate audio duration (rough calculation)
-                    const estimatedWords = text.split(' ').length;
-                    const estimatedDurationSeconds = (estimatedWords / 150) * 60; // ~150 words per minute
-                    const rtf = (latencyMs / 1000) / estimatedDurationSeconds;
-
-                    // Update live metrics
-                    updateLiveMetrics('Complete', rtf.toFixed(3), latencyMs.toFixed(0) + 'ms');
-
-                    audioPlayer.src = audioUrl;
-                    audioPlayer.style.display = 'block';
-                    audioPlayer.play();
-
-                    resultDiv.innerHTML = `
-                        <div class="success">
-                            Speech generated successfully!<br>
-                            <small>RTF: ${rtf.toFixed(3)} | Latency: ${latencyMs.toFixed(0)}ms | Voice: ${voice}</small>
-                        </div>
-                    `;
-                    currentAudio = audioPlayer;
-
-                    // Log success
-                    addDebugLog(`TTS Success: ${text.substring(0, 50)}... | RTF: ${rtf.toFixed(3)} | Voice: ${voice}`, 'success');
-                } else {
-                    const error = await response.text();
-                    updateLiveMetrics('Error', '-', latencyMs.toFixed(0) + 'ms');
-                    showError(`TTS Error: ${error}`);
-                    addDebugLog(`TTS Error: ${error}`, 'error');
-                }
             } catch (error) {
                 const endTime = performance.now();
                 const latencyMs = endTime - startTime;
-
                 console.error('TTS Error:', error);
                 updateLiveMetrics('Failed', '-', latencyMs.toFixed(0) + 'ms');
-                showError('Failed to generate speech');
+                showError(`Failed to generate speech: ${error.message}`);
                 addDebugLog(`TTS Failed: ${error.message}`, 'error');
+                streamingText.style.display = 'none';
+                streamingProgress.style.display = 'none';
             }
         }
 
