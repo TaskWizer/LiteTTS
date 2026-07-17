@@ -61,6 +61,7 @@ This plan addresses gaps, issues, and improvements identified through comprehens
 - **Desired:** Actual per-word timing from TTS engine
 - **Feasibility:** Kokoro doesn't provide per-word timing natively
 - **Workaround:** Use estimated timing (current implementation)
+- **Status:** ✅ IMPROVED - Now uses X-Audio-Duration header and browser's actual duration for better accuracy
 
 ### 6. Test Coverage Gaps
 - **Coverage:** 272 phonemizer tests, 6 API tests
