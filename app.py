@@ -476,6 +476,12 @@ class LiteTTSApplication:
                 # Process request
                 response = await call_next(request)
 
+                # Read X-Cache-Hit header from response if present
+                if hasattr(response, 'headers'):
+                    cache_hit_header = response.headers.get('X-Cache-Hit')
+                    if cache_hit_header is not None:
+                        cache_hit = cache_hit_header.lower() == 'true'
+
                 # Log response (reduce verbosity for dashboard endpoints)
                 process_time = time.time() - start_time
                 if not request.url.path.startswith('/dashboard'):

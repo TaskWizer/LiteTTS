@@ -76,6 +76,7 @@ This plan addresses gaps, issues, and improvements identified through comprehens
 - **Note:** Audio caching itself IS working (router.py properly caches), but analytics don't record hits
 - **Fix:** Pass cache_hit status from router to analytics middleware
 - **Effort:** Low
+- **Status:** ✅ FIXED - Added X-Cache-Hit header to response_formatter, router passes cache_hit, middleware reads header
 
 ### 8. Error Handling Inconsistencies
 - **Issue:** Some endpoints return JSON errors, others return plain text

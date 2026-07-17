@@ -21,9 +21,10 @@ class ResponseFormatter:
         self.audio_streamer = AudioStreamer()
         logger.info("Response formatter initialized")
     
-    async def format_audio_response(self, audio_segment: AudioSegment, 
+    async def format_audio_response(self, audio_segment: AudioSegment,
                                    format: str, processing_time: float,
-                                   stream: bool = False) -> Response:
+                                   stream: bool = False,
+                                   cache_hit: bool = False) -> Response:
         """Format audio response"""
         try:
             # Convert audio to requested format
@@ -76,7 +77,11 @@ class ResponseFormatter:
             headers['X-Audio-Bitrate'] = '128'
         elif format.lower() == 'wav':
             headers['X-Audio-Bit-Depth'] = '16'
-        
+
+        # Add cache header for analytics
+        headers['X-Cache-Hit'] = 'true' if cache_hit else 'false'
+        headers['Access-Control-Expose-Headers'] += ', X-Cache-Hit'
+
         return headers
     
     def _create_audio_stream(self, audio_bytes: bytes) -> Iterator[bytes]:

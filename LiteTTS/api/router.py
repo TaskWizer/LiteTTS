@@ -71,7 +71,7 @@ class TTSAPIRouter:
 
                     return await self.response_formatter.format_audio_response(
                         cached_audio, request.response_format, processing_time,
-                        request.stream
+                        request.stream, cache_hit=True
                     )
 
                 # Check if streaming is requested for low-latency playback
@@ -97,7 +97,7 @@ class TTSAPIRouter:
                 # Return response
                 return await self.response_formatter.format_audio_response(
                     audio_segment, request.response_format, processing_time,
-                    request.stream
+                    request.stream, cache_hit=False
                 )
                 
             except HTTPException:
