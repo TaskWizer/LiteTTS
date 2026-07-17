@@ -585,6 +585,14 @@
                     <select class="tts-input" id="tts-voice">
                         <option value="">Loading voices...</option>
                     </select>
+                    <div style="margin: 8px 0;">
+                        <input type="checkbox" id="ssml-mode" onchange="toggleSSMLMode()"> <label for="ssml-mode">SSML Mode</label>
+                    </div>
+                    <div id="ssml-help" style="display: none; font-size: 12px; color: #666; margin-bottom: 8px;">
+                        <b>SSML Examples:</b><br>
+                        &lt;speak&gt;text&lt;/speak&gt;<br>
+                        &lt;background type="rain" volume="20"&gt;text&lt;/background&gt;
+                    </div>
                     <div class="tts-metrics" id="tts-metrics">
                         <div class="metric-item">
                             <span class="metric-label">RTF:</span>
@@ -1014,10 +1022,18 @@
             document.getElementById('tts-voice').value = voiceId;
         }
 
+        // Toggle SSML mode
+        function toggleSSMLMode() {
+            const ssmlMode = document.getElementById('ssml-mode').checked;
+            const ssmlHelp = document.getElementById('ssml-help');
+            ssmlHelp.style.display = ssmlMode ? 'block' : 'none';
+        }
+
         // Test TTS - uses standard TTS endpoint for reliable audio
         async function testTTS() {
             const text = document.getElementById('tts-text').value;
             const voice = document.getElementById('tts-voice').value || selectedVoice;
+            const ssmlMode = document.getElementById('ssml-mode').checked;
             const resultDiv = document.getElementById('tts-result');
             const metricsDiv = document.getElementById('tts-metrics');
             const streamingText = document.getElementById('streaming-text');
