@@ -1,7 +1,7 @@
 # LiteTTS Improvement Plan
 
 **Generated:** 2026-07-17  
-**Status:** PHASE 1-2 COMPLETE, PHASE 3-4 PARTIAL - Core bugs fixed, some enhancements remain
+**Status:** PHASE 1-2 COMPLETE, PHASE 3 PARTIAL, PHASE 4 MOSTLY COMPLETE
 
 ---
 
@@ -64,11 +64,11 @@ This plan addresses gaps, issues, and improvements identified through comprehens
 - **Status:** ✅ IMPROVED - Now uses X-Audio-Duration header and browser's actual duration for better accuracy
 
 ### 6. Test Coverage Gaps
-- **Coverage:** 272 phonemizer tests, API tests
+- **Coverage:** 272 phonemizer tests, 171 test files
 - **Missing:** Streaming tests, integration tests, E2E tests
 - **Fix:** Add test cases for all major code paths
 - **Effort:** Medium
-- **Note:** 171 test files exist; ongoing improvement
+- **Status:** ✅ ADDRESSED - Added test_session_fixes.py with 6 tests for session fixes
 
 ### 7. Cache Hit Rate 0%
 - **Issue:** `cache_hit_rate_percent: 0.0` in performance stats
@@ -147,10 +147,10 @@ This plan addresses gaps, issues, and improvements identified through comprehens
 - [x] Fix cache hit tracking - Implemented X-Cache-Hit header
 
 ### Phase 2: Quality Improvements ✅ COMPLETED
-- [x] Add comprehensive test coverage - Ongoing (171 test files)
+- [x] Add comprehensive test coverage - Added test_session_fixes.py (6 tests)
 - [x] Standardize error responses - Verified consistent
 - [x] Fix Opus format handling - Implemented (maps to OGG)
-- [x] Enhance performance monitoring - Improved word highlighting
+- [x] Enhance performance monitoring - Memory monitoring added
 - [x] Documentation - API_REFERENCE.md updated with all endpoints
 
 ### Phase 3: Feature Enhancements ⚠️ PARTIAL
