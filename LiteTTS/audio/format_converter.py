@@ -151,7 +151,11 @@ class AudioFormatConverter:
                       target_format: str, **kwargs) -> bytes:
         """Convert audio to specified format"""
         target_format = target_format.lower()
-        
+
+        # Map opus to ogg (Opus codec in OGG container)
+        if target_format == 'opus':
+            target_format = 'ogg'
+
         if target_format == 'wav':
             bit_depth = kwargs.get('bit_depth', self.wav_bit_depth)
             include_header = kwargs.get('include_header', True)
@@ -168,9 +172,12 @@ class AudioFormatConverter:
             return self.convert_to_wav(audio_data, sample_rate, self.flac_bit_depth)
         else:
             raise ValueError(f"Unsupported format: {target_format}")
-    
+
     def get_content_type(self, format: str) -> str:
         """Get MIME content type for audio format"""
+        # Map opus to ogg for content type
+        if format.lower() == 'opus':
+            format = 'ogg'
         content_types = {
             'wav': 'audio/wav',
             'mp3': 'audio/mpeg',

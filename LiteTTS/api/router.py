@@ -160,11 +160,13 @@ class TTSAPIRouter:
             processing_time = time.time() - start_time
 
             # Determine content type based on format
+            # Note: 'opus' is mapped to 'ogg' internally (OGG Opus container)
             content_type = {
                 "mp3": "audio/mpeg",
                 "wav": "audio/wav",
                 "ogg": "audio/ogg",
                 "flac": "audio/flac",
+                "opus": "audio/ogg",  # Opus wrapped in OGG container
             }.get(request.response_format, "application/octet-stream")
 
             # Cache the complete audio in background for future non-streaming requests

@@ -40,7 +40,7 @@ class RequestValidator:
         self.min_emotion_strength = 0.0
         
         # Supported formats
-        self.supported_formats = ['mp3', 'wav', 'ogg', 'flac']
+        self.supported_formats = ['mp3', 'wav', 'ogg', 'flac', 'opus']
         
         # Text content filters
         self.forbidden_patterns = [
