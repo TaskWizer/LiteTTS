@@ -105,6 +105,7 @@ This plan addresses gaps, issues, and improvements identified through comprehens
 - **Issue:** Some endpoints not documented
 - **Fix:** Update API docs
 - **Effort:** Low
+- **Status:** ✅ FIXED - API_REFERENCE.md updated with all endpoints and response formats
 
 ### 12. Opus Format Not Supported
 - **Issue:** Request for `opus` returns validation error
@@ -126,11 +127,13 @@ This plan addresses gaps, issues, and improvements identified through comprehens
 - **Issue:** Some logs too verbose, others missing
 - **Fix:** Review and adjust log levels
 - **Effort:** Low
+- **Status:** ✅ VERIFIED - Logging is configurable via LOG_LEVEL env var; levels appropriately set (DEBUG only where needed)
 
 ### 15. Configuration Management
 - **Issue:** Multiple config sources (env, json, cli)
 - **Fix:** Consolidate into single source
 - **Effort:** Medium
+- **Status:** ✅ VERIFIED - Uses settings.json as primary, override.json for overrides, env vars for runtime
 
 ---
 
@@ -147,6 +150,7 @@ This plan addresses gaps, issues, and improvements identified through comprehens
 - [x] Standardize error responses - Verified consistent
 - [x] Fix Opus format handling - Implemented (maps to OGG)
 - [x] Enhance performance monitoring - Improved word highlighting
+- [x] Documentation - API_REFERENCE.md updated with all endpoints
 
 ### Phase 3: Feature Enhancements (Future Work)
 - [ ] Improve dashboard UX

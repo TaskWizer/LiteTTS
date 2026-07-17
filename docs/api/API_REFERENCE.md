@@ -45,14 +45,15 @@ Generate speech from text input.
 {
   "input": "string",           // Text or SSML to synthesize
   "voice": "string",           // Voice ID (e.g., "af_heart")
-  "response_format": "string", // Audio format: "mp3" or "wav"
+  "response_format": "string", // Audio format: "mp3", "wav", "ogg", "flac", or "opus"
   "speed": "number"            // Optional: Speech speed (0.5-2.0)
 }
 ```
 
 #### Response
 
-- **Content-Type**: `audio/mpeg` (for mp3) or `audio/wav` (for wav)
+- **Content-Type**: `audio/mpeg` (mp3), `audio/wav` (wav), `audio/ogg` (ogg/opus), or `audio/flac` (flac)
+- **Headers**: `X-Audio-Duration`, `X-Audio-Sample-Rate`, `X-Cache-Hit`, `X-Processing-Time`
 - **Body**: Binary audio data
 
 #### Example
@@ -99,6 +100,171 @@ HTML dashboard with:
 - Usage statistics (requests, voice popularity)
 - System health (memory, cache hit rates)
 - Error rates and status codes
+
+### GET /v1/voices/{voice_name}
+
+Get detailed information about a specific voice.
+
+#### Path Parameters
+- `voice_name`: Voice ID (e.g., "af_heart")
+
+#### Response
+
+```json
+{
+  "name": "af_heart",
+  "ready": true,
+  "cached": true,
+  "metadata": {
+    "gender": "female",
+    "language": "en-US",
+    "description": "Warm, natural voice"
+  }
+}
+```
+
+### GET /v1/emotions
+
+List all available emotional voice modulations.
+
+#### Response
+
+```json
+{
+  "emotions": ["happy", "sad", "excited", "calm", "angry", "whisper"],
+  "supported": true
+}
+```
+
+### GET /health
+
+Health check endpoint for monitoring.
+
+#### Response
+
+```json
+{
+  "status": "healthy",
+  "model_loaded": true,
+  "voices_available": 55
+}
+```
+
+### GET /stats
+
+Get comprehensive usage and performance statistics.
+
+#### Response
+
+```json
+{
+  "total_requests": 1234,
+  "cache_hit_rate": 0.45,
+  "average_rtf": 0.85,
+  "voice_usage": {"af_heart": 500, "am_onyx": 200}
+}
+```
+
+### POST /preload
+
+Preload voices into cache for faster first-request latency.
+
+#### Request Body
+
+```json
+{
+  "voices": ["af_heart", "am_onyx"]
+}
+```
+
+#### Response
+
+```json
+{
+  "preloaded": ["af_heart", "am_onyx"],
+  "cache_size": 2
+}
+```
+
+### POST /cache/clear
+
+Clear the audio cache.
+
+#### Request Body (optional)
+
+```json
+{
+  "voice": "af_heart",    // Optional: clear specific voice
+  "format": "mp3",        // Optional: clear specific format
+  "emotion": "happy"      // Optional: clear specific emotion
+}
+```
+
+#### Response
+
+```json
+{
+  "cleared": true,
+  "entries_removed": 15
+}
+```
+
+### POST /cache/optimize
+
+Optimize cache for better performance.
+
+#### Response
+
+```json
+{
+  "optimized": true,
+  "memory_freed_mb": 12
+}
+```
+
+### POST /suggest
+
+Get text suggestions based on context.
+
+#### Request Body
+
+```json
+{
+  "text": "Hello",
+  "count": 5
+}
+```
+
+#### Response
+
+```json
+{
+  "suggestions": ["Hello world", "Hello there", "Hello everyone"]
+}
+```
+
+### POST /estimate
+
+Estimate synthesis time for text without generating audio.
+
+#### Request Body
+
+```json
+{
+  "text": "Hello world",
+  "voice": "af_heart"
+}
+```
+
+#### Response
+
+```json
+{
+  "estimated_seconds": 1.2,
+  "characters": 11,
+  "words": 2
+}
+```
 
 ## Voice IDs
 
