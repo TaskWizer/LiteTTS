@@ -30,23 +30,33 @@ class AudioStreamer:
         self.chunk_duration = chunk_duration
         self.format_converter = AudioFormatConverter()
         
-    def stream_audio_sync(self, audio_segment: AudioSegment, 
+    def stream_audio_sync(self, audio_segment: AudioSegment,
                          format: str = "mp3") -> Iterator[StreamChunk]:
         """Stream audio synchronously in chunks"""
         logger.debug(f"Starting sync audio stream, duration: {audio_segment.duration}s")
-        
+
         chunks = list(audio_segment.get_chunks(self.chunk_duration))
         total_chunks = len(chunks)
-        
+
         for i, chunk in enumerate(chunks):
             try:
-                # Convert chunk to target format
-                chunk_bytes = self.format_converter.convert_format(
-                    chunk.audio_data, 
-                    chunk.sample_rate, 
-                    format
-                )
-                
+                # For WAV streaming: first chunk gets header, rest are raw PCM
+                if format.lower() == 'wav' and i > 0:
+                    # Subsequent WAV chunks: raw PCM without header
+                    chunk_bytes = self.format_converter.convert_format(
+                        chunk.audio_data,
+                        chunk.sample_rate,
+                        format,
+                        include_header=False  # No header for subsequent chunks
+                    )
+                else:
+                    # First chunk or non-WAV: include header
+                    chunk_bytes = self.format_converter.convert_format(
+                        chunk.audio_data,
+                        chunk.sample_rate,
+                        format
+                    )
+
                 yield StreamChunk(
                     data=chunk_bytes,
                     chunk_index=i,
@@ -70,21 +80,33 @@ class AudioStreamer:
                                 format: str = "mp3") -> AsyncIterator[StreamChunk]:
         """Stream audio asynchronously in chunks"""
         logger.debug(f"Starting async audio stream, duration: {audio_segment.duration}s")
-        
+
         chunks = list(audio_segment.get_chunks(self.chunk_duration))
         total_chunks = len(chunks)
-        
+
         for i, chunk in enumerate(chunks):
             try:
-                # Convert chunk to target format (run in thread pool for CPU-intensive work)
-                chunk_bytes = await asyncio.get_event_loop().run_in_executor(
-                    None,
-                    self.format_converter.convert_format,
-                    chunk.audio_data,
-                    chunk.sample_rate,
-                    format
-                )
-                
+                # For WAV streaming: first chunk gets header, rest are raw PCM
+                if format.lower() == 'wav':
+                    include_header = (i == 0)
+                    chunk_bytes = await asyncio.get_event_loop().run_in_executor(
+                        None,
+                        self.format_converter.convert_to_wav,
+                        chunk.audio_data,
+                        chunk.sample_rate,
+                        None,  # bit_depth
+                        include_header
+                    )
+                else:
+                    # Non-WAV formats always include their container headers
+                    chunk_bytes = await asyncio.get_event_loop().run_in_executor(
+                        None,
+                        self.format_converter.convert_format,
+                        chunk.audio_data,
+                        chunk.sample_rate,
+                        format
+                    )
+
                 yield StreamChunk(
                     data=chunk_bytes,
                     chunk_index=i,
@@ -97,14 +119,14 @@ class AudioStreamer:
                     },
                     is_final=(i == total_chunks - 1)
                 )
-                
+
                 # Small delay to allow other coroutines to run
                 await asyncio.sleep(0.001)
-                
+
             except Exception as e:
                 logger.error(f"Error streaming chunk {i}: {e}")
                 continue
-        
+
         logger.debug(f"Completed async audio stream, {total_chunks} chunks")    
 
     def create_streaming_response_headers(self, format: str, 

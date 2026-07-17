@@ -31,8 +31,16 @@ class AudioFormatConverter:
             self.flac_bit_depth = 24
         
     def convert_to_wav(self, audio_data: np.ndarray, sample_rate: int,
-                      bit_depth: int = None) -> bytes:
-        """Convert audio data to WAV format"""
+                      bit_depth: int = None, include_header: bool = True) -> bytes:
+        """Convert audio data to WAV format.
+
+        Args:
+            audio_data: Audio samples as float array
+            sample_rate: Sample rate in Hz
+            bit_depth: Bits per sample (16, 24, or 32)
+            include_header: If True, include full WAV header. If False, return raw PCM data.
+                          Set to False for streaming (first chunk gets header separately).
+        """
         if bit_depth is None:
             bit_depth = self.wav_bit_depth
 
@@ -46,16 +54,20 @@ class AudioFormatConverter:
                 audio_int = (audio_data * 2147483647).astype(np.int32)
             else:
                 raise ValueError(f"Unsupported bit depth: {bit_depth}")
-            
+
+            # For streaming: skip header and return raw PCM
+            if not include_header:
+                return audio_int.tobytes()
+
             # Create WAV file in memory
             wav_buffer = io.BytesIO()
-            
+
             with wave.open(wav_buffer, 'wb') as wav_file:
                 wav_file.setnchannels(1)  # Mono
                 wav_file.setsampwidth(bit_depth // 8)
                 wav_file.setframerate(sample_rate)
                 wav_file.writeframes(audio_int.tobytes())
-            
+
             wav_buffer.seek(0)
             return wav_buffer.getvalue()
             
@@ -142,7 +154,8 @@ class AudioFormatConverter:
         
         if target_format == 'wav':
             bit_depth = kwargs.get('bit_depth', self.wav_bit_depth)
-            return self.convert_to_wav(audio_data, sample_rate, bit_depth)
+            include_header = kwargs.get('include_header', True)
+            return self.convert_to_wav(audio_data, sample_rate, bit_depth, include_header)
         elif target_format == 'mp3':
             bitrate = kwargs.get('bitrate', self.mp3_bitrate)
             return self.convert_to_mp3(audio_data, sample_rate, bitrate)
