@@ -928,6 +928,7 @@ class PhonemizationPreprocessor:
 
         # CRITICAL: Fix URLs FIRST before any acronym replacements break them
         # URLs like https://example.org/api/v2 would become broken if API is expanded first
+        # Format: H-T-T-P-S, forward slash, forward slash, example dot org, slash api, slash V-two, question mark, I-D equals forty-two
         if re.search(r'https?://[^\s]+', text):
             def url_to_words(match):
                 url = match.group()
@@ -937,12 +938,60 @@ class PhonemizationPreprocessor:
 
                 result = []
 
-                # Protocol - spell out with hyphens: HTTPS -> H-T-T-P-S
+                def number_to_words(n):
+                    """Convert number string to words"""
+                    try:
+                        n_int = int(n)
+                        if n_int < 20:
+                            return {0: 'zero', 1: 'one', 2: 'two', 3: 'three', 4: 'four',
+                                   5: 'five', 6: 'six', 7: 'seven', 8: 'eight', 9: 'nine',
+                                   10: 'ten', 11: 'eleven', 12: 'twelve', 13: 'thirteen',
+                                   14: 'fourteen', 15: 'fifteen', 16: 'sixteen', 17: 'seventeen',
+                                   18: 'eighteen', 19: 'nineteen'}.get(n_int, str(n_int))
+                        elif n_int < 100:
+                            tens = {20: 'twenty', 30: 'thirty', 40: 'forty', 50: 'fifty',
+                                   60: 'sixty', 70: 'seventy', 80: 'eighty', 90: 'ninety'}.get(n_int - (n_int % 10), '')
+                            ones = number_to_words(str(n_int % 10)) if n_int % 10 else ''
+                            return f"{tens} {ones}".strip()
+                        else:
+                            hundreds = n_int // 100
+                            rest = number_to_words(str(n_int % 100))
+                            return f"{number_to_words(str(hundreds))} hundred {rest}".strip()
+                    except:
+                        return n
+
+                def word_or_hyphenate(s):
+                    """Word if alpha only, else hyphenate letters, convert numbers to words"""
+                    if s.isalpha():
+                        return s.lower()
+                    result = []
+                    i = 0
+                    current_num = ''
+                    while i < len(s):
+                        c = s[i]
+                        if c.isdigit():
+                            current_num += c
+                        else:
+                            if current_num:
+                                result.append(number_to_words(current_num))
+                                current_num = ''
+                            if c.isalpha():
+                                result.append(c.upper())
+                        i += 1
+                    if current_num:
+                        result.append(number_to_words(current_num))
+                    return '-'.join(result)
+
+                # Protocol - spell out with hyphens: HTTPS -> H-T-T-P-S, then forward slash twice
                 if url.startswith('https://'):
                     result.append('H-T-T-P-S')
+                    result.append('forward slash')
+                    result.append('forward slash')
                     url = url[8:]
                 elif url.startswith('http://'):
                     result.append('H-T-T-P')
+                    result.append('forward slash')
+                    result.append('forward slash')
                     url = url[7:]
 
                 # Split by /
@@ -950,31 +999,30 @@ class PhonemizationPreprocessor:
                 domain = parts[0]
                 path_parts = parts[1:] if len(parts) > 1 else []
 
-                # Domain - spell out with hyphens between letters
+                # Domain - lowercase, "example dot org" not "E-X-A-M-P-L-E dot O-R-G"
                 domain_parts = domain.split('.')
                 for i, dp in enumerate(domain_parts):
                     if i > 0:
                         result.append('dot')
-                    # Hyphenate each letter in domain part
-                    result.append('-'.join(list(dp.upper())))
+                    result.append(dp.lower())
 
-                # Path
+                # Path segments - use "slash" for path, preserve case for mixed
                 for pp in path_parts:
                     result.append('slash')
                     if '?' in pp:
                         path_seg, query = pp.split('?', 1)
-                        result.append('-'.join(list(path_seg.upper())))
+                        result.append(word_or_hyphenate(path_seg))
                         result.append('question mark')
                         for param in query.split('&'):
                             if '=' in param:
                                 k, v = param.split('=', 1)
-                                result.append('-'.join(list(k.upper())))
+                                result.append(word_or_hyphenate(k))
                                 result.append('equals')
-                                result.append('-'.join(list(v.upper())))
+                                result.append(word_or_hyphenate(v))
                             else:
-                                result.append('-'.join(list(param.upper())))
+                                result.append(word_or_hyphenate(param))
                     else:
-                        result.append('-'.join(list(pp.upper())))
+                        result.append(word_or_hyphenate(pp))
 
                 return ' '.join(result)
 
