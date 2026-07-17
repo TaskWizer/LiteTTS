@@ -110,6 +110,7 @@ This plan addresses gaps, issues, and improvements identified through comprehens
 - **Note:** Listed as supported in OpenAI API but not implemented
 - **Fix:** Map `opus` to `ogg` internally or implement proper opus support
 - **Effort:** Low
+- **Status:** ✅ FIXED - Maps opus to ogg (Opus codec in OGG container) in commit 967d5f0
 
 ---
 
