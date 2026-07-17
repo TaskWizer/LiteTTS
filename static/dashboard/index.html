@@ -981,11 +981,24 @@
             updateLiveMetrics('Streaming...', '-', '-');
             resultDiv.innerHTML = '<div class="loading">Streaming audio...</div>';
 
-            // Initialize streaming UI - create word spans for highlighting
-            const allWords = text.split(/(\s+)/).filter(w => w.trim());
-            const wordSpans = text.split(/(\s+)/).map((word, i) => {
-                if (word.trim() === '') return word; // preserve whitespace
-                return `<span class="streaming-word" data-index="${allWords.indexOf(word.trim())}">${word}</span>`;
+            // Parse text into words with their original positions for highlighting
+            const words = [];
+            let wordIdx = 0;
+            const parts = text.split(/(\s+)/);
+            for (const part of parts) {
+                if (part.trim() === '') {
+                    // Whitespace - just add without span
+                    continue;
+                }
+                words.push({ word: part, index: wordIdx });
+                wordIdx++;
+            }
+            const totalWords = words.length;
+
+            // Create word spans with unique data-index
+            const wordSpans = parts.map(part => {
+                if (part.trim() === '') return part; // preserve whitespace
+                return `<span class="streaming-word" data-index="${words.find(w => w.word === part)?.index ?? 0}">${part}</span>`;
             }).join('');
             streamingText.innerHTML = wordSpans;
             streamingText.style.display = 'block';
@@ -995,16 +1008,14 @@
             const startTime = performance.now();
             let audioChunks = [];
             let audioContext = null;
-            let sourceNode = null;
             let isPlaying = false;
-            let totalChunks = 0;
-            let receivedChunks = 0;
+            let wordIndex = 0;
 
             try {
                 const response = await fetch('/v1/audio/stream/sse', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ input: text, voice: voice, response_format: 'mp3' })
+                    body: JSON.stringify({ input: text, voice: voice, response_format: 'wav' })
                 });
 
                 if (!response.ok) {
@@ -1014,33 +1025,29 @@
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
                 let buffer = '';
-                let wordIndex = 0;
-                const wordsPerChunk = Math.ceil(allWords.length / 20); // Approximate words per chunk
 
-                // Initialize AudioContext
-                const initAudioContext = () => {
+                // Initialize AudioContext lazily
+                const ensureAudioContext = () => {
                     if (!audioContext) {
                         audioContext = new (window.AudioContext || window.webkitAudioContext)();
                     }
                 };
 
-                // Play next audio chunk
-                const playNextChunk = async () => {
+                // Play next chunk in queue
+                const playNext = async () => {
                     if (audioChunks.length > 0 && !isPlaying) {
                         isPlaying = true;
-                        const chunk = audioChunks.shift();
+                        const chunkData = audioChunks.shift();
                         try {
-                            const audioBuffer = await audioContext.decodeAudioData(chunk);
-                            sourceNode = audioContext.createBufferSource();
-                            sourceNode.buffer = audioBuffer;
-                            sourceNode.connect(audioContext.destination);
-                            sourceNode.onended = () => {
+                            const buffer = await audioContext.decodeAudioData(chunkData);
+                            const source = audioContext.createBufferSource();
+                            source.buffer = buffer;
+                            source.connect(audioContext.destination);
+                            source.onended = () => {
                                 isPlaying = false;
-                                if (audioChunks.length > 0) {
-                                    playNextChunk();
-                                }
+                                if (audioChunks.length > 0) playNext();
                             };
-                            sourceNode.start();
+                            source.start();
                         } catch (e) {
                             console.error('Audio decode error:', e);
                             isPlaying = false;
@@ -1048,20 +1055,20 @@
                     }
                 };
 
-                // Highlight words progressively
-                const highlightWords = (count) => {
-                    for (let i = 0; i < count && wordIndex < allWords.length; i++, wordIndex++) {
-                        const span = streamingText.querySelector(`[data-index="${wordIndex}"]`);
-                        if (span) {
-                            span.classList.add('active');
-                            setTimeout(() => {
-                                span.classList.remove('active');
-                                span.classList.add('done');
-                            }, 200);
-                        }
+                // Highlight a single word
+                const highlightWord = (idx) => {
+                    if (idx >= totalWords) return;
+                    const span = streamingText.querySelector(`[data-index="${idx}"]`);
+                    if (span) {
+                        span.classList.add('active');
+                        setTimeout(() => {
+                            span.classList.remove('active');
+                            span.classList.add('done');
+                        }, 150);
                     }
                 };
 
+                // Process SSE stream
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
@@ -1071,56 +1078,59 @@
                     buffer = lines.pop() || '';
 
                     for (const line of lines) {
-                        if (line.startsWith('data: ')) {
-                            try {
-                                const data = JSON.parse(line.slice(6));
+                        if (!line.startsWith('data: ')) continue;
 
-                                // Update progress
-                                if (data.progress !== undefined) {
-                                    progressBar.style.width = `${Math.min(data.progress, 100)}%`;
-                                    // Highlight approximate words based on progress
-                                    const targetWords = Math.floor((data.progress / 100) * allWords.length);
-                                    if (targetWords > wordIndex) {
-                                        highlightWords(targetWords - wordIndex);
-                                    }
-                                }
+                        try {
+                            const data = JSON.parse(line.slice(6));
 
-                                // Handle audio data
-                                if (data.audio_data) {
-                                    initAudioContext();
-                                    const binary = atob(data.audio_data);
-                                    const bytes = new Uint8Array(binary.length);
-                                    for (let i = 0; i < binary.length; i++) {
-                                        bytes[i] = binary.charCodeAt(i);
-                                    }
-                                    audioChunks.push(bytes.buffer);
-                                    receivedChunks++;
-                                    playNextChunk();
-                                }
+                            // Update progress bar
+                            if (data.progress !== undefined) {
+                                progressBar.style.width = `${Math.min(data.progress, 100)}%`;
 
-                                // Check for completion
-                                if (data.status === 'completed' || data.status === 'error') {
-                                    // Highlight remaining words
-                                    highlightWords(allWords.length - wordIndex);
-                                    progressBar.style.width = '100%';
-                                    break;
+                                // Highlight words based on progress (distribute evenly)
+                                const targetWords = Math.floor((data.progress / 100) * totalWords);
+                                while (wordIndex < targetWords && wordIndex < totalWords) {
+                                    highlightWord(wordIndex);
+                                    wordIndex++;
                                 }
-                            } catch (e) {
-                                // Ignore parse errors for partial data
                             }
+
+                            // Handle audio chunk
+                            if (data.audio_data) {
+                                ensureAudioContext();
+                                const binary = atob(data.audio_data);
+                                const bytes = new Uint8Array(binary.length);
+                                for (let i = 0; i < binary.length; i++) {
+                                    bytes[i] = binary.charCodeAt(i);
+                                }
+                                audioChunks.push(bytes.buffer);
+                                playNext();
+                            }
+
+                            // Check for completion
+                            if (data.status === 'completed' || data.status === 'error') {
+                                // Highlight remaining words
+                                while (wordIndex < totalWords) {
+                                    highlightWord(wordIndex);
+                                    wordIndex++;
+                                }
+                                progressBar.style.width = '100%';
+                                break;
+                            }
+                        } catch (e) {
+                            console.error('SSE parse error:', e);
                         }
                     }
                 }
 
-                // Wait for audio to finish playing
+                // Wait for playback to finish
                 while (audioChunks.length > 0 || isPlaying) {
-                    await new Promise(r => setTimeout(r, 100));
+                    await new Promise(r => setTimeout(r, 50));
                 }
 
                 const endTime = performance.now();
                 const latencyMs = endTime - startTime;
-                const estimatedWords = allWords.length;
-                const estimatedDurationSeconds = (estimatedWords / 150) * 60;
+                const estimatedDurationSeconds = (totalWords / 150) * 60;
                 const rtf = (latencyMs / 1000) / estimatedDurationSeconds;
 
                 updateLiveMetrics('Complete', rtf.toFixed(3), latencyMs.toFixed(0) + 'ms');

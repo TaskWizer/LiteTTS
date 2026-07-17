@@ -1514,6 +1514,9 @@ with open("hello.mp3", "wb") as f:
         import json
         import asyncio
         import numpy as np
+        import io
+        import soundfile as sf
+        import struct
 
         generation_id = f"sse_{int(time.time() * 1000)}"
 
@@ -1521,35 +1524,62 @@ with open("hello.mp3", "wb") as f:
         yield "event: start\n"
         yield f"data: {json.dumps({'generation_id': generation_id, 'status': 'started'})}\n\n"
 
+        def make_wav_header(num_samples, sample_rate, num_channels=1, bits_per_sample=32):
+            """Create a minimal WAV file header"""
+            byte_rate = sample_rate * num_channels * bits_per_sample // 8
+            block_align = num_channels * bits_per_sample // 8
+            data_size = num_samples * num_channels * bits_per_sample // 8
+            file_size = 36 + data_size
+
+            header = struct.pack('<4sI4s', b'RIFF', file_size, b'WAVE')
+            header += struct.pack('<4sIHHIIHH', b'fmt ', 16, 3, num_channels, sample_rate, byte_rate, block_align, bits_per_sample)
+            header += struct.pack('<4sI', b'data', data_size)
+            return header
+
         try:
             chunk_id = 0
-            async for audio_chunk in self.model.create_stream(text, voice, speed):
-                audio_data, sample_rate = audio_chunk
+            sample_rate = 24000
+            all_audio = []
+            total_samples = 0
 
-                # Convert numpy array to bytes
+            async for audio_chunk in self.model.create_stream(text, voice, speed):
+                audio_data, sr = audio_chunk
+                sample_rate = sr
+
+                # Convert to numpy array
                 if isinstance(audio_data, np.ndarray):
-                    audio_bytes = (audio_data * 32767).astype(np.int16).tobytes()
+                    audio_np = audio_data.astype(np.float32)
                 else:
-                    audio_bytes = audio_data.tobytes()
+                    audio_np = np.array(audio_data, dtype=np.float32)
+
+                all_audio.append(audio_np)
+                total_samples += len(audio_np)
+
+                # Create WAV chunk with proper header (streaming-friendly)
+                wav_header = make_wav_header(len(audio_np), sample_rate)
+                wav_data = wav_header + (audio_np * 32767).astype(np.int16).tobytes()
 
                 # Encode as base64 for SSE
-                encoded_audio = base64.b64encode(audio_bytes).decode('utf-8')
+                encoded_audio = base64.b64encode(wav_data).decode('utf-8')
+
+                # Calculate progress based on estimated total
+                progress = min((chunk_id + 1) * 10, 95)
 
                 # Send chunk event
                 event_data = {
                     "chunk_id": chunk_id,
                     "audio_data": encoded_audio,
                     "sample_rate": sample_rate,
-                    "chunk_text": text,
+                    "chunk_text": text[:50] if len(text) > 50 else text,
                     "is_final": False,
-                    "progress": (chunk_id + 1) * 10
+                    "progress": progress,
+                    "status": "streaming"
                 }
 
                 yield "event: chunk\n"
                 yield f"data: {json.dumps(event_data)}\n\n"
 
                 chunk_id += 1
-                await asyncio.sleep(0.01)
 
             # Send completion event
             yield "event: complete\n"
