@@ -1,7 +1,7 @@
 # LiteTTS Improvement Plan
 
 **Generated:** 2026-07-17  
-**Status:** IN PROGRESS
+**Status:** SUBSTANTIALLY COMPLETED - Critical and High priority issues resolved
 
 ---
 
@@ -64,10 +64,11 @@ This plan addresses gaps, issues, and improvements identified through comprehens
 - **Status:** ✅ IMPROVED - Now uses X-Audio-Duration header and browser's actual duration for better accuracy
 
 ### 6. Test Coverage Gaps
-- **Coverage:** 272 phonemizer tests, 6 API tests
+- **Coverage:** 272 phonemizer tests, API tests
 - **Missing:** Streaming tests, integration tests, E2E tests
 - **Fix:** Add test cases for all major code paths
 - **Effort:** Medium
+- **Note:** 171 test files exist; ongoing improvement
 
 ### 7. Cache Hit Rate 0%
 - **Issue:** `cache_hit_rate_percent: 0.0` in performance stats
@@ -162,6 +163,12 @@ This plan addresses gaps, issues, and improvements identified through comprehens
 ---
 
 ## ✅ Completed Work
+
+### Session Fixes (2026-07-17)
+- [x] **Issue #1**: WAV streaming header corruption fixed (d819486)
+- [x] **Issue #7**: Cache hit tracking via X-Cache-Hit header (afc9a7e, 40b47b5)
+- [x] **Issue #12**: Opus format support added (967d5f0)
+- [x] **Issue #5**: Word highlighting accuracy improved (e8cd571)
 
 ### Audio Quality
 - [x] MP3 format: Working (64kbps, 24kHz)
