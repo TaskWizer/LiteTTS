@@ -23,10 +23,9 @@ This plan addresses gaps, issues, and improvements identified through comprehens
 
 ### 1. SSE Streaming Audio Quality
 - **Issue:** WAV streaming produces garbled/static audio
-- **Root Cause:** Improper WAV header construction for streaming
-- **Current State:** Reverted to standard TTS endpoint (no streaming)
-- **Fix Needed:** Either fix WAV streaming or implement proper chunked streaming
-- **Status:** WORKAROUND in place (standard endpoint works)
+- **Root Cause:** Each WAV chunk got a full WAV header, causing corruption
+- **Fix:** Only first chunk gets WAV header; subsequent chunks return raw PCM
+- **Status:** ✅ FIXED - commit d819486
 
 ### 2. Voice Embedding Cache Unbounded Growth
 - **File:** `LiteTTS/tts/engine.py:279-327`
@@ -82,6 +81,7 @@ This plan addresses gaps, issues, and improvements identified through comprehens
 - **Issue:** Some endpoints return JSON errors, others return plain text
 - **Fix:** Standardize error response format
 - **Effort:** Low
+- **Status:** ✅ VERIFIED - All errors use HTTPException which returns JSON consistently
 
 ---
 
