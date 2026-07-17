@@ -114,11 +114,30 @@
             padding: 20px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             text-align: center;
-            transition: transform 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .status-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
         }
 
         .status-card:hover {
-            transform: translateY(-2px);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .status-card:hover::before {
+            transform: scaleX(1);
         }
 
         .status-value {
@@ -126,11 +145,17 @@
             font-weight: bold;
             color: #667eea;
             margin-bottom: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .status-card:hover .status-value {
+            color: #764ba2;
         }
 
         .status-label {
             color: #666;
             font-size: 0.9rem;
+            font-weight: 500;
         }
 
         .dashboard-grid {
@@ -142,9 +167,14 @@
 
         .dashboard-card {
             background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
         }
 
         .card-header {
@@ -174,30 +204,37 @@
 
         .voice-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 8px;
             max-height: 300px;
             overflow-y: auto;
+            padding: 5px;
         }
 
         .voice-item {
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 1px solid #dee2e6;
             border-radius: 8px;
-            padding: 10px;
+            padding: 10px 8px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #495057;
         }
 
         .voice-item:hover {
-            background: #e9ecef;
-            transform: scale(1.02);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
         }
 
         .voice-item.active {
-            background: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
 
         .tts-controls {
@@ -417,42 +454,76 @@
 
         /* Word highlighting for streaming audio */
         .streaming-text {
-            font-size: 1.1em;
-            line-height: 2;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            margin: 10px 0;
+            font-size: 1.3em;
+            line-height: 2.2;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            margin: 15px 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+            min-height: 80px;
         }
         .streaming-word {
             display: inline-block;
-            padding: 2px 4px;
-            border-radius: 3px;
-            transition: all 0.15s ease;
-            margin: 2px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            margin: 3px;
+            font-weight: 500;
         }
         .streaming-word.active {
-            background: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            transform: scale(1.05);
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+            transform: scale(1.1) translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
         }
         .streaming-word.done {
-            background: #e8e8e8;
-            color: #888;
+            background: #dee2e6;
+            color: #6c757d;
+            transform: translateY(0);
         }
         .streaming-progress {
-            height: 4px;
-            background: #e0e0e0;
-            border-radius: 2px;
-            margin: 10px 0;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            margin: 15px 0;
             overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
         }
         .streaming-progress-bar {
             height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            transition: width 0.3s ease;
-            border-radius: 2px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 200% 100%;
+            animation: shimmer 2s ease-in-out infinite;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 3px;
+        }
+        @keyframes shimmer {
+            0% { background-position: 100% 0; }
+            100% { background-position: -100% 0; }
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .streaming-active-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #667eea;
+            font-weight: 600;
+            animation: pulse 1s ease-in-out infinite;
+        }
+        .streaming-dot {
+            width: 10px;
+            height: 10px;
+            background: #667eea;
+            border-radius: 50%;
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
         }
     </style>
 </head>
@@ -535,11 +606,11 @@
                     <div class="card-title">Real-time TTS Testing</div>
                 </div>
                 <div class="tts-controls">
-                    <textarea class="tts-input" id="tts-text" placeholder="Enter text to synthesize..." rows="3">Hello! This is a test of the LiteTTS system.</textarea>
+                    <textarea class="tts-input" id="tts-text" placeholder="Enter text to synthesize..." rows="3">Hello! This is a test of the LiteTTS streaming system.</textarea>
                     <select class="tts-input" id="tts-voice">
                         <option value="">Loading voices...</option>
                     </select>
-                    <div class="tts-metrics" id="tts-metrics" style="display: none;">
+                    <div class="tts-metrics" id="tts-metrics">
                         <div class="metric-item">
                             <span class="metric-label">RTF:</span>
                             <span class="metric-value" id="live-rtf">-</span>
@@ -560,6 +631,10 @@
                     </div>
                     <div id="tts-result"></div>
                     <audio id="audio-player" controls style="width: 100%; margin-top: 10px; display: none;"></audio>
+                    <div id="streaming-indicator" class="streaming-active-indicator" style="display: none;">
+                        <div class="streaming-dot"></div>
+                        <span>Streaming audio...</span>
+                    </div>
                     <div id="streaming-text" class="streaming-text" style="display: none;"></div>
                     <div class="streaming-progress" style="display: none;">
                         <div class="streaming-progress-bar" id="streaming-progress-bar" style="width: 0%"></div>
@@ -968,6 +1043,7 @@
             const resultDiv = document.getElementById('tts-result');
             const metricsDiv = document.getElementById('tts-metrics');
             const streamingText = document.getElementById('streaming-text');
+            const streamingIndicator = document.getElementById('streaming-indicator');
             const streamingProgress = document.querySelector('.streaming-progress');
             const progressBar = document.getElementById('streaming-progress-bar');
 
@@ -976,20 +1052,17 @@
                 return;
             }
 
-            // Show metrics and update status
+            // Show streaming UI and update status
             metricsDiv.style.display = 'flex';
-            updateLiveMetrics('Streaming...', '-', '-');
-            resultDiv.innerHTML = '<div class="loading">Streaming audio...</div>';
+            updateLiveMetrics('Starting...', '-', '-');
+            resultDiv.innerHTML = '<div class="loading">Initializing stream...</div>';
 
             // Parse text into words with their original positions for highlighting
             const words = [];
             let wordIdx = 0;
             const parts = text.split(/(\s+)/);
             for (const part of parts) {
-                if (part.trim() === '') {
-                    // Whitespace - just add without span
-                    continue;
-                }
+                if (part.trim() === '') continue;
                 words.push({ word: part, index: wordIdx });
                 wordIdx++;
             }
@@ -997,11 +1070,12 @@
 
             // Create word spans with unique data-index
             const wordSpans = parts.map(part => {
-                if (part.trim() === '') return part; // preserve whitespace
+                if (part.trim() === '') return part;
                 return `<span class="streaming-word" data-index="${words.find(w => w.word === part)?.index ?? 0}">${part}</span>`;
             }).join('');
             streamingText.innerHTML = wordSpans;
             streamingText.style.display = 'block';
+            streamingIndicator.style.display = 'inline-flex';
             streamingProgress.style.display = 'block';
             progressBar.style.width = '0%';
 
@@ -1012,6 +1086,7 @@
             let wordIndex = 0;
 
             try {
+                updateLiveMetrics('Streaming...', '-', '-');
                 const response = await fetch('/v1/audio/stream/sse', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1039,9 +1114,9 @@
                         isPlaying = true;
                         const chunkData = audioChunks.shift();
                         try {
-                            const buffer = await audioContext.decodeAudioData(chunkData);
+                            const audioBuffer = await audioContext.decodeAudioData(chunkData);
                             const source = audioContext.createBufferSource();
-                            source.buffer = buffer;
+                            source.buffer = audioBuffer;
                             source.connect(audioContext.destination);
                             source.onended = () => {
                                 isPlaying = false;
@@ -1055,7 +1130,7 @@
                     }
                 };
 
-                // Highlight a single word
+                // Highlight a single word with animation
                 const highlightWord = (idx) => {
                     if (idx >= totalWords) return;
                     const span = streamingText.querySelector(`[data-index="${idx}"]`);
@@ -1064,7 +1139,7 @@
                         setTimeout(() => {
                             span.classList.remove('active');
                             span.classList.add('done');
-                        }, 150);
+                        }, 200);
                     }
                 };
 
@@ -1083,11 +1158,9 @@
                         try {
                             const data = JSON.parse(line.slice(6));
 
-                            // Update progress bar
+                            // Update progress bar and word highlighting
                             if (data.progress !== undefined) {
                                 progressBar.style.width = `${Math.min(data.progress, 100)}%`;
-
-                                // Highlight words based on progress (distribute evenly)
                                 const targetWords = Math.floor((data.progress / 100) * totalWords);
                                 while (wordIndex < targetWords && wordIndex < totalWords) {
                                     highlightWord(wordIndex);
@@ -1109,7 +1182,6 @@
 
                             // Check for completion
                             if (data.status === 'completed' || data.status === 'error') {
-                                // Highlight remaining words
                                 while (wordIndex < totalWords) {
                                     highlightWord(wordIndex);
                                     wordIndex++;
@@ -1133,6 +1205,7 @@
                 const estimatedDurationSeconds = (totalWords / 150) * 60;
                 const rtf = (latencyMs / 1000) / estimatedDurationSeconds;
 
+                streamingIndicator.style.display = 'none';
                 updateLiveMetrics('Complete', rtf.toFixed(3), latencyMs.toFixed(0) + 'ms');
                 resultDiv.innerHTML = `
                     <div class="success">
@@ -1142,6 +1215,12 @@
                 `;
                 addDebugLog(`TTS Success: ${text.substring(0, 50)}... | RTF: ${rtf.toFixed(3)} | Voice: ${voice}`, 'success');
 
+                // Hide streaming UI after a delay
+                setTimeout(() => {
+                    streamingText.style.display = 'none';
+                    streamingProgress.style.display = 'none';
+                }, 2000);
+
             } catch (error) {
                 const endTime = performance.now();
                 const latencyMs = endTime - startTime;
@@ -1150,6 +1229,7 @@
                 showError(`Failed to generate speech: ${error.message}`);
                 addDebugLog(`TTS Failed: ${error.message}`, 'error');
                 streamingText.style.display = 'none';
+                streamingIndicator.style.display = 'none';
                 streamingProgress.style.display = 'none';
             }
         }
