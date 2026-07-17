@@ -926,8 +926,20 @@ class PhonemizationPreprocessor:
         # Don't match plain C or F which might be used for other purposes
         text = re.sub(r'(-?)(\d+\.?\d*)(°[CF])', temp_to_words, text)
 
-        # CRITICAL: Fix URLs FIRST before any acronym replacements break them
-        # URLs like https://example.org/api/v2 would become broken if API is expanded first
+        # FIX: Handle YAML and XML explicitly before the acronym pattern converts them
+        # YAML -> yam-el, XML -> ex-em-el (with hyphens for better TTS)
+        text = re.sub(r'\bYAML\b', 'yam-el', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bXML\b', 'ex-em-el', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bJSON\b', 'jay son', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bSQL\b', 'sequel', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bAPI\b(?![/?&])', 'A P I', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bGPS\b', 'G P S', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bCEO\b', 'C E O', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bCFO\b', 'C F O', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bCTO\b', 'C T O', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bCOO\b', 'C O O', text, flags=re.IGNORECASE)
+
+        # CRITICAL: Fix URLs AFTER acronym replacements so api/v2 in URLs stays lowercase
         # Format: H-T-T-P-S, forward slash, forward slash, example dot org, slash api, slash V-two, question mark, I-D equals forty-two
         if re.search(r'https?://[^\s]+', text):
             def url_to_words(match):
@@ -960,10 +972,11 @@ class PhonemizationPreprocessor:
                     except:
                         return n
 
-                def word_or_hyphenate(s):
+                def word_or_hyphenate(s, upper=False):
                     """Word if alpha only, else hyphenate letters, convert numbers to words"""
                     if s.isalpha():
-                        return s.lower()
+                        # Hyphenate each letter: id -> I-D, debug -> D-E-B-U-G
+                        return '-'.join(list(s.upper())) if upper else s.lower()
                     result = []
                     i = 0
                     current_num = ''
@@ -976,7 +989,7 @@ class PhonemizationPreprocessor:
                                 result.append(number_to_words(current_num))
                                 current_num = ''
                             if c.isalpha():
-                                result.append(c.upper())
+                                result.append(c.upper() if upper else c.lower())
                         i += 1
                     if current_num:
                         result.append(number_to_words(current_num))
@@ -1016,7 +1029,8 @@ class PhonemizationPreprocessor:
                         for param in query.split('&'):
                             if '=' in param:
                                 k, v = param.split('=', 1)
-                                result.append(word_or_hyphenate(k))
+                                # Query params should be uppercased: id -> I-D
+                                result.append(word_or_hyphenate(k, upper=True))
                                 result.append('equals')
                                 result.append(word_or_hyphenate(v))
                             else:
@@ -1028,19 +1042,6 @@ class PhonemizationPreprocessor:
 
             text = re.sub(r'https?://[^\s]+', url_to_words, text)
             changes.append("URL to words")
-
-        # FIX: Handle YAML and XML explicitly before the acronym pattern converts them
-        # YAML -> yam-el, XML -> ex-em-el (with hyphens for better TTS)
-        text = re.sub(r'\bYAML\b', 'yam-el', text, flags=re.IGNORECASE)
-        text = re.sub(r'\bXML\b', 'ex-em-el', text, flags=re.IGNORECASE)
-        text = re.sub(r'\bJSON\b', 'jay son', text, flags=re.IGNORECASE)
-        text = re.sub(r'\bSQL\b', 'sequel', text, flags=re.IGNORECASE)
-        text = re.sub(r'\bAPI\b', 'A P I', text, flags=re.IGNORECASE)
-        text = re.sub(r'\bGPS\b', 'G P S', text, flags=re.IGNORECASE)
-        text = re.sub(r'\bCEO\b', 'C E O', text, flags=re.IGNORECASE)
-        text = re.sub(r'\bCFO\b', 'C F O', text, flags=re.IGNORECASE)
-        text = re.sub(r'\bCTO\b', 'C T O', text, flags=re.IGNORECASE)
-        text = re.sub(r'\bCOO\b', 'C O O', text, flags=re.IGNORECASE)
 
         # Fix email addresses like qa-test+tts@example.com
         # Convert to spell-out format: Q-A dash test plus tts at example dot com
