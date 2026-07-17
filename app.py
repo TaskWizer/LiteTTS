@@ -1508,6 +1508,58 @@ with open("hello.mp3", "wb") as f:
             self.logger.error(f"Full traceback: {traceback.format_exc()}")
             raise HTTPException(500, detail=f"Streaming generation failed: {str(e)}")
 
+    async def _stream_sse_kokoro(self, text: str, voice: str, speed: float, response_format: str):
+        """Stream audio using Kokoro's create_stream with SSE output"""
+        import base64
+        import json
+        import asyncio
+        import numpy as np
+
+        generation_id = f"sse_{int(time.time() * 1000)}"
+
+        # Send initial event
+        yield "event: start\n"
+        yield f"data: {json.dumps({'generation_id': generation_id, 'status': 'started'})}\n\n"
+
+        try:
+            chunk_id = 0
+            async for audio_chunk in self.model.create_stream(text, voice, speed):
+                audio_data, sample_rate = audio_chunk
+
+                # Convert numpy array to bytes
+                if isinstance(audio_data, np.ndarray):
+                    audio_bytes = (audio_data * 32767).astype(np.int16).tobytes()
+                else:
+                    audio_bytes = audio_data.tobytes()
+
+                # Encode as base64 for SSE
+                encoded_audio = base64.b64encode(audio_bytes).decode('utf-8')
+
+                # Send chunk event
+                event_data = {
+                    "chunk_id": chunk_id,
+                    "audio_data": encoded_audio,
+                    "sample_rate": sample_rate,
+                    "chunk_text": text,
+                    "is_final": False,
+                    "progress": (chunk_id + 1) * 10
+                }
+
+                yield "event: chunk\n"
+                yield f"data: {json.dumps(event_data)}\n\n"
+
+                chunk_id += 1
+                await asyncio.sleep(0.01)
+
+            # Send completion event
+            yield "event: complete\n"
+            yield f"data: {json.dumps({'generation_id': generation_id, 'status': 'completed', 'total_chunks': chunk_id})}\n\n"
+
+        except Exception as e:
+            self.logger.error(f"SSE streaming failed: {e}")
+            yield "event: error\n"
+            yield f"data: {json.dumps({'generation_id': generation_id, 'status': 'error', 'error': str(e)})}\n\n"
+
     async def _stream_chunked_audio(self, request: TTSRequest, voice_name: str, response_format: str, speed: float):
         """Stream audio using chunked generation"""
         try:
@@ -1695,15 +1747,23 @@ with open("hello.mp3", "wb") as f:
                 sanitized_request = TTSRequest(**data_or_error)
                 self.logger.info(f"🎧 SSE streaming request: '{sanitized_request.input[:50]}...' voice='{sanitized_request.voice}'")
 
-                # Use progressive handler for SSE
-                from LiteTTS.api.progressive_response import ProgressiveResponseHandler
-                progressive_handler = ProgressiveResponseHandler(self.model.progressive_generator)
-
-                return await progressive_handler.create_server_sent_events_response(
-                    text=sanitized_request.input,
-                    voice=sanitized_request.voice,
-                    response_format=sanitized_request.response_format,
-                    speed=sanitized_request.speed
+                # Use Kokoro's native create_stream for SSE
+                return StreamingResponse(
+                    self._stream_sse_kokoro(
+                        text=sanitized_request.input,
+                        voice=sanitized_request.voice,
+                        speed=sanitized_request.speed,
+                        response_format=sanitized_request.response_format
+                    ),
+                    media_type="text/event-stream",
+                    headers={
+                        "Cache-Control": "no-cache",
+                        "Connection": "keep-alive",
+                        "X-Generation-Mode": "stream",
+                        "Access-Control-Allow-Origin": "*",
+                        "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+                        "Access-Control-Allow-Headers": "*"
+                    }
                 )
             except HTTPException:
                 raise
