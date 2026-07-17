@@ -1058,6 +1058,10 @@
                     throw new Error(await response.text());
                 }
 
+                // Get audio duration from response header (more accurate than blob size estimate)
+                const audioDurationHeader = response.headers.get('X-Audio-Duration');
+                let duration = 10; // Default fallback
+
                 // Get audio blob and create URL
                 const audioBlob = await response.blob();
                 const audioUrl = URL.createObjectURL(audioBlob);
@@ -1066,8 +1070,13 @@
                 audioPlayer.src = audioUrl;
                 currentAudio = audioPlayer;
 
-                // Calculate timing for word highlighting
-                const duration = audioBlob.size / 16000; // rough estimate
+                // Use actual audio duration from header if available, otherwise estimate
+                if (audioDurationHeader) {
+                    duration = parseFloat(audioDurationHeader);
+                } else {
+                    // Fallback estimate: assume ~10KB per second for MP3 at 128kbps
+                    duration = audioBlob.size / 12500;
+                }
                 const msPerWord = (duration * 1000) / totalWords;
 
                 // Start word highlighting as audio plays
@@ -1087,10 +1096,22 @@
                     }
                 };
 
+                audioPlayer.onloadedmetadata = () => {
+                    // Use actual audio duration from browser once loaded
+                    const actualDuration = audioPlayer.duration;
+                    if (actualDuration && actualDuration > 0 && actualDuration < 10000) {
+                        duration = actualDuration;
+                        clearInterval(highlightingInterval);
+                        highlightingInterval = setInterval(highlightNext, (duration * 1000) / totalWords);
+                    }
+                };
+
                 audioPlayer.oncanplay = () => {
                     audioPlayer.play();
                     updateLiveMetrics('Playing...', '-', '-');
-                    highlightingInterval = setInterval(highlightNext, msPerWord);
+                    if (!highlightingInterval) {
+                        highlightingInterval = setInterval(highlightNext, (duration * 1000) / totalWords);
+                    }
                 };
 
                 audioPlayer.onended = () => {
