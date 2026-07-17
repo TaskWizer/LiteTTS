@@ -1509,14 +1509,12 @@ with open("hello.mp3", "wb") as f:
             raise HTTPException(500, detail=f"Streaming generation failed: {str(e)}")
 
     async def _stream_sse_kokoro(self, text: str, voice: str, speed: float, response_format: str):
-        """Stream audio using Kokoro's create_stream with SSE output"""
+        """Stream audio using Kokoro's create_stream - collect all, then send complete WAV"""
         import base64
         import json
-        import asyncio
-        import numpy as np
         import io
         import soundfile as sf
-        import struct
+        import numpy as np
 
         generation_id = f"sse_{int(time.time() * 1000)}"
 
@@ -1524,66 +1522,60 @@ with open("hello.mp3", "wb") as f:
         yield "event: start\n"
         yield f"data: {json.dumps({'generation_id': generation_id, 'status': 'started'})}\n\n"
 
-        def make_wav_header(num_samples, sample_rate, num_channels=1, bits_per_sample=32):
-            """Create a minimal WAV file header"""
-            byte_rate = sample_rate * num_channels * bits_per_sample // 8
-            block_align = num_channels * bits_per_sample // 8
-            data_size = num_samples * num_channels * bits_per_sample // 8
-            file_size = 36 + data_size
-
-            header = struct.pack('<4sI4s', b'RIFF', file_size, b'WAVE')
-            header += struct.pack('<4sIHHIIHH', b'fmt ', 16, 3, num_channels, sample_rate, byte_rate, block_align, bits_per_sample)
-            header += struct.pack('<4sI', b'data', data_size)
-            return header
-
         try:
-            chunk_id = 0
-            sample_rate = 24000
+            # Collect all audio chunks first
             all_audio = []
-            total_samples = 0
+            sample_rate = 24000
 
             async for audio_chunk in self.model.create_stream(text, voice, speed):
                 audio_data, sr = audio_chunk
                 sample_rate = sr
 
-                # Convert to numpy array
                 if isinstance(audio_data, np.ndarray):
-                    audio_np = audio_data.astype(np.float32)
+                    all_audio.append(audio_data)
                 else:
-                    audio_np = np.array(audio_data, dtype=np.float32)
+                    all_audio.append(np.array(audio_data))
 
-                all_audio.append(audio_np)
-                total_samples += len(audio_np)
+            # Concatenate all audio
+            if all_audio:
+                full_audio = np.concatenate(all_audio) if len(all_audio) > 1 else all_audio[0]
+            else:
+                full_audio = np.array([])
 
-                # Create WAV chunk with proper header (streaming-friendly)
-                wav_header = make_wav_header(len(audio_np), sample_rate)
-                wav_data = wav_header + (audio_np * 32767).astype(np.int16).tobytes()
+            # Send progress update
+            yield "event: progress\n"
+            yield f"data: {json.dumps({'progress': 50, 'status': 'processing'})}\n\n"
 
-                # Encode as base64 for SSE
-                encoded_audio = base64.b64encode(wav_data).decode('utf-8')
+            # Convert to WAV using soundfile (same method as regular endpoint)
+            buffer = io.BytesIO()
+            if full_audio.dtype != np.float32:
+                full_audio = full_audio.astype(np.float32)
+            if full_audio.ndim > 1:
+                full_audio = full_audio.flatten()
 
-                # Calculate progress based on estimated total
-                progress = min((chunk_id + 1) * 10, 95)
+            sf.write(buffer, full_audio, sample_rate, format='WAV')
+            buffer.seek(0)
+            wav_data = buffer.read()
 
-                # Send chunk event
-                event_data = {
-                    "chunk_id": chunk_id,
-                    "audio_data": encoded_audio,
-                    "sample_rate": sample_rate,
-                    "chunk_text": text[:50] if len(text) > 50 else text,
-                    "is_final": False,
-                    "progress": progress,
-                    "status": "streaming"
-                }
+            # Encode as base64 for SSE
+            encoded_audio = base64.b64encode(wav_data).decode('utf-8')
 
-                yield "event: chunk\n"
-                yield f"data: {json.dumps(event_data)}\n\n"
+            # Send final chunk with complete audio
+            event_data = {
+                "audio_data": encoded_audio,
+                "sample_rate": sample_rate,
+                "duration": len(full_audio) / sample_rate if len(full_audio) > 0 else 0,
+                "is_final": True,
+                "progress": 100,
+                "status": "completed"
+            }
 
-                chunk_id += 1
+            yield "event: chunk\n"
+            yield f"data: {json.dumps(event_data)}\n\n"
 
             # Send completion event
             yield "event: complete\n"
-            yield f"data: {json.dumps({'generation_id': generation_id, 'status': 'completed', 'total_chunks': chunk_id})}\n\n"
+            yield f"data: {json.dumps({'generation_id': generation_id, 'status': 'completed'})}\n\n"
 
         except Exception as e:
             self.logger.error(f"SSE streaming failed: {e}")

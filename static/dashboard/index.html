@@ -492,38 +492,9 @@
         }
         .streaming-progress-bar {
             height: 100%;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-            background-size: 200% 100%;
-            animation: shimmer 2s ease-in-out infinite;
-            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
             border-radius: 3px;
-        }
-        @keyframes shimmer {
-            0% { background-position: 100% 0; }
-            100% { background-position: -100% 0; }
-        }
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        .streaming-active-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: #667eea;
-            font-weight: 600;
-            animation: pulse 1s ease-in-out infinite;
-        }
-        .streaming-dot {
-            width: 10px;
-            height: 10px;
-            background: #667eea;
-            border-radius: 50%;
-            animation: bounce 0.6s ease-in-out infinite;
-        }
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-4px); }
         }
     </style>
 </head>
@@ -630,11 +601,7 @@
                         <button class="btn btn-info" onclick="validateVoice()">🔍 Test Voice</button>
                     </div>
                     <div id="tts-result"></div>
-                    <audio id="audio-player" controls style="width: 100%; margin-top: 10px; display: none;"></audio>
-                    <div id="streaming-indicator" class="streaming-active-indicator" style="display: none;">
-                        <div class="streaming-dot"></div>
-                        <span>Streaming audio...</span>
-                    </div>
+                    <audio id="audio-player" controls style="width: 100%; margin-top: 10px;"></audio>
                     <div id="streaming-text" class="streaming-text" style="display: none;"></div>
                     <div class="streaming-progress" style="display: none;">
                         <div class="streaming-progress-bar" id="streaming-progress-bar" style="width: 0%"></div>
@@ -1036,7 +1003,7 @@
             document.getElementById('tts-voice').value = voiceId;
         }
 
-        // Test TTS with SSE streaming
+        // Test TTS - uses standard TTS endpoint for reliable audio
         async function testTTS() {
             const text = document.getElementById('tts-text').value;
             const voice = document.getElementById('tts-voice').value || selectedVoice;
@@ -1046,32 +1013,24 @@
             const streamingIndicator = document.getElementById('streaming-indicator');
             const streamingProgress = document.querySelector('.streaming-progress');
             const progressBar = document.getElementById('streaming-progress-bar');
+            const audioPlayer = document.getElementById('audio-player');
 
             if (!text.trim()) {
                 showError('Please enter some text to synthesize');
                 return;
             }
 
-            // Show streaming UI and update status
+            // Show UI
             metricsDiv.style.display = 'flex';
-            updateLiveMetrics('Starting...', '-', '-');
-            resultDiv.innerHTML = '<div class="loading">Initializing stream...</div>';
+            updateLiveMetrics('Generating...', '-', '-');
+            resultDiv.innerHTML = '<div class="loading">Generating speech...</div>';
 
-            // Parse text into words with their original positions for highlighting
-            const words = [];
-            let wordIdx = 0;
-            const parts = text.split(/(\s+)/);
-            for (const part of parts) {
-                if (part.trim() === '') continue;
-                words.push({ word: part, index: wordIdx });
-                wordIdx++;
-            }
+            // Setup word highlighting
+            const words = text.split(/\s+/).filter(w => w);
             const totalWords = words.length;
-
-            // Create word spans with unique data-index
-            const wordSpans = parts.map(part => {
+            const wordSpans = text.split(/(\s+)/).map((part, i) => {
                 if (part.trim() === '') return part;
-                return `<span class="streaming-word" data-index="${words.find(w => w.word === part)?.index ?? 0}">${part}</span>`;
+                return `<span class="streaming-word" data-idx="${words.indexOf(part)}">${part}</span>`;
             }).join('');
             streamingText.innerHTML = wordSpans;
             streamingText.style.display = 'block';
@@ -1080,157 +1039,98 @@
             progressBar.style.width = '0%';
 
             const startTime = performance.now();
-            let audioChunks = [];
-            let audioContext = null;
-            let isPlaying = false;
-            let wordIndex = 0;
+            let highlightingInterval = null;
+
+            // Stop any existing audio
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
 
             try {
-                updateLiveMetrics('Streaming...', '-', '-');
-                const response = await fetch('/v1/audio/stream/sse', {
+                const response = await fetch('/v1/audio/speech', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ input: text, voice: voice, response_format: 'wav' })
+                    body: JSON.stringify({ input: text, voice: voice, response_format: 'mp3' })
                 });
 
                 if (!response.ok) {
                     throw new Error(await response.text());
                 }
 
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder();
-                let buffer = '';
+                // Get audio blob and create URL
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
 
-                // Initialize AudioContext lazily
-                const ensureAudioContext = () => {
-                    if (!audioContext) {
-                        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    }
-                };
+                // Setup audio player
+                audioPlayer.src = audioUrl;
+                currentAudio = audioPlayer;
 
-                // Play next chunk in queue
-                const playNext = async () => {
-                    if (audioChunks.length > 0 && !isPlaying) {
-                        isPlaying = true;
-                        const chunkData = audioChunks.shift();
-                        try {
-                            const audioBuffer = await audioContext.decodeAudioData(chunkData);
-                            const source = audioContext.createBufferSource();
-                            source.buffer = audioBuffer;
-                            source.connect(audioContext.destination);
-                            source.onended = () => {
-                                isPlaying = false;
-                                if (audioChunks.length > 0) playNext();
-                            };
-                            source.start();
-                        } catch (e) {
-                            console.error('Audio decode error:', e);
-                            isPlaying = false;
+                // Calculate timing for word highlighting
+                const duration = audioBlob.size / 16000; // rough estimate
+                const msPerWord = (duration * 1000) / totalWords;
+
+                // Start word highlighting as audio plays
+                let currentWord = 0;
+                const highlightNext = () => {
+                    if (currentWord < totalWords) {
+                        const span = streamingText.querySelector(`[data-idx="${currentWord}"]`);
+                        if (span) {
+                            span.classList.add('active');
+                            setTimeout(() => {
+                                span.classList.remove('active');
+                                span.classList.add('done');
+                            }, msPerWord * 0.8);
                         }
+                        currentWord++;
+                        progressBar.style.width = `${(currentWord / totalWords) * 100}%`;
                     }
                 };
 
-                // Highlight a single word with animation
-                const highlightWord = (idx) => {
-                    if (idx >= totalWords) return;
-                    const span = streamingText.querySelector(`[data-index="${idx}"]`);
-                    if (span) {
-                        span.classList.add('active');
-                        setTimeout(() => {
-                            span.classList.remove('active');
-                            span.classList.add('done');
-                        }, 200);
-                    }
+                audioPlayer.oncanplay = () => {
+                    audioPlayer.play();
+                    updateLiveMetrics('Playing...', '-', '-');
+                    highlightingInterval = setInterval(highlightNext, msPerWord);
                 };
 
-                // Process SSE stream
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
+                audioPlayer.onended = () => {
+                    clearInterval(highlightingInterval);
+                    progressBar.style.width = '100%';
+                    while (currentWord < totalWords) highlightNext();
 
-                    buffer += decoder.decode(value, { stream: true });
-                    const lines = buffer.split('\n');
-                    buffer = lines.pop() || '';
+                    const endTime = performance.now();
+                    const latencyMs = endTime - startTime;
+                    const rtf = (latencyMs / 1000) / duration;
 
-                    for (const line of lines) {
-                        if (!line.startsWith('data: ')) continue;
+                    updateLiveMetrics('Complete', rtf.toFixed(3), latencyMs.toFixed(0) + 'ms');
+                    resultDiv.innerHTML = `<div class="success">Speech generated successfully! <small>RTF: ${rtf.toFixed(3)} | Latency: ${latencyMs.toFixed(0)}ms</small></div>`;
+                    streamingIndicator.style.display = 'none';
+                    addDebugLog(`TTS Success: ${text.substring(0, 50)}...`, 'success');
+                };
 
-                        try {
-                            const data = JSON.parse(line.slice(6));
-
-                            // Update progress bar and word highlighting
-                            if (data.progress !== undefined) {
-                                progressBar.style.width = `${Math.min(data.progress, 100)}%`;
-                                const targetWords = Math.floor((data.progress / 100) * totalWords);
-                                while (wordIndex < targetWords && wordIndex < totalWords) {
-                                    highlightWord(wordIndex);
-                                    wordIndex++;
-                                }
-                            }
-
-                            // Handle audio chunk
-                            if (data.audio_data) {
-                                ensureAudioContext();
-                                const binary = atob(data.audio_data);
-                                const bytes = new Uint8Array(binary.length);
-                                for (let i = 0; i < binary.length; i++) {
-                                    bytes[i] = binary.charCodeAt(i);
-                                }
-                                audioChunks.push(bytes.buffer);
-                                playNext();
-                            }
-
-                            // Check for completion
-                            if (data.status === 'completed' || data.status === 'error') {
-                                while (wordIndex < totalWords) {
-                                    highlightWord(wordIndex);
-                                    wordIndex++;
-                                }
-                                progressBar.style.width = '100%';
-                                break;
-                            }
-                        } catch (e) {
-                            console.error('SSE parse error:', e);
-                        }
-                    }
-                }
-
-                // Wait for playback to finish
-                while (audioChunks.length > 0 || isPlaying) {
-                    await new Promise(r => setTimeout(r, 50));
-                }
-
-                const endTime = performance.now();
-                const latencyMs = endTime - startTime;
-                const estimatedDurationSeconds = (totalWords / 150) * 60;
-                const rtf = (latencyMs / 1000) / estimatedDurationSeconds;
-
-                streamingIndicator.style.display = 'none';
-                updateLiveMetrics('Complete', rtf.toFixed(3), latencyMs.toFixed(0) + 'ms');
-                resultDiv.innerHTML = `
-                    <div class="success">
-                        Speech streamed successfully!<br>
-                        <small>RTF: ${rtf.toFixed(3)} | Latency: ${latencyMs.toFixed(0)}ms | Voice: ${voice}</small>
-                    </div>
-                `;
-                addDebugLog(`TTS Success: ${text.substring(0, 50)}... | RTF: ${rtf.toFixed(3)} | Voice: ${voice}`, 'success');
-
-                // Hide streaming UI after a delay
-                setTimeout(() => {
-                    streamingText.style.display = 'none';
-                    streamingProgress.style.display = 'none';
-                }, 2000);
+                audioPlayer.onerror = () => {
+                    clearInterval(highlightingInterval);
+                    throw new Error('Audio playback failed');
+                };
 
             } catch (error) {
-                const endTime = performance.now();
-                const latencyMs = endTime - startTime;
+                clearInterval(highlightingInterval);
+                const latencyMs = performance.now() - startTime;
                 console.error('TTS Error:', error);
                 updateLiveMetrics('Failed', '-', latencyMs.toFixed(0) + 'ms');
-                showError(`Failed to generate speech: ${error.message}`);
+                showError(`Failed: ${error.message}`);
                 addDebugLog(`TTS Failed: ${error.message}`, 'error');
                 streamingText.style.display = 'none';
                 streamingIndicator.style.display = 'none';
                 streamingProgress.style.display = 'none';
+            }
+        }
+
+        // Stop audio playback
+        function stopAudio() {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
             }
         }
 
