@@ -1,189 +1,228 @@
-# Tasks - TTS Pronunciation Fixes
+# LiteTTS Comprehensive Task List
 
-## Task 1: Fix phonemizer_preprocessor.py problematic_patterns
-**File:** `LiteTTS/text/phonemizer_preprocessor.py`
-**Status:** COMPLETED
-**Changes:**
-- Removed the over-aggressive `(r'([A-Z]{2,})', ...)` pattern that spells out regular words
-- Only converts true acronyms (all caps sequences like FBI, NASA)
-- Preserves capitalized words like "Directions", "Any", "Know"
+**Generated:** 2026-08-21  
+**Total Tasks:** 31  
+**Codebase:** ~138,827 lines across 482 Python files
 
-## Task 2: Remove fraction slash pattern
-**File:** `LiteTTS/text/phonemizer_preprocessor.py`
-**Status:** COMPLETED
-**Changes:**
-- Removed `(r'\b(\d+)/(\d+)\b', r'\1 slash \2', 'Fractions and dates')` pattern
-- Let natural number processing handle fractions
+---
 
-## Task 3: Add pronunciation fixes to clean_text_normalizer.py
-**File:** `LiteTTS/nlp/clean_text_normalizer.py`
-**Status:** COMPLETED
-**Changes:**
-- Added "because": "be-CAUZ" - prevents "be-swah-s-e" pronunciation
-- Added "know": "NOH" - prevents confusion with "now"
-- Added "tests": "TESTS" - preserves 'e', prevents "tess"
-- Added "Directions": "di-REK-shuns" - prevents letter-by-letter spelling
-- Added "any": "EN-ee" - prevents "e-n-turn-v" pronunciation
-- Added "their"/"there": "THAIR" - distinct pronunciations
+## Critical Infrastructure (Missing)
 
-## Task 4: Update text_normalizer slash handling
-**File:** `LiteTTS/nlp/text_normalizer.py`
-**Status:** COMPLETED
-**Changes:**
-- Changed slash handling from " slash " to " " (space) - slashes are now silent
-- Removed '/' from symbol_words_map in phonemizer_preprocessor.py
+| # | Task | Priority | Effort |
+|---|------|----------|--------|
+| 1 | Set up GitHub Actions CI/CD pipeline | CRITICAL | Medium |
+| 2 | Configure pre-commit hooks | CRITICAL | Low |
 
-## Task 5: Optimization Analysis
-**File:** `docs/OPTIMIZATION_REPORT.md`
-**Status:** COMPLETED
-**Changes:**
-- Created comprehensive analysis report with 34 identified issues
-- 4 critical, 8 high, 12 medium, 10 low severity
-- Covers: performance, quality, architecture, testing gaps
-- Kokoro ONNX limitations documented
+## Critical Issues (from OPTIMIZATION_REPORT.md)
 
-### Critical Issues Identified:
-1. Voice embedding cache unbounded growth (engine.py:279-327)
-2. Phoneme truncation without notification (patches.py:211-213)
-3. Pipeline parallelism dead code (engine.py:976-1090)
-4. ONNX input validation missing (engine.py:439-482)
+| # | Task | Priority | Effort |
+|---|------|----------|--------|
+| 3 | Audit and fix audio_quality_enhancer.py disabled features | HIGH | High |
+| 7 | Fix or remove dead code: pipeline parallelism | CRITICAL | Medium |
+| 8 | Add ONNX input validation before inference | HIGH | Medium |
 
-### High Priority Issues:
-1. Tokenization cache key missing parameters (engine.py:299)
-2. Audio quality enhancer disabled (audio_quality_enhancer.py:176-197)
-3. Emotion controller non-deterministic indexing (emotion_controller.py:168-179)
-4. Voice vector bounds edge case (patches.py:224-231)
-5. ThreadPoolExecutor contention on ONNX (engine.py:885)
+## High Priority
 
-## Task 6: Optimization Fixes Implemented
-**Status:** COMPLETED
-**Date:** 2026-07-15
+| # | Task | Priority | Effort |
+|---|------|----------|--------|
+| 4 | Reduce NLP pipeline complexity (15+ stages) | MEDIUM | High |
+| 5 | Consolidate three independent cache implementations | MEDIUM | Medium |
+| 6 | Implement deterministic emotion controller indexing | HIGH | Medium |
+| 9 | Implement CPU thermal throttling detection | MEDIUM | Medium |
+| 10 | Replace silent pass blocks with error logging | MEDIUM | Low |
+| 27 | Implement batch processing optimization | HIGH | Medium |
 
-### Completed Fixes:
-1. **Tokenization cache key** (engine.py:299)
-   - Changed from `f"{text}:{voice}"` to `f"{text}:{voice}:{speed}:{emotion}:{emotion_strength}"`
+## Medium Priority
 
-2. **LRU eviction for all caches** (synthesis_optimizer.py)
-   - Added `max_voice_embedding_cache: int = 100`
-   - Added `max_tokenization_cache: int = 1000`
-   - Changed `voice_embedding_cache`, `tokenization_cache`, `fast_path_cache` from `dict` to `OrderedDict`
-   - Implemented LRU eviction in `cache_voice_embedding()`, `cache_tokenization()`, `cache_fast_path_result()`
-   - Cache access now calls `move_to_end()` for LRU tracking
+| # | Task | Priority | Effort |
+|---|------|----------|--------|
+| 11 | Test and verify enable/disable combined voice file loading | LOW | Low |
+| 13 | Add performance benchmarks to CI | MEDIUM | Medium |
+| 17 | Audit NLP processor overlap and duplication | MEDIUM | High |
+| 18 | Implement voice vector bounds fallback strategy | LOW | Low |
+| 19 | Add validation for empty audio before ONNX inference | LOW | Low |
+| 29 | Standardize voice embedding shape handling | MEDIUM | Medium |
 
-3. **Emotion controller deterministic indexing** (emotion_controller.py:168-179)
-   - Replaced `hash(weight_type) % len()` with `(idx * 37 + len(weight_type)) % len()`
-   - Uses enumerate index for deterministic behavior
+## Documentation
 
-4. **Removed dead pipeline parallelism code** (engine.py:976-1090)
-   - Removed `synthesize_with_pipeline_parallelism()` method
-   - References non-existent `self.phonemizer`, `self.model`, `self.vocoder`
+| # | Task | Priority | Effort |
+|---|------|----------|--------|
+| 12 | Create comprehensive API documentation | HIGH | Medium |
+| 14 | Create architecture decision record (ADR) documentation | MEDIUM | Medium |
+| 15 | Review and update CHANGELOG.md format | LOW | Low |
+| 16 | Create CONTRIBUTING.md with development guide | MEDIUM | Medium |
+| 20 | Create deployment documentation with examples | MEDIUM | Medium |
+| 21 | Audit and document all environment variables | MEDIUM | Low |
+| 25 | Document SSML handling and limitations | MEDIUM | Medium |
+| 26 | Create system requirements and compatibility matrix | MEDIUM | Low |
+| 28 | Create troubleshooting decision tree | MEDIUM | Medium |
+| 30 | Create migration guide for version upgrades | LOW | Low |
+| 31 | Add inline documentation to complex NLP processors | MEDIUM | High |
 
-5. **Improved voice vector bounds handling** (patches.py:224-231)
-   - Enhanced warning message to be more descriptive
-   - Added validation that voice_size should be 510
+## Research & Analysis
 
-6. **Enhanced ONNX input validation** (engine.py:439-482)
-   - Added validation for empty/missing inputs before inference
-   - Added dtype validation (must be numeric)
-   - Added shape validation (cannot be scalar)
-   - Improved error messages for different failure modes
-   - Validates extra inputs (may indicate configuration issues)
+| # | Task | Priority | Effort |
+|---|------|----------|--------|
+| 22 | Research best practices from similar TTS projects | MEDIUM | Medium |
+| 23 | Create security audit checklist and run scan | HIGH | Medium |
+| 24 | Verify all TODO/FIXME comments are tracked | LOW | Medium |
 
-## Task 7: Additional Optimization Fixes
-**Status:** COMPLETED
-**Date:** 2026-07-15
+---
 
-### Completed Fixes:
-1. **Audio quality enhancer** (audio_quality_enhancer.py)
-   - Reimplemented _apply_emotional_markers with safe <emphasis> tags
-   - Reimplemented _apply_prosodic_markers with minimal safe marking
-   - Disabled natural_pauses by default (Kokoro handles pauses naturally)
-   - Uses word-boundary matching to avoid nested SSML corruption
+## External Research Findings
 
-2. **ThreadPoolExecutor ONNX contention** (engine.py)
-   - Added `_inference_semaphore` to limit concurrent ONNX inference calls
-   - Added `_inference_lock` for thread-safe state access
-   - Semaphore limit based on CPU count: `max(2, cpu_count // 2)`
+### Best Practices from Similar TTS Projects
 
-3. **Documented text processing pipeline** (unified_text_processor.py)
-   - Added comprehensive docstring to `_process_enhanced()`
-   - Explains Stage Group 1 (Enhanced Processors) vs Stage Group 2 (Core Processing)
-   - Documents all 17+ stages and their ordering dependencies
+Research conducted on **Coqui TTS**, **Bark**, and **Tortoise-TTS** repositories:
 
-4. **Replaced silent pass blocks** (cpu_optimizer.py)
-   - Changed `except Exception: pass` to `except Exception as e: logger.warning(...)`
-   - Improved error visibility for debugging
+#### Coqui TTS (Best Reference - 39.2k stars)
+**CI/CD Workflow Structure:**
+- **Multiple focused test workflows:** `aux_tests.yml`, `data_tests.yml`, `inference_tests.yml`, `text_tests.yml`, `tts_tests.yml`, `vocoder_tests.yml`
+- **Separate style checking workflow** for fast feedback
+- **Docker workflow** for image building/publishing
+- **Skip mechanism:** `[ci skip]` in commit messages
+- **Matrix strategy:** Tests on Python 3.9, 3.10, 3.11
+- **System dependencies:** `make system-deps` for build requirements
+- **Pip caching:** `actions/setup-python@v4` with pip caching
 
-5. **CPU thermal throttling** (cpu_optimizer.py)
-   - ALREADY IMPLEMENTED: `get_thermal_status()` method properly detects throttling
-   - Uses psutil to get CPU temps, flags >85°C as throttling
+**Pre-commit Hooks:**
+- `check-yaml` - validates YAML syntax
+- `end-of-file-fixer` - ensures files end with a newline
+- `trailing-whitespace` - removes trailing whitespace
+- `black` - Python code formatter
+- `isort` - import sorting
+- `pylint` - code quality checks
 
-6. **Standardized voice embedding shape handling** (engine.py)
-   - Created `_normalize_voice_embedding_shape()` helper method
-   - Extracted 6-case shape handling into well-documented method
-   - Improved _prepare_model_inputs() to use the helper
+**Documentation:**
+- `docs/` directory with Sphinx/ReadTheDocs integration
+- `.readthedocs.yml` configuration
+- `Makefile` with `make style`, `make test_tts` targets
+- `requirements.dev.txt` for development dependencies
 
-7. **Type hints added** (engine.py)
-   - Added return type hints to void methods: _initialize_chunked_generation,
-     _initialize_engine, _load_onnx_model, _load_tokenizer, _init_misaki_g2p,
-     _init_kokoro_tokenizer, _setup_voice_system, cleanup
+#### Bark (Simpler Project - 39.2k stars)
+- README-driven documentation
+- Separate `notebooks/` for tutorials
+- `model-card.md` for model metadata
+- No visible CI/CD configuration (smaller project)
 
-8. **Cache consolidation documented** (synthesis_optimizer.py)
-   - Added ARCHITECTURE NOTE documenting the three-cache duplication issue
-   - Full consolidation would require significant refactoring
+#### Tortoise-TTS
+- `.github/` directory present
+- `examples/`, `scripts/` organization
+- `Advanced_Usage.md`, `CHANGELOG.md` documentation
+- Jupyter notebook support
 
-### Remaining Low-Priority Items:
-- Combined voice file loading disabled (use_combined_file=False in config.py)
-- Full type hint coverage (would require extensive effort across all classes)
+### Recommended Implementation for LiteTTS
 
-## Task 8: Streaming Audio Implementation
-**Status:** COMPLETED
-**Date:** 2026-07-15
+Based on research, LiteTTS should implement:
 
-### Completed Implementation:
-1. **Router streaming endpoint** (LiteTTS/api/router.py)
-   - Added `_handle_streaming_synthesis()` method for low-latency playback
-   - Returns `StreamingResponse` that yields audio chunks as they become available
-   - Checks `request.stream` flag to enable streaming mode
-   - Background caching of complete audio for future requests
+**GitHub Actions Workflows (Recommended Structure):**
+```
+.github/workflows/
+├── ci.yml           # Main: lint, type-check, unit tests
+├── test-api.yml     # API integration tests
+├── test-performance.yml  # RTF benchmarks
+├── style.yml        # Code style (fast feedback)
+└── docker.yml       # Docker build/test
+```
 
-2. **Synthesizer streaming method** (LiteTTS/tts/synthesizer.py)
-   - Added `synthesize_streaming()` async method
-   - Uses `ProgressiveAudioGenerator` for chunked audio generation
-   - Yields `ChunkResult` objects with audio data and metadata
-   - Falls back to standard synthesis if progressive generator unavailable
+**Pre-commit Hooks (Recommended):**
+```yaml
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  hooks:
+    - id: trailing-whitespace
+    - id: end-of-file-fixer
+    - id: check-yaml
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  hooks:
+    - id: ruff
+    - id: ruff-format
+- repo: https://github.com/pycqa/isort
+  hooks:
+    - id: isort
+```
 
-3. **Progressive generator fix** (LiteTTS/audio/progressive_generator.py)
-   - Fixed `_sync_synthesize()` to pass correct parameters to engine
-   - Changed from 4 args (text, voice, response_format, speed) to 3 args (text, voice, speed)
+**Key Differences from Current LiteTTS:**
+1. Coqui uses **multiple focused workflows** vs LiteTTS's single Makefile approach
+2. Coqui uses **ruff** (modern) vs LiteTTS uses separate flake8/pylint
+3. Coqui has **performance benchmarks in CI** - LiteTTS does not
+4. Coqui has **model zoo tests** - distributed testing for large model sets
 
-## Task 9: Test Coverage Improvement
-**Status:** COMPLETED
-**Date:** 2026-07-15
+---
 
-### Critical Bug Fix:
-- **Fixed circular import** (LiteTTS/models/__init__.py)
-  - Changed from `from models import ...` to dynamic import using importlib
-  - This was blocking all unit tests from running
+## Summary by Category
 
-### Unit Tests Added:
-| File | Tests | Coverage |
-|------|-------|----------|
-| test_validators.py | 15 | 100% on validators.py |
-| test_phonemizer_preprocessor.py | 28 | 59% on phonemizer_preprocessor.py |
-| test_chunking.py | 16 | 100% on chunking.py |
-| test_progressive_generator.py | 15 | 98% |
-| test_error_handler.py | 12 | 100% |
-| test_response_formatter.py | 8 | 100% |
-| test_cache_manager.py | 10 | 100% |
-| test_ssml_parser.py | 12 | 100% |
-| test_ssml_processor.py | 8 | 100% |
-| test_voice_discovery.py | 5 | 46% |
-| test_text_processing.py | 8 | Tested |
-| test_json_sanitizer.py | 16 | 68% |
-| **Total** | **158** | **Overall 21%** |
+### CI/CD & DevOps
+- #1 GitHub Actions CI/CD pipeline
+- #2 Pre-commit hooks
+- #13 Performance benchmarks in CI
 
-### Bug Fixed in progressive_generator:
-- Fixed `_should_use_chunking()` using wrong config attribute
-- Changed `min_text_length_for_chunking` to `min_chunk_size` (correct attribute name)
+### Code Quality
+- #3 audio_quality_enhancer.py fixes
+- #4 NLP pipeline complexity
+- #5 Cache consolidation
+- #6 Deterministic emotion controller
+- #7 Dead code removal
+- #8 ONNX input validation
+- #9 Thermal throttling
+- #10 Silent pass blocks
+- #11 Combined voice file loading
+- #17 NLP processor audit
+- #18 Voice vector bounds
+- #19 Empty audio validation
+- #27 Batch processing
+- #29 Voice embedding standardization
 
+### Documentation
+- #12 API documentation
+- #14 ADR documentation
+- #15 CHANGELOG cleanup
+- #16 CONTRIBUTING guide
+- #20 Deployment examples
+- #21 Environment variables
+- #25 SSML documentation
+- #26 System requirements
+- #28 Troubleshooting
+- #30 Migration guide
+- #31 Inline documentation
+
+### Research & Security
+- #22 Best practices research
+- #23 Security audit
+- #24 TODO/FIXME tracking
+
+---
+
+## Key Findings from Analysis
+
+### Missing Infrastructure
+- **No GitHub Actions** - All CI/CD must be set up from scratch
+- **No pre-commit hooks** - Code quality gates manual only
+- **No automated security scanning** in CI
+
+### Codebase Size
+- 482 Python files
+- ~138,827 lines of Python code
+- 36 NLP processor files (~16,638 lines)
+- 100+ unit test files
+
+### Already Documented Issues
+- OPTIMIZATION_REPORT.md identifies 34 issues (4 Critical, 8 High, 12 Medium, 10 Low)
+- Recent commits show active work on coverage improvement (100% on phonemizer_preprocessor.py)
+- Text chunking fixed the 23-second audio truncation issue
+
+### Testing Status
+- Comprehensive test suite exists
+- Unit tests in LiteTTS/tests/unit/
+- Recent circular import fix enabled tests to run
+- Coverage reporting configured but CI not automated
+
+---
+
+## Recommended Priority Order
+
+1. **First:** #1, #2 (CI/CD and pre-commit) - Foundation for quality
+2. **Second:** #7, #8 (Critical code issues from OPTIMIZATION_REPORT)
+3. **Third:** #3, #6 (High priority from OPTIMIZATION_REPORT)
+4. **Fourth:** #23 (Security audit before public release)
+5. **Fifth:** #16, #12 (Documentation for contributors)
+6. **Sixth:** Remaining tasks based on project needs
