@@ -103,6 +103,81 @@ This guide covers common issues and their solutions for the Kokoro ONNX TTS API.
 - Verify disk space availability
 - Check firewall/proxy settings
 
+## Decision Trees
+
+### 🔍 Audio Generation Not Working
+
+```
+Is the server running?
+├── No → Start server: `uvicorn app:app --port 8354`
+└── Yes → Check health: `curl http://localhost:8354/health`
+    ├── Error → Check logs, verify models downloaded
+    └── OK → Is audio silent or truncated?
+        ├── Silent → Test with simple text "Hello world"
+        │   ├── Still silent → Check server logs
+        │   └── Works → Issue with input text, check SSML
+        └── Truncated → Text too long (>510 phonemes)
+            ├── Yes → Text chunking should handle automatically
+            └── No → Check for special characters causing issues
+```
+
+### 🔍 Slow Audio Generation
+
+```
+Is RTF > 1.0? (slower than real-time)
+├── Yes → Check system resources
+│   ├── CPU throttling → Thermal issue, check temps
+│   ├── Low memory → Increase RAM or reduce cache
+│   └── OK → Enable optimizations
+│       ├── Set TARGET_RTF=0.25
+│       ├── Enable CACHE_ENABLED=true
+│       └── Try shorter text
+└── No (RTF < 1.0) → Performance is acceptable
+```
+
+### 🔍 Voice Not Found
+
+```
+Is the voice name correct?
+├── No → Check available: `curl http://localhost:8354/v1/voices`
+└── Yes → Is voice downloaded?
+    ├── No → Trigger download or set DOWNLOAD_ALL_VOICES=true
+    └── Yes → Check voice files in voices/ directory
+        ├── Files exist → Permission issue or cache problem
+        └── Files missing → Redownload voice
+```
+
+### 🔍 Connection Issues
+
+```
+Can you ping the server?
+├── No → Server not running or firewall blocking
+│   ├── Check: `systemctl status litetts`
+│   └── Fix: Start server or open port
+└── Yes → Can you reach the API?
+    ├── No → Wrong port or host
+    │   ├── Check: curl localhost:8354/health
+    │   └── Fix: Use correct PORT in API URL
+    └── Yes → Authentication/Network issue
+        ├── Check API key if required
+        └── Check CORS settings
+```
+
+### 🔍 Memory Leaks
+
+```
+Is memory usage growing over time?
+├── No → Normal behavior
+└── Yes → Cache growing unbounded?
+    ├── Yes → Check cache size limits
+    │   └── Set MAX_CACHE_SIZE environment variable
+    └── No → Memory in ONNX/Model
+        ├── Restart server periodically
+        └── Check for memory leaks in logs
+```
+
+---
+
 ## Getting Help
 
 If you encounter issues not covered here:
