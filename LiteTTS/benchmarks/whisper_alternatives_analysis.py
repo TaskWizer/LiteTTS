@@ -52,7 +52,7 @@ class EdgeHardwareSpec:
     architecture: str  # 'arm64', 'x86_64'
     simd_support: List[str]  # ['neon', 'avx2', 'sse4.1']
     os_info: str
-    
+
 @dataclass
 class PerformanceResult:
     """Performance measurement result"""
@@ -86,38 +86,38 @@ class AudioTestSample:
 
 class SystemMonitor:
     """System resource monitoring during benchmarks"""
-    
+
     def __init__(self):
         self.monitoring = False
         self.metrics = []
         self.monitor_thread = None
-        
+
     def start_monitoring(self):
         """Start system monitoring"""
         self.monitoring = True
         self.metrics = []
         self.monitor_thread = threading.Thread(target=self._monitor_loop)
         self.monitor_thread.start()
-        
+
     def stop_monitoring(self) -> Tuple[float, float, float, float]:
         """Stop monitoring and return peak/avg memory and CPU"""
         self.monitoring = False
         if self.monitor_thread:
             self.monitor_thread.join()
-            
+
         if not self.metrics:
             return 0.0, 0.0, 0.0, 0.0
-            
+
         memory_values = [m['memory_mb'] for m in self.metrics]
         cpu_values = [m['cpu_percent'] for m in self.metrics]
-        
+
         return (
             max(memory_values),
             sum(memory_values) / len(memory_values),
             max(cpu_values),
             sum(cpu_values) / len(cpu_values)
         )
-        
+
     def _monitor_loop(self):
         """Monitoring loop"""
         process = psutil.Process()
@@ -125,7 +125,7 @@ class SystemMonitor:
             try:
                 memory_info = process.memory_info()
                 cpu_percent = process.cpu_percent()
-                
+
                 self.metrics.append({
                     'timestamp': time.time(),
                     'memory_mb': memory_info.rss / 1024 / 1024,
@@ -138,25 +138,25 @@ class SystemMonitor:
 
 class WhisperAlternativesAnalyzer:
     """Main analyzer for Whisper alternatives performance"""
-    
+
     def __init__(self, output_dir: str = "whisper_analysis_results"):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
-        
+
         # Test configurations
         self.model_configs = self._get_model_configurations()
         self.hardware_specs = self._detect_hardware_specs()
         self.test_samples = []
-        
+
         # Results storage
         self.results = []
-        
+
         logger.info(f"WhisperAlternativesAnalyzer initialized with output dir: {self.output_dir}")
-        
+
     def _get_model_configurations(self) -> List[WhisperModelConfig]:
         """Get all model configurations to test"""
         configs = []
-        
+
         # Distil-Whisper models
         configs.extend([
             WhisperModelConfig(
@@ -167,7 +167,7 @@ class WhisperAlternativesAnalyzer:
             ),
             WhisperModelConfig(
                 name="distil-medium.en",
-                model_id="distil-whisper/distil-medium.en", 
+                model_id="distil-whisper/distil-medium.en",
                 model_size_mb=769,
                 implementation="distil-whisper"
             ),
@@ -178,7 +178,7 @@ class WhisperAlternativesAnalyzer:
                 implementation="distil-whisper"
             )
         ])
-        
+
         # OpenAI Whisper models
         configs.extend([
             WhisperModelConfig(
@@ -206,7 +206,7 @@ class WhisperAlternativesAnalyzer:
                 implementation="openai-whisper"
             )
         ])
-        
+
         # Faster-Whisper with quantization variants
         for model_size in ["tiny", "base", "small"]:
             for quant in ["int8", "int4", "fp16"]:
@@ -217,13 +217,13 @@ class WhisperAlternativesAnalyzer:
                     implementation="faster-whisper",
                     quantization=quant
                 ))
-        
+
         return configs
-        
+
     def _detect_hardware_specs(self) -> EdgeHardwareSpec:
         """Detect current hardware specifications"""
         import platform
-        
+
         # Get CPU info
         cpu_info = {}
         try:
@@ -235,7 +235,7 @@ class WhisperAlternativesAnalyzer:
                             cpu_info[key.strip()] = value.strip()
         except:
             pass
-            
+
         # Detect SIMD support
         simd_support = []
         try:
@@ -254,7 +254,7 @@ class WhisperAlternativesAnalyzer:
                 simd_support.append('neon')
             elif platform.machine().lower() in ['x86_64', 'amd64']:
                 simd_support.extend(['sse4.1', 'avx2'])  # Assume modern x86
-                
+
         return EdgeHardwareSpec(
             name=f"{platform.node()}-{platform.machine()}",
             cpu_model=cpu_info.get("model name", platform.processor()),
@@ -265,14 +265,14 @@ class WhisperAlternativesAnalyzer:
             simd_support=simd_support,
             os_info=f"{platform.system()} {platform.release()}"
         )
-        
+
     def generate_test_audio_samples(self) -> List[AudioTestSample]:
         """Generate standardized test audio samples"""
         samples = []
-        
+
         # Test durations as specified in requirements
         test_durations = [5, 15, 30, 60, 120]
-        
+
         # Test content types
         test_texts = {
             "technical": "The neural network architecture utilizes transformer-based attention mechanisms with multi-head self-attention layers.",
@@ -280,7 +280,7 @@ class WhisperAlternativesAnalyzer:
             "podcast": "Welcome to today's episode where we'll be discussing the latest developments in artificial intelligence and machine learning.",
             "conversation": "Hey, how are you doing today? I was wondering if you could help me with this project I'm working on."
         }
-        
+
         # Generate synthetic audio samples (placeholder - in real implementation, use TTS or recorded samples)
         for duration in test_durations:
             for content_type, text in test_texts.items():
@@ -289,7 +289,7 @@ class WhisperAlternativesAnalyzer:
                 target_words = int((duration / 60) * words_per_minute)
                 repeated_text = (text + " ") * (target_words // len(text.split()) + 1)
                 repeated_text = " ".join(repeated_text.split()[:target_words])
-                
+
                 sample = AudioTestSample(
                     file_path=f"test_audio_{content_type}_{duration}s.wav",
                     duration_s=duration,
@@ -299,38 +299,38 @@ class WhisperAlternativesAnalyzer:
                     content_type=content_type
                 )
                 samples.append(sample)
-                
+
         return samples
-        
+
     async def run_comprehensive_analysis(self) -> Dict[str, Any]:
         """Run comprehensive performance analysis"""
         logger.info("Starting comprehensive Whisper alternatives analysis")
-        
+
         # Generate test samples
         self.test_samples = self.generate_test_audio_samples()
-        
+
         # Run analysis for each model configuration
         for model_config in self.model_configs:
             logger.info(f"Analyzing model: {model_config.name}")
-            
+
             try:
                 model_results = await self._analyze_model(model_config)
                 self.results.extend(model_results)
             except Exception as e:
                 logger.error(f"Failed to analyze model {model_config.name}: {e}")
-                
+
         # Generate comprehensive report
         report = self._generate_analysis_report()
-        
+
         # Save results
         self._save_results()
-        
+
         return report
-        
+
     async def _analyze_model(self, model_config: WhisperModelConfig) -> List[PerformanceResult]:
         """Analyze a specific model configuration"""
         results = []
-        
+
         # Test with each audio sample
         for sample in self.test_samples:
             try:
@@ -338,45 +338,45 @@ class WhisperAlternativesAnalyzer:
                 results.append(result)
             except Exception as e:
                 logger.error(f"Failed to benchmark {model_config.name} on {sample.file_path}: {e}")
-                
+
         return results
-        
-    async def _benchmark_model_on_sample(self, model_config: WhisperModelConfig, 
+
+    async def _benchmark_model_on_sample(self, model_config: WhisperModelConfig,
                                        sample: AudioTestSample) -> PerformanceResult:
         """Benchmark a model on a specific audio sample"""
         monitor = SystemMonitor()
-        
+
         try:
             # Start monitoring
             monitor.start_monitoring()
-            
+
             # Measure model loading time
             load_start = time.time()
             model = await self._load_model(model_config)
             load_time = time.time() - load_start
-            
+
             # Measure cold start time (first inference)
             cold_start = time.time()
-            
+
             # Generate or load test audio
             audio_data = await self._get_test_audio(sample)
-            
+
             # Perform transcription
             transcribe_start = time.time()
             transcription, confidence = await self._transcribe_audio(model, audio_data, model_config)
             processing_time = time.time() - transcribe_start
-            
+
             cold_start_time = time.time() - cold_start
-            
+
             # Calculate RTF
             rtf = processing_time / sample.duration_s
-            
+
             # Calculate WER if reference available
             wer = self._calculate_wer(sample.reference_transcription, transcription) if sample.reference_transcription else None
-            
+
             # Stop monitoring and get metrics
             peak_mem, avg_mem, peak_cpu, avg_cpu = monitor.stop_monitoring()
-            
+
             return PerformanceResult(
                 model_config=model_config,
                 hardware_spec=self.hardware_specs,
@@ -394,7 +394,7 @@ class WhisperAlternativesAnalyzer:
                 cold_start_time_s=cold_start_time,
                 success=True
             )
-            
+
         except Exception as e:
             monitor.stop_monitoring()
             return PerformanceResult(

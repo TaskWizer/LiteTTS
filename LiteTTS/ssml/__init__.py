@@ -6,7 +6,7 @@ from .processor import SSMLProcessor
 
 __all__ = [
     'SSMLParser',
-    'ParsedSSML', 
+    'ParsedSSML',
     'BackgroundConfig',
     'BackgroundType',
     'BackgroundGenerator',

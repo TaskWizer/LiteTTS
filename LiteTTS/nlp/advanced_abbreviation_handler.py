@@ -20,18 +20,18 @@ class AbbreviationMode(Enum):
 
 class AdvancedAbbreviationHandler:
     """Advanced abbreviation processing for natural TTS pronunciation"""
-    
+
     def __init__(self):
         self.spell_out_abbreviations = self._load_spell_out_abbreviations()
         self.expansion_abbreviations = self._load_expansion_abbreviations()
         self.context_abbreviations = self._load_context_abbreviations()
         self.natural_abbreviations = self._load_natural_abbreviations()
-        
+
         # Configuration
         self.default_mode = AbbreviationMode.HYBRID
         self.use_context_analysis = True
         self.preserve_technical_terms = True
-        
+
     def _load_spell_out_abbreviations(self) -> Dict[str, str]:
         """Load abbreviations that should be spelled out"""
         return {
@@ -88,7 +88,7 @@ class AdvancedAbbreviationHandler:
             'RAR': 'R A R',
             'EXE': 'E X E',
             'DLL': 'D L L',
-            
+
             # Business and finance
             'LLC': 'L L C',
             'Inc': 'I N C',
@@ -102,7 +102,7 @@ class AdvancedAbbreviationHandler:
             'SaaS': 'S A A S',
             'CRM': 'C R M',
             'ERP': 'E R P',
-            
+
             # Medical and scientific
             'DNA': 'D N A',
             'RNA': 'R N A',
@@ -116,7 +116,7 @@ class AdvancedAbbreviationHandler:
             'CDC': 'C D C',
             'FDA': 'F D A',
             'WHO': 'W H O',
-            
+
             # Government and organizations
             'FBI': 'F B I',
             'CIA': 'C I A',
@@ -134,7 +134,7 @@ class AdvancedAbbreviationHandler:
             'NATO': 'N A T O',
             'UNICEF': 'U N I C E F',
         }
-    
+
     def _load_expansion_abbreviations(self) -> Dict[str, str]:
         """Load abbreviations that should be expanded"""
         return {
@@ -151,7 +151,7 @@ class AdvancedAbbreviationHandler:
             'RTFM': 'read the manual',
             'DIY': 'do it yourself',
             'FAQ': 'frequently asked questions',  # Alternative to spelling out
-            
+
             # Time and dates - Enhanced phonetic handling
             'AM': 'ay em',  # Better phonetic representation
             'PM': 'pee em',  # Better phonetic representation
@@ -163,7 +163,7 @@ class AdvancedAbbreviationHandler:
             'PST': 'Pacific Standard Time',
             'GMT': 'Greenwich Mean Time',
             'UTC': 'Coordinated Universal Time',
-            
+
             # Titles and honorifics
             'Dr.': 'Doctor',
             'Mr.': 'Mister',
@@ -176,7 +176,7 @@ class AdvancedAbbreviationHandler:
             'Capt.': 'Captain',
             'Lt.': 'Lieutenant',
             'Sgt.': 'Sergeant',
-            
+
             # Common Latin abbreviations
             'etc.': 'etcetera',
             'vs.': 'versus',
@@ -188,7 +188,7 @@ class AdvancedAbbreviationHandler:
             'ibid.': 'in the same place',
             'op. cit.': 'in the work cited',
             'loc. cit.': 'in the place cited',
-            
+
             # Units and measurements - CAREFUL with single letters to avoid false matches
             'ft.': 'feet',
             'in.': 'inches',
@@ -215,7 +215,7 @@ class AdvancedAbbreviationHandler:
             'kbps': 'kilobits per second',
             'mbps': 'megabits per second',
             'gbps': 'gigabits per second',
-            
+
             # Common abbreviations
             'w/': 'with',
             'w/o': 'without',
@@ -238,7 +238,7 @@ class AdvancedAbbreviationHandler:
             'ltd.': 'limited',
             'co.': 'company',
         }
-    
+
     def _load_context_abbreviations(self) -> Dict[str, Dict[str, str]]:
         """Load context-dependent abbreviations"""
         return {
@@ -263,7 +263,7 @@ class AdvancedAbbreviationHandler:
                 'abbreviation': 'personal computer',
             },
         }
-    
+
     def _load_natural_abbreviations(self) -> Dict[str, str]:
         """Load abbreviations that are naturally pronounced as words"""
         return {
@@ -280,14 +280,14 @@ class AdvancedAbbreviationHandler:
             'ETHERNET': 'ethernet',
             'JSON': 'Jason',  # Pronounced as "Jason", not spelled out
         }
-    
+
     def process_abbreviations(self, text: str, mode: Optional[AbbreviationMode] = None) -> str:
         """Process abbreviations based on the specified mode"""
         if mode is None:
             mode = self.default_mode
-        
+
         logger.debug(f"Processing abbreviations in {mode.value} mode: {text[:100]}...")
-        
+
         if mode == AbbreviationMode.SPELL_OUT:
             text = self._process_spell_out_mode(text)
         elif mode == AbbreviationMode.EXPAND:
@@ -296,17 +296,17 @@ class AdvancedAbbreviationHandler:
             text = self._process_natural_mode(text)
         elif mode == AbbreviationMode.HYBRID:
             text = self._process_hybrid_mode(text)
-        
+
         logger.debug(f"Abbreviation processing result: {text[:100]}...")
         return text
-    
+
     def _process_spell_out_mode(self, text: str) -> str:
         """Process abbreviations by spelling them out"""
         for abbrev, spelled_out in self.spell_out_abbreviations.items():
             pattern = r'\b' + re.escape(abbrev) + r'\b'
             text = re.sub(pattern, spelled_out, text, flags=re.IGNORECASE)
         return text
-    
+
     def _process_expansion_mode(self, text: str) -> str:
         """Process abbreviations by expanding them"""
         for abbrev, expansion in self.expansion_abbreviations.items():
@@ -317,14 +317,14 @@ class AdvancedAbbreviationHandler:
                 pattern = r'\b' + re.escape(abbrev) + r'\b'
             text = re.sub(pattern, expansion, text, flags=re.IGNORECASE)
         return text
-    
+
     def _process_natural_mode(self, text: str) -> str:
         """Process abbreviations using natural pronunciations"""
         for abbrev, natural in self.natural_abbreviations.items():
             pattern = r'\b' + re.escape(abbrev) + r'\b'
             text = re.sub(pattern, natural, text, flags=re.IGNORECASE)
         return text
-    
+
     def _process_hybrid_mode(self, text: str) -> str:
         """Process abbreviations using a hybrid approach"""
         # Priority order: natural > spell_out > expansion > contextual units
@@ -342,7 +342,7 @@ class AdvancedAbbreviationHandler:
 
         # Process contextual units (single letters in measurement contexts)
         text = self._process_contextual_units(text)
-        
+
         # Finally, apply expansions for remaining abbreviations
         for abbrev, expansion in self.expansion_abbreviations.items():
             if abbrev not in self.natural_abbreviations and abbrev not in self.spell_out_abbreviations:
@@ -351,26 +351,26 @@ class AdvancedAbbreviationHandler:
                 else:
                     pattern = r'\b' + re.escape(abbrev) + r'\b'
                 text = re.sub(pattern, expansion, text, flags=re.IGNORECASE)
-        
+
         return text
-    
+
     def _get_context_pronunciation(self, abbrev: str, context: str) -> Optional[str]:
         """Get context-dependent pronunciation"""
         if abbrev not in self.context_abbreviations:
             return None
-        
+
         context_options = self.context_abbreviations[abbrev]
-        
+
         # Simple context analysis (could be enhanced with ML)
         context_lower = context.lower()
-        
+
         for context_key, pronunciation in context_options.items():
             if context_key in context_lower:
                 return pronunciation
-        
+
         # Return first option if no context match
         return list(context_options.values())[0]
-    
+
     def analyze_abbreviations(self, text: str) -> Dict[str, List[str]]:
         """Analyze abbreviations in text"""
         info = {
@@ -380,10 +380,10 @@ class AdvancedAbbreviationHandler:
             'context_dependent': [],
             'unknown_abbreviations': []
         }
-        
+
         # Find potential abbreviations (all caps words)
         abbreviations = re.findall(r'\b[A-Z]{2,}\b', text)
-        
+
         for abbrev in abbreviations:
             if abbrev in self.spell_out_abbreviations:
                 info['spell_out_candidates'].append(abbrev)
@@ -395,9 +395,9 @@ class AdvancedAbbreviationHandler:
                 info['context_dependent'].append(abbrev)
             else:
                 info['unknown_abbreviations'].append(abbrev)
-        
+
         return info
-    
+
     def add_abbreviation(self, abbrev: str, pronunciation: str, mode: AbbreviationMode):
         """Add a new abbreviation to the appropriate dictionary"""
         if mode == AbbreviationMode.SPELL_OUT:
@@ -406,9 +406,9 @@ class AdvancedAbbreviationHandler:
             self.expansion_abbreviations[abbrev] = pronunciation
         elif mode == AbbreviationMode.NATURAL:
             self.natural_abbreviations[abbrev] = pronunciation
-        
+
         logger.info(f"Added abbreviation: {abbrev} -> {pronunciation} ({mode.value})")
-    
+
     def set_configuration(self, default_mode: AbbreviationMode = None,
                          use_context_analysis: bool = None,
                          preserve_technical_terms: bool = None):
@@ -419,12 +419,12 @@ class AdvancedAbbreviationHandler:
             self.use_context_analysis = use_context_analysis
         if preserve_technical_terms is not None:
             self.preserve_technical_terms = preserve_technical_terms
-        
+
         logger.info(f"Abbreviation handler configuration updated: "
                    f"default_mode={self.default_mode.value}, "
                    f"use_context_analysis={self.use_context_analysis}, "
                    f"preserve_technical_terms={self.preserve_technical_terms}")
-    
+
     def _process_contextual_units(self, text: str) -> str:
         """Process single-letter units only in proper measurement contexts"""
         # Define unit patterns that should only be processed in measurement contexts

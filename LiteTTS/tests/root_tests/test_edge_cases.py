@@ -19,15 +19,15 @@ from app import app
 
 class TestTextBoundaryConditions:
     """Test text input boundary conditions"""
-    
+
     def setup_method(self):
         self.client = TestClient(app)
         self.base_endpoint = "/v1/audio/speech"
-    
+
     def test_single_character_input(self):
         """Test single character inputs"""
         single_chars = ["a", "1", "!", "?", ".", " ", "\n", "\t"]
-        
+
         for char in single_chars:
             response = self.client.post(
                 self.base_endpoint,
@@ -35,7 +35,7 @@ class TestTextBoundaryConditions:
             )
             # Should handle gracefully
             assert response.status_code in [200, 400]
-    
+
     def test_whitespace_only_input(self):
         """Test whitespace-only inputs"""
         whitespace_inputs = [
@@ -46,7 +46,7 @@ class TestTextBoundaryConditions:
             "\r\n",        # CRLF
             " \t\n ",      # Mixed whitespace
         ]
-        
+
         for text in whitespace_inputs:
             response = self.client.post(
                 self.base_endpoint,
@@ -54,7 +54,7 @@ class TestTextBoundaryConditions:
             )
             # Should either reject or handle gracefully
             assert response.status_code in [200, 400]
-    
+
     def test_punctuation_only_input(self):
         """Test punctuation-only inputs"""
         punctuation_inputs = [
@@ -68,14 +68,14 @@ class TestTextBoundaryConditions:
             "()[]{}",
             "\"'`",
         ]
-        
+
         for text in punctuation_inputs:
             response = self.client.post(
                 self.base_endpoint,
                 json={"input": text, "voice": "af_heart"}
             )
             assert response.status_code in [200, 400]
-    
+
     def test_numbers_only_input(self):
         """Test number-only inputs"""
         number_inputs = [
@@ -90,14 +90,14 @@ class TestTextBoundaryConditions:
             "0",
             "00000",
         ]
-        
+
         for text in number_inputs:
             response = self.client.post(
                 self.base_endpoint,
                 json={"input": text, "voice": "af_heart"}
             )
             assert response.status_code in [200, 400]
-    
+
     def test_mixed_language_input(self):
         """Test mixed language inputs"""
         mixed_inputs = [
@@ -107,7 +107,7 @@ class TestTextBoundaryConditions:
             "English русский العربية",
             "123 ABC αβγ",
         ]
-        
+
         for text in mixed_inputs:
             response = self.client.post(
                 self.base_endpoint,
@@ -118,11 +118,11 @@ class TestTextBoundaryConditions:
 
 class TestParameterBoundaryConditions:
     """Test parameter boundary conditions"""
-    
+
     def setup_method(self):
         self.client = TestClient(app)
         self.base_endpoint = "/v1/audio/speech"
-    
+
     def test_speed_boundary_values(self):
         """Test speed parameter boundary values"""
         boundary_speeds = [
@@ -132,7 +132,7 @@ class TestParameterBoundaryConditions:
             2.0,    # Fast
             4.0,    # Very fast
         ]
-        
+
         for speed in boundary_speeds:
             response = self.client.post(
                 self.base_endpoint,
@@ -144,7 +144,7 @@ class TestParameterBoundaryConditions:
             )
             # Should either succeed or fail gracefully
             assert response.status_code in [200, 400]
-    
+
     def test_format_case_sensitivity(self):
         """Test format parameter case sensitivity"""
         format_variations = [
@@ -157,7 +157,7 @@ class TestParameterBoundaryConditions:
             "ogg",
             "OGG",
         ]
-        
+
         for fmt in format_variations:
             response = self.client.post(
                 self.base_endpoint,
@@ -168,7 +168,7 @@ class TestParameterBoundaryConditions:
                 }
             )
             assert response.status_code in [200, 400]
-    
+
     def test_voice_case_sensitivity(self):
         """Test voice parameter case sensitivity"""
         voice_variations = [
@@ -179,7 +179,7 @@ class TestParameterBoundaryConditions:
             "am_puck",
             "AM_PUCK",
         ]
-        
+
         for voice in voice_variations:
             response = self.client.post(
                 self.base_endpoint,
@@ -193,11 +193,11 @@ class TestParameterBoundaryConditions:
 
 class TestSpecialTextPatterns:
     """Test special text patterns and edge cases"""
-    
+
     def setup_method(self):
         self.client = TestClient(app)
         self.base_endpoint = "/v1/audio/speech"
-    
+
     def test_repeated_characters(self):
         """Test repeated character patterns"""
         repeated_patterns = [
@@ -208,14 +208,14 @@ class TestSpecialTextPatterns:
             "ababab",
             "123123123",
         ]
-        
+
         for pattern in repeated_patterns:
             response = self.client.post(
                 self.base_endpoint,
                 json={"input": pattern, "voice": "af_heart"}
             )
             assert response.status_code in [200, 400]
-    
+
     def test_alternating_patterns(self):
         """Test alternating character patterns"""
         alternating_patterns = [
@@ -225,14 +225,14 @@ class TestSpecialTextPatterns:
             "AaAaAaAaAa",
             "0101010101",
         ]
-        
+
         for pattern in alternating_patterns:
             response = self.client.post(
                 self.base_endpoint,
                 json={"input": pattern, "voice": "af_heart"}
             )
             assert response.status_code in [200, 400]
-    
+
     def test_mathematical_expressions(self):
         """Test mathematical expressions"""
         math_expressions = [
@@ -244,14 +244,14 @@ class TestSpecialTextPatterns:
             "α + β = γ",
             "√16 = 4",
         ]
-        
+
         for expr in math_expressions:
             response = self.client.post(
                 self.base_endpoint,
                 json={"input": expr, "voice": "af_heart"}
             )
             assert response.status_code in [200, 400]
-    
+
     def test_code_snippets(self):
         """Test code snippet inputs"""
         code_snippets = [
@@ -262,14 +262,14 @@ class TestSpecialTextPatterns:
             "def func(): pass",
             "import sys",
         ]
-        
+
         for code in code_snippets:
             response = self.client.post(
                 self.base_endpoint,
                 json={"input": code, "voice": "af_heart"}
             )
             assert response.status_code in [200, 400]
-    
+
     def test_urls_and_emails(self):
         """Test URLs and email addresses"""
         web_inputs = [
@@ -280,7 +280,7 @@ class TestSpecialTextPatterns:
             "ftp://files.example.com",
             "mailto:contact@example.org",
         ]
-        
+
         for web_input in web_inputs:
             response = self.client.post(
                 self.base_endpoint,
@@ -291,16 +291,16 @@ class TestSpecialTextPatterns:
 
 class TestTimingAndPerformance:
     """Test timing-related edge cases"""
-    
+
     def setup_method(self):
         self.client = TestClient(app)
         self.base_endpoint = "/v1/audio/speech"
-    
+
     def test_rapid_identical_requests(self):
         """Test rapid identical requests (cache behavior)"""
         text = "This is a cache test"
         times = []
-        
+
         for i in range(5):
             start_time = time.time()
             response = self.client.post(
@@ -308,23 +308,23 @@ class TestTimingAndPerformance:
                 json={"input": text, "voice": "af_heart"}
             )
             end_time = time.time()
-            
+
             times.append(end_time - start_time)
             assert response.status_code in [200, 400]
-            
+
             # Small delay between requests
             time.sleep(0.01)
-        
+
         # Later requests should be faster (cache hits)
         if all(t > 0 for t in times) and len(times) >= 3:
             # Allow for some variation, but later requests should generally be faster
             assert min(times[1:]) <= max(times[:2]) * 2  # Generous threshold
-    
+
     def test_varying_text_lengths(self):
         """Test varying text lengths for performance patterns"""
         text_lengths = [1, 10, 50, 100, 200, 500]
         times = []
-        
+
         for length in text_lengths:
             text = "A" * length
             start_time = time.time()
@@ -333,10 +333,10 @@ class TestTimingAndPerformance:
                 json={"input": text, "voice": "af_heart"}
             )
             end_time = time.time()
-            
+
             times.append(end_time - start_time)
             assert response.status_code in [200, 400]
-        
+
         # Longer texts should generally take more time (if successful)
         # This is a loose check since some might fail
         assert len(times) == len(text_lengths)
@@ -344,11 +344,11 @@ class TestTimingAndPerformance:
 
 class TestDataTypeEdgeCases:
     """Test edge cases with data types"""
-    
+
     def setup_method(self):
         self.client = TestClient(app)
         self.base_endpoint = "/v1/audio/speech"
-    
+
     def test_numeric_strings_as_text(self):
         """Test numeric strings as text input"""
         numeric_strings = [
@@ -359,14 +359,14 @@ class TestDataTypeEdgeCases:
             "0x1A",
             "1.23e-4",
         ]
-        
+
         for num_str in numeric_strings:
             response = self.client.post(
                 self.base_endpoint,
                 json={"input": num_str, "voice": "af_heart"}
             )
             assert response.status_code in [200, 400]
-    
+
     def test_boolean_like_strings(self):
         """Test boolean-like strings"""
         boolean_strings = [
@@ -381,14 +381,14 @@ class TestDataTypeEdgeCases:
             "on",
             "off",
         ]
-        
+
         for bool_str in boolean_strings:
             response = self.client.post(
                 self.base_endpoint,
                 json={"input": bool_str, "voice": "af_heart"}
             )
             assert response.status_code in [200, 400]
-    
+
     def test_json_like_strings(self):
         """Test JSON-like strings as text"""
         json_strings = [
@@ -398,7 +398,7 @@ class TestDataTypeEdgeCases:
             '[]',
             '{}',
         ]
-        
+
         for json_str in json_strings:
             response = self.client.post(
                 self.base_endpoint,

@@ -65,7 +65,7 @@ class TestVoiceBlender:
         mock_embedding = Mock()
         mock_embedding.name = "single_voice"
         mock_voice_manager.get_voice_embedding.return_value = mock_embedding
-        
+
         blender = VoiceBlender(mock_voice_manager)
         config = BlendConfig(voices=[("single_voice", 1.0)])
         result = blender.blend_voices(config)
@@ -86,7 +86,7 @@ class TestVoiceBlender:
         """Test blending when voice fails to load"""
         mock_voice_manager = Mock()
         mock_voice_manager.get_voice_embedding.return_value = None
-        
+
         blender = VoiceBlender(mock_voice_manager)
         config = BlendConfig(
             voices=[("voice1", 0.5), ("voice2", 0.5)],
@@ -101,7 +101,7 @@ class TestVoiceBlender:
         mock_embedding = Mock()
         mock_embedding.embedding_data = np.random.randn(256).astype(np.float32)
         mock_voice_manager.get_voice_embedding.return_value = mock_embedding
-        
+
         blender = VoiceBlender(mock_voice_manager)
         config = BlendConfig(
             voices=[("voice1", 0.0), ("voice2", 0.0)],
@@ -117,18 +117,18 @@ class TestVoiceBlender:
         mock_embedding1 = Mock()
         mock_embedding1.name = "voice1"
         mock_embedding1.embedding_data = np.ones(256, dtype=np.float32)
-        
+
         mock_embedding2 = Mock()
         mock_embedding2.name = "voice2"
         mock_embedding2.embedding_data = np.ones(256, dtype=np.float32) * 2
-        
+
         def get_embedding(name):
             if name == "voice1":
                 return mock_embedding1
             return mock_embedding2
-        
+
         mock_voice_manager.get_voice_embedding.side_effect = get_embedding
-        
+
         blender = VoiceBlender(mock_voice_manager)
         config = BlendConfig(
             voices=[("voice1", 0.5), ("voice2", 0.5)],

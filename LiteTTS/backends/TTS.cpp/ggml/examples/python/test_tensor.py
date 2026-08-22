@@ -13,7 +13,7 @@ def ctx():
     print("teardown")
 
 class TestNumPy:
-    
+
     # Single element
 
     def test_set_get_single_i32(self, ctx):
@@ -23,7 +23,7 @@ class TestNumPy:
 
     def test_set_get_single_f32(self, ctx):
         i = lib.ggml_new_f32(ctx, 4.2)
-        
+
         epsilon = 0.000001 # Not sure why so large a difference??
         pytest.approx(lib.ggml_get_f32_1d(i, 0), 4.2, epsilon)
         pytest.approx(numpy(i), np.array([4.2], dtype=np.float32), epsilon)
@@ -129,16 +129,16 @@ class TestNumPy:
         t = lib.ggml_new_tensor_1d(ctx, lib.GGML_TYPE_F32, 10)
         a = np.arange(10, dtype=np.float32)
         copy(a, t) # OK
-        
+
         a = a.reshape((5, 2))
         with raises(AssertionError): copy(a, t)
         with raises(AssertionError): copy(t, a)
-            
+
     def test_copy_mismatching_shapes_2d(self, ctx):
         t = lib.ggml_new_tensor_2d(ctx, lib.GGML_TYPE_F32, 2, 3)
         a = np.arange(6, dtype=np.float32)
         copy(a.reshape((2, 3)), t) # OK
-        
+
         a = a.reshape((3, 2))
         with raises(AssertionError): copy(a, t)
         with raises(AssertionError): copy(t, a)
@@ -147,7 +147,7 @@ class TestNumPy:
         t = lib.ggml_new_tensor_3d(ctx, lib.GGML_TYPE_F32, 2, 3, 4)
         a = np.arange(24, dtype=np.float32)
         copy(a.reshape((2, 3, 4)), t) # OK
-        
+
         a = a.reshape((2, 4, 3))
         with raises(AssertionError): copy(a, t)
         with raises(AssertionError): copy(t, a)
@@ -156,7 +156,7 @@ class TestNumPy:
         t = lib.ggml_new_tensor_4d(ctx, lib.GGML_TYPE_F32, 2, 3, 4, 5)
         a = np.arange(24*5, dtype=np.float32)
         copy(a.reshape((2, 3, 4, 5)), t) # OK
-        
+
         a = a.reshape((2, 3, 5, 4))
         with raises(AssertionError): copy(a, t)
         with raises(AssertionError): copy(t, a)

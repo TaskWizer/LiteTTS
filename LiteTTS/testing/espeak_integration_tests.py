@@ -17,27 +17,27 @@ class EspeakIntegrationTestSuite:
     """
     Test suite specifically for validating eSpeak integration improvements
     """
-    
+
     def __init__(self):
         self.test_cases = []
         self._create_test_cases()
-    
+
     def _create_test_cases(self):
         """
         Create comprehensive test cases for eSpeak integration validation
         """
         # Critical symbol processing tests
         self.test_cases.extend(self._create_symbol_processing_tests())
-        
+
         # Currency and datetime processing tests
         self.test_cases.extend(self._create_currency_datetime_tests())
-        
+
         # Context-aware processing tests
         self.test_cases.extend(self._create_context_aware_tests())
-        
+
         # Edge cases and regression tests
         self.test_cases.extend(self._create_edge_case_tests())
-    
+
     def _create_symbol_processing_tests(self) -> List[AudioTestCase]:
         """
         Create test cases for symbol processing improvements
@@ -55,7 +55,7 @@ class EspeakIntegrationTestSuite:
                 expected_pronunciations={"?": "question mark"},
                 min_pronunciation_accuracy=0.95
             ),
-            
+
             AudioTestCase(
                 test_id="espeak_question_mark_multiple",
                 input_text="What time is it? Are you ready? Let's go?",
@@ -67,7 +67,7 @@ class EspeakIntegrationTestSuite:
                 expected_pronunciations={"?": "question mark"},
                 min_pronunciation_accuracy=0.95
             ),
-            
+
             # Asterisk pronunciation fix
             AudioTestCase(
                 test_id="espeak_asterisk_basic",
@@ -80,7 +80,7 @@ class EspeakIntegrationTestSuite:
                 expected_pronunciations={"*": "asterisk"},
                 min_pronunciation_accuracy=0.95
             ),
-            
+
             AudioTestCase(
                 test_id="espeak_asterisk_math",
                 input_text="Calculate 5 * 3 = 15",
@@ -92,7 +92,7 @@ class EspeakIntegrationTestSuite:
                 expected_pronunciations={"*": "asterisk"},
                 min_pronunciation_accuracy=0.9
             ),
-            
+
             # Combined symbol tests
             AudioTestCase(
                 test_id="espeak_combined_symbols",
@@ -109,7 +109,7 @@ class EspeakIntegrationTestSuite:
                 },
                 min_pronunciation_accuracy=0.9
             ),
-            
+
             # Quote handling test
             AudioTestCase(
                 test_id="espeak_quote_handling",
@@ -120,7 +120,7 @@ class EspeakIntegrationTestSuite:
                 priority="normal",
                 min_pronunciation_accuracy=0.9
             ),
-            
+
             # Ampersand test
             AudioTestCase(
                 test_id="espeak_ampersand",
@@ -134,7 +134,7 @@ class EspeakIntegrationTestSuite:
                 min_pronunciation_accuracy=0.9
             )
         ]
-    
+
     def _create_currency_datetime_tests(self) -> List[AudioTestCase]:
         """
         Create test cases for currency and datetime processing
@@ -149,7 +149,7 @@ class EspeakIntegrationTestSuite:
                 priority="high",
                 min_pronunciation_accuracy=0.9
             ),
-            
+
             AudioTestCase(
                 test_id="espeak_currency_large",
                 input_text="The price is $1,234.56",
@@ -159,7 +159,7 @@ class EspeakIntegrationTestSuite:
                 priority="normal",
                 min_pronunciation_accuracy=0.85
             ),
-            
+
             AudioTestCase(
                 test_id="espeak_percentage",
                 input_text="The tax rate is 8.5%",
@@ -171,7 +171,7 @@ class EspeakIntegrationTestSuite:
                 expected_pronunciations={"%": "percent"},
                 min_pronunciation_accuracy=0.9
             ),
-            
+
             AudioTestCase(
                 test_id="espeak_datetime_basic",
                 input_text="The meeting is at 3:30 PM",
@@ -182,7 +182,7 @@ class EspeakIntegrationTestSuite:
                 min_pronunciation_accuracy=0.85
             )
         ]
-    
+
     def _create_context_aware_tests(self) -> List[AudioTestCase]:
         """
         Create test cases for context-aware symbol processing
@@ -197,7 +197,7 @@ class EspeakIntegrationTestSuite:
                 priority="normal",
                 min_pronunciation_accuracy=0.8
             ),
-            
+
             AudioTestCase(
                 test_id="espeak_email_context",
                 input_text="Email me at test@example.com",
@@ -207,7 +207,7 @@ class EspeakIntegrationTestSuite:
                 priority="normal",
                 min_pronunciation_accuracy=0.8
             ),
-            
+
             AudioTestCase(
                 test_id="espeak_filepath_context",
                 input_text="The file is at C:\\Users\\test.txt",
@@ -217,7 +217,7 @@ class EspeakIntegrationTestSuite:
                 priority="low",
                 min_pronunciation_accuracy=0.7
             ),
-            
+
             AudioTestCase(
                 test_id="espeak_math_expression",
                 input_text="Solve x + y = z * 2",
@@ -234,7 +234,7 @@ class EspeakIntegrationTestSuite:
                 min_pronunciation_accuracy=0.85
             )
         ]
-    
+
     def _create_edge_case_tests(self) -> List[AudioTestCase]:
         """
         Create edge case and regression test cases
@@ -257,7 +257,7 @@ class EspeakIntegrationTestSuite:
                 },
                 min_pronunciation_accuracy=0.9
             ),
-            
+
             AudioTestCase(
                 test_id="espeak_edge_long_text",
                 input_text="This is a longer text with multiple symbols: What time is it? The cost is $25.99. Use the * symbol. Email test@example.com for more info!",
@@ -268,7 +268,7 @@ class EspeakIntegrationTestSuite:
                 min_pronunciation_accuracy=0.8,
                 max_rtf=0.3  # Allow slightly higher RTF for longer text
             ),
-            
+
             AudioTestCase(
                 test_id="espeak_regression_basic",
                 input_text="Hello world",
@@ -279,7 +279,7 @@ class EspeakIntegrationTestSuite:
                 min_pronunciation_accuracy=0.95,
                 min_mos_score=4.0
             ),
-            
+
             AudioTestCase(
                 test_id="espeak_regression_no_symbols",
                 input_text="The quick brown fox jumps over the lazy dog",
@@ -291,33 +291,33 @@ class EspeakIntegrationTestSuite:
                 min_mos_score=4.0
             )
         ]
-    
+
     def get_test_cases(self, category: str = None, priority: str = None) -> List[AudioTestCase]:
         """
         Get test cases filtered by category and/or priority
         """
         filtered_cases = self.test_cases
-        
+
         if category:
             filtered_cases = [tc for tc in filtered_cases if tc.test_category == category]
-        
+
         if priority:
             filtered_cases = [tc for tc in filtered_cases if tc.priority == priority]
-        
+
         return filtered_cases
-    
+
     def get_critical_tests(self) -> List[AudioTestCase]:
         """
         Get only critical test cases for quick validation
         """
         return self.get_test_cases(priority="critical")
-    
+
     def get_symbol_processing_tests(self) -> List[AudioTestCase]:
         """
         Get symbol processing specific tests
         """
         return self.get_test_cases(category="espeak_symbols")
-    
+
     def get_regression_tests(self) -> List[AudioTestCase]:
         """
         Get regression test cases

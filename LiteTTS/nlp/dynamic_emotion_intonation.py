@@ -82,7 +82,7 @@ class DynamicEmotionIntonationSystem:
             logger.info("LLM context analyzer initialized")
         else:
             logger.warning("LLM context analyzer not available")
-        
+
     def _load_punctuation_patterns(self) -> Dict[str, IntonationType]:
         """Load punctuation-based intonation patterns"""
         return {
@@ -97,7 +97,7 @@ class DynamicEmotionIntonationSystem:
             '!!': IntonationType.EXCLAMATORY,
             '???': IntonationType.QUESTIONING,
         }
-    
+
     def _load_emotion_indicators(self) -> Dict[str, Tuple[str, EmotionIntensity]]:
         """Load emotion indicator words and phrases"""
         return {
@@ -114,7 +114,7 @@ class DynamicEmotionIntonationSystem:
             'wow': ('excitement', EmotionIntensity.STRONG),
             'yay': ('excitement', EmotionIntensity.STRONG),
             'hooray': ('excitement', EmotionIntensity.STRONG),
-            
+
             # Surprise indicators
             'surprising': ('surprise', EmotionIntensity.MODERATE),
             'unexpected': ('surprise', EmotionIntensity.MODERATE),
@@ -124,7 +124,7 @@ class DynamicEmotionIntonationSystem:
             'whoa': ('surprise', EmotionIntensity.MODERATE),
             'really': ('surprise', EmotionIntensity.SUBTLE),
             'seriously': ('surprise', EmotionIntensity.MODERATE),
-            
+
             # Concern/worry indicators
             'worried': ('concern', EmotionIntensity.MODERATE),
             'concerned': ('concern', EmotionIntensity.MODERATE),
@@ -134,7 +134,7 @@ class DynamicEmotionIntonationSystem:
             'scared': ('concern', EmotionIntensity.STRONG),
             'troubling': ('concern', EmotionIntensity.MODERATE),
             'disturbing': ('concern', EmotionIntensity.STRONG),
-            
+
             # Sadness indicators
             'sad': ('sadness', EmotionIntensity.MODERATE),
             'disappointed': ('sadness', EmotionIntensity.MODERATE),
@@ -144,7 +144,7 @@ class DynamicEmotionIntonationSystem:
             'unfortunate': ('sadness', EmotionIntensity.MODERATE),
             'terrible': ('sadness', EmotionIntensity.STRONG),
             'awful': ('sadness', EmotionIntensity.STRONG),
-            
+
             # Anger indicators
             'angry': ('anger', EmotionIntensity.STRONG),
             'furious': ('anger', EmotionIntensity.INTENSE),
@@ -154,7 +154,7 @@ class DynamicEmotionIntonationSystem:
             'irritated': ('anger', EmotionIntensity.MODERATE),
             'ridiculous': ('anger', EmotionIntensity.MODERATE),
             'unacceptable': ('anger', EmotionIntensity.STRONG),
-            
+
             # Calm/peaceful indicators
             'calm': ('calm', EmotionIntensity.MODERATE),
             'peaceful': ('calm', EmotionIntensity.MODERATE),
@@ -163,7 +163,7 @@ class DynamicEmotionIntonationSystem:
             'tranquil': ('calm', EmotionIntensity.STRONG),
             'gentle': ('calm', EmotionIntensity.MODERATE),
             'soothing': ('calm', EmotionIntensity.MODERATE),
-            
+
             # Uncertainty indicators
             'maybe': ('uncertainty', EmotionIntensity.SUBTLE),
             'perhaps': ('uncertainty', EmotionIntensity.SUBTLE),
@@ -173,7 +173,7 @@ class DynamicEmotionIntonationSystem:
             'confused': ('uncertainty', EmotionIntensity.MODERATE),
             'puzzled': ('uncertainty', EmotionIntensity.MODERATE),
         }
-    
+
     def _load_intonation_rules(self) -> List[Tuple[str, IntonationType, EmotionIntensity]]:
         """Load intonation rules based on text patterns"""
         return [
@@ -181,38 +181,38 @@ class DynamicEmotionIntonationSystem:
             (r'\b(what|where|when|who|why|how|which|whose)\b.*\?', IntonationType.QUESTIONING, EmotionIntensity.MODERATE),
             (r'\b(is|are|was|were|do|does|did|can|could|will|would|should|shall)\b.*\?', IntonationType.RISING, EmotionIntensity.MODERATE),
             (r'\b(really|seriously|honestly)\?', IntonationType.QUESTIONING, EmotionIntensity.STRONG),
-            
+
             # Exclamation patterns
             (r'\b(wow|amazing|incredible|fantastic|awesome|brilliant)\b.*!', IntonationType.EXCLAMATORY, EmotionIntensity.STRONG),
             (r'\b(oh no|oh my|good grief|for crying out loud)\b.*!', IntonationType.EXCLAMATORY, EmotionIntensity.STRONG),
             (r'\b(yes|no|absolutely|definitely|certainly)\b.*!', IntonationType.EMPHATIC, EmotionIntensity.STRONG),
-            
+
             # Emphasis patterns
             (r'\*([^*]+)\*', IntonationType.EMPHATIC, EmotionIntensity.MODERATE),  # *italic*
             (r'\*\*([^*]+)\*\*', IntonationType.EMPHATIC, EmotionIntensity.STRONG),  # **bold**
             (r'\b(very|really|extremely|incredibly|absolutely|totally|completely)\b', IntonationType.EMPHATIC, EmotionIntensity.MODERATE),
-            
+
             # Listing patterns
             (r'\b(first|second|third|next|then|finally|lastly)\b', IntonationType.FLAT, EmotionIntensity.SUBTLE),
             (r'\b(and|or|but|however|therefore|moreover)\b', IntonationType.FLAT, EmotionIntensity.SUBTLE),
-            
+
             # Parenthetical patterns (should be softer)
             (r'\(([^)]+)\)', IntonationType.FLAT, EmotionIntensity.SUBTLE),
-            
+
             # Quotation patterns
             (r'"([^"]+)"', IntonationType.RISING_FALLING, EmotionIntensity.MODERATE),
-            
+
             # Uncertainty patterns
             (r'\b(maybe|perhaps|possibly|probably|likely)\b', IntonationType.RISING, EmotionIntensity.SUBTLE),
             (r'\b(I think|I believe|I suppose|I guess)\b', IntonationType.RISING, EmotionIntensity.SUBTLE),
-            
+
             # Contrast patterns
             (r'\b(but|however|although|though|nevertheless|nonetheless)\b', IntonationType.RISING_FALLING, EmotionIntensity.MODERATE),
-            
+
             # Conclusion patterns
             (r'\b(therefore|thus|consequently|in conclusion|finally)\b', IntonationType.FALLING, EmotionIntensity.MODERATE),
         ]
-    
+
     def _load_emphasis_patterns(self) -> List[Tuple[str, EmotionIntensity]]:
         """Load emphasis detection patterns"""
         return [
@@ -221,38 +221,38 @@ class DynamicEmotionIntonationSystem:
             (r'\*\*([^*]+)\*\*', EmotionIntensity.STRONG),  # **bold**
             (r'_([^_]+)_', EmotionIntensity.MODERATE),  # _italic_
             (r'__([^_]+)__', EmotionIntensity.STRONG),  # __bold__
-            
+
             # ALL CAPS (but not acronyms)
             (r'\b[A-Z]{3,}\b(?![A-Z])', EmotionIntensity.STRONG),
-            
+
             # Repeated punctuation
             (r'[!]{2,}', EmotionIntensity.STRONG),
             (r'[?]{2,}', EmotionIntensity.STRONG),
             (r'\.{3,}', EmotionIntensity.MODERATE),
-            
+
             # Intensifier words
             (r'\b(very|really|extremely|incredibly|absolutely|totally|completely|utterly|quite|rather|fairly|somewhat)\b', EmotionIntensity.MODERATE),
         ]
-    
+
     def _load_question_patterns(self) -> List[Tuple[str, IntonationType]]:
         """Load question detection patterns"""
         return [
             # Wh-questions
             (r'\b(what|where|when|who|why|how|which|whose)\b.*\?', IntonationType.QUESTIONING),
-            
+
             # Yes/no questions
             (r'\b(is|are|was|were|do|does|did|can|could|will|would|should|shall|have|has|had)\b.*\?', IntonationType.RISING),
-            
+
             # Tag questions
             (r'.*,\s*(right|okay|yeah|no|yes|isn\'t it|aren\'t they|don\'t you|won\'t you)\?', IntonationType.RISING),
-            
+
             # Rhetorical questions
             (r'\b(really|seriously|honestly|come on)\?', IntonationType.QUESTIONING),
-            
+
             # Question without question mark (rising intonation)
             (r'\b(I wonder|do you think|could you tell me)\b', IntonationType.RISING),
         ]
-    
+
     def process_emotion_intonation(self, text: str, conversation_history: Optional[List[str]] = None) -> Tuple[str, List[IntonationMarker]]:
         """Process text for emotion and intonation markers with enhanced LLM context analysis"""
         logger.debug(f"Processing emotion and intonation in: {text[:100]}...")
@@ -279,7 +279,7 @@ class DynamicEmotionIntonationSystem:
         logger.debug(f"Emotion intonation result: {processed_text[:100]}...")
 
         return processed_text, intonation_markers
-    
+
     def _detect_intonation_markers(self, text: str, llm_analysis: Optional[LLMContextAnalysis] = None) -> List[IntonationMarker]:
         """Detect intonation markers in text with enhanced LLM context"""
         markers = []
@@ -314,19 +314,19 @@ class DynamicEmotionIntonationSystem:
                     context=text[max(0, match.start()-20):match.end()+20]
                 )
                 markers.append(marker)
-        
+
         # Detect punctuation-based intonation
         for punct, intonation_type in self.punctuation_patterns.items():
             pattern = re.escape(punct)
             matches = re.finditer(pattern, text)
-            
+
             for match in matches:
                 # Check if this punctuation is already covered by a rule
                 covered = any(
                     marker.position <= match.start() <= marker.position + marker.length
                     for marker in markers
                 )
-                
+
                 if not covered:
                     marker = IntonationMarker(
                         position=match.start(),
@@ -337,17 +337,17 @@ class DynamicEmotionIntonationSystem:
                         context=text[max(0, match.start()-10):match.end()+10]
                     )
                     markers.append(marker)
-        
+
         # Sort markers by position
         markers.sort(key=lambda x: x.position)
-        
+
         return markers
-    
+
     def _detect_emotion_context(self, text: str, llm_analysis: Optional[LLMContextAnalysis] = None) -> EmotionContext:
         """Detect overall emotion context of the text"""
         emotions = {}
         triggers = []
-        
+
         # Analyze emotion indicator words
         for word, (emotion, intensity) in self.emotion_indicators.items():
             if re.search(r'\b' + re.escape(word) + r'\b', text, re.IGNORECASE):
@@ -355,7 +355,7 @@ class DynamicEmotionIntonationSystem:
                     emotions[emotion] = []
                 emotions[emotion].append(intensity)
                 triggers.append(word)
-        
+
         # Determine primary emotion
         if emotions:
             # Weight emotions by intensity
@@ -363,14 +363,14 @@ class DynamicEmotionIntonationSystem:
             for emotion, intensities in emotions.items():
                 score = sum(intensity.value for intensity in intensities)
                 emotion_scores[emotion] = score
-            
+
             primary_emotion = max(emotion_scores, key=emotion_scores.get)
             secondary_emotions = [e for e in emotion_scores.keys() if e != primary_emotion]
-            
+
             # Determine overall intensity
             primary_intensities = emotions[primary_emotion]
             avg_intensity = sum(intensity.value for intensity in primary_intensities) / len(primary_intensities)
-            
+
             if avg_intensity >= 3:
                 overall_intensity = EmotionIntensity.INTENSE
             elif avg_intensity >= 2:
@@ -379,14 +379,14 @@ class DynamicEmotionIntonationSystem:
                 overall_intensity = EmotionIntensity.MODERATE
             else:
                 overall_intensity = EmotionIntensity.SUBTLE
-            
+
             confidence = min(1.0, len(triggers) * 0.2)
         else:
             primary_emotion = "neutral"
             secondary_emotions = []
             overall_intensity = EmotionIntensity.SUBTLE
             confidence = 0.0
-        
+
         return EmotionContext(
             primary_emotion=primary_emotion,
             secondary_emotions=secondary_emotions,
@@ -394,16 +394,16 @@ class DynamicEmotionIntonationSystem:
             confidence=confidence,
             triggers=triggers
         )
-    
-    def _apply_intonation_markers(self, text: str, markers: List[IntonationMarker], 
+
+    def _apply_intonation_markers(self, text: str, markers: List[IntonationMarker],
                                 emotion_context: EmotionContext) -> str:
         """Apply intonation markers to text"""
         # For now, we'll add simple markers that can be interpreted by the TTS engine
         # In a full implementation, this would generate SSML or other markup
-        
+
         processed_text = text
         offset = 0
-        
+
         for marker in markers:
             # Create intonation marker based on type
             if marker.intonation_type == IntonationType.QUESTIONING:
@@ -420,14 +420,14 @@ class DynamicEmotionIntonationSystem:
                 intonation_marker = "↗↘"  # Rising then falling
             else:
                 intonation_marker = ""
-            
+
             # Insert marker at the end of the segment
             insert_pos = marker.position + marker.length + offset
             processed_text = processed_text[:insert_pos] + intonation_marker + processed_text[insert_pos:]
             offset += len(intonation_marker)
-        
+
         return processed_text
-    
+
     def analyze_intonation_opportunities(self, text: str) -> Dict[str, List[str]]:
         """Analyze text for intonation opportunities"""
         info = {
@@ -437,32 +437,32 @@ class DynamicEmotionIntonationSystem:
             'emotion_indicators': [],
             'intonation_patterns': []
         }
-        
+
         # Find questions
         questions = re.findall(r'[^.!]*\?', text)
         info['questions'] = questions
-        
+
         # Find exclamations
         exclamations = re.findall(r'[^.?]*!', text)
         info['exclamations'] = exclamations
-        
+
         # Find emphasis patterns
         emphasis = re.findall(r'\*([^*]+)\*|\*\*([^*]+)\*\*', text)
         info['emphasis_candidates'] = [match[0] or match[1] for match in emphasis]
-        
+
         # Find emotion indicators
         for word in self.emotion_indicators:
             if re.search(r'\b' + re.escape(word) + r'\b', text, re.IGNORECASE):
                 info['emotion_indicators'].append(word)
-        
+
         # Find intonation patterns
         for pattern, intonation_type, intensity in self.intonation_rules:
             matches = re.findall(pattern, text, re.IGNORECASE)
             if matches:
                 info['intonation_patterns'].extend(matches)
-        
+
         return info
-    
+
     def set_configuration(self, enable_question_intonation: bool = None,
                          enable_exclamation_handling: bool = None,
                          enable_emphasis_detection: bool = None,

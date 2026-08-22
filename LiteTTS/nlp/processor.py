@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 
 class NLPProcessor:
     """Main NLP processor that orchestrates all text processing"""
-    
+
     def __init__(self, enable_advanced_features: bool = True, config: Optional[Dict] = None):
         """Initialize NLP processor with all components
 
@@ -68,7 +68,7 @@ class NLPProcessor:
             self.emotion_detector = None
             self.context_adapter = None
             self.naturalness_enhancer = None
-        
+
     def process_text(self, text: str, options: NormalizationOptions = None) -> str:
         """Process text through the complete NLP pipeline"""
         if options is None:
@@ -132,19 +132,19 @@ class NLPProcessor:
 
         logger.info(f"Text processing complete: {text[:100]}...")
         return text
-    
+
     def normalize_text(self, text: str) -> str:
         """Normalize input text"""
         return self.text_normalizer.normalize_text(text)
-    
+
     def resolve_homographs(self, text: str) -> str:
         """Resolve homograph pronunciations"""
         return self.homograph_resolver.resolve_homographs(text)
-    
+
     def process_phonetics(self, text: str) -> str:
         """Process phonetic markers"""
         return self.phonetic_processor.process_phonetics(text)
-    
+
     def analyze_prosody(self, text: str) -> ProsodyInfo:
         """Analyze text for prosody information"""
         prosody_data = self.prosody_analyzer.get_prosody_info(text)
@@ -153,11 +153,11 @@ class NLPProcessor:
             emphasis=prosody_data['emphasis'],
             intonation=prosody_data['intonation']
         )
-    
+
     def spell_word(self, word: str) -> str:
         """Spell out a word letter by letter"""
         return self.spell_processor.spell_word_direct(word)
-    
+
     def add_homograph(self, word: str, pronunciations: Dict[str, str]):
         """Add a custom homograph"""
         self.homograph_resolver.add_homograph(word, pronunciations)
@@ -264,7 +264,7 @@ class NLPProcessor:
             return None
 
         return self.naturalness_enhancer.enhance_naturalness(text, context)
-    
+
     def get_processing_stats(self) -> Dict[str, Any]:
         """Get processing statistics"""
         stats = {

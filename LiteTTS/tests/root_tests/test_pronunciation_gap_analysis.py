@@ -37,21 +37,21 @@ pytestmark = pytest.mark.skip(reason="Internal NLP component tests - implementat
 
 class PronunciationGapAnalysis(unittest.TestCase):
     """Comprehensive analysis of pronunciation gaps in the current system"""
-    
+
     def setUp(self):
         """Set up test components"""
         if not COMPONENTS_AVAILABLE:
             self.skipTest("Required components not available")
-        
+
         # Initialize processors
         self.nlp_processor = NLPProcessor()
         self.enhanced_processor = EnhancedNLPProcessor()
-        
+
         # Test cases from conversation history
         self.critical_issues = self._load_critical_test_cases()
         self.systematic_issues = self._load_systematic_test_cases()
         self.advanced_issues = self._load_advanced_test_cases()
-    
+
     def _load_critical_test_cases(self) -> Dict[str, List[Tuple[str, str, str]]]:
         """Load critical pronunciation issues that need immediate fixing"""
         return {
@@ -81,7 +81,7 @@ class PronunciationGapAnalysis(unittest.TestCase):
                 ("Ahh, I see", "Ah, I see", "ahh should be natural"),
             ]
         }
-    
+
     def _load_systematic_test_cases(self) -> Dict[str, List[Tuple[str, str, str]]]:
         """Load systematic processing issues"""
         return {
@@ -109,7 +109,7 @@ class PronunciationGapAnalysis(unittest.TestCase):
                 ("e.g. this example", "for example this example", "e.g. should be 'for example'"),
             ]
         }
-    
+
     def _load_advanced_test_cases(self) -> Dict[str, List[Tuple[str, str, str]]]:
         """Load advanced feature test cases"""
         return {
@@ -128,47 +128,47 @@ class PronunciationGapAnalysis(unittest.TestCase):
                 ("Hedonism philosophy", "Hedonism philosophy", "should be /ˈhiːdənɪzəm/"),
             ]
         }
-    
+
     def test_critical_contraction_issues(self):
         """Test critical contraction pronunciation issues"""
         print("\n=== Testing Critical Contraction Issues ===")
-        
+
         for input_text, expected_output, description in self.critical_issues['contractions']:
             with self.subTest(input_text=input_text):
                 # Test with basic processor
                 basic_result = self.nlp_processor.process_text(input_text)
-                
+
                 # Test with enhanced processor
                 enhanced_result = self.enhanced_processor.process_text_enhanced(input_text)
                 enhanced_text = enhanced_result.processed_text if isinstance(enhanced_result, dict) else enhanced_result
-                
+
                 print(f"\nInput: {input_text}")
                 print(f"Expected: {expected_output}")
                 print(f"Basic: {basic_result}")
                 print(f"Enhanced: {enhanced_text}")
                 print(f"Issue: {description}")
-                
+
                 # Check if the issue is resolved
                 if expected_output.lower() in enhanced_text.lower():
                     print("✅ FIXED")
                 else:
                     print("❌ STILL BROKEN")
-    
+
     def test_critical_symbol_issues(self):
         """Test critical symbol and punctuation issues"""
         print("\n=== Testing Critical Symbol & Punctuation Issues ===")
-        
+
         for input_text, expected_output, description in self.critical_issues['symbols_punctuation']:
             with self.subTest(input_text=input_text):
                 # Test with enhanced processor
                 enhanced_result = self.enhanced_processor.process_text_enhanced(input_text)
                 enhanced_text = enhanced_result.processed_text if isinstance(enhanced_result, dict) else enhanced_result
-                
+
                 print(f"\nInput: {input_text}")
                 print(f"Expected: {expected_output}")
                 print(f"Enhanced: {enhanced_text}")
                 print(f"Issue: {description}")
-                
+
                 # Check for specific issues
                 if 'x27' in enhanced_text or 'in quat' in enhanced_text.lower():
                     print("❌ SYMBOL ENCODING ISSUE DETECTED")
@@ -176,41 +176,41 @@ class PronunciationGapAnalysis(unittest.TestCase):
                     print("✅ FIXED")
                 else:
                     print("❌ STILL BROKEN")
-    
+
     def test_systematic_currency_processing(self):
         """Test systematic currency processing"""
         print("\n=== Testing Currency Processing ===")
-        
+
         for input_text, expected_output, description in self.systematic_issues['currency']:
             with self.subTest(input_text=input_text):
                 enhanced_result = self.enhanced_processor.process_text_enhanced(input_text)
                 enhanced_text = enhanced_result.processed_text if isinstance(enhanced_result, dict) else enhanced_result
-                
+
                 print(f"\nInput: {input_text}")
                 print(f"Expected: {expected_output}")
                 print(f"Enhanced: {enhanced_text}")
                 print(f"Issue: {description}")
-                
+
                 # Check if currency is properly processed
                 if any(word in enhanced_text.lower() for word in ['dollars', 'cents', 'euros']):
                     print("✅ CURRENCY PROCESSED")
                 else:
                     print("❌ CURRENCY NOT PROCESSED")
-    
+
     def test_systematic_date_processing(self):
         """Test systematic date and time processing"""
         print("\n=== Testing Date & Time Processing ===")
-        
+
         for input_text, expected_output, description in self.systematic_issues['dates_times']:
             with self.subTest(input_text=input_text):
                 enhanced_result = self.enhanced_processor.process_text_enhanced(input_text)
                 enhanced_text = enhanced_result.processed_text if isinstance(enhanced_result, dict) else enhanced_result
-                
+
                 print(f"\nInput: {input_text}")
                 print(f"Expected: {expected_output}")
                 print(f"Enhanced: {enhanced_text}")
                 print(f"Issue: {description}")
-                
+
                 # Check for dash issues in ISO dates
                 if 'dash' in enhanced_text.lower() and '2023' in input_text:
                     print("❌ ISO DATE DASH ISSUE DETECTED")
@@ -218,21 +218,21 @@ class PronunciationGapAnalysis(unittest.TestCase):
                     print("✅ DATE PROCESSED NATURALLY")
                 else:
                     print("❌ DATE NOT PROCESSED")
-    
+
     def test_advanced_context_awareness(self):
         """Test advanced context-aware processing"""
         print("\n=== Testing Context-Aware Processing ===")
-        
+
         for input_text, expected_output, description in self.advanced_issues['context_aware']:
             with self.subTest(input_text=input_text):
                 enhanced_result = self.enhanced_processor.process_text_enhanced(input_text)
                 enhanced_text = enhanced_result.processed_text if isinstance(enhanced_result, dict) else enhanced_result
-                
+
                 print(f"\nInput: {input_text}")
                 print(f"Expected: {expected_output}")
                 print(f"Enhanced: {enhanced_text}")
                 print(f"Issue: {description}")
-                
+
                 # Check for specific improvements
                 if 'tesla' in enhanced_text.lower() and 'tsla' in input_text.lower():
                     print("✅ TICKER SYMBOL CONTEXT AWARE")
@@ -240,25 +240,25 @@ class PronunciationGapAnalysis(unittest.TestCase):
                     print("✅ PROPER NAME PRONUNCIATION")
                 else:
                     print("❌ CONTEXT AWARENESS NEEDED")
-    
+
     def generate_gap_analysis_report(self):
         """Generate a comprehensive gap analysis report"""
         print("\n" + "="*60)
         print("COMPREHENSIVE GAP ANALYSIS REPORT")
         print("="*60)
-        
+
         # This would be called after running all tests
         # For now, just print a summary structure
         print("\n1. CRITICAL ISSUES (Immediate Fix Required):")
         print("   - Contraction processing gaps")
         print("   - Symbol & punctuation encoding issues")
         print("   - Comma processing problems")
-        
+
         print("\n2. SYSTEMATIC ISSUES (Enhancement Required):")
         print("   - Currency processing coverage")
         print("   - Date/time format handling")
         print("   - URL processing improvements")
-        
+
         print("\n3. ADVANCED FEATURES (Future Enhancement):")
         print("   - Context-aware pronunciation")
         print("   - Emotional & prosodic enhancement")
@@ -267,6 +267,6 @@ class PronunciationGapAnalysis(unittest.TestCase):
 if __name__ == '__main__':
     # Set up logging
     logging.basicConfig(level=logging.DEBUG)
-    
+
     # Run the gap analysis
     unittest.main(verbosity=2)

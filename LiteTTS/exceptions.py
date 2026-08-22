@@ -9,10 +9,10 @@ from datetime import datetime
 
 class KokoroError(Exception):
     """Base exception for Kokoro ONNX TTS API with enhanced error context"""
-    
+
     def __init__(
-        self, 
-        message: str, 
+        self,
+        message: str,
         details: Optional[Dict[str, Any]] = None,
         error_code: Optional[str] = None,
         http_status: int = 500,
@@ -25,9 +25,9 @@ class KokoroError(Exception):
         self.request_id = request_id
         self.timestamp = datetime.utcnow().isoformat()
         self.traceback = traceback.format_exc()
-        
+
         super().__init__(self.message)
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert exception to dictionary for API responses"""
         return {
@@ -37,14 +37,14 @@ class KokoroError(Exception):
             "request_id": self.request_id,
             "timestamp": self.timestamp
         }
-    
+
     def __str__(self) -> str:
         return f"{self.__class__.__name__}: {self.message}"
 
 
 class ModelError(KokoroError):
     """Raised when there are issues with the TTS model"""
-    
+
     def __init__(self, message: str, model_path: Optional[str] = None, **kwargs):
         details = kwargs.get('details', {})
         if model_path:
@@ -57,7 +57,7 @@ class ModelError(KokoroError):
 
 class VoiceError(KokoroError):
     """Raised when there are issues with voice processing"""
-    
+
     def __init__(self, message: str, voice_name: Optional[str] = None, **kwargs):
         details = kwargs.get('details', {})
         if voice_name:
@@ -70,7 +70,7 @@ class VoiceError(KokoroError):
 
 class AudioError(KokoroError):
     """Raised when there are issues with audio processing"""
-    
+
     def __init__(self, message: str, audio_format: Optional[str] = None, **kwargs):
         details = kwargs.get('details', {})
         if audio_format:
@@ -83,7 +83,7 @@ class AudioError(KokoroError):
 
 class ValidationError(KokoroError):
     """Raised when input validation fails"""
-    
+
     def __init__(self, message: str, field: Optional[str] = None, value: Optional[Any] = None, **kwargs):
         details = kwargs.get('details', {})
         if field:
@@ -98,7 +98,7 @@ class ValidationError(KokoroError):
 
 class CacheError(KokoroError):
     """Raised when there are caching issues"""
-    
+
     def __init__(self, message: str, cache_key: Optional[str] = None, **kwargs):
         details = kwargs.get('details', {})
         if cache_key:
@@ -111,7 +111,7 @@ class CacheError(KokoroError):
 
 class ConfigurationError(KokoroError):
     """Raised when there are configuration issues"""
-    
+
     def __init__(self, message: str, config_key: Optional[str] = None, **kwargs):
         details = kwargs.get('details', {})
         if config_key:
@@ -124,7 +124,7 @@ class ConfigurationError(KokoroError):
 
 class DownloadError(KokoroError):
     """Raised when model/voice downloads fail"""
-    
+
     def __init__(self, message: str, url: Optional[str] = None, file_path: Optional[str] = None, **kwargs):
         details = kwargs.get('details', {})
         if url:
@@ -139,7 +139,7 @@ class DownloadError(KokoroError):
 
 class RateLimitError(KokoroError):
     """Raised when rate limits are exceeded"""
-    
+
     def __init__(self, message: str, limit: Optional[int] = None, window: Optional[int] = None, **kwargs):
         details = kwargs.get('details', {})
         if limit:
@@ -154,7 +154,7 @@ class RateLimitError(KokoroError):
 
 class AuthenticationError(KokoroError):
     """Raised when authentication fails"""
-    
+
     def __init__(self, message: str = "Authentication required", **kwargs):
         kwargs.setdefault('error_code', 'authentication_required')
         kwargs.setdefault('http_status', 401)
@@ -163,7 +163,7 @@ class AuthenticationError(KokoroError):
 
 class TextProcessingError(KokoroError):
     """Raised when text processing fails"""
-    
+
     def __init__(self, message: str, text_length: Optional[int] = None, **kwargs):
         details = kwargs.get('details', {})
         if text_length:
@@ -194,9 +194,9 @@ def get_http_status(exception: Exception) -> int:
     """Get appropriate HTTP status code for an exception"""
     if isinstance(exception, KokoroError):
         return exception.http_status
-    
+
     for exc_type, status in EXCEPTION_STATUS_MAP.items():
         if isinstance(exception, exc_type):
             return status
-    
+
     return 500  # Default to internal server error

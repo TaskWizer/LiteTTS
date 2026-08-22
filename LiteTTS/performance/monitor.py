@@ -53,7 +53,7 @@ class PerformanceMonitor:
     Comprehensive performance monitoring for TTS API
     Tracks RTF, latency, cache performance, and system resources
     """
-    
+
     def __init__(self, max_history: int = None, enable_system_monitoring: bool = None, config=None):
         # Use config values or fallback to defaults
         if config and hasattr(config, 'monitoring'):
@@ -67,12 +67,12 @@ class PerformanceMonitor:
             self.enable_system_monitoring = enable_system_monitoring if enable_system_monitoring is not None else True
             self.monitoring_interval = 1.0
             self.join_timeout = 5.0
-        
+
         # Performance data storage
         self.metrics: deque = deque(maxlen=max_history)
         self.tts_metrics: deque = deque(maxlen=max_history)
         self.system_metrics: deque = deque(maxlen=max_history)
-        
+
         # Real-time statistics
         self.stats = {
             'total_requests': 0,
@@ -87,7 +87,7 @@ class PerformanceMonitor:
             'min_latency': None,  # Use None instead of inf for uninitialized values
             'max_latency': 0.0
         }
-        
+
         # Voice-specific statistics
         self.voice_stats: Dict[str, Dict[str, Any]] = defaultdict(lambda: {
             'requests': 0,
@@ -96,7 +96,7 @@ class PerformanceMonitor:
             'avg_rtf': 0.0,
             'cache_hits': 0
         })
-        
+
         # Text length analysis
         self.length_buckets = {
             'short': {'range': (0, 50), 'count': 0, 'total_time': 0.0},
@@ -104,39 +104,39 @@ class PerformanceMonitor:
             'long': {'range': (201, 500), 'count': 0, 'total_time': 0.0},
             'very_long': {'range': (501, float('inf')), 'count': 0, 'total_time': 0.0}
         }
-        
+
         # System monitoring
         self.system_monitor_thread: Optional[threading.Thread] = None
         self.stop_monitoring_event = threading.Event()
         self.monitoring_interval = 5.0  # seconds
-        
+
         # Thread safety
         self.stats_lock = threading.RLock()
-        
+
         logger.info("Performance monitor initialized")
-    
+
     def start_monitoring(self):
         """Start system monitoring thread"""
         if not self.enable_system_monitoring:
             return
-        
+
         if self.system_monitor_thread and self.system_monitor_thread.is_alive():
             logger.warning("System monitoring already running")
             return
-        
+
         self.stop_monitoring_event.clear()
         self.system_monitor_thread = threading.Thread(target=self._system_monitor_worker, daemon=True)
         self.system_monitor_thread.start()
-        
+
         logger.info("System monitoring started")
-    
+
     def stop_monitoring(self):
         """Stop system monitoring"""
         self.stop_monitoring_event.set()
         if self.system_monitor_thread:
             self.system_monitor_thread.join(timeout=self.join_timeout)
         logger.info("System monitoring stopped")
-    
+
     def record_tts_performance(self, tts_data: TTSPerformanceData):
         """Record TTS performance metrics"""
         with self.stats_lock:
@@ -154,32 +154,32 @@ class PerformanceMonitor:
                     'speed': tts_data.speed
                 }
             )
-            
+
             self.metrics.append(metric)
             self.tts_metrics.append(tts_data)
-            
+
             # Update global statistics
             self.stats['total_requests'] += 1
-            
+
             if tts_data.cache_hit:
                 self.stats['cache_hits'] += 1
             else:
                 self.stats['cache_misses'] += 1
                 self.stats['total_generation_time'] += tts_data.generation_time
                 self.stats['total_audio_duration'] += tts_data.audio_duration
-                
+
                 # Update RTF statistics
                 self._update_rtf_stats(tts_data.rtf)
-                
+
                 # Update latency statistics
                 self._update_latency_stats(tts_data.generation_time)
-            
+
             # Update voice-specific statistics
             self._update_voice_stats(tts_data)
-            
+
             # Update text length analysis
             self._update_length_analysis(tts_data)
-    
+
     def _update_rtf_stats(self, rtf: float):
         """Update RTF statistics with safe calculations"""
         # Import safe division utility
@@ -201,7 +201,7 @@ class PerformanceMonitor:
         if non_cached_requests > 0:
             total_rtf = self.stats['avg_rtf'] * (non_cached_requests - 1) + rtf
             self.stats['avg_rtf'] = safe_division(total_rtf, non_cached_requests, 0.0)
-    
+
     def _update_latency_stats(self, latency: float):
         """Update latency statistics with safe calculations"""
         # Import safe division utility
@@ -223,7 +223,7 @@ class PerformanceMonitor:
         if non_cached_requests > 0:
             total_latency = self.stats['avg_latency'] * (non_cached_requests - 1) + latency
             self.stats['avg_latency'] = safe_division(total_latency, non_cached_requests, 0.0)
-    
+
     def _update_voice_stats(self, tts_data: TTSPerformanceData):
         """Update voice-specific statistics with safe calculations"""
         # Import safe division utility
@@ -243,25 +243,25 @@ class PerformanceMonitor:
             if non_cached > 0:
                 total_rtf = voice_stat['avg_rtf'] * (non_cached - 1) + sanitize_float(tts_data.rtf, 0.0)
                 voice_stat['avg_rtf'] = safe_division(total_rtf, non_cached, 0.0)
-    
+
     def _update_length_analysis(self, tts_data: TTSPerformanceData):
         """Update text length analysis"""
         if tts_data.cache_hit:
             return  # Don't include cached requests in length analysis
-        
+
         text_length = tts_data.text_length
-        
+
         for bucket_name, bucket_data in self.length_buckets.items():
             min_len, max_len = bucket_data['range']
             if min_len <= text_length <= max_len:
                 bucket_data['count'] += 1
                 bucket_data['total_time'] += tts_data.generation_time
                 break
-    
+
     def _system_monitor_worker(self):
         """Background worker for system monitoring"""
         logger.info("System monitoring worker started")
-        
+
         while not self.stop_monitoring_event.is_set():
             try:
                 # Collect system metrics
@@ -269,7 +269,7 @@ class PerformanceMonitor:
                 memory = psutil.virtual_memory()
                 disk_io = psutil.disk_io_counters()
                 network_io = psutil.net_io_counters()
-                
+
                 system_metric = SystemMetrics(
                     cpu_percent=cpu_percent,
                     memory_percent=memory.percent,
@@ -279,19 +279,19 @@ class PerformanceMonitor:
                     network_sent_mb=network_io.bytes_sent / (1024 * 1024) if network_io else 0,
                     network_recv_mb=network_io.bytes_recv / (1024 * 1024) if network_io else 0
                 )
-                
+
                 with self.stats_lock:
                     self.system_metrics.append(system_metric)
-                
+
                 # Wait for next interval
                 self.stop_monitoring_event.wait(self.monitoring_interval)
 
             except Exception as e:
                 logger.error(f"Error in system monitoring: {e}")
                 self.stop_monitoring_event.wait(self.join_timeout)
-        
+
         logger.info("System monitoring worker stopped")
-    
+
     def get_performance_summary(self) -> Dict[str, Any]:
         """Get comprehensive performance summary with safe calculations"""
         # Import safe division utilities
@@ -306,7 +306,7 @@ class PerformanceMonitor:
             total_audio = self.stats['total_audio_duration']
             total_gen_time = self.stats['total_generation_time']
             efficiency = safe_division(total_audio, total_gen_time, 0.0)
-            
+
             # Get recent system metrics
             recent_system = None
             if self.system_metrics:
@@ -315,7 +315,7 @@ class PerformanceMonitor:
                     'memory_percent': self.system_metrics[-1].memory_percent,
                     'memory_used_mb': self.system_metrics[-1].memory_used_mb
                 }
-            
+
             # Text length analysis with safe division
             length_analysis = {}
             for bucket_name, bucket_data in self.length_buckets.items():
@@ -326,7 +326,7 @@ class PerformanceMonitor:
                         'count': bucket_data['count'],
                         'avg_generation_time': avg_time
                     }
-            
+
             return {
                 'summary': {
                     'total_requests': total_requests,
@@ -355,11 +355,11 @@ class PerformanceMonitor:
                     'total_metrics': len(self.metrics)
                 }
             }
-    
+
     def get_rtf_trend(self, minutes: int = 30) -> List[Tuple[datetime, float]]:
         """Get RTF trend over specified time period"""
         cutoff_time = datetime.now() - timedelta(minutes=minutes)
-        
+
         with self.stats_lock:
             trend_data = []
             for tts_data in self.tts_metrics:
@@ -368,18 +368,18 @@ class PerformanceMonitor:
                 else:
                     # Estimate timestamp from metrics
                     for metric in reversed(self.metrics):
-                        if (metric.metadata.get('voice') == tts_data.voice and 
+                        if (metric.metadata.get('voice') == tts_data.voice and
                             metric.metadata.get('text_length') == tts_data.text_length):
                             timestamp = metric.timestamp
                             break
                     else:
                         continue
-                
+
                 if timestamp >= cutoff_time and not tts_data.cache_hit:
                     trend_data.append((timestamp, tts_data.rtf))
-            
+
             return sorted(trend_data, key=lambda x: x[0])
-    
+
     def export_metrics(self, filepath: str):
         """Export performance metrics to JSON file"""
         with self.stats_lock:
@@ -396,9 +396,9 @@ class PerformanceMonitor:
                     for metric in self.metrics
                 ]
             }
-            
+
             Path(filepath).parent.mkdir(parents=True, exist_ok=True)
             with open(filepath, 'w') as f:
                 json.dump(export_data, f, indent=2)
-            
+
             logger.info(f"Performance metrics exported to {filepath}")

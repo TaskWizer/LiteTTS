@@ -57,27 +57,27 @@ def setup_logging(
         json_format: Use JSON format for structured logging
         include_trace_id: Include trace ID in log messages
     """
-    
+
     # Default format with better structure
     if format_string is None:
         if json_format:
             format_string = '{"timestamp": "%(asctime)s", "level": "%(levelname)s", "logger": "%(name)s", "message": "%(message)s"}'
         else:
             format_string = "%(asctime)s | %(levelname)-8s | %(name)-25s | %(message)s"
-    
+
     # Configure root logger
     root_logger = logging.getLogger()
     root_logger.setLevel(getattr(logging, level.upper()))
-    
+
     # Clear existing handlers
     root_logger.handlers.clear()
-    
+
     # Create formatter
     if json_format:
         formatter = JSONFormatter(format_string)
     else:
         formatter = ColoredFormatter(format_string)
-    
+
     # Console handler with enhanced formatting and Windows encoding support
     # Configure console output stream with proper encoding for Windows
     import platform
@@ -104,7 +104,7 @@ def setup_logging(
     console_handler.setFormatter(formatter)
     console_handler.setLevel(getattr(logging, level.upper()))
     root_logger.addHandler(console_handler)
-    
+
     # Set up comprehensive logging to docs/logs directory
     log_dir = Path("docs/logs")
     log_dir.mkdir(parents=True, exist_ok=True)
@@ -182,14 +182,14 @@ def setup_logging(
         file_handler.setFormatter(file_formatter)
         file_handler.setLevel(getattr(logging, level.upper()))
         root_logger.addHandler(file_handler)
-    
+
     # Set specific logger levels for external libraries
     logging.getLogger("uvicorn").setLevel(logging.WARNING)
     logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
     logging.getLogger("fastapi").setLevel(logging.WARNING)
     logging.getLogger("onnxruntime").setLevel(logging.WARNING)
     logging.getLogger("transformers").setLevel(logging.WARNING)
-    
+
     # Log setup completion
     logger = logging.getLogger("kokoro.logging")
     logger.info(format_log_message('clipboard', 'Comprehensive logging system initialized'))
@@ -202,7 +202,7 @@ def setup_logging(
 
 class ColoredFormatter(logging.Formatter):
     """Custom formatter with color support for console output"""
-    
+
     # Color codes
     COLORS = {
         'DEBUG': '\033[36m',     # Cyan
@@ -212,22 +212,22 @@ class ColoredFormatter(logging.Formatter):
         'CRITICAL': '\033[35m',  # Magenta
         'RESET': '\033[0m'       # Reset
     }
-    
+
     def format(self, record):
         # Add color to level name
         if record.levelname in self.COLORS:
             record.levelname = f"{self.COLORS[record.levelname]}{record.levelname}{self.COLORS['RESET']}"
-        
+
         return super().format(record)
 
 
 class JSONFormatter(logging.Formatter):
     """JSON formatter for structured logging"""
-    
+
     def format(self, record):
         import json
         from datetime import datetime
-        
+
         log_entry = {
             "timestamp": datetime.fromtimestamp(record.created).isoformat(),
             "level": record.levelname,
@@ -237,31 +237,31 @@ class JSONFormatter(logging.Formatter):
             "function": record.funcName,
             "line": record.lineno
         }
-        
+
         # Add exception info if present
         if record.exc_info:
             log_entry["exception"] = self.formatException(record.exc_info)
-        
+
         # Add extra fields
         for key, value in record.__dict__.items():
-            if key not in ['name', 'msg', 'args', 'levelname', 'levelno', 'pathname', 
-                          'filename', 'module', 'lineno', 'funcName', 'created', 
-                          'msecs', 'relativeCreated', 'thread', 'threadName', 
+            if key not in ['name', 'msg', 'args', 'levelname', 'levelno', 'pathname',
+                          'filename', 'module', 'lineno', 'funcName', 'created',
+                          'msecs', 'relativeCreated', 'thread', 'threadName',
                           'processName', 'process', 'getMessage', 'exc_info', 'exc_text', 'stack_info']:
                 log_entry[key] = value
-        
+
         return json.dumps(log_entry)
 
 class RequestLogger:
     """Enhanced context manager for request-specific logging with metrics"""
-    
+
     def __init__(self, request_id: str, logger: logging.Logger, extra_context: Optional[dict] = None):
         self.request_id = request_id
         self.logger = logger
         self.start_time = None
         self.context = extra_context or {}
         self.metrics = {}
-    
+
     def __enter__(self):
         import time
         self.start_time = time.time()
@@ -269,12 +269,12 @@ class RequestLogger:
         self.logger.info(format_log_message('rocket', f'Request {self.request_id} started{context_str}'),
                         extra={"request_id": self.request_id, "event": "request_start", **self.context})
         return self
-    
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         import time
         duration = time.time() - self.start_time if self.start_time else 0
         self.metrics["duration"] = duration
-        
+
         if exc_type is None:
             self.logger.info(format_log_message('check', f'Request {self.request_id} completed in {duration:.3f}s'),
                            extra={"request_id": self.request_id, "event": "request_complete",
@@ -283,33 +283,33 @@ class RequestLogger:
             self.logger.error(format_log_message('cross', f'Request {self.request_id} failed in {duration:.3f}s: {exc_val}'),
                             extra={"request_id": self.request_id, "event": "request_error",
                                   "duration": duration, "error": str(exc_val), "metrics": self.metrics, **self.context})
-    
+
     def info(self, message: str, **kwargs):
-        self.logger.info(f"[{self.request_id}] {message}", 
+        self.logger.info(f"[{self.request_id}] {message}",
                         extra={"request_id": self.request_id, **kwargs})
-    
+
     def error(self, message: str, **kwargs):
-        self.logger.error(f"[{self.request_id}] {message}", 
+        self.logger.error(f"[{self.request_id}] {message}",
                          extra={"request_id": self.request_id, **kwargs})
-    
+
     def warning(self, message: str, **kwargs):
-        self.logger.warning(f"[{self.request_id}] {message}", 
+        self.logger.warning(f"[{self.request_id}] {message}",
                            extra={"request_id": self.request_id, **kwargs})
-    
+
     def debug(self, message: str, **kwargs):
-        self.logger.debug(f"[{self.request_id}] {message}", 
+        self.logger.debug(f"[{self.request_id}] {message}",
                          extra={"request_id": self.request_id, **kwargs})
-    
+
     def add_metric(self, key: str, value: any):
         """Add a metric to be logged with the request"""
         self.metrics[key] = value
-    
+
     def add_context(self, key: str, value: any):
         """Add context information to be logged with the request"""
         self.context[key] = value
 
 
-def get_request_logger(request_id: str, logger_name: str = "kokoro.request", 
+def get_request_logger(request_id: str, logger_name: str = "kokoro.request",
                       extra_context: Optional[dict] = None) -> RequestLogger:
     """Get a request-specific logger with optional context"""
     logger = logging.getLogger(logger_name)
@@ -320,7 +320,7 @@ def setup_performance_logging():
     """Set up performance-specific logging"""
     perf_logger = logging.getLogger("kokoro.performance")
     perf_logger.setLevel(logging.INFO)
-    
+
     # Create a separate handler for performance logs if needed
     return perf_logger
 
@@ -330,15 +330,15 @@ def log_system_info():
     import platform
     import psutil
     import sys
-    
+
     logger = logging.getLogger("kokoro.system")
-    
+
     logger.info("System Information:")
     logger.info(f"  Platform: {platform.platform()}")
     logger.info(f"  Python: {sys.version}")
     logger.info(f"  CPU Count: {psutil.cpu_count()}")
     logger.info(f"  Memory: {psutil.virtual_memory().total / (1024**3):.1f} GB")
-    
+
     # Check for CUDA availability
     try:
         import torch

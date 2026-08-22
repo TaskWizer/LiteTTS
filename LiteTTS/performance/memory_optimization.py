@@ -54,55 +54,55 @@ class MemoryOptimizationConfig:
 
 class MemoryOptimizer:
     """Memory usage and pre-allocation optimization system"""
-    
+
     def __init__(self):
         self.results_dir = Path("test_results/memory_optimization")
         self.results_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # Memory monitoring
         self.baseline_memory = None
         self.peak_memory = 0
         self.memory_history = []
         self.monitoring_active = False
         self.monitor_thread = None
-        
+
         # Pre-allocated memory pools
         self.memory_pools = {}
         self.allocated_buffers = []
-        
+
         # Start memory tracking
         tracemalloc.start()
-        
+
     def get_current_memory_profile(self) -> MemoryProfile:
         """Get current memory usage profile"""
         # System memory
         memory = psutil.virtual_memory()
-        
+
         # Process memory
         process = psutil.Process()
         process_memory = process.memory_info()
-        
+
         # Peak memory tracking
         current_memory_mb = process_memory.rss / (1024 * 1024)
         if current_memory_mb > self.peak_memory:
             self.peak_memory = current_memory_mb
-        
+
         # Memory growth calculation
         memory_growth = 0
         if self.baseline_memory:
             memory_growth = current_memory_mb - self.baseline_memory
-        
+
         # Garbage collection stats
         gc_stats = {
             f"generation_{i}": gc.get_count()[i] for i in range(len(gc.get_count()))
         }
-        
+
         # Get largest objects (top 10)
         largest_objects = []
         try:
             snapshot = tracemalloc.take_snapshot()
             top_stats = snapshot.statistics('lineno')[:10]
-            
+
             for stat in top_stats:
                 largest_objects.append({
                     "size_mb": stat.size / (1024 * 1024),
@@ -111,7 +111,7 @@ class MemoryOptimizer:
                 })
         except Exception as e:
             logger.warning(f"Could not get memory traceback: {e}")
-        
+
         profile = MemoryProfile(
             total_memory_mb=memory.total / (1024 * 1024),
             available_memory_mb=memory.available / (1024 * 1024),
@@ -123,20 +123,20 @@ class MemoryOptimizer:
             gc_collections=gc_stats,
             largest_objects=largest_objects
         )
-        
+
         return profile
-    
+
     def set_baseline_memory(self):
         """Set baseline memory usage"""
         profile = self.get_current_memory_profile()
         self.baseline_memory = profile.process_memory_mb
         logger.info(f"Baseline memory set to: {self.baseline_memory:.2f} MB")
-    
+
     def start_memory_monitoring(self, interval: float = 1.0):
         """Start continuous memory monitoring"""
         self.monitoring_active = True
         self.memory_history = []
-        
+
         def monitor_loop():
             while self.monitoring_active:
                 try:
@@ -149,22 +149,22 @@ class MemoryOptimizer:
                     time.sleep(interval)
                 except Exception as e:
                     logger.warning(f"Memory monitoring error: {e}")
-        
+
         self.monitor_thread = threading.Thread(target=monitor_loop)
         self.monitor_thread.start()
         logger.info("Memory monitoring started")
-    
+
     def stop_memory_monitoring(self) -> Dict[str, Any]:
         """Stop memory monitoring and return statistics"""
         self.monitoring_active = False
         if self.monitor_thread:
             self.monitor_thread.join()
-        
+
         if not self.memory_history:
             return {"error": "No monitoring data collected"}
-        
+
         memory_values = [entry["memory_mb"] for entry in self.memory_history]
-        
+
         stats = {
             "duration_seconds": self.memory_history[-1]["timestamp"] - self.memory_history[0]["timestamp"],
             "samples_collected": len(self.memory_history),
@@ -174,23 +174,23 @@ class MemoryOptimizer:
             "memory_variance": self._calculate_variance(memory_values),
             "peak_growth_mb": max(memory_values) - min(memory_values)
         }
-        
+
         logger.info("Memory monitoring stopped")
         return stats
-    
+
     def _calculate_variance(self, values: List[float]) -> float:
         """Calculate variance of memory values"""
         if len(values) < 2:
             return 0.0
-        
+
         mean = sum(values) / len(values)
         variance = sum((x - mean) ** 2 for x in values) / len(values)
         return variance
-    
+
     def implement_memory_pre_allocation(self, config: MemoryOptimizationConfig) -> bool:
         """Implement memory pre-allocation strategies"""
         logger.info("Implementing memory pre-allocation...")
-        
+
         try:
             if config.enable_pre_allocation:
                 # Pre-allocate memory buffers for common operations
@@ -200,7 +200,7 @@ class MemoryOptimizer:
                     16 * 1024 * 1024, # 16MB buffer
                     32 * 1024 * 1024  # 32MB buffer
                 ]
-                
+
                 total_allocated = 0
                 for size in buffer_sizes:
                     if total_allocated + size / (1024 * 1024) <= config.pre_allocation_size_mb:
@@ -208,9 +208,9 @@ class MemoryOptimizer:
                         self.allocated_buffers.append(buffer)
                         total_allocated += size / (1024 * 1024)
                         logger.info(f"Pre-allocated {size / (1024 * 1024):.1f}MB buffer")
-                
+
                 logger.info(f"Total pre-allocated memory: {total_allocated:.1f}MB")
-            
+
             if config.enable_memory_pooling:
                 # Create memory pools for different object types
                 self.memory_pools = {
@@ -219,13 +219,13 @@ class MemoryOptimizer:
                     "tensor_buffers": []
                 }
                 logger.info("Memory pools initialized")
-            
+
             return True
-            
+
         except Exception as e:
             logger.error(f"Memory pre-allocation failed: {e}")
             return False
-    
+
     def optimize_garbage_collection(self, config: MemoryOptimizationConfig):
         """Optimize garbage collection settings with improved thresholds"""
         logger.info("Optimizing garbage collection...")
@@ -344,11 +344,11 @@ class MemoryOptimizer:
 
         except Exception as e:
             logger.error(f"Emergency memory cleanup failed: {e}")
-    
+
     def implement_caching_optimization(self, config: MemoryOptimizationConfig) -> Dict[str, Any]:
         """Implement optimized caching mechanisms"""
         logger.info("Implementing caching optimization...")
-        
+
         cache_config = {
             "voice_cache": {
                 "enabled": True,
@@ -375,35 +375,35 @@ class MemoryOptimizer:
                 "eviction_policy": "lru"
             }
         }
-        
+
         logger.info(f"Cache configuration: {cache_config}")
         return cache_config
-    
+
     def monitor_memory_leaks(self, duration_seconds: int = 60) -> Dict[str, Any]:
         """Monitor for memory leaks"""
         logger.info(f"Monitoring for memory leaks for {duration_seconds} seconds...")
-        
+
         # Take initial snapshot
         initial_snapshot = tracemalloc.take_snapshot()
         initial_profile = self.get_current_memory_profile()
-        
+
         # Wait and monitor
         time.sleep(duration_seconds)
-        
+
         # Take final snapshot
         final_snapshot = tracemalloc.take_snapshot()
         final_profile = self.get_current_memory_profile()
-        
+
         # Compare snapshots
         top_stats = final_snapshot.compare_to(initial_snapshot, 'lineno')
-        
+
         leak_analysis = {
             "memory_growth_mb": final_profile.process_memory_mb - initial_profile.process_memory_mb,
             "monitoring_duration": duration_seconds,
             "potential_leaks": [],
             "top_memory_increases": []
         }
-        
+
         # Analyze top memory increases
         for stat in top_stats[:10]:
             if stat.size_diff > 1024 * 1024:  # > 1MB increase
@@ -412,14 +412,14 @@ class MemoryOptimizer:
                     "count_diff": stat.count_diff,
                     "filename": stat.traceback.format()[-1] if stat.traceback else "unknown"
                 })
-        
+
         # Identify potential leaks (significant growth without corresponding decrease)
         if leak_analysis["memory_growth_mb"] > 50:  # > 50MB growth
             leak_analysis["potential_leaks"].append("Significant memory growth detected")
-        
+
         logger.info(f"Memory leak analysis completed. Growth: {leak_analysis['memory_growth_mb']:.2f}MB")
         return leak_analysis
-    
+
     def calculate_optimal_config(self, target_memory_mb: int = 1024) -> MemoryOptimizationConfig:
         """Calculate optimal memory configuration with realistic targets"""
         logger.info(f"Calculating optimal memory configuration for {target_memory_mb}MB target...")
@@ -477,45 +477,45 @@ class MemoryOptimizer:
         logger.info(f"   Memory mapping: {config.enable_memory_mapping}")
 
         return config
-    
+
     def run_comprehensive_optimization(self, target_memory_mb: int = 1024) -> Dict[str, Any]:
         """Run comprehensive memory optimization"""
         logger.info("Starting comprehensive memory optimization...")
-        
+
         # Set baseline
         self.set_baseline_memory()
         baseline_profile = self.get_current_memory_profile()
-        
+
         # Calculate optimal configuration
         config = self.calculate_optimal_config(target_memory_mb)
-        
+
         # Start monitoring
         self.start_memory_monitoring()
-        
+
         # Implement optimizations
         logger.info("Implementing memory optimizations...")
-        
+
         # Pre-allocation
         pre_allocation_success = self.implement_memory_pre_allocation(config)
-        
+
         # GC optimization
         self.optimize_garbage_collection(config)
-        
+
         # Cache optimization
         cache_config = self.implement_caching_optimization(config)
-        
+
         # Monitor for a period
         time.sleep(30)  # Monitor for 30 seconds
-        
+
         # Stop monitoring
         monitoring_stats = self.stop_memory_monitoring()
-        
+
         # Get final profile
         final_profile = self.get_current_memory_profile()
-        
+
         # Memory leak analysis
         leak_analysis = self.monitor_memory_leaks(30)
-        
+
         # Compile results
         results = {
             "optimization_timestamp": time.time(),
@@ -535,91 +535,91 @@ class MemoryOptimizer:
             "leak_analysis": leak_analysis,
             "recommendations": self._generate_memory_recommendations(config, baseline_profile, final_profile, target_memory_mb)
         }
-        
+
         # Save results
         results_file = self.results_dir / f"memory_optimization_results_{int(time.time())}.json"
         with open(results_file, 'w') as f:
             json.dump(results, f, indent=2, default=str)
-        
+
         logger.info(f"Memory optimization completed. Results saved to: {results_file}")
         return results
-    
-    def _generate_memory_recommendations(self, config: MemoryOptimizationConfig, 
-                                       baseline: MemoryProfile, 
-                                       final: MemoryProfile, 
+
+    def _generate_memory_recommendations(self, config: MemoryOptimizationConfig,
+                                       baseline: MemoryProfile,
+                                       final: MemoryProfile,
                                        target_mb: int) -> List[str]:
         """Generate memory optimization recommendations"""
         recommendations = []
-        
+
         memory_change = final.process_memory_mb - baseline.process_memory_mb
-        
+
         # Target achievement
         if memory_change > target_mb:
             recommendations.append(f"Memory usage exceeded target by {memory_change - target_mb:.1f}MB")
             recommendations.append("Consider reducing cache sizes or implementing more aggressive optimization")
         else:
             recommendations.append(f"Memory target achieved with {target_mb - memory_change:.1f}MB headroom")
-        
+
         # Memory growth analysis
         if final.memory_growth_mb > 100:
             recommendations.append("High memory growth detected - investigate potential memory leaks")
-        
+
         # GC recommendations
         if final.gc_collections.get("generation_0", 0) > baseline.gc_collections.get("generation_0", 0) * 2:
             recommendations.append("High GC activity - consider optimizing object allocation patterns")
-        
+
         # Cache recommendations
         if config.cache_size_limit_mb > 100:
             recommendations.append("Large cache size may impact memory usage - monitor cache hit rates")
-        
+
         # System recommendations
         if final.process_memory_percent > 10:
             recommendations.append("Process using significant system memory - consider system memory upgrade")
-        
+
         return recommendations
 
 def main():
     """Main function to run memory optimization"""
     optimizer = MemoryOptimizer()
-    
+
     try:
         results = optimizer.run_comprehensive_optimization(target_memory_mb=150)
-        
+
         print("\n" + "="*80)
         print("MEMORY OPTIMIZATION SUMMARY")
         print("="*80)
-        
+
         baseline = results["baseline_profile"]
         final = results["final_profile"]
         improvement = results["memory_improvement"]
-        
+
         print(f"Target Memory: {results['target_memory_mb']} MB")
         print(f"Baseline Memory: {baseline['process_memory_mb']:.2f} MB")
         print(f"Final Memory: {final['process_memory_mb']:.2f} MB")
         print(f"Memory Change: {improvement['memory_change_mb']:.2f} MB")
         print(f"Target Achieved: {'✅' if improvement['target_achieved'] else '❌'}")
-        
+
         print(f"\nOptimization Results:")
         print(f"  Pre-allocation Success: {'✅' if results['pre_allocation_success'] else '❌'}")
         print(f"  Peak Memory: {final['peak_memory_mb']:.2f} MB")
         print(f"  Memory Growth: {final['memory_growth_mb']:.2f} MB")
-        
+
         monitoring = results["monitoring_statistics"]
         if "avg_memory_mb" in monitoring:
             print(f"  Average Memory: {monitoring['avg_memory_mb']:.2f} MB")
             print(f"  Memory Variance: {monitoring['memory_variance']:.2f}")
-        
+
         leak_analysis = results["leak_analysis"]
         print(f"\nLeak Analysis:")
         print(f"  Memory Growth in Test: {leak_analysis['memory_growth_mb']:.2f} MB")
         print(f"  Potential Leaks: {len(leak_analysis['potential_leaks'])}")
-        
+
         print(f"\nRecommendations:")
         for i, rec in enumerate(results["recommendations"], 1):
             print(f"  {i}. {rec}")
-        
+
         print("\n" + "="*80)
-        
+
     except Exception as e:
         logger.error(f"Memory optimization failed: {e}")
         import traceback

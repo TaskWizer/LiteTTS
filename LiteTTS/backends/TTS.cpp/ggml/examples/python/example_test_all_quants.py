@@ -61,7 +61,7 @@ for i, type in enumerate(quants):
 
             plt.title(f'{name} ({results["compression"]}x smaller)')
             plt.imshow(quantized, interpolation='nearest')
-        
+
     except Exception as e:
         print(f'Error: {e}')
 

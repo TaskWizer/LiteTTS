@@ -100,7 +100,7 @@ class VoiceCache:
 
         # Initialize cache
         self._initialize_cache()
-    
+
     def _initialize_cache(self):
         """Initialize cache with preloaded voices"""
         logger.info("Initializing voice cache")
@@ -115,7 +115,7 @@ class VoiceCache:
                 logger.warning(f"Failed to preload voice {voice_name}: {e}")
 
         logger.info(f"Voice cache initialized with {successful_preloads}/{len(self.preload_voices)} voices preloaded")
-    
+
     def get_voice_embedding(self, voice_name: str) -> Optional[VoiceEmbedding]:
         """Get voice embedding from cache or load if not cached"""
         with self.cache_lock:
@@ -125,20 +125,20 @@ class VoiceCache:
                 entry.last_accessed = datetime.now()
                 entry.access_count += 1
                 self.cache_hits += 1
-                
+
                 logger.debug(f"Cache hit for voice: {voice_name}")
                 return entry.embedding
-            
+
             # Cache miss - try to load voice
             self.cache_misses += 1
             logger.debug(f"Cache miss for voice: {voice_name}")
-            
+
             try:
                 return self._load_voice_to_cache(voice_name)
             except Exception as e:
                 logger.error(f"Failed to load voice {voice_name}: {e}")
                 return None
-    
+
     def _load_voice_to_cache(self, voice_name: str) -> Optional[VoiceEmbedding]:
         """Load voice embedding to cache using robust loader"""
         try:
@@ -181,7 +181,7 @@ class VoiceCache:
                 )
             else:
                 voice_metadata = metadata
-            
+
             # Create voice embedding
             voice_embedding = VoiceEmbedding(
                 name=voice_name,
@@ -203,19 +203,19 @@ class VoiceCache:
                 memory_size=memory_size,
                 priority=1 if voice_name in ["af_heart", "am_puck", "af_nicole"] else 0
             )
-            
+
             # Manage cache size
             self._manage_cache_size()
-            
+
             # Add new entry
             self.cache[voice_name] = cache_entry
-            
+
             logger.info(f"Loaded voice to cache: {voice_name} ({memory_size} bytes)")
             return voice_embedding
-            
+
         except Exception as e:
             logger.error(f"Failed to load voice {voice_name}: {e}")
-            return None    
+            return None
 
     def _manage_cache_size(self):
         """Manage cache size by evicting least recently used entries"""
@@ -225,7 +225,7 @@ class VoiceCache:
                 self.cache.keys(),
                 key=lambda v: self.cache[v].last_accessed
             )
-            
+
             # Don't evict preloaded voices unless absolutely necessary
             if lru_voice in self.preload_voices and len(self.cache) < self.max_cache_size * 2:
                 # Find next LRU that's not preloaded
@@ -235,30 +235,30 @@ class VoiceCache:
                         non_preloaded,
                         key=lambda v: self.cache[v].last_accessed
                     )
-            
+
             # Evict the LRU entry
             evicted_entry = self.cache.pop(lru_voice)
             logger.info(f"Evicted voice from cache: {lru_voice} "
                        f"(accessed {evicted_entry.access_count} times)")
-    
+
     def _calculate_file_hash(self, file_path: Path) -> str:
         """Calculate file hash for integrity checking"""
         import hashlib
-        
+
         hash_sha256 = hashlib.sha256()
         with open(file_path, "rb") as f:
             for chunk in iter(lambda: f.read(4096), b""):
                 hash_sha256.update(chunk)
-        
+
         return hash_sha256.hexdigest()
-    
+
     def preload_voice(self, voice_name: str) -> bool:
         """Preload a specific voice into cache"""
         with self.cache_lock:
             if voice_name in self.cache:
                 logger.debug(f"Voice already cached: {voice_name}")
                 return True
-            
+
             try:
                 embedding = self._load_voice_to_cache(voice_name)
                 if embedding:
@@ -270,29 +270,29 @@ class VoiceCache:
             except Exception as e:
                 logger.error(f"Failed to preload voice {voice_name}: {e}")
                 return False
-    
+
     def preload_voices_batch(self, voice_names: List[str]) -> Dict[str, bool]:
         """Preload multiple voices"""
         results = {}
-        
+
         for voice_name in voice_names:
             results[voice_name] = self.preload_voice(voice_name)
-        
+
         successful = sum(1 for success in results.values() if success)
         logger.info(f"Preloaded {successful}/{len(voice_names)} voices")
-        
+
         return results
-    
+
     def is_voice_cached(self, voice_name: str) -> bool:
         """Check if voice is currently cached"""
         with self.cache_lock:
             return voice_name in self.cache
-    
+
     def get_cached_voices(self) -> List[str]:
         """Get list of currently cached voices"""
         with self.cache_lock:
             return list(self.cache.keys())
-    
+
     def evict_voice(self, voice_name: str) -> bool:
         """Manually evict a voice from cache"""
         with self.cache_lock:
@@ -301,14 +301,14 @@ class VoiceCache:
                 logger.info(f"Manually evicted voice: {voice_name}")
                 return True
             return False
-    
+
     def clear_cache(self, keep_preloaded: bool = True):
         """Clear cache, optionally keeping preloaded voices"""
         with self.cache_lock:
             if keep_preloaded:
                 # Keep only preloaded voices
                 voices_to_remove = [
-                    v for v in self.cache.keys() 
+                    v for v in self.cache.keys()
                     if v not in self.preload_voices
                 ]
                 for voice_name in voices_to_remove:
@@ -319,15 +319,15 @@ class VoiceCache:
                 cleared_count = len(self.cache)
                 self.cache.clear()
                 logger.info(f"Cleared entire cache ({cleared_count} voices)")
-    
+
     def get_cache_stats(self) -> Dict[str, any]:
         """Get cache statistics"""
         with self.cache_lock:
             total_memory = sum(entry.memory_size for entry in self.cache.values())
             total_accesses = sum(entry.access_count for entry in self.cache.values())
-            
+
             hit_rate = self.cache_hits / (self.cache_hits + self.cache_misses) if (self.cache_hits + self.cache_misses) > 0 else 0
-            
+
             return {
                 'cached_voices': len(self.cache),
                 'max_cache_size': self.max_cache_size,
@@ -350,7 +350,7 @@ class VoiceCache:
                     for voice_name, entry in self.cache.items()
                 }
             }
-    
+
     def optimize_cache(self):
         """Optimize cache by reloading frequently used voices"""
         with self.cache_lock:
@@ -359,47 +359,47 @@ class VoiceCache:
                 voice_name: entry.access_count
                 for voice_name, entry in self.cache.items()
             }
-            
+
             # Sort by frequency
             sorted_voices = sorted(
                 voice_frequencies.items(),
                 key=lambda x: x[1],
                 reverse=True
             )
-            
+
             # Update preload list with most frequently used voices
             top_voices = [voice for voice, freq in sorted_voices[:self.max_cache_size]]
-            
+
             # Add to preload list if not already there
             for voice_name in top_voices:
                 if voice_name not in self.preload_voices:
                     self.preload_voices.append(voice_name)
-            
+
             logger.info(f"Optimized cache preload list: {self.preload_voices}")
-    
+
     def validate_cache_integrity(self) -> Dict[str, bool]:
         """Validate integrity of cached voice embeddings"""
         results = {}
-        
+
         with self.cache_lock:
             for voice_name, entry in self.cache.items():
                 try:
                     # Check if embedding data is valid
                     embedding = entry.embedding
-                    
+
                     if embedding.embedding_data is None:
                         results[voice_name] = False
                         continue
-                    
+
                     # Check for NaN or infinite values
                     if torch.any(torch.isnan(embedding.embedding_data)):
                         results[voice_name] = False
                         continue
-                    
+
                     if torch.any(torch.isinf(embedding.embedding_data)):
                         results[voice_name] = False
                         continue
-                    
+
                     # Check file hash if available
                     if embedding.file_hash:
                         voice_file = self.voices_dir / f"{voice_name}.pt"
@@ -408,19 +408,19 @@ class VoiceCache:
                             if current_hash != embedding.file_hash:
                                 results[voice_name] = False
                                 continue
-                    
+
                     results[voice_name] = True
-                    
+
                 except Exception as e:
                     logger.error(f"Cache validation failed for {voice_name}: {e}")
                     results[voice_name] = False
-        
+
         # Remove invalid entries
         invalid_voices = [voice for voice, valid in results.items() if not valid]
         for voice_name in invalid_voices:
             self.evict_voice(voice_name)
             logger.warning(f"Evicted invalid voice from cache: {voice_name}")
-        
+
         return results
 
     def optimize_for_individual_files(self):

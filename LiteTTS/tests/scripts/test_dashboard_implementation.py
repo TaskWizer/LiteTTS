@@ -16,16 +16,16 @@ from typing import Dict, Any
 
 def test_dashboard_web_interface() -> bool:
     """Test that the dashboard web interface is accessible"""
-    
+
     print("🌐 Testing Dashboard Web Interface")
     print("=" * 40)
-    
+
     try:
         response = requests.get("http://localhost:8354/dashboard", timeout=10)
-        
+
         if response.status_code == 200:
             content = response.text
-            
+
             # Check for key dashboard elements
             required_elements = [
                 "Kokoro ONNX TTS API Dashboard",
@@ -33,12 +33,12 @@ def test_dashboard_web_interface() -> bool:
                 "chart.js",
                 "dashboard-data"
             ]
-            
+
             missing_elements = []
             for element in required_elements:
                 if element.lower() not in content.lower():
                     missing_elements.append(element)
-            
+
             if missing_elements:
                 print(f"❌ Missing dashboard elements: {missing_elements}")
                 return False
@@ -48,7 +48,7 @@ def test_dashboard_web_interface() -> bool:
         else:
             print(f"❌ Dashboard returned status code: {response.status_code}")
             return False
-            
+
     except requests.exceptions.ConnectionError:
         print("❌ Could not connect to dashboard - is the server running?")
         return False
@@ -58,16 +58,16 @@ def test_dashboard_web_interface() -> bool:
 
 def test_dashboard_data_api() -> bool:
     """Test that the dashboard data API returns valid data"""
-    
+
     print("\n📊 Testing Dashboard Data API")
     print("=" * 35)
-    
+
     try:
         response = requests.get("http://localhost:8354/dashboard/data", timeout=10)
-        
+
         if response.status_code == 200:
             data = response.json()
-            
+
             # Check for required data fields
             required_fields = [
                 'timestamp',
@@ -80,49 +80,49 @@ def test_dashboard_data_api() -> bool:
                 'performance',
                 'tts_stats'
             ]
-            
+
             missing_fields = []
             for field in required_fields:
                 if field not in data:
                     missing_fields.append(field)
-            
+
             if missing_fields:
                 print(f"❌ Missing data fields: {missing_fields}")
                 return False
-            
+
             # Validate data structure
             if not isinstance(data['requests_per_minute'], list):
                 print("❌ requests_per_minute should be a list")
                 return False
-            
+
             if not isinstance(data['response_time_stats'], dict):
                 print("❌ response_time_stats should be a dict")
                 return False
-            
+
             if not isinstance(data['concurrency'], dict):
                 print("❌ concurrency should be a dict")
                 return False
-            
+
             print("✅ Dashboard data API returns valid structured data")
             print(f"   Timestamp: {data['timestamp']}")
             print(f"   Total requests: {data['system_status']['total_requests_all_time']}")
             print(f"   Uptime: {data['system_status']['uptime_seconds']:.1f}s")
-            
+
             return True
         else:
             print(f"❌ Dashboard data API returned status code: {response.status_code}")
             return False
-            
+
     except Exception as e:
         print(f"❌ Dashboard data API test failed: {e}")
         return False
 
 def test_analytics_data_collection() -> bool:
     """Test that analytics properly collect data from TTS requests"""
-    
+
     print("\n🔍 Testing Analytics Data Collection")
     print("=" * 40)
-    
+
     try:
         # Get initial state
         initial_response = requests.get("http://localhost:8354/dashboard/data", timeout=10)
@@ -196,80 +196,80 @@ def test_analytics_data_collection() -> bool:
         else:
             print("❌ Neither analytics system captured the TTS request")
             return False
-            
+
     except Exception as e:
         print(f"❌ Analytics data collection test failed: {e}")
         return False
 
 def test_real_time_metrics() -> bool:
     """Test that metrics update in real-time"""
-    
+
     print("\n⏱️ Testing Real-time Metrics")
     print("=" * 30)
-    
+
     try:
         # Get initial metrics
         response1 = requests.get("http://localhost:8354/dashboard/data", timeout=10)
         data1 = response1.json()
         timestamp1 = data1['timestamp']
-        
+
         print(f"First timestamp: {timestamp1}")
-        
+
         # Wait a moment
         time.sleep(3)
-        
+
         # Get updated metrics
         response2 = requests.get("http://localhost:8354/dashboard/data", timeout=10)
         data2 = response2.json()
         timestamp2 = data2['timestamp']
-        
+
         print(f"Second timestamp: {timestamp2}")
-        
+
         if timestamp2 > timestamp1:
             print("✅ Metrics are updating in real-time")
-            
+
             # Check if uptime increased
             uptime1 = data1['system_status']['uptime_seconds']
             uptime2 = data2['system_status']['uptime_seconds']
-            
+
             if uptime2 > uptime1:
                 print(f"✅ Uptime tracking working: {uptime1:.1f}s -> {uptime2:.1f}s")
-            
+
             return True
         else:
             print("❌ Metrics are not updating")
             return False
-            
+
     except Exception as e:
         print(f"❌ Real-time metrics test failed: {e}")
         return False
 
 def test_dashboard_comprehensive() -> Dict[str, bool]:
     """Run comprehensive dashboard tests"""
-    
+
     print("🔧 API Analytics & Concurrency Dashboard Test Suite")
     print("=" * 55)
     print("Testing the complete dashboard implementation...")
     print()
-    
+
     results = {}
-    
+
     # Run all tests
     results['web_interface'] = test_dashboard_web_interface()
     results['data_api'] = test_dashboard_data_api()
     results['analytics_collection'] = test_analytics_data_collection()
     results['real_time_metrics'] = test_real_time_metrics()
-    
+
     return results
 
 def main():
     """Main test execution"""
-    
+
     results = test_dashboard_comprehensive()
-    
+
     print("\n" + "=" * 55)
     print("📊 DASHBOARD TEST RESULTS:")
-    
+
     all_passed = True
     for test_name, passed in results.items():
         status = "✅ PASS" if passed else "❌ FAIL"
@@ -277,9 +277,9 @@ def main():
         print(f"   {test_display}: {status}")
         if not passed:
             all_passed = False
-    
+
     print(f"\nOverall Status: {'✅ ALL TESTS PASSED' if all_passed else '❌ SOME TESTS FAILED'}")
-    
+
     if all_passed:
         print("\n🎉 Dashboard implementation is working correctly!")
         print("✅ Web interface accessible")
@@ -290,7 +290,7 @@ def main():
     else:
         print("\n⚠️ Some dashboard features need attention")
         print("Please check the failed tests and fix any issues")
-    
+
     return 0 if all_passed else 1
 
 if __name__ == "__main__":

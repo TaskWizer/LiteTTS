@@ -53,13 +53,13 @@ class TranscriptionResult:
 
 class PerformanceMonitor:
     """Monitor performance metrics during transcription"""
-    
+
     def __init__(self):
         self.start_memory = 0
         self.peak_memory = 0
         self.monitoring = False
         self.memory_samples = []
-        
+
     def start(self):
         """Start performance monitoring"""
         process = psutil.Process()
@@ -67,19 +67,19 @@ class PerformanceMonitor:
         self.peak_memory = self.start_memory
         self.memory_samples = []
         self.monitoring = True
-        
+
         # Start memory monitoring thread
         self.monitor_thread = threading.Thread(target=self._monitor_memory)
         self.monitor_thread.daemon = True
         self.monitor_thread.start()
-        
+
     def stop(self) -> float:
         """Stop monitoring and return peak memory usage"""
         self.monitoring = False
         if hasattr(self, 'monitor_thread'):
             self.monitor_thread.join(timeout=1.0)
         return self.peak_memory - self.start_memory
-        
+
     def _monitor_memory(self):
         """Monitor memory usage in background thread"""
         process = psutil.Process()
@@ -96,26 +96,26 @@ class OptimizedWhisperProcessor:
     """
     Optimized Whisper processor with multiple implementation support and fallback mechanisms
     """
-    
+
     def __init__(self, config: Optional[WhisperConfig] = None):
         self.config = config or WhisperConfig()
         self.models = {}  # Cache for loaded models
         self.performance_monitor = PerformanceMonitor()
-        
+
         # Configure CPU threads from environment or config
         cpu_threads = int(os.environ.get('WHISPER_CPU_THREADS', self.config.cpu_threads))
         self.config.cpu_threads = min(cpu_threads, psutil.cpu_count(logical=False))
-        
+
         # Set model cache directory
         if not self.config.model_cache_dir:
             self.config.model_cache_dir = os.path.join(
                 os.path.expanduser("~"), ".cache", "whisper"
             )
-        
+
         logger.info(f"OptimizedWhisperProcessor initialized with {self.config.implementation.value}")
         logger.info(f"Model: {self.config.model_name}, Compute: {self.config.compute_type}")
         logger.info(f"CPU threads: {self.config.cpu_threads}")
-        
+
     def transcribe(self, audio_path: str, audio_duration: Optional[float] = None) -> TranscriptionResult:
         """
         Transcribe audio file with performance monitoring and fallback support
@@ -128,37 +128,37 @@ class OptimizedWhisperProcessor:
             TranscriptionResult with text, performance metrics, and metadata
         """
         start_time = time.time()
-        
+
         # Calculate audio duration if not provided
         if audio_duration is None:
             audio_duration = self._get_audio_duration(audio_path)
-            
+
         # Start performance monitoring
         self.performance_monitor.start()
-        
+
         try:
             # Try primary implementation
             result = self._transcribe_with_implementation(
-                audio_path, 
+                audio_path,
                 self.config.implementation,
                 self.config.model_name
             )
-            
+
             processing_time = time.time() - start_time
             memory_usage = self.performance_monitor.stop()
             rtf = processing_time / audio_duration if audio_duration > 0 else float('inf')
-            
+
             # Check if performance meets thresholds
             if rtf > self.config.rtf_threshold or memory_usage > self.config.memory_threshold_mb:
                 logger.warning(f"Performance threshold exceeded: RTF={rtf:.3f}, Memory={memory_usage:.1f}MB")
-                
+
                 # Try fallback if enabled and thresholds exceeded
                 if self.config.enable_fallback and rtf > self.config.rtf_threshold:
                     logger.info("Attempting fallback to faster model...")
                     fallback_result = self._try_fallback(audio_path, audio_duration)
                     if fallback_result.success:
                         return fallback_result
-            
+
             return TranscriptionResult(
                 text=result,
                 processing_time=processing_time,
@@ -167,20 +167,20 @@ class OptimizedWhisperProcessor:
                 model_used=f"{self.config.implementation.value}-{self.config.model_name}",
                 success=True
             )
-            
+
         except Exception as e:
             processing_time = time.time() - start_time
             memory_usage = self.performance_monitor.stop()
-            
+
             logger.error(f"Transcription failed with {self.config.implementation.value}: {e}")
-            
+
             # Try fallback on error
             if self.config.enable_fallback:
                 logger.info("Attempting fallback due to error...")
                 fallback_result = self._try_fallback(audio_path, audio_duration)
                 if fallback_result.success:
                     return fallback_result
-            
+
             return TranscriptionResult(
                 text="",
                 processing_time=processing_time,
@@ -190,10 +190,10 @@ class OptimizedWhisperProcessor:
                 success=False,
                 error_message=str(e)
             )
-            
+
     def _transcribe_with_implementation(self, audio_path: str, implementation: WhisperImplementation, model_name: str) -> str:
         """Transcribe using specific implementation"""
-        
+
         if implementation == WhisperImplementation.FASTER_WHISPER:
             return self._transcribe_faster_whisper(audio_path, model_name)
         elif implementation == WhisperImplementation.OPENAI_WHISPER:
@@ -202,16 +202,16 @@ class OptimizedWhisperProcessor:
             return self._transcribe_distil_whisper(audio_path, model_name)
         else:
             raise ValueError(f"Unsupported implementation: {implementation}")
-            
+
     def _transcribe_faster_whisper(self, audio_path: str, model_name: str) -> str:
         """Transcribe using faster-whisper"""
         try:
             from faster_whisper import WhisperModel
         except ImportError:
             raise ImportError("faster-whisper not installed. Install with: pip install faster-whisper")
-            
+
         model_key = f"faster_whisper_{model_name}_{self.config.compute_type}"
-        
+
         if model_key not in self.models:
             logger.info(f"Loading faster-whisper model: {model_name}")
             self.models[model_key] = WhisperModel(
@@ -221,36 +221,36 @@ class OptimizedWhisperProcessor:
                 cpu_threads=self.config.cpu_threads,
                 download_root=self.config.model_cache_dir
             )
-            
+
         model = self.models[model_key]
-        
+
         segments, info = model.transcribe(
             audio_path,
             beam_size=self.config.beam_size,
             language=self.config.language,
             condition_on_previous_text=self.config.condition_on_previous_text
         )
-        
+
         return " ".join([segment.text for segment in segments]).strip()
-        
+
     def _transcribe_openai_whisper(self, audio_path: str, model_name: str) -> str:
         """Transcribe using OpenAI Whisper (fallback)"""
         try:
             import whisper
         except ImportError:
             raise ImportError("openai-whisper not installed. Install with: pip install openai-whisper")
-            
+
         model_key = f"openai_whisper_{model_name}"
-        
+
         if model_key not in self.models:
             logger.info(f"Loading OpenAI Whisper model: {model_name}")
             self.models[model_key] = whisper.load_model(model_name)
-            
+
         model = self.models[model_key]
         result = model.transcribe(audio_path)
-        
+
         return result["text"].strip()
-        
+
     def _transcribe_distil_whisper(self, audio_path: str, model_name: str) -> str:
         """Transcribe using Distil-Whisper"""
         try:
@@ -259,12 +259,12 @@ class OptimizedWhisperProcessor:
             import soundfile as sf
         except ImportError:
             raise ImportError("transformers and torch not installed for Distil-Whisper")
-            
+
         model_key = f"distil_whisper_{model_name}"
-        
+
         if model_key not in self.models:
             logger.info(f"Loading Distil-Whisper model: {model_name}")
-            
+
             model = AutoModelForSpeechSeq2Seq.from_pretrained(
                 f"distil-whisper/{model_name}",
                 torch_dtype=torch.float16,
@@ -272,25 +272,25 @@ class OptimizedWhisperProcessor:
                 use_safetensors=True
             )
             processor = AutoProcessor.from_pretrained(f"distil-whisper/{model_name}")
-            
+
             self.models[model_key] = (model, processor)
-            
+
         model, processor = self.models[model_key]
-        
+
         # Load and process audio
         audio_array, sample_rate = sf.read(audio_path)
         inputs = processor(audio_array, sampling_rate=sample_rate, return_tensors="pt")
-        
+
         with torch.no_grad():
             predicted_ids = model.generate(
                 inputs["input_features"],
                 max_new_tokens=128,
                 do_sample=False
             )
-            
+
         transcription = processor.batch_decode(predicted_ids, skip_special_tokens=True)[0]
         return transcription.strip()
-        
+
     def _try_fallback(self, audio_path: str, audio_duration: float) -> TranscriptionResult:
         """Try fallback implementations"""
         fallback_configs = [
@@ -298,20 +298,20 @@ class OptimizedWhisperProcessor:
             (WhisperImplementation.OPENAI_WHISPER, "base"),
             (WhisperImplementation.OPENAI_WHISPER, "tiny")
         ]
-        
+
         for implementation, model_name in fallback_configs:
             try:
                 logger.info(f"Trying fallback: {implementation.value} with {model_name}")
-                
+
                 start_time = time.time()
                 self.performance_monitor.start()
-                
+
                 result = self._transcribe_with_implementation(audio_path, implementation, model_name)
-                
+
                 processing_time = time.time() - start_time
                 memory_usage = self.performance_monitor.stop()
                 rtf = processing_time / audio_duration if audio_duration > 0 else float('inf')
-                
+
                 return TranscriptionResult(
                     text=result,
                     processing_time=processing_time,
@@ -320,11 +320,11 @@ class OptimizedWhisperProcessor:
                     model_used=f"{implementation.value}-{model_name}",
                     success=True
                 )
-                
+
             except Exception as e:
                 logger.warning(f"Fallback {implementation.value}-{model_name} failed: {e}")
                 continue
-                
+
         # All fallbacks failed
         return TranscriptionResult(
             text="",
@@ -335,7 +335,7 @@ class OptimizedWhisperProcessor:
             success=False,
             error_message="All fallback implementations failed"
         )
-        
+
     def _get_audio_duration(self, audio_path: str) -> float:
         """Get audio duration in seconds"""
         try:
@@ -350,7 +350,7 @@ class OptimizedWhisperProcessor:
             except:
                 logger.warning(f"Could not determine audio duration for {audio_path}")
                 return 1.0  # Default fallback
-                
+
     def get_model_info(self) -> Dict[str, Any]:
         """Get information about loaded models"""
         return {
@@ -364,7 +364,7 @@ class OptimizedWhisperProcessor:
             "loaded_models": list(self.models.keys()),
             "cache_dir": self.config.model_cache_dir
         }
-        
+
     def clear_cache(self):
         """Clear model cache to free memory"""
         self.models.clear()
@@ -395,7 +395,7 @@ def create_whisper_processor(
         cpu_threads=cpu_threads or psutil.cpu_count(logical=False),
         enable_fallback=enable_fallback
     )
-    
+
     return OptimizedWhisperProcessor(config)
 
 # Example usage
@@ -406,12 +406,12 @@ if __name__ == "__main__":
         compute_type="int8",
         enable_fallback=True
     )
-    
+
     # Example transcription (would need actual audio file)
     # result = processor.transcribe("test_audio.wav")
     # print(f"Transcription: {result.text}")
     # print(f"RTF: {result.rtf:.3f}")
     # print(f"Memory: {result.memory_usage_mb:.1f}MB")
-    
+
     print("OptimizedWhisperProcessor initialized successfully")
     print(f"Model info: {processor.get_model_info()}")

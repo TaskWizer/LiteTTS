@@ -16,15 +16,15 @@ def run_command(cmd: list, description: str) -> bool:
     try:
         logger.info(f"🔧 {description}")
         logger.info(f"   Command: {' '.join(cmd)}")
-        
+
         result = subprocess.run(cmd, check=True, capture_output=True, text=True)
-        
+
         if result.stdout:
             logger.info(f"   Output: {result.stdout.strip()}")
-        
+
         logger.info(f"✅ {description} - Success")
         return True
-        
+
     except subprocess.CalledProcessError as e:
         logger.error(f"❌ {description} - Failed")
         logger.error(f"   Error: {e.stderr}")
@@ -43,18 +43,18 @@ def check_gpu_packages():
         "nvidia-ml-py",
         "pycuda"
     ]
-    
+
     installed_gpu_packages = []
-    
+
     for package in gpu_packages:
         try:
-            result = subprocess.run([sys.executable, "-m", "pip", "show", package], 
+            result = subprocess.run([sys.executable, "-m", "pip", "show", package],
                                   capture_output=True, text=True)
             if result.returncode == 0:
                 installed_gpu_packages.append(package)
         except:
             pass
-    
+
     if installed_gpu_packages:
         logger.warning(f"⚠️ GPU packages detected: {', '.join(installed_gpu_packages)}")
         logger.warning("   These may cause conflicts with CPU-only operation")
@@ -67,11 +67,11 @@ def check_gpu_packages():
 def install_cpu_dependencies():
     """Install CPU-only dependencies"""
     logger.info("🚀 Installing CPU-only dependencies for Kokoro ONNX TTS API")
-    
+
     # Core dependencies (CPU-only)
     dependencies = [
         "fastapi>=0.95.0",
-        "uvicorn>=0.21.0", 
+        "uvicorn>=0.21.0",
         "soundfile>=0.12.0",
         "numpy>=1.24.0",
         "requests>=2.25.0",
@@ -81,21 +81,21 @@ def install_cpu_dependencies():
         # Kokoro ONNX (should be CPU-only)
         "kokoro-onnx>=0.4.9"
     ]
-    
+
     success = True
-    
+
     # Install each dependency
     for dep in dependencies:
         cmd = [sys.executable, "-m", "pip", "install", dep]
         if not run_command(cmd, f"Installing {dep}"):
             success = False
-    
+
     return success
 
 def verify_installation():
     """Verify the installation works correctly"""
     logger.info("🧪 Verifying installation...")
-    
+
     try:
         # Test imports
         import fastapi
@@ -105,13 +105,13 @@ def verify_installation():
         import requests
         import pydantic
         import onnxruntime
-        
+
         logger.info("✅ Core dependencies imported successfully")
-        
+
         # Test ONNX Runtime providers (should be CPU only)
         providers = onnxruntime.get_available_providers()
         logger.info(f"📋 ONNX Runtime providers: {providers}")
-        
+
         # Check for GPU providers
         gpu_providers = [p for p in providers if 'CUDA' in p or 'GPU' in p]
         if gpu_providers:
@@ -119,7 +119,7 @@ def verify_installation():
             logger.warning("   This may indicate GPU dependencies are installed")
         else:
             logger.info("✅ CPU-only ONNX Runtime confirmed")
-        
+
         # Try to import kokoro-onnx
         try:
             import kokoro_onnx
@@ -127,9 +127,9 @@ def verify_installation():
         except ImportError as e:
             logger.error(f"❌ Failed to import kokoro-onnx: {e}")
             return False
-        
+
         return True
-        
+
     except ImportError as e:
         logger.error(f"❌ Import failed: {e}")
         return False
@@ -143,26 +143,26 @@ def main():
         level=logging.INFO,
         format='%(asctime)s - %(levelname)s - %(message)s'
     )
-    
+
     logger.info("🎯 Kokoro ONNX TTS API - CPU-Only Installation")
     logger.info("=" * 50)
-    
+
     # Check for existing GPU packages
     logger.info("🔍 Checking for conflicting GPU packages...")
     check_gpu_packages()
-    
+
     # Install dependencies
     logger.info("📦 Installing CPU-only dependencies...")
     if not install_cpu_dependencies():
         logger.error("❌ Failed to install dependencies")
         sys.exit(1)
-    
+
     # Verify installation
     logger.info("🧪 Verifying installation...")
     if not verify_installation():
         logger.error("❌ Installation verification failed")
         sys.exit(1)
-    
+
     logger.info("🎉 CPU-only installation completed successfully!")
     logger.info("💡 You can now run: uv run python app.py")
 

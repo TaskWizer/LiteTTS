@@ -12,12 +12,12 @@ logger = logging.getLogger(__name__)
 
 class InterjectionFixProcessor:
     """Processor to fix interjection pronunciation issues in TTS"""
-    
+
     def __init__(self):
         self.interjection_fixes = self._load_interjection_fixes()
         self.phonetic_interjections = self._load_phonetic_interjections()
         self.context_patterns = self._load_context_patterns()
-        
+
     def _load_interjection_fixes(self) -> Dict[str, str]:
         """Load interjection pronunciation fixes"""
         return {
@@ -30,10 +30,10 @@ class InterjectionFixProcessor:
             "Mmm": "Mmm",
             "mm": "mmm",   # Expand short form
             "Mm": "Mmm",
-            
+
             # Agreement/acknowledgment
             "uh-huh": "uh-huh",
-            "Uh-huh": "Uh-huh", 
+            "Uh-huh": "Uh-huh",
             "mm-hmm": "mm-hmm",
             "Mm-hmm": "Mm-hmm",
             "mhm": "mm-hmm",  # Expand
@@ -44,15 +44,15 @@ class InterjectionFixProcessor:
             "Yep": "Yep",
             "yup": "yup",
             "Yup": "Yup",
-            
+
             # Disagreement/negative
             "uh-uh": "uh-uh",
             "Uh-uh": "Uh-uh",
-            "nah": "nah", 
+            "nah": "nah",
             "Nah": "Nah",
             "nope": "nope",
             "Nope": "Nope",
-            
+
             # Hesitation/filler
             "uh": "uh",
             "Uh": "Uh",
@@ -64,7 +64,7 @@ class InterjectionFixProcessor:
             "Ah": "Ah",
             "oh": "oh",
             "Oh": "Oh",
-            
+
             # Surprise/realization
             "ooh": "ooh",
             "Ooh": "Ooh",
@@ -74,7 +74,7 @@ class InterjectionFixProcessor:
             "Wow": "Wow",
             "whoa": "whoa",
             "Whoa": "Whoa",
-            
+
             # Pain/discomfort
             "ow": "ow",
             "Ow": "Ow",
@@ -82,7 +82,7 @@ class InterjectionFixProcessor:
             "Ouch": "Ouch",
             "oof": "oof",
             "Oof": "Oof",
-            
+
             # Disgust/disapproval
             "ew": "ew",
             "Ew": "Ew",
@@ -92,21 +92,21 @@ class InterjectionFixProcessor:
             "Ugh": "Ugh",
             "bleh": "bleh",
             "Bleh": "Bleh",
-            
+
             # Laughter
             "haha": "ha-ha",
             "Haha": "Ha-ha",
-            "hehe": "he-he", 
+            "hehe": "he-he",
             "Hehe": "He-he",
             "hihi": "hi-hi",
             "Hihi": "Hi-hi",
-            
+
             # Shushing
             "shh": "shh",
             "Shh": "Shh",
             "shhh": "shhh",
             "Shhh": "Shhh",
-            
+
             # Calling attention
             "hey": "hey",
             "Hey": "Hey",
@@ -115,7 +115,7 @@ class InterjectionFixProcessor:
             "ahem": "ahem",
             "Ahem": "Ahem",
         }
-    
+
     def _load_phonetic_interjections(self) -> Dict[str, str]:
         """Load phonetic representations for interjections"""
         return {
@@ -130,24 +130,24 @@ class InterjectionFixProcessor:
             "Mm": "Mmmm",
             "mmm": "mmmm",
             "Mmm": "Mmmm",
-            
+
             # Ensure proper vowel sounds
             "uh": "uhh",
             "Uh": "Uhh",
-            "um": "umm", 
+            "um": "umm",
             "Um": "Umm",
             "ah": "ahh",
             "Ah": "Ahh",
             "oh": "ohh",
             "Oh": "Ohh",
-            
+
             # Laughter with proper separation
             "haha": "ha ha",
             "Haha": "Ha ha",
             "hehe": "he he",
             "Hehe": "He he",
         }
-    
+
     def _load_context_patterns(self) -> List[Tuple[str, str, str]]:
         """Load context-based interjection patterns"""
         return [
@@ -169,7 +169,7 @@ class InterjectionFixProcessor:
             (r'(?<!-)\bMmm\b(?!-)', 'Mmmm', 'Fix Mmm pronunciation (not in compounds)'),
             (r'(?<!-)\bmm\b(?!-)', 'mmmm', 'Expand mm to mmmm (not in compounds)'),
             (r'(?<!-)\bMm\b(?!-)', 'Mmmm', 'Expand Mm to Mmmm (not in compounds)'),
-            
+
             # Hesitation sounds
             (r'\buh\b', 'uhh', 'Fix uh pronunciation'),
             (r'\bUh\b', 'Uhh', 'Fix Uh pronunciation'),
@@ -177,17 +177,17 @@ class InterjectionFixProcessor:
             (r'\bUm\b', 'Umm', 'Fix Um pronunciation'),
             (r'\ber\b', 'err', 'Fix er pronunciation'),
             (r'\bEr\b', 'Err', 'Fix Er pronunciation'),
-            
+
             # Vowel sounds
             (r'\bah\b', 'ahh', 'Fix ah pronunciation'),
             (r'\bAh\b', 'Ahh', 'Fix Ah pronunciation'),
             (r'\boh\b', 'ohh', 'Fix oh pronunciation'),
             (r'\bOh\b', 'Ohh', 'Fix Oh pronunciation'),
-            
+
             # Agreement sounds
             (r'\bmhm\b', 'mm-hmm', 'Expand mhm to mm-hmm'),
             (r'\bMhm\b', 'Mm-hmm', 'Expand Mhm to Mm-hmm'),
-            
+
             # Laughter
             (r'\bhaha\b', 'ha ha', 'Fix haha pronunciation'),
             (r'\bHaha\b', 'Ha ha', 'Fix Haha pronunciation'),
@@ -196,27 +196,27 @@ class InterjectionFixProcessor:
             (r'\bhihi\b', 'hi hi', 'Fix hihi pronunciation'),
             (r'\bHihi\b', 'Hi hi', 'Fix Hihi pronunciation'),
         ]
-    
+
     def fix_interjection_pronunciation(self, text: str) -> str:
         """Fix interjection pronunciation issues in text"""
         logger.debug(f"Fixing interjection pronunciation in: {text[:100]}...")
-        
+
         original_text = text
-        
+
         # Step 1: Apply context-based patterns
         text = self._apply_context_patterns(text)
-        
+
         # Step 2: Handle special cases
         text = self._handle_special_cases(text)
-        
+
         # Step 3: Ensure proper spacing around interjections
         text = self._fix_interjection_spacing(text)
-        
+
         if text != original_text:
             logger.debug(f"Interjection fixes applied: '{original_text}' → '{text}'")
-        
+
         return text
-    
+
     def _apply_context_patterns(self, text: str) -> str:
         """Apply context-based interjection patterns"""
         # First, protect compound interjections by temporarily replacing them
@@ -254,7 +254,7 @@ class InterjectionFixProcessor:
             text = text.replace(placeholder, original)
 
         return text
-    
+
     def _handle_special_cases(self, text: str) -> str:
         """Handle special interjection cases"""
         # Handle interjections at sentence start (avoid compounds)
@@ -262,7 +262,7 @@ class InterjectionFixProcessor:
         text = re.sub(r'^(?<!-)mm(?!-)\b', r'Mmmm', text, flags=re.IGNORECASE)
         text = re.sub(r'^(?<!-)uh(?!-)\b', r'Uhh', text, flags=re.IGNORECASE)
         text = re.sub(r'^(?<!-)um(?!-)\b', r'Umm', text, flags=re.IGNORECASE)
-        
+
         # Handle interjections after punctuation (avoid compounds)
         text = re.sub(r'\. (?<!-)hmm(?!-)\b', r'. Hmmm', text, flags=re.IGNORECASE)
         text = re.sub(r'\. (?<!-)mm(?!-)\b', r'. Mmmm', text, flags=re.IGNORECASE)
@@ -274,22 +274,22 @@ class InterjectionFixProcessor:
         text = re.sub(r'(?<!-)hmm(?!-)(\.)', r'hmmm\1', text, flags=re.IGNORECASE)
         text = re.sub(r'\b(hmm)(\?)', r'hmmm\2', text, flags=re.IGNORECASE)
         text = re.sub(r'\b(hmm)(!)', r'hmmm\2', text, flags=re.IGNORECASE)
-        
+
         return text
-    
+
     def _fix_interjection_spacing(self, text: str) -> str:
         """Fix spacing around interjections"""
         # Ensure space after interjections when followed by words
         interjections = ['hmmm', 'mmmm', 'uhh', 'umm', 'ahh', 'ohh', 'err']
-        
+
         for interjection in interjections:
             # Add space after interjection if missing
             pattern = r'\b(' + re.escape(interjection) + r')([a-zA-Z])'
             replacement = r'\1 \2'
             text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
-        
+
         return text
-    
+
     def analyze_interjection_issues(self, text: str) -> Dict[str, List[str]]:
         """Analyze text for interjection pronunciation issues"""
         issues = {
@@ -298,33 +298,33 @@ class InterjectionFixProcessor:
             'hesitation_markers': [],
             'potential_fixes': []
         }
-        
+
         # Find short interjections that might need expansion
         short_patterns = [r'\bhm\b', r'\bmm\b', r'\buh\b', r'\bum\b', r'\ber\b', r'\bah\b', r'\boh\b']
         for pattern in short_patterns:
             matches = re.findall(pattern, text, re.IGNORECASE)
             if matches:
                 issues['short_interjections'].extend(matches)
-        
+
         # Find nasal sounds
         nasal_patterns = [r'\bhmm\b', r'\bmmm\b', r'\bmhm\b']
         for pattern in nasal_patterns:
             matches = re.findall(pattern, text, re.IGNORECASE)
             if matches:
                 issues['nasal_sounds'].extend(matches)
-        
+
         # Find hesitation markers
         hesitation_patterns = [r'\buh\b', r'\bum\b', r'\ber\b', r'\bwell\b']
         for pattern in hesitation_patterns:
             matches = re.findall(pattern, text, re.IGNORECASE)
             if matches:
                 issues['hesitation_markers'].extend(matches)
-        
+
         # Check for potential fixes
         for interjection, fix in self.interjection_fixes.items():
             if interjection.lower() in text.lower() and interjection != fix:
                 issues['potential_fixes'].append(f"{interjection} → {fix}")
-        
+
         return issues
 
 # Global instance for easy access

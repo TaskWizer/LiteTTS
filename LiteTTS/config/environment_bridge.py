@@ -18,7 +18,7 @@ class EnvironmentConfig:
     enable_performance_optimization: bool = True
     max_memory_mb: int = 4096
     target_rtf: float = 0.25
-    
+
     # Dynamic CPU allocation settings
     dynamic_cpu_allocation_enabled: bool = True
     cpu_target: float = 75.0
@@ -26,13 +26,13 @@ class EnvironmentConfig:
     thermal_protection: bool = True
     onnx_integration: bool = True
     update_environment: bool = True
-    
+
     # Threading settings
     omp_num_threads: Optional[int] = None
     mkl_num_threads: Optional[int] = None
     openblas_num_threads: Optional[int] = None
     veclib_maximum_threads: Optional[int] = None
-    
+
     # ONNX Runtime settings
     ort_disable_all_optimization: bool = False
     ort_enable_cpu_fp16_ops: bool = True
@@ -41,7 +41,7 @@ class EnvironmentConfig:
     ort_enable_mem_pattern: bool = True
     ort_enable_cpu_mem_arena: bool = True
     ort_enable_mem_reuse: bool = True
-    
+
     # Memory allocation settings
     malloc_arena_max: int = 4
     malloc_mmap_threshold: int = 131072
@@ -51,11 +51,11 @@ class EnvironmentConfig:
 
 class EnvironmentConfigLoader:
     """Loads configuration from environment variables"""
-    
+
     def __init__(self):
         self.config = EnvironmentConfig()
         self._load_from_environment()
-    
+
     def _load_from_environment(self):
         """Load configuration from environment variables"""
         try:
@@ -65,7 +65,7 @@ class EnvironmentConfigLoader:
             )
             self.config.max_memory_mb = self._get_int_env("MAX_MEMORY_MB", 4096)
             self.config.target_rtf = self._get_float_env("TARGET_RTF", 0.25)
-            
+
             # Dynamic CPU allocation settings
             self.config.dynamic_cpu_allocation_enabled = self._get_bool_env(
                 "DYNAMIC_CPU_ALLOCATION_ENABLED", True
@@ -75,13 +75,13 @@ class EnvironmentConfigLoader:
             self.config.thermal_protection = self._get_bool_env("THERMAL_PROTECTION", True)
             self.config.onnx_integration = self._get_bool_env("ONNX_INTEGRATION", True)
             self.config.update_environment = self._get_bool_env("UPDATE_ENVIRONMENT", True)
-            
+
             # Threading settings
             self.config.omp_num_threads = self._get_int_env("OMP_NUM_THREADS")
             self.config.mkl_num_threads = self._get_int_env("MKL_NUM_THREADS")
             self.config.openblas_num_threads = self._get_int_env("OPENBLAS_NUM_THREADS")
             self.config.veclib_maximum_threads = self._get_int_env("VECLIB_MAXIMUM_THREADS")
-            
+
             # ONNX Runtime settings
             self.config.ort_disable_all_optimization = self._get_bool_env(
                 "ORT_DISABLE_ALL_OPTIMIZATION", False
@@ -102,27 +102,27 @@ class EnvironmentConfigLoader:
             self.config.ort_enable_mem_reuse = self._get_bool_env(
                 "ORT_ENABLE_MEM_REUSE", True
             )
-            
+
             # Memory allocation settings
             self.config.malloc_arena_max = self._get_int_env("MALLOC_ARENA_MAX", 4)
             self.config.malloc_mmap_threshold = self._get_int_env("MALLOC_MMAP_THRESHOLD_", 131072)
             self.config.malloc_trim_threshold = self._get_int_env("MALLOC_TRIM_THRESHOLD_", 131072)
             self.config.malloc_top_pad = self._get_int_env("MALLOC_TOP_PAD_", 131072)
             self.config.malloc_mmap_max = self._get_int_env("MALLOC_MMAP_MAX_", 65536)
-            
+
             logger.info("Environment configuration loaded successfully")
             logger.info(f"CPU target: {self.config.cpu_target}%, "
                        f"Aggressive mode: {self.config.aggressive_mode}, "
                        f"Memory limit: {self.config.max_memory_mb}MB")
-            
+
         except Exception as e:
             logger.error(f"Failed to load environment configuration: {e}")
-    
+
     def _get_bool_env(self, key: str, default: bool = False) -> bool:
         """Get boolean environment variable"""
         value = os.getenv(key, str(default)).lower()
         return value in ("true", "1", "yes", "on")
-    
+
     def _get_int_env(self, key: str, default: Optional[int] = None) -> Optional[int]:
         """Get integer environment variable"""
         value = os.getenv(key)
@@ -133,7 +133,7 @@ class EnvironmentConfigLoader:
         except ValueError:
             logger.warning(f"Invalid integer value for {key}: {value}, using default: {default}")
             return default
-    
+
     def _get_float_env(self, key: str, default: float = 0.0) -> float:
         """Get float environment variable"""
         value = os.getenv(key, str(default))
@@ -142,7 +142,7 @@ class EnvironmentConfigLoader:
         except ValueError:
             logger.warning(f"Invalid float value for {key}: {value}, using default: {default}")
             return default
-    
+
     def get_dynamic_cpu_allocation_config(self) -> Dict[str, Any]:
         """Get dynamic CPU allocation configuration"""
         return {
@@ -153,7 +153,7 @@ class EnvironmentConfigLoader:
             "onnx_integration": self.config.onnx_integration,
             "update_environment": self.config.update_environment
         }
-    
+
     def get_performance_config(self) -> Dict[str, Any]:
         """Get performance configuration"""
         return {
@@ -162,7 +162,7 @@ class EnvironmentConfigLoader:
             "target_rtf": self.config.target_rtf,
             "dynamic_cpu_allocation": self.get_dynamic_cpu_allocation_config()
         }
-    
+
     def apply_onnx_environment_variables(self):
         """Apply ONNX Runtime environment variables"""
         try:
@@ -175,16 +175,16 @@ class EnvironmentConfigLoader:
                 "ORT_ENABLE_CPU_MEM_ARENA": "1" if self.config.ort_enable_cpu_mem_arena else "0",
                 "ORT_ENABLE_MEM_REUSE": "1" if self.config.ort_enable_mem_reuse else "0",
             }
-            
+
             for key, value in onnx_env_vars.items():
                 if key not in os.environ:
                     os.environ[key] = value
-            
+
             logger.info("Applied ONNX Runtime environment variables")
-            
+
         except Exception as e:
             logger.error(f"Failed to apply ONNX environment variables: {e}")
-    
+
     def apply_memory_allocation_variables(self):
         """Apply memory allocation environment variables"""
         try:
@@ -195,21 +195,21 @@ class EnvironmentConfigLoader:
                 "MALLOC_TOP_PAD_": str(self.config.malloc_top_pad),
                 "MALLOC_MMAP_MAX_": str(self.config.malloc_mmap_max),
             }
-            
+
             for key, value in malloc_env_vars.items():
                 if key not in os.environ:
                     os.environ[key] = value
-            
+
             logger.info("Applied memory allocation environment variables")
-            
+
         except Exception as e:
             logger.error(f"Failed to apply memory allocation variables: {e}")
-    
+
     def apply_threading_variables(self):
         """Apply threading environment variables"""
         try:
             threading_vars = {}
-            
+
             if self.config.omp_num_threads is not None:
                 threading_vars["OMP_NUM_THREADS"] = str(self.config.omp_num_threads)
             if self.config.mkl_num_threads is not None:
@@ -218,17 +218,17 @@ class EnvironmentConfigLoader:
                 threading_vars["OPENBLAS_NUM_THREADS"] = str(self.config.openblas_num_threads)
             if self.config.veclib_maximum_threads is not None:
                 threading_vars["VECLIB_MAXIMUM_THREADS"] = str(self.config.veclib_maximum_threads)
-            
+
             for key, value in threading_vars.items():
                 if key not in os.environ:
                     os.environ[key] = value
-            
+
             if threading_vars:
                 logger.info(f"Applied threading environment variables: {list(threading_vars.keys())}")
-            
+
         except Exception as e:
             logger.error(f"Failed to apply threading variables: {e}")
-    
+
     def apply_all_environment_variables(self):
         """Apply all environment variables"""
         self.apply_onnx_environment_variables()

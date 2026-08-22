@@ -41,7 +41,7 @@ class CPUAllocation:
 
 class CPUUtilizationMonitor:
     """Real-time CPU utilization monitoring with dynamic core allocation"""
-    
+
     def __init__(self, thresholds: Optional[CPUThresholds] = None):
         self.thresholds = thresholds or CPUThresholds()
         self.total_cores = os.cpu_count() or 4
@@ -54,24 +54,24 @@ class CPUUtilizationMonitor:
             intra_op_threads=1,
             allocation_reason="initial"
         )
-        
+
         # Monitoring state
         self._monitoring = False
         self._monitor_thread: Optional[threading.Thread] = None
         self._utilization_history = deque(maxlen=self.thresholds.history_window)
         self._last_allocation_change = 0.0
         self._allocation_callbacks: List[Callable[[CPUAllocation], None]] = []
-        
+
         # Thread safety
         self._lock = threading.RLock()
-        
+
         logger.info(f"CPU Monitor initialized: {self.total_cores} cores available")
-    
+
     def add_allocation_callback(self, callback: Callable[[CPUAllocation], None]):
         """Add callback to be called when CPU allocation changes"""
         with self._lock:
             self._allocation_callbacks.append(callback)
-    
+
     def get_current_utilization(self) -> float:
         """Get current CPU utilization percentage"""
         try:
@@ -80,14 +80,14 @@ class CPUUtilizationMonitor:
         except Exception as e:
             logger.warning(f"Failed to get CPU utilization: {e}")
             return 50.0  # Default fallback
-    
+
     def get_average_utilization(self) -> float:
         """Get average CPU utilization from history"""
         with self._lock:
             if not self._utilization_history:
                 return self.get_current_utilization()
             return sum(self._utilization_history) / len(self._utilization_history)
-    
+
     def calculate_optimal_cores(self, utilization: float) -> Tuple[int, str]:
         """Calculate optimal core count based on single CPU target threshold with hysteresis"""
         min_cores = 1
@@ -111,7 +111,7 @@ class CPUUtilizationMonitor:
             reason = f"stable_zone_{utilization:.1f}%_target_{scale_up_threshold:.1f}%"
 
         return optimal_cores, reason
-    
+
     def calculate_thread_allocation(self, cores: int) -> Tuple[int, int]:
         """Calculate optimal inter_op and intra_op thread counts for given cores"""
         # Based on existing CPU optimizer logic but simplified for dynamic allocation
@@ -124,25 +124,25 @@ class CPUUtilizationMonitor:
         else:
             inter_op = max(1, cores // 2)
             intra_op = cores
-        
+
         return inter_op, intra_op
-    
+
     def update_allocation(self, utilization: float) -> bool:
         """Update CPU allocation based on utilization. Returns True if changed."""
         current_time = time.time()
-        
+
         # Check cooldown period
         if current_time - self._last_allocation_change < self.thresholds.allocation_cooldown:
             return False
-        
+
         optimal_cores, reason = self.calculate_optimal_cores(utilization)
-        
+
         # Only update if allocation actually changes
         if optimal_cores == self.current_allocation.allocated_cores:
             return False
-        
+
         inter_op, intra_op = self.calculate_thread_allocation(optimal_cores)
-        
+
         with self._lock:
             old_allocation = self.current_allocation
             self.current_allocation = CPUAllocation(
@@ -155,71 +155,71 @@ class CPUUtilizationMonitor:
                 allocation_reason=reason
             )
             self._last_allocation_change = current_time
-        
+
         logger.info(f"CPU allocation changed: {old_allocation.allocated_cores} → {optimal_cores} cores "
                    f"(utilization: {utilization:.1f}%, reason: {reason})")
-        
+
         # Notify callbacks
         for callback in self._allocation_callbacks:
             try:
                 callback(self.current_allocation)
             except Exception as e:
                 logger.error(f"CPU allocation callback failed: {e}")
-        
+
         return True
-    
+
     def _monitor_loop(self):
         """Main monitoring loop (runs in separate thread)"""
         logger.info("CPU utilization monitoring started")
-        
+
         while self._monitoring:
             try:
                 # Get current utilization
                 utilization = self.get_current_utilization()
-                
+
                 # Update history
                 with self._lock:
                     self._utilization_history.append(utilization)
-                
+
                 # Use average utilization for allocation decisions to reduce noise
                 avg_utilization = self.get_average_utilization()
-                
+
                 # Update allocation if needed
                 self.update_allocation(avg_utilization)
-                
+
                 # Sleep until next monitoring interval
                 time.sleep(self.thresholds.monitoring_interval)
-                
+
             except Exception as e:
                 logger.error(f"CPU monitoring error: {e}")
                 time.sleep(self.thresholds.monitoring_interval)
-    
+
     def start_monitoring(self):
         """Start CPU utilization monitoring"""
         if self._monitoring:
             logger.warning("CPU monitoring already running")
             return
-        
+
         self._monitoring = True
         self._monitor_thread = threading.Thread(target=self._monitor_loop, daemon=True)
         self._monitor_thread.start()
         logger.info("CPU utilization monitoring started")
-    
+
     def stop_monitoring(self):
         """Stop CPU utilization monitoring"""
         if not self._monitoring:
             return
-        
+
         self._monitoring = False
         if self._monitor_thread:
             self._monitor_thread.join(timeout=2.0)
         logger.info("CPU utilization monitoring stopped")
-    
+
     def get_current_allocation(self) -> CPUAllocation:
         """Get current CPU allocation state"""
         with self._lock:
             return self.current_allocation
-    
+
     def get_monitoring_stats(self) -> Dict:
         """Get monitoring statistics"""
         with self._lock:

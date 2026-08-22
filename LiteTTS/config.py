@@ -223,7 +223,7 @@ class TTSConfig:
     sample_rate: int = 24000
     chunk_size: int = 100
     device: str = "cpu"
-    
+
 @dataclass
 class APIConfig:
     """API server configuration"""
@@ -233,7 +233,7 @@ class APIConfig:
     reload: bool = False
     log_level: str = "INFO"
     cors_origins: list = None
-    
+
     def __post_init__(self):
         if self.cors_origins is None:
             self.cors_origins = ["*"]
@@ -303,7 +303,7 @@ class SecurityConfig:
     rate_limit_window: int = 60  # seconds
     max_text_length: int = 5000
     allowed_origins: list = None
-    
+
     def __post_init__(self):
         if self.allowed_origins is None:
             self.allowed_origins = ["*"]
@@ -475,7 +475,7 @@ class ConfigManager:
 
         # Update CacheConfig with new values
         self.cache.enabled = self.performance.cache_enabled
-    
+
     def _load_from_env(self):
         """Load configuration from environment variables with type safety"""
         try:
@@ -527,32 +527,32 @@ class ConfigManager:
             self.tts.sample_rate = int(os.getenv("KOKORO_SAMPLE_RATE", str(self.audio.sample_rate)))
             self.tts.chunk_size = int(os.getenv("KOKORO_CHUNK_SIZE", str(self.performance.chunk_size)))
             self.tts.device = "cuda" if os.getenv("USE_CUDA", "false").lower() == "true" else "cpu"
-            
+
             # API Configuration - sync with server configuration
             self.api.host = os.getenv("API_HOST", self.server.host)
             self.api.port = int(os.getenv("PORT", str(self.server.port)))
             self.api.workers = int(os.getenv("WORKERS", str(self.server.workers)))
             self.api.reload = os.getenv("API_RELOAD", "false").lower() == "true"
             self.api.log_level = os.getenv("LOG_LEVEL", self.api.log_level)
-            
+
             # Parse CORS origins
             cors_origins = os.getenv("CORS_ORIGINS")
             if cors_origins:
                 self.api.cors_origins = [origin.strip() for origin in cors_origins.split(",")]
-            
+
             # Cache Configuration
             self.cache.enabled = os.getenv("CACHE_ENABLED", "true").lower() == "true"
             self.cache.max_size = int(os.getenv("CACHE_MAX_SIZE", str(self.cache.max_size)))
             self.cache.ttl = int(os.getenv("CACHE_TTL", str(self.cache.ttl)))
             self.cache.voice_cache_size = int(os.getenv("VOICE_CACHE_SIZE", str(self.cache.voice_cache_size)))
             self.cache.audio_cache_size = int(os.getenv("AUDIO_CACHE_SIZE", str(self.cache.audio_cache_size)))
-            
+
             # Logging Configuration
             self.logging.level = os.getenv("LOG_LEVEL", self.logging.level)
             self.logging.file_path = os.getenv("LOG_FILE_PATH")
             self.logging.max_file_size = int(os.getenv("LOG_MAX_FILE_SIZE", str(self.logging.max_file_size)))
             self.logging.backup_count = int(os.getenv("LOG_BACKUP_COUNT", str(self.logging.backup_count)))
-            
+
             # Monitoring Configuration
             self.monitoring.enabled = os.getenv("MONITORING_ENABLED", str(self.monitoring.enabled)).lower() == "true"
             self.monitoring.max_history = int(os.getenv("MONITORING_MAX_HISTORY", str(self.monitoring.max_history)))
@@ -565,7 +565,7 @@ class ConfigManager:
             self.metrics.metrics_endpoint = os.getenv("METRICS_ENDPOINT", str(self.metrics.metrics_endpoint)).lower() == "true"
             self.metrics.health_endpoint = os.getenv("HEALTH_ENDPOINT", str(self.metrics.health_endpoint)).lower() == "true"
             self.metrics.request_tracking = os.getenv("REQUEST_TRACKING", str(self.metrics.request_tracking)).lower() == "true"
-            
+
             # Security Configuration
             self.security.api_key_required = os.getenv("API_KEY_REQUIRED", "false").lower() == "true"
             self.security.api_key = os.getenv("API_KEY")
@@ -573,24 +573,24 @@ class ConfigManager:
             self.security.rate_limit_requests = int(os.getenv("RATE_LIMIT_REQUESTS", str(self.security.rate_limit_requests)))
             self.security.rate_limit_window = int(os.getenv("RATE_LIMIT_WINDOW", str(self.security.rate_limit_window)))
             self.security.max_text_length = int(os.getenv("MAX_TEXT_LENGTH", str(self.security.max_text_length)))
-            
+
             # Parse allowed origins
             allowed_origins = os.getenv("ALLOWED_ORIGINS")
             if allowed_origins:
                 self.security.allowed_origins = [origin.strip() for origin in allowed_origins.split(",")]
-                
+
         except (ValueError, TypeError) as e:
             logger.error(f"Error loading configuration from environment: {e}")
             # Use lazy import to avoid circular dependency
             from .exceptions import ConfigurationError
             raise ConfigurationError(f"Invalid environment variable configuration: {e}")
-    
+
     def _validate_startup(self):
         """Validate configuration at startup"""
         if not self.validate():
             from .exceptions import ConfigurationError
             raise ConfigurationError("Configuration validation failed")
-        
+
         # Log configuration summary
         logger.info("Configuration loaded successfully")
         logger.info(f"TTS Device: {self.tts.device}")
@@ -598,48 +598,48 @@ class ConfigManager:
         logger.info(f"Cache Enabled: {self.cache.enabled}")
         logger.info(f"Monitoring Enabled: {self.monitoring.enabled}")
         logger.info(f"Security: API Key Required = {self.security.api_key_required}")
-    
+
     def reload_from_env(self):
         """Reload configuration from environment variables"""
         logger.info("Reloading configuration from environment")
         self._load_from_env()
         self._validate_startup()
-    
+
     def validate(self) -> bool:
         """Validate configuration settings"""
         errors = []
-        
+
         # Validate TTS config
         if not Path(self.tts.model_path).parent.exists():
             errors.append(f"Model directory does not exist: {Path(self.tts.model_path).parent}")
-        
+
         if not Path(self.tts.voices_path).parent.exists():
             errors.append(f"Voices directory does not exist: {Path(self.tts.voices_path).parent}")
-        
+
         if self.tts.sample_rate <= 0:
             errors.append(f"Invalid sample rate: {self.tts.sample_rate}")
-        
+
         # Validate API config
         if not (1 <= self.api.port <= 65535):
             errors.append(f"Invalid port: {self.api.port}")
-        
+
         if self.api.workers < 1:
             errors.append(f"Invalid worker count: {self.api.workers}")
-        
+
         # Validate cache config
         if self.cache.max_size < 0:
             errors.append(f"Invalid cache max size: {self.cache.max_size}")
-        
+
         if self.cache.ttl < 0:
             errors.append(f"Invalid cache TTL: {self.cache.ttl}")
-        
+
         if errors:
             for error in errors:
                 logger.error(f"Configuration error: {error}")
             return False
-        
+
         return True
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert configuration to dictionary"""
         return {

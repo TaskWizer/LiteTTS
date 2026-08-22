@@ -72,7 +72,7 @@ class BenchmarkResult:
     test_text: str
     text_length: int
     voice: str
-    
+
     # Performance metrics
     load_time_ms: float
     generation_time_ms: float
@@ -80,31 +80,31 @@ class BenchmarkResult:
     rtf: float
     samples_generated: int
     sample_rate: int
-    
+
     # System metrics
     peak_memory_mb: float
     avg_memory_mb: float
     peak_cpu_percent: float
     avg_cpu_percent: float
-    
+
     # Quality metrics
     audio_quality_score: float  # Based on signal analysis
     success: bool
     error_message: Optional[str] = None
-    
+
     # Metadata
     timestamp: str = ""
     benchmark_version: str = "1.0"
 
 class SystemMonitor:
     """Monitor system resources during benchmarking"""
-    
+
     def __init__(self):
         self.monitoring = False
         self.memory_samples = []
         self.cpu_samples = []
         self.monitor_thread = None
-        
+
     def start_monitoring(self):
         """Start system monitoring"""
         self.monitoring = True
@@ -112,44 +112,44 @@ class SystemMonitor:
         self.cpu_samples = []
         self.monitor_thread = threading.Thread(target=self._monitor_worker, daemon=True)
         self.monitor_thread.start()
-    
+
     def stop_monitoring(self) -> Tuple[float, float, float, float]:
         """Stop monitoring and return peak/avg memory and CPU"""
         self.monitoring = False
         if self.monitor_thread:
             self.monitor_thread.join(timeout=1.0)
-        
+
         if not self.memory_samples or not self.cpu_samples:
             return 0.0, 0.0, 0.0, 0.0
-        
+
         peak_memory = max(self.memory_samples)
         avg_memory = sum(self.memory_samples) / len(self.memory_samples)
         peak_cpu = max(self.cpu_samples)
         avg_cpu = sum(self.cpu_samples) / len(self.cpu_samples)
-        
+
         return peak_memory, avg_memory, peak_cpu, avg_cpu
-    
+
     def _monitor_worker(self):
         """Background worker for system monitoring"""
         process = psutil.Process()
-        
+
         while self.monitoring:
             try:
                 # Memory usage in MB
                 memory_mb = process.memory_info().rss / (1024 * 1024)
                 self.memory_samples.append(memory_mb)
-                
+
                 # CPU usage percentage
                 cpu_percent = process.cpu_percent()
                 self.cpu_samples.append(cpu_percent)
-                
+
                 time.sleep(0.1)  # Sample every 100ms
             except Exception:
                 break
 
 class AudioQualityAnalyzer:
     """Analyze audio quality metrics"""
-    
+
     @staticmethod
     def analyze_audio_quality(audio: np.ndarray, sample_rate: int) -> float:
         """
@@ -158,25 +158,25 @@ class AudioQualityAnalyzer:
         """
         if len(audio) == 0:
             return 0.0
-        
+
         try:
             # Normalize audio
             audio = audio.astype(np.float32)
             if np.max(np.abs(audio)) > 0:
                 audio = audio / np.max(np.abs(audio))
-            
+
             # Calculate various quality metrics
-            
+
             # 1. Signal-to-noise ratio estimate
             signal_power = np.mean(audio ** 2)
             noise_floor = np.percentile(np.abs(audio), 10)  # Estimate noise floor
             snr = 10 * np.log10(signal_power / (noise_floor ** 2 + 1e-10))
             snr_score = min(100, max(0, (snr + 20) * 2))  # Scale to 0-100
-            
+
             # 2. Dynamic range
             dynamic_range = np.max(audio) - np.min(audio)
             dr_score = min(100, dynamic_range * 50)  # Scale to 0-100
-            
+
             # 3. Frequency content (spectral centroid)
             if len(audio) > 1024:
                 fft = np.fft.fft(audio[:1024])
@@ -187,13 +187,13 @@ class AudioQualityAnalyzer:
                 centroid_score = 100 - min(100, abs(spectral_centroid - 2000) / 50)
             else:
                 centroid_score = 50
-            
+
             # 4. Zero crossing rate (indicates voicing)
             zero_crossings = np.sum(np.diff(np.sign(audio)) != 0)
             zcr = zero_crossings / len(audio)
             # Good speech typically has ZCR around 0.1-0.3
             zcr_score = 100 - min(100, abs(zcr - 0.2) * 500)
-            
+
             # Combine scores with weights
             quality_score = (
                 snr_score * 0.4 +
@@ -201,16 +201,16 @@ class AudioQualityAnalyzer:
                 centroid_score * 0.2 +
                 zcr_score * 0.2
             )
-            
+
             return max(0, min(100, quality_score))
-            
+
         except Exception as e:
             logging.warning(f"Audio quality analysis failed: {e}")
             return 50.0  # Default score if analysis fails
 
 class ModelBenchmarker:
     """Comprehensive model benchmarking system"""
-    
+
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.test_texts = [
@@ -221,45 +221,45 @@ class ModelBenchmarker:
         ]
         self.test_voices = ["af_heart", "am_puck"]
         self.results: List[BenchmarkResult] = []
-        
+
     def discover_models(self) -> List[Tuple[str, str]]:
         """Discover all available ONNX models"""
         models_dir = Path("LiteTTS/models")
         models = []
-        
+
         for model_file in models_dir.glob("*.onnx"):
             model_name = model_file.stem
             model_path = str(model_file)
             models.append((model_name, model_path))
-        
+
         return sorted(models)
-    
+
     def benchmark_model(self, model_name: str, model_path: str) -> List[BenchmarkResult]:
         """Benchmark a single model with all test cases"""
         results = []
-        
+
         self.logger.info(f"🔬 Benchmarking model: {model_name}")
-        
+
         # Get model file size
         model_size_mb = Path(model_path).stat().st_size / (1024 * 1024)
-        
+
         for text in self.test_texts:
             for voice in self.test_voices:
                 result = self._benchmark_single_case(
                     model_name, model_path, model_size_mb, text, voice
                 )
                 results.append(result)
-                
+
                 # Brief pause between tests
                 time.sleep(0.5)
-        
+
         return results
-    
-    def _benchmark_single_case(self, model_name: str, model_path: str, 
+
+    def _benchmark_single_case(self, model_name: str, model_path: str,
                               model_size_mb: float, text: str, voice: str) -> BenchmarkResult:
         """Benchmark a single test case"""
         self.logger.info(f"  📝 Testing: '{text[:30]}...' with voice '{voice}'")
-        
+
         # Initialize result with defaults
         result = BenchmarkResult(
             model_name=model_name,
@@ -282,31 +282,31 @@ class ModelBenchmarker:
             success=False,
             timestamp=datetime.now().isoformat()
         )
-        
+
         monitor = SystemMonitor()
-        
+
         try:
             # Start system monitoring
             monitor.start_monitoring()
-            
+
             # Load model
             load_start = time.time()
-            
+
             # Import kokoro_onnx and create model
             import kokoro_onnx
             model = kokoro_onnx.Kokoro(model_path, "LiteTTS/voices")
-            
+
             load_time = (time.time() - load_start) * 1000
             result.load_time_ms = load_time
-            
+
             # Generate audio
             gen_start = time.time()
             audio, sample_rate = model.create(text, voice=voice, speed=1.0, lang="en-us")
             gen_time = (time.time() - gen_start) * 1000
-            
+
             # Stop monitoring and get metrics
             peak_mem, avg_mem, peak_cpu, avg_cpu = monitor.stop_monitoring()
-            
+
             # Calculate metrics
             result.generation_time_ms = gen_time
             result.samples_generated = len(audio)
@@ -317,45 +317,45 @@ class ModelBenchmarker:
             result.avg_memory_mb = avg_mem
             result.peak_cpu_percent = peak_cpu
             result.avg_cpu_percent = avg_cpu
-            
+
             # Analyze audio quality
             result.audio_quality_score = AudioQualityAnalyzer.analyze_audio_quality(audio, sample_rate)
-            
+
             result.success = len(audio) > 0
-            
+
             self.logger.info(f"    ✅ Success: {len(audio)} samples, RTF: {result.rtf:.3f}, Quality: {result.audio_quality_score:.1f}")
-            
+
         except Exception as e:
             monitor.stop_monitoring()
             result.error_message = str(e)
             result.success = False
             self.logger.error(f"    ❌ Failed: {e}")
-        
+
         return result
-    
+
     def run_full_benchmark(self) -> Dict[str, Any]:
         """Run comprehensive benchmark on all models"""
         self.logger.info("🚀 Starting comprehensive model benchmark")
-        
+
         start_time = datetime.now()
         models = self.discover_models()
-        
+
         self.logger.info(f"📊 Found {len(models)} models to benchmark")
-        
+
         all_results = []
-        
+
         for model_name, model_path in models:
             model_results = self.benchmark_model(model_name, model_path)
             all_results.extend(model_results)
-        
+
         end_time = datetime.now()
         duration = (end_time - start_time).total_seconds()
-        
+
         # Generate summary
         summary = self._generate_summary(all_results, duration)
-        
+
         self.logger.info(f"✅ Benchmark completed in {duration:.1f} seconds")
-        
+
         return {
             "summary": summary,
             "results": [asdict(result) for result in all_results],
@@ -369,21 +369,21 @@ class ModelBenchmarker:
                 "test_voices": len(self.test_voices)
             }
         }
-    
+
     def _generate_summary(self, results: List[BenchmarkResult], duration: float) -> Dict[str, Any]:
         """Generate benchmark summary statistics"""
         successful_results = [r for r in results if r.success]
-        
+
         if not successful_results:
             return {"error": "No successful benchmark results"}
-        
+
         # Group by model
         model_stats = {}
         for result in successful_results:
             if result.model_name not in model_stats:
                 model_stats[result.model_name] = []
             model_stats[result.model_name].append(result)
-        
+
         # Calculate statistics for each model
         model_summary = {}
         for model_name, model_results in model_stats.items():
@@ -391,7 +391,7 @@ class ModelBenchmarker:
             latencies = [r.generation_time_ms for r in model_results]
             qualities = [r.audio_quality_score for r in model_results]
             memories = [r.peak_memory_mb for r in model_results]
-            
+
             model_summary[model_name] = {
                 "model_size_mb": model_results[0].model_size_mb,
                 "tests_run": len(model_results),
@@ -406,7 +406,7 @@ class ModelBenchmarker:
                 "avg_memory_mb": sum(memories) / len(memories),
                 "load_time_ms": model_results[0].load_time_ms
             }
-        
+
         return {
             "total_duration_seconds": duration,
             "total_tests": len(results),

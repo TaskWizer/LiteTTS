@@ -72,25 +72,25 @@ class LLMContextAnalysis:
 
 class LLMContextAnalyzer:
     """LLM-based context analyzer for emotional and prosodic enhancement"""
-    
+
     def __init__(self, enable_llm: bool = False):
         self.enable_llm = enable_llm
         self.emotional_patterns = self._load_emotional_patterns()
         self.prosodic_patterns = self._load_prosodic_patterns()
         self.contextual_rules = self._load_contextual_rules()
-        
+
         # LLM integration (placeholder for future implementation)
         self.llm_client = None
         if enable_llm:
             self._init_llm_client()
-    
+
     def _init_llm_client(self):
         """Initialize LLM client (placeholder for future implementation)"""
         # This would initialize an actual LLM client (OpenAI, Anthropic, etc.)
         # For now, we'll use enhanced rule-based analysis
         logger.info("LLM enhancement requested but not implemented - using enhanced rule-based analysis")
         self.llm_client = None
-    
+
     def _load_emotional_patterns(self) -> Dict[str, Any]:
         """Load emotional pattern recognition rules"""
         return {
@@ -149,7 +149,7 @@ class LLMContextAnalyzer:
                 r'\"[^\"]*\"',  # Quoted text often sarcastic
             ]
         }
-    
+
     def _load_prosodic_patterns(self) -> Dict[str, Any]:
         """Load prosodic pattern recognition rules"""
         return {
@@ -178,7 +178,7 @@ class LLMContextAnalyzer:
                 r'\b(um|uh|er|ah|well|so|now|then)\b'  # Filler words
             ]
         }
-    
+
     def _load_contextual_rules(self) -> Dict[str, Any]:
         """Load contextual analysis rules"""
         return {
@@ -200,22 +200,22 @@ class LLMContextAnalyzer:
                 'uncertainty': r'\b(maybe|perhaps|possibly|might|could|seems|appears)\b'
             }
         }
-    
+
     def analyze_context(self, text: str, conversation_history: Optional[List[str]] = None) -> LLMContextAnalysis:
         """Perform comprehensive context analysis"""
         start_time = time.perf_counter()
-        
+
         # Analyze emotional context
         emotional_context = self._analyze_emotional_context(text, conversation_history)
-        
+
         # Analyze prosodic context
         prosody_context = self._analyze_prosodic_context(text)
-        
+
         # Calculate overall confidence
         confidence_score = self._calculate_confidence(emotional_context, prosody_context)
-        
+
         processing_time = time.perf_counter() - start_time
-        
+
         analysis = LLMContextAnalysis(
             emotional_context=emotional_context,
             prosody_context=prosody_context,
@@ -223,26 +223,26 @@ class LLMContextAnalyzer:
             processing_time=processing_time,
             analysis_method="enhanced_rule_based" if not self.enable_llm else "llm_enhanced"
         )
-        
+
         logger.debug(f"Context analysis completed in {processing_time:.3f}s with confidence {confidence_score:.2f}")
         return analysis
-    
+
     def _analyze_emotional_context(self, text: str, history: Optional[List[str]] = None) -> EmotionalContext:
         """Analyze emotional context of the text"""
         emotion_scores = {}
-        
+
         # Analyze each emotion pattern
         for emotion_type, patterns in self.emotional_patterns.items():
             emotion_name = emotion_type.replace('_patterns', '')
             score = 0.0
-            
+
             for pattern in patterns:
                 matches = re.findall(pattern, text, re.IGNORECASE)
                 score += len(matches) * 0.2
-            
+
             if score > 0:
                 emotion_scores[emotion_name] = min(score, 1.0)
-        
+
         # Determine primary emotion
         if emotion_scores:
             primary_emotion_name = max(emotion_scores, key=emotion_scores.get)
@@ -259,21 +259,21 @@ class LLMContextAnalyzer:
             if emotion_name != primary_emotion_name and score > 0.1:
                 emotion = self._map_to_contextual_emotion(emotion_name)
                 secondary_emotions.append((emotion, score))
-        
+
         # Sort secondary emotions by score
         secondary_emotions.sort(key=lambda x: x[1], reverse=True)
         secondary_emotions = secondary_emotions[:3]  # Keep top 3
-        
+
         # Analyze conversation history for emotional trajectory
         trajectory = []
         if history:
             for hist_text in history[-3:]:  # Last 3 messages
                 hist_analysis = self._analyze_emotional_context(hist_text)
                 trajectory.append(hist_analysis.primary_emotion)
-        
+
         # Generate prosodic suggestions
         prosodic_suggestions = self._generate_prosodic_suggestions(primary_emotion, intensity)
-        
+
         return EmotionalContext(
             primary_emotion=primary_emotion,
             secondary_emotions=secondary_emotions,
@@ -288,7 +288,7 @@ class LLMContextAnalyzer:
             },
             prosodic_suggestions=prosodic_suggestions
         )
-    
+
     def _analyze_prosodic_context(self, text: str) -> ProsodyContext:
         """Analyze prosodic context of the text"""
         # Detect pause patterns
@@ -296,26 +296,26 @@ class LLMContextAnalyzer:
         for match in re.finditer(r'[,;:.]|\s-\s|\.{2,}', text):
             pause_duration = 0.3 if match.group() in ',;:' else 0.5
             pause_patterns.append((match.start(), pause_duration))
-        
+
         # Detect emphasis points
         emphasis_points = []
         for match in re.finditer(r'\b[A-Z]{2,}\b|\*[^*]+\*', text):
             emphasis_points.append((match.start(), match.end(), 0.7))
-        
+
         # Determine speech rate modifier
         speech_rate_modifier = 1.0
         if re.search(r'\b(urgent|hurry|quick|fast)\b', text, re.IGNORECASE):
             speech_rate_modifier = 1.2
         elif re.search(r'\b(slow|calm|peaceful|gentle)\b', text, re.IGNORECASE):
             speech_rate_modifier = 0.8
-        
+
         # Determine pitch range modifier
         pitch_range_modifier = 1.0
         if re.search(r'[!]{2,}', text):
             pitch_range_modifier = 1.3
         elif re.search(r'\b(whisper|quiet|soft)\b', text, re.IGNORECASE):
             pitch_range_modifier = 0.7
-        
+
         # Determine intonation contour
         intonation_contour = "neutral"
         if re.search(r'\?', text):
@@ -324,7 +324,7 @@ class LLMContextAnalyzer:
             intonation_contour = "emphatic"
         elif re.search(r'\.{2,}', text):
             intonation_contour = "trailing"
-        
+
         return ProsodyContext(
             speech_rate_modifier=speech_rate_modifier,
             pitch_range_modifier=pitch_range_modifier,
@@ -333,7 +333,7 @@ class LLMContextAnalyzer:
             emphasis_points=emphasis_points,
             intonation_contour=intonation_contour
         )
-    
+
     def _map_to_contextual_emotion(self, emotion_name: str) -> ContextualEmotion:
         """Map emotion name to ContextualEmotion enum"""
         mapping = {
@@ -349,7 +349,7 @@ class LLMContextAnalyzer:
             'sarcasm': ContextualEmotion.SARCASM
         }
         return mapping.get(emotion_name, ContextualEmotion.NEUTRAL)
-    
+
     def _calculate_intensity(self, score: float) -> EmotionalIntensity:
         """Calculate emotional intensity from score"""
         if score >= 0.8:
@@ -362,7 +362,7 @@ class LLMContextAnalyzer:
             return EmotionalIntensity.LOW
         else:
             return EmotionalIntensity.VERY_LOW
-    
+
     def _generate_prosodic_suggestions(self, emotion: ContextualEmotion, intensity: EmotionalIntensity) -> Dict[str, float]:
         """Generate prosodic parameter suggestions based on emotion and intensity"""
         base_suggestions = {
@@ -371,9 +371,9 @@ class LLMContextAnalyzer:
             'volume_adjustment': 1.0,
             'emphasis_strength': 1.0
         }
-        
+
         intensity_factor = intensity.value
-        
+
         if emotion == ContextualEmotion.JOY:
             base_suggestions.update({
                 'speech_rate': 1.0 + (intensity_factor * 0.2),
@@ -416,14 +416,14 @@ class LLMContextAnalyzer:
                 'volume_adjustment': 1.0 - (intensity_factor * 0.1),
                 'emphasis_strength': 1.0 - (intensity_factor * 0.2)
             })
-        
+
         return base_suggestions
-    
+
     def _calculate_confidence(self, emotional_context: EmotionalContext, prosody_context: ProsodyContext) -> float:
         """Calculate overall confidence score"""
         # Base confidence from emotional analysis
         emotional_confidence = emotional_context.confidence
-        
+
         # Prosodic confidence based on clear patterns
         prosodic_confidence = 0.5
         if prosody_context.emphasis_points:
@@ -432,6 +432,6 @@ class LLMContextAnalyzer:
             prosodic_confidence += 0.1
         if prosody_context.intonation_contour != "neutral":
             prosodic_confidence += 0.2
-        
+
         # Combined confidence
         return min((emotional_confidence + prosodic_confidence) / 2, 0.95)

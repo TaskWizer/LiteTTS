@@ -56,19 +56,19 @@ class SIMDOptimizer:
     """
     SIMD instruction set optimizer for audio processing acceleration
     """
-    
+
     def __init__(self, config: Optional[SIMDOptimizationConfig] = None):
         self.config = config or SIMDOptimizationConfig()
         self.capabilities = self._detect_simd_capabilities()
         self.optimal_config = self._determine_optimal_config()
-        
+
         logger.info(f"SIMD Optimizer initialized with {self.capabilities.optimal_instruction_set} instruction set")
         logger.info(f"Vector width: {self.capabilities.vector_width}, Chunk size: {self.config.vector_chunk_size}")
-    
+
     def _detect_simd_capabilities(self) -> SIMDCapabilities:
         """Detect CPU SIMD instruction set capabilities"""
         capabilities = SIMDCapabilities()
-        
+
         try:
             # Get CPU info using cpuinfo library or fallback
             if CPUINFO_AVAILABLE:
@@ -77,7 +77,7 @@ class SIMDOptimizer:
             else:
                 # Fallback: try to read from /proc/cpuinfo on Linux
                 flags = self._get_cpu_flags_fallback()
-            
+
             # Check for instruction sets
             capabilities.sse = 'sse' in flags
             capabilities.sse2 = 'sse2' in flags
@@ -94,7 +94,7 @@ class SIMDOptimizer:
             capabilities.avx512vl = 'avx512vl' in flags
             capabilities.fma = 'fma' in flags
             capabilities.fma3 = 'fma3' in flags
-            
+
             # Determine optimal instruction set and vector width
             if capabilities.avx512f and capabilities.avx512dq:
                 capabilities.optimal_instruction_set = "avx512"
@@ -114,14 +114,14 @@ class SIMDOptimizer:
             else:
                 capabilities.optimal_instruction_set = "scalar"
                 capabilities.vector_width = 1
-            
+
             logger.info(f"Detected SIMD capabilities: {capabilities.optimal_instruction_set}")
-            
+
         except Exception as e:
             logger.warning(f"Failed to detect SIMD capabilities: {e}")
             capabilities.optimal_instruction_set = "scalar"
             capabilities.vector_width = 1
-        
+
         return capabilities
 
     def _get_cpu_flags_fallback(self) -> List[str]:
@@ -149,7 +149,7 @@ class SIMDOptimizer:
             flags = []
 
         return flags
-    
+
     def _determine_optimal_config(self) -> Dict[str, Any]:
         """Determine optimal configuration based on detected capabilities"""
         config = {
@@ -159,27 +159,27 @@ class SIMDOptimizer:
             "chunk_size": self.config.vector_chunk_size,
             "use_fma": self.capabilities.fma or self.capabilities.fma3
         }
-        
+
         # Adjust chunk size based on vector width
         if self.capabilities.vector_width > 1:
             # Ensure chunk size is multiple of vector width
             config["chunk_size"] = (self.config.vector_chunk_size // self.capabilities.vector_width) * self.capabilities.vector_width
-        
+
         return config
-    
+
     def optimize_audio_processing(self, audio_data: np.ndarray) -> np.ndarray:
         """Optimize audio sample processing using vectorized operations"""
         if not self.config.enable_audio_vectorization:
             return audio_data
-        
+
         try:
             # Ensure proper alignment for SIMD operations
             if audio_data.dtype != np.float32:
                 audio_data = audio_data.astype(np.float32)
-            
+
             # Align memory for optimal SIMD performance
             aligned_data = self._align_array(audio_data)
-            
+
             # Apply vectorized operations based on capabilities
             if self.capabilities.optimal_instruction_set in ["avx512", "avx2", "avx"]:
                 return self._vectorized_audio_processing_avx(aligned_data)
@@ -187,23 +187,23 @@ class SIMDOptimizer:
                 return self._vectorized_audio_processing_sse(aligned_data)
             else:
                 return aligned_data
-                
+
         except Exception as e:
             logger.warning(f"SIMD audio processing failed, falling back to scalar: {e}")
             return audio_data
-    
+
     def optimize_mel_spectrogram_computation(self, features: np.ndarray) -> np.ndarray:
         """Accelerate mel-spectrogram computation using SIMD"""
         if not self.config.enable_mel_spectrogram_acceleration:
             return features
-        
+
         try:
             # Ensure proper data type and alignment
             if features.dtype != np.float32:
                 features = features.astype(np.float32)
-            
+
             aligned_features = self._align_array(features)
-            
+
             # Apply vectorized mel-spectrogram operations
             if self.capabilities.vector_width >= 8:
                 return self._vectorized_mel_computation_avx(aligned_features)
@@ -211,61 +211,61 @@ class SIMDOptimizer:
                 return self._vectorized_mel_computation_sse(aligned_features)
             else:
                 return aligned_features
-                
+
         except Exception as e:
             logger.warning(f"SIMD mel-spectrogram computation failed: {e}")
             return features
-    
+
     def optimize_phoneme_processing(self, phoneme_sequences: List[np.ndarray]) -> List[np.ndarray]:
         """Vectorize phoneme sequence processing"""
         if not self.config.enable_phoneme_vectorization:
             return phoneme_sequences
-        
+
         try:
             optimized_sequences = []
-            
+
             for sequence in phoneme_sequences:
                 if sequence.dtype != np.float32:
                     sequence = sequence.astype(np.float32)
-                
+
                 aligned_sequence = self._align_array(sequence)
-                
+
                 # Apply vectorized phoneme processing
                 if self.capabilities.vector_width >= 4:
                     optimized_sequence = self._vectorized_phoneme_processing(aligned_sequence)
                 else:
                     optimized_sequence = aligned_sequence
-                
+
                 optimized_sequences.append(optimized_sequence)
-            
+
             return optimized_sequences
-            
+
         except Exception as e:
             logger.warning(f"SIMD phoneme processing failed: {e}")
             return phoneme_sequences
-    
+
     def _align_array(self, array: np.ndarray, alignment: Optional[int] = None) -> np.ndarray:
         """Align array for optimal SIMD performance"""
         if alignment is None:
             alignment = self.optimal_config["alignment"]
-        
+
         # Check if array is already aligned
         if array.ctypes.data % alignment == 0:
             return array
-        
+
         # Create aligned array
         aligned_array = np.empty_like(array, dtype=array.dtype)
         aligned_array[:] = array
         return aligned_array
-    
+
     def _vectorized_audio_processing_avx(self, audio_data: np.ndarray) -> np.ndarray:
         """AVX-optimized audio processing"""
         # Use NumPy's optimized operations which can leverage AVX
         # Apply common audio processing operations
-        
+
         # Normalize audio with vectorized operations
         audio_data = np.clip(audio_data, -1.0, 1.0)
-        
+
         # Apply vectorized filtering if needed
         if len(audio_data) > self.optimal_config["chunk_size"]:
             # Process in chunks for better cache utilization
@@ -276,64 +276,64 @@ class SIMDOptimizer:
                 audio_data[i:i+chunk_size] = np.tanh(chunk * 0.9)  # Soft clipping
         else:
             audio_data = np.tanh(audio_data * 0.9)
-        
+
         return audio_data
-    
+
     def _vectorized_audio_processing_sse(self, audio_data: np.ndarray) -> np.ndarray:
         """SSE-optimized audio processing"""
         # Similar to AVX but with smaller vector width considerations
         audio_data = np.clip(audio_data, -1.0, 1.0)
-        
+
         # Process in SSE-friendly chunks
         chunk_size = min(self.optimal_config["chunk_size"], 512)  # Smaller chunks for SSE
-        
+
         if len(audio_data) > chunk_size:
             for i in range(0, len(audio_data), chunk_size):
                 chunk = audio_data[i:i+chunk_size]
                 audio_data[i:i+chunk_size] = np.tanh(chunk * 0.9)
         else:
             audio_data = np.tanh(audio_data * 0.9)
-        
+
         return audio_data
-    
+
     def _vectorized_mel_computation_avx(self, features: np.ndarray) -> np.ndarray:
         """AVX-optimized mel-spectrogram computation"""
         # Apply vectorized mel-scale transformations
         # Use NumPy's optimized mathematical operations
-        
+
         # Log-mel computation with vectorized operations
         features = np.maximum(features, 1e-10)  # Avoid log(0)
         log_features = np.log(features)
-        
+
         # Apply mel-scale transformation (simplified)
         mel_features = log_features * 1127.0  # Mel scale factor
-        
+
         return mel_features
-    
+
     def _vectorized_mel_computation_sse(self, features: np.ndarray) -> np.ndarray:
         """SSE-optimized mel-spectrogram computation"""
         # Similar to AVX but optimized for SSE vector width
         features = np.maximum(features, 1e-10)
         log_features = np.log(features)
         mel_features = log_features * 1127.0
-        
+
         return mel_features
-    
+
     def _vectorized_phoneme_processing(self, sequence: np.ndarray) -> np.ndarray:
         """Vectorized phoneme sequence processing"""
         # Apply vectorized transformations to phoneme embeddings
-        
+
         # Normalize phoneme vectors
         sequence_norm = np.linalg.norm(sequence, axis=-1, keepdims=True)
         sequence_norm = np.maximum(sequence_norm, 1e-12)
         normalized_sequence = sequence / sequence_norm
-        
+
         return normalized_sequence
-    
+
     def apply_environment_optimizations(self) -> Dict[str, str]:
         """Apply SIMD-related environment variable optimizations"""
         env_vars = {}
-        
+
         try:
             # Set NumPy to use optimal BLAS/LAPACK
             if self.capabilities.avx512f:
@@ -343,7 +343,7 @@ class SIMDOptimizer:
                     "MKL_NUM_THREADS": "1",
                     "VECLIB_MAXIMUM_THREADS": "1"
                 })
-            
+
             # ONNX Runtime SIMD optimizations
             if self.capabilities.avx512f:
                 env_vars["ORT_ENABLE_AVX512"] = "1"
@@ -351,18 +351,18 @@ class SIMDOptimizer:
             elif self.capabilities.avx2:
                 env_vars["ORT_ENABLE_AVX2"] = "1"
                 env_vars["ORT_AVX2_OPTIMIZATION"] = "1"
-            
+
             # Apply environment variables
             for key, value in env_vars.items():
                 os.environ[key] = value
-            
+
             logger.info(f"Applied SIMD environment optimizations: {env_vars}")
-            
+
         except Exception as e:
             logger.warning(f"Failed to apply SIMD environment optimizations: {e}")
-        
+
         return env_vars
-    
+
     def get_optimization_status(self) -> Dict[str, Any]:
         """Get current SIMD optimization status"""
         return {

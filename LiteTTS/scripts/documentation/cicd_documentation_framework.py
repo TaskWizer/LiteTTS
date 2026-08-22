@@ -52,21 +52,21 @@ class CICDConfiguration:
 
 class CICDDocumentationManager:
     """CI/CD and documentation coverage manager"""
-    
+
     def __init__(self):
         self.results_dir = Path("test_results/cicd_documentation")
         self.results_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # Default configuration
         self.config = self._create_default_config()
-        
+
         # Documentation patterns
         self.docstring_patterns = {
             'function': re.compile(r'def\s+(\w+)\s*\('),
             'class': re.compile(r'class\s+(\w+)\s*[\(:]'),
             'module': re.compile(r'^""".*?"""', re.MULTILINE | re.DOTALL)
         }
-        
+
     def _create_default_config(self) -> CICDConfiguration:
         """Create default CI/CD configuration"""
         return CICDConfiguration(
@@ -82,82 +82,82 @@ class CICDDocumentationManager:
             python_versions=["3.8", "3.9", "3.10", "3.11"],
             deployment_environments=["development", "staging", "production"]
         )
-    
+
     def analyze_documentation_coverage(self) -> DocumentationCoverage:
         """Analyze documentation coverage across the codebase"""
         logger.info("Analyzing documentation coverage...")
-        
+
         total_modules = documented_modules = 0
         total_functions = documented_functions = 0
         total_classes = documented_classes = 0
         missing_docstrings = []
-        
+
         # Find all Python files
         python_files = []
         for pattern in ["*.py"]:
             python_files.extend(Path(".").rglob(pattern))
-        
+
         # Filter out excluded files
         excluded_patterns = ["__pycache__", ".git", "venv", "env", "build", "dist"]
         filtered_files = []
         for file_path in python_files:
             if not any(pattern in str(file_path) for pattern in excluded_patterns):
                 filtered_files.append(file_path)
-        
+
         for file_path in filtered_files:
             try:
                 with open(file_path, 'r', encoding='utf-8') as f:
                     content = f.read()
-                
+
                 # Check module docstring
                 total_modules += 1
                 if self.docstring_patterns['module'].search(content):
                     documented_modules += 1
                 else:
                     missing_docstrings.append(f"Module: {file_path}")
-                
+
                 # Check function docstrings
                 functions = self.docstring_patterns['function'].findall(content)
                 for func_name in functions:
                     if not func_name.startswith('_'):  # Skip private functions
                         total_functions += 1
-                        
+
                         # Look for docstring after function definition
                         func_pattern = re.compile(
                             rf'def\s+{re.escape(func_name)}\s*\([^)]*\):\s*""".*?"""',
                             re.MULTILINE | re.DOTALL
                         )
-                        
+
                         if func_pattern.search(content):
                             documented_functions += 1
                         else:
                             missing_docstrings.append(f"Function: {file_path}:{func_name}")
-                
+
                 # Check class docstrings
                 classes = self.docstring_patterns['class'].findall(content)
                 for class_name in classes:
                     if not class_name.startswith('_'):  # Skip private classes
                         total_classes += 1
-                        
+
                         # Look for docstring after class definition
                         class_pattern = re.compile(
                             rf'class\s+{re.escape(class_name)}\s*[\(:].*?:\s*""".*?"""',
                             re.MULTILINE | re.DOTALL
                         )
-                        
+
                         if class_pattern.search(content):
                             documented_classes += 1
                         else:
                             missing_docstrings.append(f"Class: {file_path}:{class_name}")
-                
+
             except Exception as e:
                 logger.warning(f"Error analyzing {file_path}: {e}")
-        
+
         # Calculate overall coverage
         total_items = total_modules + total_functions + total_classes
         documented_items = documented_modules + documented_functions + documented_classes
         coverage_percentage = (documented_items / total_items * 100) if total_items > 0 else 0
-        
+
         return DocumentationCoverage(
             total_modules=total_modules,
             documented_modules=documented_modules,
@@ -168,11 +168,11 @@ class CICDDocumentationManager:
             coverage_percentage=coverage_percentage,
             missing_docstrings=missing_docstrings[:20]  # Limit to first 20
         )
-    
+
     def generate_github_actions_workflow(self) -> str:
         """Generate GitHub Actions workflow"""
         logger.info("Generating GitHub Actions workflow...")
-        
+
         workflow_content = f'''name: Kokoro TTS CI/CD Pipeline
 
 on:
@@ -297,22 +297,22 @@ jobs:
         echo "Deploying to production environment..."
         # Add production deployment commands here
 '''
-        
+
         # Save workflow file
         workflow_dir = Path(".github/workflows")
         workflow_dir.mkdir(parents=True, exist_ok=True)
         workflow_file = workflow_dir / "ci-cd.yml"
-        
+
         with open(workflow_file, 'w') as f:
             f.write(workflow_content)
-        
+
         logger.info(f"GitHub Actions workflow saved: {workflow_file}")
         return workflow_content
-    
+
     def generate_gitlab_ci_config(self) -> str:
         """Generate GitLab CI configuration"""
         logger.info("Generating GitLab CI configuration...")
-        
+
         gitlab_ci_content = f'''# LiteTTS GitLab CI/CD Pipeline
 
 stages:
@@ -410,19 +410,19 @@ deploy_production:
   only:
     - main
 '''
-        
+
         # Save GitLab CI file
         gitlab_ci_file = Path(".gitlab-ci.yml")
         with open(gitlab_ci_file, 'w') as f:
             f.write(gitlab_ci_content)
-        
+
         logger.info(f"GitLab CI configuration saved: {gitlab_ci_file}")
         return gitlab_ci_content
-    
+
     def generate_documentation_check_script(self) -> str:
         """Generate documentation coverage check script"""
         logger.info("Generating documentation check script...")
-        
+
         doc_check_script = f'''#!/bin/bash
 # Documentation Coverage Check Script
 # Generated automatically - do not edit manually
@@ -455,13 +455,13 @@ else:
 
 echo "Documentation check completed successfully!"
 '''
-        
+
         # Save documentation check script
         doc_script_file = self.results_dir / "check_documentation.sh"
         with open(doc_script_file, 'w') as f:
             f.write(doc_check_script)
         os.chmod(doc_script_file, 0o755)
-        
+
         logger.info(f"Documentation check script saved: {doc_script_file}")
         return doc_check_script
 

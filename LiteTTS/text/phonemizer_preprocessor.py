@@ -43,7 +43,7 @@ class PhonemizationPreprocessor:
     4. Numbers and symbols aren't converted to words
     5. Unicode normalization issues
     """
-    
+
     def __init__(self, config: Dict = None):
         self.config = config or {}
         self.contractions_map = self._build_contractions_map()
@@ -228,7 +228,7 @@ class PhonemizationPreprocessor:
             '40': 'forty', '50': 'fifty', '60': 'sixty', '70': 'seventy',
             '80': 'eighty', '90': 'ninety', '100': 'one hundred', '1000': 'one thousand'
         }
-    
+
     def _build_symbol_words_map(self) -> Dict[str, str]:
         """Build symbol to words mapping from external config file"""
         try:
@@ -266,7 +266,7 @@ class PhonemizationPreprocessor:
             '‘': '',  # ' Left single quotation mark
             '’': '',  # ' Right single quotation mark
         }
-    
+
     def _build_problematic_patterns(self) -> List[Tuple[str, str, str]]:
         """
         Build list of problematic patterns that cause phonemizer issues
@@ -1526,18 +1526,18 @@ class PhonemizationPreprocessor:
                     changes.append(f"Converted symbol '{symbol}' to '{word}'")
 
         return text, changes
-    
+
     def _fix_problematic_patterns(self, text: str) -> Tuple[str, List[str]]:
         """Fix patterns known to cause phonemizer issues"""
         changes = []
-        
+
         for pattern, replacement, description in self.problematic_patterns:
             if re.search(pattern, text):
                 text = re.sub(pattern, replacement, text)
                 changes.append(f"Fixed {description.lower()}")
-        
+
         return text, changes
-    
+
     def _clean_whitespace_and_punctuation(self, text: str) -> str:
         """Clean up whitespace and punctuation (using pre-compiled patterns)"""
         # Remove multiple spaces (using pre-compiled pattern)
@@ -1555,33 +1555,33 @@ class PhonemizationPreprocessor:
         text = re.sub(r'[?]{2,}', '?', text)
 
         return text.strip()
-    
+
     def _calculate_confidence_score(self, processed_text: str, original_text: str) -> float:
         """Calculate confidence score for phonemizer success"""
         score = 1.0
-        
+
         # Penalize for remaining problematic characters
         problematic_chars = set('@#$%^&*()_+={}[]|\\:";\'<>?/~`')
         for char in processed_text:
             if char in problematic_chars:
                 score -= 0.05
-        
+
         # Penalize for remaining numbers
         if re.search(r'\d', processed_text):
             score -= 0.1
-        
+
         # Penalize for very long words (likely to cause issues)
         words = processed_text.split()
         for word in words:
             if len(word) > 15:
                 score -= 0.1
-        
+
         # Bonus for proper sentence structure
         if re.search(r'[.!?]$', processed_text.strip()):
             score += 0.1
-        
+
         return max(0.0, min(1.0, score))
-    
+
     def _detect_potential_issues(self, text: str) -> List[str]:
         """Detect potential issues that might still cause problems with enhanced edge case detection"""
         warnings = []

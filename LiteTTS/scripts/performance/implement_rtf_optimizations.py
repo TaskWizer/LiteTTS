@@ -15,62 +15,62 @@ from typing import Dict, List, Any
 
 class RTFOptimizer:
     """Implements RTF optimizations for the TTS system"""
-    
+
     def __init__(self, project_root: str = "."):
         self.project_root = Path(project_root)
         self.optimizations_applied = []
-        
+
     def apply_all_optimizations(self) -> Dict[str, Any]:
         """Apply all RTF optimizations"""
-        
+
         print("🚀 Implementing RTF Optimizations")
         print("=" * 40)
-        
+
         results = {
             'optimizations_applied': [],
             'files_modified': [],
             'performance_improvements': {},
             'status': 'success'
         }
-        
+
         try:
             # 1. Optimize audio processing pipeline
             print("\n🎵 1. Optimizing Audio Processing Pipeline")
             self.optimize_audio_pipeline()
-            
+
             # 2. Implement intelligent caching
             print("\n💾 2. Implementing Intelligent Caching")
             self.implement_intelligent_caching()
-            
+
             # 3. Optimize text preprocessing
             print("\n📝 3. Optimizing Text Preprocessing")
             self.optimize_text_preprocessing()
-            
+
             # 4. Add performance monitoring enhancements
             print("\n📊 4. Enhancing Performance Monitoring")
             self.enhance_performance_monitoring()
-            
+
             # 5. Implement request batching
             print("\n⚡ 5. Implementing Request Batching")
             self.implement_request_batching()
-            
+
             # 6. Add adaptive quality settings
             print("\n🎯 6. Adding Adaptive Quality Settings")
             self.add_adaptive_quality()
-            
+
             results['optimizations_applied'] = self.optimizations_applied
             results['status'] = 'success'
-            
+
         except Exception as e:
             print(f"❌ Error during optimization: {e}")
             results['status'] = 'error'
             results['error'] = str(e)
-        
+
         return results
-    
+
     def optimize_audio_pipeline(self):
         """Optimize audio processing pipeline for better RTF"""
-        
+
         # Create optimized audio processor
         audio_optimizer_code = '''"""
 Audio Processing Optimizations for RTF Improvement
@@ -188,20 +188,20 @@ def get_optimized_audio_processor():
     """Get the global optimized audio processor instance"""
     return _audio_processor
 '''
-        
+
         # Write optimized audio processor
         audio_opt_path = self.project_root / "kokoro" / "audio" / "optimized_processor.py"
         audio_opt_path.parent.mkdir(parents=True, exist_ok=True)
-        
+
         with open(audio_opt_path, 'w') as f:
             f.write(audio_optimizer_code)
-        
+
         self.optimizations_applied.append("Audio Pipeline Optimization")
         print("   ✅ Created optimized audio processor")
-    
+
     def implement_intelligent_caching(self):
         """Implement intelligent caching for better performance"""
-        
+
         cache_optimizer_code = '''"""
 Intelligent Caching System for RTF Optimization
 """
@@ -355,28 +355,28 @@ def get_intelligent_cache():
     """Get the global intelligent cache instance"""
     return _intelligent_cache
 '''
-        
+
         # Write intelligent cache
         cache_path = self.project_root / "kokoro" / "cache" / "intelligent_cache.py"
         cache_path.parent.mkdir(parents=True, exist_ok=True)
-        
+
         with open(cache_path, 'w') as f:
             f.write(cache_optimizer_code)
-        
+
         self.optimizations_applied.append("Intelligent Caching System")
         print("   ✅ Created intelligent caching system")
-    
+
     def optimize_text_preprocessing(self):
         """Optimize text preprocessing for better RTF"""
-        
+
         # Check if text preprocessing exists
         text_processor_path = self.project_root / "kokoro" / "text" / "processor.py"
-        
+
         if text_processor_path.exists():
             # Read current processor
             with open(text_processor_path, 'r') as f:
                 content = f.read()
-            
+
             # Add optimization imports at the top
             optimization_imports = '''
 # RTF Optimization imports
@@ -384,7 +384,7 @@ import re
 from functools import lru_cache
 import unicodedata
 '''
-            
+
             # Add optimized preprocessing methods
             optimization_methods = '''
     
@@ -414,35 +414,35 @@ import unicodedata
         
         return text
 '''
-            
+
             # Insert optimizations if not already present
             if "_cached_normalize_text" not in content:
                 # Find class definition and add methods
                 class_match = re.search(r'class\s+\w+.*?:', content)
                 if class_match:
                     insert_pos = content.find('\n', class_match.end())
-                    content = (content[:insert_pos] + 
-                             optimization_methods + 
+                    content = (content[:insert_pos] +
+                             optimization_methods +
                              content[insert_pos:])
-                
+
                 # Add imports at the top
                 if "from functools import lru_cache" not in content:
                     content = optimization_imports + content
-                
+
                 # Write back optimized version
                 with open(text_processor_path, 'w') as f:
                     f.write(content)
-                
+
                 self.optimizations_applied.append("Text Preprocessing Optimization")
                 print("   ✅ Optimized text preprocessing with caching")
             else:
                 print("   ✅ Text preprocessing already optimized")
         else:
             print("   ⚠️ Text processor not found, skipping optimization")
-    
+
     def enhance_performance_monitoring(self):
         """Enhance performance monitoring for RTF tracking"""
-        
+
         monitoring_code = '''"""
 Enhanced Performance Monitoring for RTF Optimization
 """
@@ -581,42 +581,42 @@ def get_performance_monitor():
     """Get the global performance monitor instance"""
     return _performance_monitor
 '''
-        
+
         # Write performance monitor
         monitor_path = self.project_root / "kokoro" / "monitoring" / "rtf_monitor.py"
         monitor_path.parent.mkdir(parents=True, exist_ok=True)
-        
+
         with open(monitor_path, 'w') as f:
             f.write(monitoring_code)
-        
+
         self.optimizations_applied.append("Enhanced Performance Monitoring")
         print("   ✅ Created enhanced RTF performance monitor")
-    
+
     def implement_request_batching(self):
         """Implement request batching for concurrent requests"""
-        
+
         print("   ✅ Request batching optimization noted (requires server architecture changes)")
         self.optimizations_applied.append("Request Batching (Architecture)")
-    
+
     def add_adaptive_quality(self):
         """Add adaptive quality settings based on performance"""
-        
+
         print("   ✅ Adaptive quality settings optimization noted (requires quality configuration)")
         self.optimizations_applied.append("Adaptive Quality Settings")
-    
+
     def generate_optimization_report(self) -> str:
         """Generate optimization implementation report"""
-        
+
         report = f"""# RTF Optimization Implementation Report
 
 ## Summary
 Successfully implemented {len(self.optimizations_applied)} RTF optimizations:
 
 """
-        
+
         for i, optimization in enumerate(self.optimizations_applied, 1):
             report += f"{i}. ✅ {optimization}\n"
-        
+
         report += f"""
 ## Performance Impact
 - **Baseline RTF**: 0.197 (Excellent)
@@ -661,26 +661,26 @@ Successfully implemented {len(self.optimizations_applied)} RTF optimizations:
 
 Generated on: {time.strftime('%Y-%m-%d %H:%M:%S')}
 """
-        
+
         return report
 
 def main():
     """Run RTF optimization implementation"""
     optimizer = RTFOptimizer()
     results = optimizer.apply_all_optimizations()
-    
+
     # Generate and save report
     report = optimizer.generate_optimization_report()
-    
+
     report_path = Path("docs/rtf_optimization_implementation.md")
     report_path.parent.mkdir(parents=True, exist_ok=True)
-    
+
     with open(report_path, 'w') as f:
         f.write(report)
-    
+
     print(f"\n📄 Optimization report saved: {report_path}")
     print(f"✅ Applied {len(optimizer.optimizations_applied)} optimizations")
-    
+
     return results
 
 if __name__ == "__main__":

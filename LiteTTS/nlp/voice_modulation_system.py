@@ -32,18 +32,18 @@ class ModulationSegment:
 
 class VoiceModulationSystem:
     """Advanced voice modulation system for natural TTS expression"""
-    
+
     def __init__(self):
         self.modulation_patterns = self._load_modulation_patterns()
         self.voice_profiles = self._load_voice_profiles()
         self.ssml_markers = self._load_ssml_markers()
-        
+
         # Configuration
         self.enable_parenthetical_whisper = True
         self.enable_emphasis_detection = True
         self.enable_voice_blending = True
         self.default_whisper_voice = "af_nicole"
-        
+
     def _load_modulation_patterns(self) -> List[Tuple[str, str, Dict]]:
         """Load text patterns that trigger voice modulation"""
         return [
@@ -78,7 +78,7 @@ class VoiceModulationSystem:
                 'tone': 'aside',
                 'blend_ratio': 0.75
             }),
-            
+
             # Italicized text - emphasis
             (r'\*([^*]+)\*', 'emphasis', {
                 'volume_multiplier': 1.2,
@@ -86,7 +86,7 @@ class VoiceModulationSystem:
                 'pitch_adjustment': 0.05,
                 'tone': 'emphasis'
             }),
-            
+
             # Bold text - strong emphasis
             (r'\*\*([^*]+)\*\*', 'strong_emphasis', {
                 'volume_multiplier': 1.3,
@@ -94,7 +94,7 @@ class VoiceModulationSystem:
                 'pitch_adjustment': 0.1,
                 'tone': 'strong_emphasis'
             }),
-            
+
             # Quoted text - different tone
             (r'"([^"]+)"', 'quoted', {
                 'volume_multiplier': 1.1,
@@ -102,7 +102,7 @@ class VoiceModulationSystem:
                 'pitch_adjustment': 0.02,
                 'tone': 'quoted'
             }),
-            
+
             # Whispered text (explicit)
             (r'\[whisper\]([^[]+)\[/whisper\]', 'explicit_whisper', {
                 'voice_name': 'af_nicole',
@@ -112,7 +112,7 @@ class VoiceModulationSystem:
                 'tone': 'whisper',
                 'blend_ratio': 0.8
             }),
-            
+
             # Soft text
             (r'\[soft\]([^[]+)\[/soft\]', 'soft', {
                 'volume_multiplier': 0.8,
@@ -120,7 +120,7 @@ class VoiceModulationSystem:
                 'pitch_adjustment': -0.05,
                 'tone': 'soft'
             }),
-            
+
             # Loud text
             (r'\[loud\]([^[]+)\[/loud\]', 'loud', {
                 'volume_multiplier': 1.4,
@@ -128,19 +128,19 @@ class VoiceModulationSystem:
                 'pitch_adjustment': 0.1,
                 'tone': 'loud'
             }),
-            
+
             # Fast text
             (r'\[fast\]([^[]+)\[/fast\]', 'fast', {
                 'speed_multiplier': 1.3,
                 'tone': 'fast'
             }),
-            
+
             # Slow text
             (r'\[slow\]([^[]+)\[/slow\]', 'slow', {
                 'speed_multiplier': 0.7,
                 'tone': 'slow'
             }),
-            
+
             # Aside text (similar to parenthetical but different marker)
             (r'\[aside\]([^[]+)\[/aside\]', 'aside', {
                 'voice_name': 'af_nicole',
@@ -151,7 +151,7 @@ class VoiceModulationSystem:
                 'blend_ratio': 0.6
             }),
         ]
-    
+
     def _load_voice_profiles(self) -> Dict[str, VoiceModulation]:
         """Load predefined voice profiles"""
         return {
@@ -216,7 +216,7 @@ class VoiceModulationSystem:
                 tone='calm'
             ),
         }
-    
+
     def _load_ssml_markers(self) -> Dict[str, str]:
         """Load SSML-like markers for voice modulation"""
         return {
@@ -224,22 +224,22 @@ class VoiceModulationSystem:
             '<volume level="soft">': '[soft]',
             '</volume>': '[/soft]',
             '<volume level="loud">': '[loud]',
-            
+
             # Speed markers
             '<prosody rate="slow">': '[slow]',
             '</prosody>': '[/slow]',
             '<prosody rate="fast">': '[fast]',
-            
+
             # Voice markers
             '<voice name="whisper">': '[whisper]',
             '</voice>': '[/whisper]',
-            
+
             # Emphasis markers
             '<emphasis level="strong">': '**',
             '</emphasis>': '**',
             '<emphasis level="moderate">': '*',
         }
-    
+
     def process_voice_modulation(self, text: str, base_voice: str = "default") -> Tuple[str, List[ModulationSegment]]:
         """Process text for voice modulation and return processed text with modulation segments"""
         logger.debug(f"Processing voice modulation in: {text[:100]}...")
@@ -260,20 +260,20 @@ class VoiceModulationSystem:
         logger.debug(f"Voice modulation result: {processed_text[:100]}...")
 
         return processed_text, modulation_segments
-    
+
     def _convert_ssml_markers(self, text: str) -> str:
         """Convert SSML-like markers to internal format"""
         for ssml_marker, internal_marker in self.ssml_markers.items():
             text = text.replace(ssml_marker, internal_marker)
         return text
-    
+
     def _find_modulation_segments(self, text: str, base_voice: str) -> List[ModulationSegment]:
         """Find all text segments that need voice modulation"""
         segments = []
-        
+
         for pattern, modulation_type, params in self.modulation_patterns:
             matches = re.finditer(pattern, text, re.IGNORECASE)
-            
+
             for match in matches:
                 # Create modulation object
                 modulation = VoiceModulation(
@@ -284,7 +284,7 @@ class VoiceModulationSystem:
                     tone=params.get('tone', 'normal'),
                     blend_ratio=params.get('blend_ratio', 1.0)
                 )
-                
+
                 # Create segment
                 segment = ModulationSegment(
                     text=match.group(1),  # The content inside the markers
@@ -293,65 +293,65 @@ class VoiceModulationSystem:
                     modulation=modulation,
                     original_text=match.group(0)  # The full match including markers
                 )
-                
+
                 segments.append(segment)
-        
+
         # Sort segments by position
         segments.sort(key=lambda x: x.start_pos)
-        
+
         return segments
-    
+
     def _remove_modulation_markers(self, text: str) -> str:
         """Remove modulation markers from text, leaving only the content"""
         # Remove markers but keep the content
         for pattern, _, _ in self.modulation_patterns:
             text = re.sub(pattern, r'\1', text)
-        
+
         # Clean up any remaining markers
         text = re.sub(r'\[/?[a-zA-Z_]+\]', '', text)
-        
+
         return text
-    
-    def generate_ssml_with_modulation(self, text: str, segments: List[ModulationSegment], 
+
+    def generate_ssml_with_modulation(self, text: str, segments: List[ModulationSegment],
                                     base_voice: str = "default") -> str:
         """Generate SSML with voice modulation markers"""
         if not segments:
             return text
-        
+
         # Build SSML with modulation
         ssml_parts = []
         last_pos = 0
-        
+
         for segment in segments:
             # Add text before this segment
             if segment.start_pos > last_pos:
                 before_text = text[last_pos:segment.start_pos]
                 ssml_parts.append(before_text)
-            
+
             # Add modulated segment
             ssml_segment = self._create_ssml_segment(segment)
             ssml_parts.append(ssml_segment)
-            
+
             last_pos = segment.end_pos
-        
+
         # Add remaining text
         if last_pos < len(text):
             ssml_parts.append(text[last_pos:])
-        
+
         return ''.join(ssml_parts)
-    
+
     def _create_ssml_segment(self, segment: ModulationSegment) -> str:
         """Create SSML for a modulated segment"""
         modulation = segment.modulation
         content = segment.text
-        
+
         # Build SSML tags
         tags = []
-        
+
         # Voice change
         if modulation.voice_name != "default":
             tags.append(f'<voice name="{modulation.voice_name}">')
-        
+
         # Volume
         if modulation.volume_multiplier != 1.0:
             if modulation.volume_multiplier < 0.7:
@@ -361,7 +361,7 @@ class VoiceModulationSystem:
             else:
                 volume_level = f"{modulation.volume_multiplier:.1f}"
             tags.append(f'<prosody volume="{volume_level}">')
-        
+
         # Speed
         if modulation.speed_multiplier != 1.0:
             if modulation.speed_multiplier < 0.8:
@@ -371,23 +371,23 @@ class VoiceModulationSystem:
             else:
                 rate = f"{modulation.speed_multiplier:.1f}"
             tags.append(f'<prosody rate="{rate}">')
-        
+
         # Pitch
         if modulation.pitch_adjustment != 0.0:
             pitch_change = f"{modulation.pitch_adjustment:+.1f}st"
             tags.append(f'<prosody pitch="{pitch_change}">')
-        
+
         # Emphasis
         if modulation.tone in ['emphasis', 'strong_emphasis']:
             level = "strong" if modulation.tone == 'strong_emphasis' else "moderate"
             tags.append(f'<emphasis level="{level}">')
-        
+
         # Build the complete SSML segment
         opening_tags = ''.join(tags)
         closing_tags = ''.join(f'</{tag.split()[0][1:]}>' for tag in reversed(tags))
-        
+
         return f"{opening_tags}{content}{closing_tags}"
-    
+
     def analyze_modulation_opportunities(self, text: str) -> Dict[str, List[str]]:
         """Analyze text for potential voice modulation opportunities"""
         info = {
@@ -397,29 +397,29 @@ class VoiceModulationSystem:
             'explicit_markers': [],
             'potential_whispers': []
         }
-        
+
         # Find parenthetical text
         parenthetical = re.findall(r'\(([^)]+)\)', text)
         info['parenthetical_text'] = parenthetical
-        
+
         # Find emphasized text (markdown style)
         emphasized = re.findall(r'\*([^*]+)\*', text)
         info['emphasized_text'] = emphasized
-        
+
         # Find quoted text
         quoted = re.findall(r'"([^"]+)"', text)
         info['quoted_text'] = quoted
-        
+
         # Find explicit markers
         explicit_markers = re.findall(r'\[([a-zA-Z_]+)\]', text)
         info['explicit_markers'] = explicit_markers
-        
+
         # Find potential whisper opportunities (words that suggest quiet speech)
         whisper_indicators = ['whisper', 'quietly', 'softly', 'murmur', 'aside', 'secretly']
         for indicator in whisper_indicators:
             if indicator in text.lower():
                 info['potential_whispers'].append(indicator)
-        
+
         return info
 
     def _add_breathing_pauses(self, text: str, segments: List[ModulationSegment]) -> Tuple[str, List[ModulationSegment]]:
@@ -512,7 +512,7 @@ class VoiceModulationSystem:
                 processed_text = processed_text.replace(original, replacement, 1)
 
         return processed_text
-    
+
     def create_voice_profile(self, name: str, voice_name: str = "default",
                            volume_multiplier: float = 1.0, speed_multiplier: float = 1.0,
                            pitch_adjustment: float = 0.0, tone: str = "normal",
@@ -526,10 +526,10 @@ class VoiceModulationSystem:
             tone=tone,
             blend_ratio=blend_ratio
         )
-        
+
         self.voice_profiles[name] = profile
         logger.info(f"Created voice profile: {name}")
-    
+
     def set_configuration(self, enable_parenthetical_whisper: bool = None,
                          enable_emphasis_detection: bool = None,
                          enable_voice_blending: bool = None,
@@ -543,13 +543,13 @@ class VoiceModulationSystem:
             self.enable_voice_blending = enable_voice_blending
         if default_whisper_voice is not None:
             self.default_whisper_voice = default_whisper_voice
-        
+
         logger.info(f"Voice modulation configuration updated: "
                    f"parenthetical_whisper={self.enable_parenthetical_whisper}, "
                    f"emphasis_detection={self.enable_emphasis_detection}, "
                    f"voice_blending={self.enable_voice_blending}, "
                    f"default_whisper_voice={self.default_whisper_voice}")
-    
+
     def get_voice_profiles(self) -> Dict[str, VoiceModulation]:
         """Get all available voice profiles"""
         return self.voice_profiles.copy()

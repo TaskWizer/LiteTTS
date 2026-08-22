@@ -12,14 +12,14 @@ logger = logging.getLogger(__name__)
 
 class InternalConfig:
     """Internal configuration system for technical settings"""
-    
+
     def __init__(self):
         self.pronunciation_rules = self._get_pronunciation_rules()
         self.acronym_handling = self._get_acronym_handling()
         self.text_processing = self._get_text_processing_defaults()
         self.performance_optimization = self._get_performance_defaults()
         self.cache_optimization = self._get_cache_defaults()
-        
+
     def _get_pronunciation_rules(self) -> Dict[str, Any]:
         """Internal pronunciation rules configuration"""
         return {
@@ -70,7 +70,7 @@ class InternalConfig:
                 }
             }
         }
-    
+
     def _get_acronym_handling(self) -> Dict[str, Any]:
         """Internal acronym handling configuration"""
         return {
@@ -81,7 +81,7 @@ class InternalConfig:
             "financial_symbols": ["TSLA", "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "SPY", "QQQ"],
             "exclusions": ["THE", "AND", "FOR", "ARE", "BUT", "NOT", "YOU", "ALL", "CAN", "HER", "WAS", "ONE", "OUR", "HAD", "BUT", "HIS", "HAS", "HIM"]
         }
-    
+
     def _get_text_processing_defaults(self) -> Dict[str, Any]:
         """Internal text processing defaults"""
         return {
@@ -104,7 +104,7 @@ class InternalConfig:
                 "parenthetical_voice_modulation": True
             }
         }
-    
+
     def _get_performance_defaults(self) -> Dict[str, Any]:
         """Internal performance optimization defaults"""
         return {
@@ -132,7 +132,7 @@ class InternalConfig:
                 "cache_compression": True
             }
         }
-    
+
     def _get_cache_defaults(self) -> Dict[str, Any]:
         """Internal cache optimization defaults"""
         return {
@@ -156,11 +156,11 @@ class InternalConfig:
                 "phoneme_cache_size": 500
             }
         }
-    
+
     def get_config_section(self, section: str) -> Optional[Dict[str, Any]]:
         """Get a specific configuration section"""
         return getattr(self, section, None)
-    
+
     def override_setting(self, section: str, key: str, value: Any):
         """Override a specific setting (for advanced users)"""
         if hasattr(self, section):
@@ -172,7 +172,7 @@ class InternalConfig:
                 logger.warning(f"Cannot override {section}.{key}: section is not a dictionary")
         else:
             logger.warning(f"Cannot override {section}.{key}: section does not exist")
-    
+
     def load_overrides_from_env(self):
         """Load configuration overrides from environment variables"""
         # Format: KOKORO_INTERNAL_<SECTION>_<KEY>=value
@@ -183,7 +183,7 @@ class InternalConfig:
                     parts = env_var.replace('KOKORO_INTERNAL_', '').lower().split('_', 1)
                     if len(parts) == 2:
                         section, key = parts
-                        
+
                         # Convert string values to appropriate types
                         if value.lower() in ('true', 'false'):
                             value = value.lower() == 'true'
@@ -191,13 +191,13 @@ class InternalConfig:
                             value = int(value)
                         elif '.' in value and value.replace('.', '').isdigit():
                             value = float(value)
-                        
+
                         self.override_setting(section, key, value)
                         logger.info(f"Applied environment override: {env_var} = {value}")
-                        
+
                 except Exception as e:
                     logger.warning(f"Failed to apply environment override {env_var}: {e}")
-    
+
     def get_all_config(self) -> Dict[str, Any]:
         """Get all internal configuration"""
         return {
@@ -228,13 +228,13 @@ def reload_internal_config():
 # Example usage
 if __name__ == "__main__":
     config = get_internal_config()
-    
+
     print("🔧 Internal Configuration System")
     print("=" * 40)
-    
+
     # Show configuration sections
     sections = ['pronunciation_rules', 'acronym_handling', 'text_processing', 'performance_optimization', 'cache_optimization']
-    
+
     for section in sections:
         section_config = config.get_config_section(section)
         if section_config:
@@ -245,11 +245,11 @@ if __name__ == "__main__":
                         print(f"  {key}: {len(value)} items")
                     else:
                         print(f"  {key}: {value}")
-    
+
     # Test environment override
     print(f"\n🔧 Testing Environment Override:")
     print("Set KOKORO_INTERNAL_PERFORMANCE_CHUNK_SIZE=100 to test")
-    
+
     # Test override
     config.override_setting('performance_optimization', 'processing', {'chunk_size': 100})
     print("Override applied successfully")

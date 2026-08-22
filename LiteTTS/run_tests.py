@@ -20,13 +20,13 @@ sys.path.insert(0, str(project_root))
 
 class TestRunner:
     """Comprehensive test runner for Kokoro ONNX TTS API"""
-    
+
     def __init__(self, verbose: bool = False, coverage: bool = False):
         self.verbose = verbose
         self.coverage = coverage
         self.results = {}
         self.start_time = time.time()
-        
+
         # Test suites configuration
         self.test_suites = {
             "unit": {
@@ -73,7 +73,7 @@ class TestRunner:
                 "critical": True
             }
         }
-    
+
     def check_dependencies(self) -> bool:
         """Check if required dependencies are available"""
         try:
@@ -82,32 +82,32 @@ class TestRunner:
             if result.returncode != 0:
                 print("❌ uv is not installed or not in PATH")
                 return False
-            
+
             # Check if pytest is available
-            result = subprocess.run(["uv", "run", "python", "-m", "pytest", "--version"], 
+            result = subprocess.run(["uv", "run", "python", "-m", "pytest", "--version"],
                                   capture_output=True, text=True)
             if result.returncode != 0:
                 print("❌ pytest is not available. Installing dev dependencies...")
-                install_result = subprocess.run(["uv", "sync", "--extra", "dev"], 
+                install_result = subprocess.run(["uv", "sync", "--extra", "dev"],
                                                capture_output=True, text=True)
                 if install_result.returncode != 0:
                     print(f"❌ Failed to install dev dependencies: {install_result.stderr}")
                     return False
                 print("✅ Dev dependencies installed")
-            
+
             return True
-            
+
         except Exception as e:
             print(f"❌ Dependency check failed: {e}")
             return False
-    
+
     def find_test_files(self, paths: List[str]) -> List[Path]:
         """Find all test files matching the given patterns"""
         test_files = []
-        
+
         for path_pattern in paths:
             path = Path(path_pattern)
-            
+
             if path.is_file():
                 test_files.append(path)
             elif "*" in str(path):
@@ -120,17 +120,17 @@ class TestRunner:
                 # Find all test files in directory
                 test_files.extend(path.glob("test_*.py"))
                 test_files.extend(path.glob("*_test.py"))
-        
+
         return [f for f in test_files if f.exists()]
-    
+
     def run_test_suite(self, suite_name: str, suite_config: Dict) -> Dict:
         """Run a specific test suite"""
         print(f"\n🧪 Running {suite_name} tests...")
         print(f"📝 {suite_config['description']}")
-        
+
         # Find test files
         test_files = self.find_test_files(suite_config["paths"])
-        
+
         if not test_files:
             print(f"⚠️  No test files found for {suite_name}")
             return {
@@ -141,21 +141,21 @@ class TestRunner:
                 "failures": 0,
                 "errors": 0
             }
-        
+
         print(f"📁 Found {len(test_files)} test files")
-        
+
         # Build pytest command
         cmd = ["uv", "run", "python", "-m", "pytest"]
-        
+
         # Add test files
         cmd.extend(str(f) for f in test_files)
-        
+
         # Add options
         if self.verbose:
             cmd.extend(["-v", "-s"])
         else:
             cmd.append("-q")
-        
+
         # Add coverage if requested
         if self.coverage:
             cmd.extend([
@@ -163,17 +163,17 @@ class TestRunner:
                 "--cov-report=term-missing",
                 f"--cov-report=html:docs/coverage_{suite_name}"
             ])
-        
+
         # Add timeout
         cmd.extend(["--timeout", str(suite_config["timeout"])])
-        
+
         # Add JSON report
         json_report = f"docs/test_results_{suite_name}.json"
         cmd.extend(["--json-report", f"--json-report-file={json_report}"])
-        
+
         # Run tests
         start_time = time.time()
-        
+
         try:
             result = subprocess.run(
                 cmd,
@@ -181,12 +181,12 @@ class TestRunner:
                 text=True,
                 timeout=suite_config["timeout"] + 60  # Extra buffer
             )
-            
+
             duration = time.time() - start_time
-            
+
             # Parse results
             test_result = self._parse_test_result(result, json_report, duration)
-            
+
             # Print summary
             if test_result["status"] == "passed":
                 print(f"✅ {suite_name}: {test_result['tests_run']} tests passed in {duration:.1f}s")
@@ -194,9 +194,9 @@ class TestRunner:
                 print(f"❌ {suite_name}: {test_result['failures']} failures, {test_result['errors']} errors")
             else:
                 print(f"⚠️  {suite_name}: {test_result['status']}")
-            
+
             return test_result
-            
+
         except subprocess.TimeoutExpired:
             duration = time.time() - start_time
             print(f"⏰ {suite_name}: Timed out after {duration:.1f}s")
@@ -218,17 +218,17 @@ class TestRunner:
                 "failures": 0,
                 "errors": 1
             }
-    
-    def _parse_test_result(self, result: subprocess.CompletedProcess, 
+
+    def _parse_test_result(self, result: subprocess.CompletedProcess,
                           json_report: str, duration: float) -> Dict:
         """Parse test result from subprocess and JSON report"""
-        
+
         # Try to parse JSON report first
         try:
             if Path(json_report).exists():
                 with open(json_report, 'r') as f:
                     json_data = json.load(f)
-                
+
                 return {
                     "status": "passed" if result.returncode == 0 else "failed",
                     "duration": duration,
@@ -239,7 +239,7 @@ class TestRunner:
                 }
         except Exception:
             pass
-        
+
         # Fallback to parsing stdout/stderr
         return {
             "status": "passed" if result.returncode == 0 else "failed",
@@ -250,58 +250,58 @@ class TestRunner:
             "stdout": result.stdout,
             "stderr": result.stderr
         }
-    
+
     def run_all_tests(self, suites: Optional[List[str]] = None) -> Dict:
         """Run all test suites or specified suites"""
-        
+
         if not self.check_dependencies():
             return {"status": "error", "message": "Dependency check failed"}
-        
+
         # Determine which suites to run
         suites_to_run = suites if suites else list(self.test_suites.keys())
-        
+
         print("🚀 Starting Kokoro ONNX TTS API Test Suite")
         print("=" * 60)
-        
+
         # Create results directory
         Path("docs").mkdir(exist_ok=True)
-        
+
         # Run each test suite
         for suite_name in suites_to_run:
             if suite_name not in self.test_suites:
                 print(f"⚠️  Unknown test suite: {suite_name}")
                 continue
-            
+
             suite_config = self.test_suites[suite_name]
             self.results[suite_name] = self.run_test_suite(suite_name, suite_config)
-        
+
         # Generate summary
         return self._generate_summary()
-    
+
     def _generate_summary(self) -> Dict:
         """Generate test run summary"""
         total_duration = time.time() - self.start_time
-        
+
         total_tests = sum(r.get("tests_run", 0) for r in self.results.values())
         total_failures = sum(r.get("failures", 0) for r in self.results.values())
         total_errors = sum(r.get("errors", 0) for r in self.results.values())
-        
+
         passed_suites = sum(1 for r in self.results.values() if r.get("status") == "passed")
         total_suites = len(self.results)
-        
+
         # Determine overall status
-        critical_suites = [name for name, config in self.test_suites.items() 
+        critical_suites = [name for name, config in self.test_suites.items()
                           if config.get("critical", False) and name in self.results]
-        critical_failures = [name for name in critical_suites 
+        critical_failures = [name for name in critical_suites
                            if self.results[name].get("status") != "passed"]
-        
+
         if critical_failures:
             overall_status = "failed"
         elif total_failures > 0 or total_errors > 0:
             overall_status = "partial"
         else:
             overall_status = "passed"
-        
+
         summary = {
             "status": overall_status,
             "duration": total_duration,
@@ -319,7 +319,7 @@ class TestRunner:
             "critical_failures": critical_failures,
             "results": self.results
         }
-        
+
         # Print summary
         print("\n" + "=" * 60)
         print("📊 TEST SUMMARY")
@@ -328,17 +328,17 @@ class TestRunner:
         print(f"⏱️  Total Duration: {total_duration:.1f}s")
         print(f"📦 Test Suites: {passed_suites}/{total_suites} passed")
         print(f"🧪 Individual Tests: {total_tests - total_failures - total_errors}/{total_tests} passed")
-        
+
         if critical_failures:
             print(f"🚨 Critical Failures: {', '.join(critical_failures)}")
-        
+
         # Save summary to file
         summary_file = "docs/test_summary.json"
         with open(summary_file, 'w') as f:
             json.dump(summary, f, indent=2)
-        
+
         print(f"📄 Detailed results saved to: {summary_file}")
-        
+
         return summary
 
 
@@ -362,45 +362,45 @@ Examples:
   python run_tests.py --coverage        # Include coverage report
         """
     )
-    
+
     parser.add_argument(
         "suites",
         nargs="*",
         help="Test suites to run (default: all)"
     )
-    
+
     parser.add_argument(
         "--verbose", "-v",
         action="store_true",
         help="Verbose output"
     )
-    
+
     parser.add_argument(
         "--coverage", "-c",
         action="store_true",
         help="Generate coverage report"
     )
-    
+
     parser.add_argument(
         "--list-suites",
         action="store_true",
         help="List available test suites"
     )
-    
+
     args = parser.parse_args()
-    
+
     runner = TestRunner(verbose=args.verbose, coverage=args.coverage)
-    
+
     if args.list_suites:
         print("Available test suites:")
         for name, config in runner.test_suites.items():
             critical = "🚨 CRITICAL" if config.get("critical") else "📋 Optional"
             print(f"  {name:15} - {config['description']} ({critical})")
         return 0
-    
+
     # Run tests
     summary = runner.run_all_tests(args.suites)
-    
+
     # Return appropriate exit code
     if summary["status"] == "passed":
         return 0

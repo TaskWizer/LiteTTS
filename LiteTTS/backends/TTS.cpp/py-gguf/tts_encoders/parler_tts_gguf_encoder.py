@@ -157,7 +157,7 @@ class ParlerTTSEncoder(DACEncoder):
         # ---- Parler TTS Decoder configuration ----
 
         # hparams and audio_hparams represent the independent model configuration for the Parler-TTS Decoder and
-        # the DAC Audio Encoder models respectively. 
+        # the DAC Audio Encoder models respectively.
         hparams = self.model.config.decoder.to_dict()
         audio_hparams = self.model.config.audio_encoder.to_dict()
         # Overwrite the architecture so that context length and head count are stored appropriately under the

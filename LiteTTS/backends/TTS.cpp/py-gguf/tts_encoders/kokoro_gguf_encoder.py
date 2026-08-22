@@ -320,7 +320,7 @@ class KokoroEncoder(TTSEncoder):
         if parts[0] in ["norm1", "norm2"]:
             if parts[1] == "norm":
                 # This is related to affine bug with instance norm; these weight variables aren't actually used.
-                return 
+                return
             data = param.data.to(dtype=torch.float32).detach().detach().numpy()
             data = [data[:data.shape[0]//2], data[data.shape[0]//2:]]
             self.set_tensor(f"{base}.{parts[0]}_gamma_{parts[-1]}", data[0])

@@ -21,10 +21,10 @@ logger = logging.getLogger(__name__)
 
 class TTSSynthesizer:
     """Main TTS synthesizer that coordinates all components"""
-    
+
     def __init__(self, config: TTSConfiguration):
         self.config = config
-        
+
         # Initialize components
         self.engine = KokoroTTSEngine(config)
         self.emotion_controller = EmotionController()
@@ -200,12 +200,12 @@ class TTSSynthesizer:
             logger.warning(f"Failed to initialize time-stretcher: {e}")
             # Return disabled time-stretcher as fallback
             return TimeStretcher(TimeStretchConfig(enabled=False))
-    
-    def synthesize(self, request: TTSRequest, 
+
+    def synthesize(self, request: TTSRequest,
                   progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None) -> AudioSegment:
         """Main synthesis method"""
         logger.info(f"Starting synthesis: '{request.input[:50]}...' with voice '{request.voice}'")
-        
+
         try:
             # Step 1: SSML processing and text preprocessing
             if progress_callback:
@@ -238,30 +238,30 @@ class TTSSynthesizer:
                     plain_text,
                     request.normalization_options
                 )
-            
+
             # Step 2: Text chunking (if needed)
             if progress_callback:
                 progress_callback({'stage': 'chunking', 'progress': 0.2})
-            
+
             chunks = self.chunk_processor.chunk_text(processed_text)
-            
+
             # Step 3: Voice and emotion preparation
             if progress_callback:
                 progress_callback({'stage': 'voice_preparation', 'progress': 0.3})
-            
+
             voice_embedding = self.engine.load_voice(request.voice)
             if not voice_embedding:
                 raise RuntimeError(f"Failed to load voice: {request.voice}")
-            
+
             # Apply emotion if specified
             emotion = getattr(request, 'emotion', None)
             emotion_strength = getattr(request, 'emotion_strength', 1.0)
-            
+
             if emotion and emotion in self.emotion_controller.get_supported_emotions():
                 voice_embedding.embedding_data = self.emotion_controller.apply_emotion(
                     voice_embedding.embedding_data, emotion, emotion_strength
                 )
-            
+
             # Step 4: Synthesis (with optional time-stretching optimization)
             if progress_callback:
                 progress_callback({'stage': 'synthesis', 'progress': 0.4})
@@ -330,7 +330,7 @@ class TTSSynthesizer:
 
                 logger.debug(f"Time-stretching metrics: RTF {stretch_metrics.rtf_original:.3f} → {stretch_metrics.rtf_stretched:.3f}")
 
-            
+
             # Step 5: Background audio mixing (if SSML background specified)
             if background_config:
                 if progress_callback:
@@ -351,44 +351,44 @@ class TTSSynthesizer:
             # Optimize for streaming if needed
             if request.stream:
                 audio_segment = self.audio_processor.optimize_for_streaming(audio_segment)
-            
+
             # Step 6: Format conversion
             if progress_callback:
                 progress_callback({'stage': 'format_conversion', 'progress': 0.9})
-            
+
             # The format conversion will be handled by the API layer
             # Here we just ensure the audio is in the right format
             audio_segment.format = request.response_format
-            
+
             if progress_callback:
                 progress_callback({'stage': 'complete', 'progress': 1.0})
-            
+
             logger.info(f"Synthesis completed: {audio_segment.duration:.2f}s audio generated")
             return audio_segment
-            
+
         except Exception as e:
             logger.error(f"Synthesis failed: {e}")
             if progress_callback:
                 progress_callback({'stage': 'error', 'progress': 0.0, 'error': str(e)})
             raise
-    
-    def synthesize_simple(self, text: str, voice: str = None, 
+
+    def synthesize_simple(self, text: str, voice: str = None,
                          speed: float = 1.0, emotion: str = None) -> AudioSegment:
         """Simple synthesis method with minimal parameters"""
         if voice is None:
             voice = self.config.default_voice
-        
+
         request = TTSRequest(
             input=text,
             voice=voice,
             speed=speed
         )
-        
+
         # Add emotion if specified
         if emotion:
             request.emotion = emotion
             request.emotion_strength = 1.0
-        
+
         return self.synthesize(request)
 
     async def synthesize_streaming(
@@ -470,71 +470,71 @@ class TTSSynthesizer:
         # Generate test audio
         test_audio = self.synthesize_simple(test_text)
         return self.time_stretcher.benchmark_rates(test_audio, rates)
-    
+
     def get_supported_emotions(self) -> List[str]:
         """Get list of supported emotions"""
         return self.emotion_controller.get_supported_emotions()
-    
+
     def get_voice_info(self, voice_name: str) -> Dict[str, Any]:
         """Get detailed information about a voice"""
         return self.engine.get_voice_info(voice_name)
-    
+
     def get_emotion_info(self, emotion: str) -> Optional[Dict[str, Any]]:
         """Get information about an emotion"""
         return self.emotion_controller.get_emotion_info(emotion)
-    
+
     def estimate_synthesis_time(self, text: str, voice: str) -> float:
         """Estimate synthesis time"""
         # Process text to get accurate length
         processed_text = self.nlp_processor.process_text(text)
         chunks = self.chunk_processor.chunk_text(processed_text)
-        
+
         # Get base estimate from engine
         base_estimate = self.engine.estimate_synthesis_time(processed_text, voice)
-        
+
         # Add chunk processing overhead
         chunk_estimate = self.chunk_processor.estimate_processing_time(chunks)
-        
+
         return base_estimate + chunk_estimate
-    
+
     def validate_request(self, request: TTSRequest) -> List[str]:
         """Validate synthesis request"""
         errors = []
-        
+
         # Check voice availability
         if request.voice not in self.get_available_voices():
             errors.append(f"Voice '{request.voice}' not available")
-        
+
         # Check emotion if specified
         emotion = getattr(request, 'emotion', None)
         if emotion and emotion not in self.get_supported_emotions():
             errors.append(f"Emotion '{emotion}' not supported")
-        
+
         # Check emotion strength
         emotion_strength = getattr(request, 'emotion_strength', 1.0)
         is_valid, msg = self.emotion_controller.validate_emotion_strength(emotion_strength)
         if not is_valid:
             errors.append(msg)
-        
+
         # Check text length
         if len(request.input) > self.config.max_text_length:
             errors.append(f"Text too long: {len(request.input)} > {self.config.max_text_length}")
-        
-        return errors    
+
+        return errors
 
     def preload_voice(self, voice_name: str) -> bool:
         """Preload a voice for faster synthesis"""
         return self.engine.preload_voice(voice_name)
-    
+
     def preload_voices(self, voice_names: List[str]) -> Dict[str, bool]:
         """Preload multiple voices"""
         return self.engine.preload_voices(voice_names)
-    
+
     def get_system_status(self) -> Dict[str, Any]:
         """Get comprehensive system status"""
         engine_info = self.engine.get_engine_info()
         voice_system_status = self.engine.voice_manager.get_system_status()
-        
+
         return {
             'engine': engine_info,
             'voices': voice_system_status,
@@ -550,25 +550,25 @@ class TTSSynthesizer:
                 'device': self.config.device
             }
         }
-    
+
     def suggest_voice_for_text(self, text: str) -> str:
         """Suggest an appropriate voice based on text content"""
         # Simple heuristics for voice selection
         text_lower = text.lower()
-        
+
         # Check for gender-specific content
         if any(word in text_lower for word in ['she', 'her', 'woman', 'girl', 'female']):
             # Prefer female voices
             female_voices = [v for v in self.get_available_voices() if v.startswith('af_')]
             if female_voices:
                 return female_voices[0]  # Default to first available female voice
-        
+
         if any(word in text_lower for word in ['he', 'him', 'man', 'boy', 'male']):
             # Prefer male voices
             male_voices = [v for v in self.get_available_voices() if v.startswith('am_')]
             if male_voices:
                 return male_voices[0]  # Default to first available male voice
-        
+
         # Check for content type
         if any(word in text_lower for word in ['professional', 'business', 'formal']):
             # Prefer professional voices
@@ -576,21 +576,21 @@ class TTSSynthesizer:
             for voice in professional_voices:
                 if voice in self.get_available_voices():
                     return voice
-        
+
         if any(word in text_lower for word in ['story', 'tale', 'narrative']):
             # Prefer narrative voices
             narrative_voices = ['af_heart', 'am_puck']
             for voice in narrative_voices:
                 if voice in self.get_available_voices():
                     return voice
-        
+
         # Default to configured default voice
         return self.config.default_voice
-    
+
     def suggest_emotion_for_text(self, text: str) -> str:
         """Suggest an appropriate emotion based on text content"""
         return self.emotion_controller.suggest_emotion_for_text(text)
-    
+
     def create_synthesis_profile(self, name: str, voice: str, speed: float = 1.0,
                                emotion: str = None, emotion_strength: float = 1.0,
                                volume_multiplier: float = 1.0) -> Dict[str, Any]:
@@ -601,11 +601,11 @@ class TTSSynthesizer:
             'speed': speed,
             'volume_multiplier': volume_multiplier
         }
-        
+
         if emotion:
             profile['emotion'] = emotion
             profile['emotion_strength'] = emotion_strength
-        
+
         # Validate profile
         test_request = TTSRequest(
             input="Test",
@@ -613,17 +613,17 @@ class TTSSynthesizer:
             speed=speed,
             volume_multiplier=volume_multiplier
         )
-        
+
         if emotion:
             test_request.emotion = emotion
             test_request.emotion_strength = emotion_strength
-        
+
         validation_errors = self.validate_request(test_request)
         if validation_errors:
             raise ValueError(f"Invalid profile: {validation_errors}")
-        
+
         return profile
-    
+
     def synthesize_with_profile(self, text: str, profile: Dict[str, Any]) -> AudioSegment:
         """Synthesize using a predefined profile"""
         request = TTSRequest(
@@ -632,19 +632,19 @@ class TTSSynthesizer:
             speed=profile.get('speed', 1.0),
             volume_multiplier=profile.get('volume_multiplier', 1.0)
         )
-        
+
         if 'emotion' in profile:
             request.emotion = profile['emotion']
             request.emotion_strength = profile.get('emotion_strength', 1.0)
-        
+
         return self.synthesize(request)
-    
-    def batch_synthesize(self, texts: List[str], voice: str, 
+
+    def batch_synthesize(self, texts: List[str], voice: str,
                         progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None) -> List[AudioSegment]:
         """Synthesize multiple texts in batch"""
         results = []
         total_texts = len(texts)
-        
+
         for i, text in enumerate(texts):
             try:
                 if progress_callback:
@@ -654,15 +654,15 @@ class TTSSynthesizer:
                         'current_item': i + 1,
                         'total_items': total_texts
                     })
-                
+
                 audio = self.synthesize_simple(text, voice)
                 results.append(audio)
-                
+
             except Exception as e:
                 logger.error(f"Failed to synthesize text {i}: {e}")
                 # Add empty audio segment as placeholder
                 results.append(AudioSegment.silence(0.1))
-        
+
         if progress_callback:
             progress_callback({
                 'stage': 'batch_complete',
@@ -670,23 +670,23 @@ class TTSSynthesizer:
                 'total_items': total_texts,
                 'successful_items': len([r for r in results if r.duration > 0.1])
             })
-        
+
         return results
-    
+
     def cleanup(self):
         """Clean up synthesizer resources"""
         logger.info("Cleaning up TTS synthesizer")
-        
+
         if self.engine:
             self.engine.cleanup()
-        
+
         logger.info("TTS synthesizer cleanup completed")
-    
+
     def get_synthesis_stats(self) -> Dict[str, Any]:
         """Get synthesis statistics"""
         voice_stats = self.engine.voice_manager.metadata_manager.get_usage_summary()
         cache_stats = self.engine.voice_manager.cache.get_cache_stats()
-        
+
         return {
             'voice_usage': voice_stats,
             'cache_performance': {

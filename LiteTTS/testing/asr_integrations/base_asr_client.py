@@ -13,13 +13,13 @@ class BaseASRClient(ABC):
     """
     Base class for ASR (Automatic Speech Recognition) clients
     """
-    
+
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         self.config = config or {}
         self.timeout = self.config.get("timeout", 30)
         self.language = self.config.get("language", "en-US")
         self.model = self.config.get("model", "general")
-        
+
     @abstractmethod
     async def transcribe(self, audio_data: bytes) -> Tuple[str, float]:
         """
@@ -32,7 +32,7 @@ class BaseASRClient(ABC):
             Tuple of (transcription, confidence_score)
         """
         pass
-    
+
     @abstractmethod
     def is_available(self) -> bool:
         """
@@ -42,7 +42,7 @@ class BaseASRClient(ABC):
             True if service is available, False otherwise
         """
         pass
-    
+
     def get_service_info(self) -> Dict[str, Any]:
         """
         Get information about the ASR service

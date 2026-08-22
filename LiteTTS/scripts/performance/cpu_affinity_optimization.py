@@ -52,30 +52,30 @@ class AffinityConfiguration:
 
 class CPUAffinityOptimizer:
     """CPU affinity and multi-core optimization system"""
-    
+
     def __init__(self):
         self.results_dir = Path("test_results/cpu_optimization")
         self.results_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # CPU topology detection
         self.topology = self._detect_cpu_topology()
-        
+
         # Current process
         self.current_process = psutil.Process()
-        
+
     def _detect_cpu_topology(self) -> CPUTopology:
         """Detect CPU topology and core types"""
         logger.info("Detecting CPU topology...")
-        
+
         # Basic CPU information
         total_cores = psutil.cpu_count(logical=True)
         physical_cores = psutil.cpu_count(logical=False)
         logical_cores = total_cores
-        
+
         # Try to detect P-cores and E-cores (Intel 12th gen+)
         p_cores = []
         e_cores = []
-        
+
         try:
             # On Linux, try to read CPU frequency info to distinguish core types
             if platform.system() == "Linux":
@@ -91,7 +91,7 @@ class CPUAffinityOptimizer:
             # Fallback: treat all cores as P-cores
             p_cores = list(range(physical_cores))
             e_cores = []
-        
+
         # NUMA nodes detection
         numa_nodes = []
         try:
@@ -100,16 +100,16 @@ class CPUAffinityOptimizer:
                 numa_nodes = [0]  # Default single NUMA node
         except:
             numa_nodes = [0]
-        
+
         # Cache information
         cache_levels = self._detect_cache_info()
-        
+
         # Frequency information
         frequency_info = self._get_frequency_info()
-        
+
         # Architecture detection
         architecture = platform.machine()
-        
+
         topology = CPUTopology(
             total_cores=total_cores,
             physical_cores=physical_cores,
@@ -121,15 +121,15 @@ class CPUAffinityOptimizer:
             frequency_info=frequency_info,
             architecture=architecture
         )
-        
+
         logger.info(f"Detected topology: {total_cores} total cores, {len(p_cores)} P-cores, {len(e_cores)} E-cores")
         return topology
-    
+
     def _detect_core_types_linux(self) -> Tuple[List[int], List[int]]:
         """Detect P-cores and E-cores on Linux systems"""
         p_cores = []
         e_cores = []
-        
+
         try:
             # Read CPU frequency information
             cpu_freqs = psutil.cpu_freq(percpu=True)
@@ -137,12 +137,12 @@ class CPUAffinityOptimizer:
                 # Sort cores by maximum frequency
                 core_freqs = [(i, freq.max) for i, freq in enumerate(cpu_freqs) if freq.max]
                 core_freqs.sort(key=lambda x: x[1], reverse=True)
-                
+
                 # Assume cores with higher max frequency are P-cores
                 # This is a heuristic and may need adjustment
                 total_physical = self.topology.physical_cores if hasattr(self, 'topology') else psutil.cpu_count(logical=False)
                 p_core_count = max(1, total_physical // 2)
-                
+
                 p_cores = [core[0] for core in core_freqs[:p_core_count]]
                 e_cores = [core[0] for core in core_freqs[p_core_count:]]
             else:
@@ -151,16 +151,16 @@ class CPUAffinityOptimizer:
                 mid_point = total_cores // 2
                 p_cores = list(range(0, mid_point))
                 e_cores = list(range(mid_point, total_cores))
-                
+
         except Exception as e:
             logger.warning(f"Error detecting core types on Linux: {e}")
             # Final fallback
             total_cores = psutil.cpu_count(logical=False)
             p_cores = list(range(total_cores))
             e_cores = []
-        
+
         return p_cores, e_cores
-    
+
     def _detect_cache_info(self) -> Dict[str, Any]:
         """Detect CPU cache information"""
         cache_info = {
@@ -169,7 +169,7 @@ class CPUAffinityOptimizer:
             "l2": "unknown",
             "l3": "unknown"
         }
-        
+
         try:
             if platform.system() == "Linux":
                 # Try to read cache info from /proc/cpuinfo
@@ -183,9 +183,9 @@ class CPUAffinityOptimizer:
                                 break
         except Exception as e:
             logger.warning(f"Could not detect cache info: {e}")
-        
+
         return cache_info
-    
+
     def _get_frequency_info(self) -> Dict[str, float]:
         """Get CPU frequency information"""
         freq_info = {
@@ -193,7 +193,7 @@ class CPUAffinityOptimizer:
             "min": 0.0,
             "max": 0.0
         }
-        
+
         try:
             cpu_freq = psutil.cpu_freq()
             if cpu_freq:
@@ -202,21 +202,21 @@ class CPUAffinityOptimizer:
                 freq_info["max"] = cpu_freq.max
         except Exception as e:
             logger.warning(f"Could not get frequency info: {e}")
-        
+
         return freq_info
-    
+
     def calculate_optimal_affinity(self, workload_type: str = "inference") -> AffinityConfiguration:
         """Calculate optimal CPU affinity configuration"""
         logger.info(f"Calculating optimal affinity for {workload_type} workload...")
-        
+
         total_cores = self.topology.total_cores
         p_cores = self.topology.p_cores
         e_cores = self.topology.e_cores
-        
+
         if workload_type == "inference":
             # For TTS inference, prioritize P-cores for ONNX Runtime
             # Reserve some cores for system tasks
-            
+
             if len(p_cores) >= 4:
                 # Use most P-cores for ONNX, reserve 1-2 for system
                 onnx_cores = p_cores[:-1]  # All but last P-core
@@ -236,12 +236,12 @@ class CPUAffinityOptimizer:
                 system_cores = e_cores[:1] if e_cores else [total_cores - 1]
                 io_cores = []
                 monitoring_cores = []
-            
+
             # Thread pool configuration
             thread_pool_size = len(onnx_cores)
             inter_op_threads = max(1, len(onnx_cores) // 2)
             intra_op_threads = len(onnx_cores)
-            
+
         else:
             # Default configuration
             onnx_cores = list(range(min(4, total_cores)))
@@ -251,7 +251,7 @@ class CPUAffinityOptimizer:
             thread_pool_size = min(4, total_cores)
             inter_op_threads = 2
             intra_op_threads = min(4, total_cores)
-        
+
         config = AffinityConfiguration(
             onnx_cores=onnx_cores,
             system_cores=system_cores,
@@ -262,14 +262,14 @@ class CPUAffinityOptimizer:
             intra_op_threads=intra_op_threads,
             optimization_level="aggressive"
         )
-        
+
         logger.info(f"Optimal configuration: ONNX cores: {onnx_cores}, System cores: {system_cores}")
         return config
-    
+
     def apply_cpu_affinity(self, config: AffinityConfiguration) -> bool:
         """Apply CPU affinity configuration"""
         logger.info("Applying CPU affinity configuration...")
-        
+
         try:
             # Set process affinity to ONNX cores
             if hasattr(self.current_process, 'cpu_affinity'):
@@ -281,28 +281,28 @@ class CPUAffinityOptimizer:
                     logger.warning("No cores assigned, skipping affinity setting")
             else:
                 logger.warning("CPU affinity not supported on this platform")
-            
+
             # Set environment variables for ONNX Runtime
             os.environ['OMP_NUM_THREADS'] = str(config.intra_op_threads)
             os.environ['MKL_NUM_THREADS'] = str(config.intra_op_threads)
             os.environ['OPENBLAS_NUM_THREADS'] = str(config.intra_op_threads)
             os.environ['VECLIB_MAXIMUM_THREADS'] = str(config.intra_op_threads)
             os.environ['NUMEXPR_NUM_THREADS'] = str(config.intra_op_threads)
-            
+
             # ONNX Runtime specific settings
             os.environ['ORT_NUM_THREADS'] = str(config.intra_op_threads)
-            
+
             logger.info(f"Set threading environment variables: OMP_NUM_THREADS={config.intra_op_threads}")
             return True
-            
+
         except Exception as e:
             logger.error(f"Failed to apply CPU affinity: {e}")
             return False
-    
+
     def optimize_onnx_runtime_config(self, config: AffinityConfiguration) -> Dict[str, Any]:
         """Generate optimized ONNX Runtime configuration"""
         logger.info("Generating optimized ONNX Runtime configuration...")
-        
+
         onnx_config = {
             "providers": ["CPUExecutionProvider"],
             "provider_options": [{
@@ -330,16 +330,16 @@ class CPUAffinityOptimizer:
                 "thread_affinity": config.onnx_cores
             }
         }
-        
+
         return onnx_config
-    
+
     def benchmark_affinity_performance(self, config: AffinityConfiguration) -> Dict[str, Any]:
         """Benchmark performance with affinity configuration"""
         logger.info("Benchmarking affinity performance...")
-        
+
         # Apply configuration
         self.apply_cpu_affinity(config)
-        
+
         # Run performance tests
         test_results = {
             "cpu_utilization": [],
@@ -347,7 +347,7 @@ class CPUAffinityOptimizer:
             "context_switches": [],
             "cache_misses": []
         }
-        
+
         # Monitor for 30 seconds
         start_time = time.time()
         while time.time() - start_time < 30:
@@ -355,24 +355,24 @@ class CPUAffinityOptimizer:
                 # CPU utilization per core
                 cpu_percent = psutil.cpu_percent(percpu=True, interval=1)
                 test_results["cpu_utilization"].append(cpu_percent)
-                
+
                 # Memory usage
                 memory = psutil.virtual_memory()
                 test_results["memory_usage"].append(memory.percent)
-                
+
                 # Context switches
                 ctx_switches = psutil.cpu_stats().ctx_switches
                 test_results["context_switches"].append(ctx_switches)
-                
+
             except Exception as e:
                 logger.warning(f"Monitoring error: {e}")
                 break
-        
+
         # Calculate statistics
         if test_results["cpu_utilization"]:
-            avg_cpu = [sum(cores) / len(test_results["cpu_utilization"]) 
+            avg_cpu = [sum(cores) / len(test_results["cpu_utilization"])
                       for cores in zip(*test_results["cpu_utilization"])]
-            
+
             performance_stats = {
                 "avg_cpu_per_core": avg_cpu,
                 "avg_memory_usage": sum(test_results["memory_usage"]) / len(test_results["memory_usage"]),
@@ -384,13 +384,13 @@ class CPUAffinityOptimizer:
             performance_stats = {
                 "error": "No performance data collected"
             }
-        
+
         return performance_stats
-    
+
     def generate_configuration_file(self, config: AffinityConfiguration) -> str:
         """Generate configuration file for CPU optimization"""
         logger.info("Generating CPU optimization configuration file...")
-        
+
         config_data = {
             "cpu_optimization": {
                 "enabled": True,
@@ -411,39 +411,39 @@ class CPUAffinityOptimizer:
                 }
             }
         }
-        
+
         config_file = self.results_dir / "cpu_optimization_config.json"
         with open(config_file, 'w') as f:
             json.dump(config_data, f, indent=2)
-        
+
         logger.info(f"Configuration saved to: {config_file}")
         return str(config_file)
-    
+
     def run_comprehensive_optimization(self) -> Dict[str, Any]:
         """Run comprehensive CPU affinity and multi-core optimization"""
         logger.info("Starting comprehensive CPU optimization...")
-        
+
         # Calculate optimal configuration
         config = self.calculate_optimal_affinity("inference")
-        
+
         # Benchmark current performance (before optimization)
         logger.info("Benchmarking baseline performance...")
         baseline_performance = self.benchmark_affinity_performance(config)
-        
+
         # Apply optimizations
         logger.info("Applying CPU optimizations...")
         affinity_applied = self.apply_cpu_affinity(config)
-        
+
         # Generate ONNX Runtime configuration
         onnx_config = self.optimize_onnx_runtime_config(config)
-        
+
         # Benchmark optimized performance
         logger.info("Benchmarking optimized performance...")
         optimized_performance = self.benchmark_affinity_performance(config)
-        
+
         # Generate configuration file
         config_file = self.generate_configuration_file(config)
-        
+
         # Compile results
         results = {
             "optimization_timestamp": time.time(),
@@ -456,29 +456,29 @@ class CPUAffinityOptimizer:
             "configuration_file": config_file,
             "recommendations": self._generate_optimization_recommendations(config, baseline_performance, optimized_performance)
         }
-        
+
         # Save results
         results_file = self.results_dir / f"cpu_optimization_results_{int(time.time())}.json"
         with open(results_file, 'w') as f:
             json.dump(results, f, indent=2, default=str)
-        
+
         logger.info(f"CPU optimization completed. Results saved to: {results_file}")
         return results
-    
-    def _generate_optimization_recommendations(self, config: AffinityConfiguration, 
-                                             baseline: Dict[str, Any], 
+
+    def _generate_optimization_recommendations(self, config: AffinityConfiguration,
+                                             baseline: Dict[str, Any],
                                              optimized: Dict[str, Any]) -> List[str]:
         """Generate optimization recommendations"""
         recommendations = []
-        
+
         # Core allocation recommendations
         if len(config.onnx_cores) < 4:
             recommendations.append("Consider upgrading to a CPU with more cores for better TTS performance")
-        
+
         # Thread configuration recommendations
         if config.intra_op_threads < 4:
             recommendations.append("Limited thread count may impact performance on complex models")
-        
+
         # Performance comparison recommendations
         if "onnx_core_utilization" in optimized and optimized["onnx_core_utilization"]:
             avg_onnx_util = sum(optimized["onnx_core_utilization"]) / len(optimized["onnx_core_utilization"])
@@ -486,51 +486,51 @@ class CPUAffinityOptimizer:
                 recommendations.append("ONNX cores are underutilized, consider increasing workload or reducing core count")
             elif avg_onnx_util > 90:
                 recommendations.append("ONNX cores are highly utilized, consider adding more cores or optimizing workload")
-        
+
         # System recommendations
         recommendations.append("Enable CPU performance governor for optimal TTS performance")
         recommendations.append("Ensure adequate cooling for sustained high CPU utilization")
         recommendations.append("Monitor thermal throttling during production workloads")
-        
+
         return recommendations
 
 def main():
     """Main function to run CPU affinity optimization"""
     optimizer = CPUAffinityOptimizer()
-    
+
     try:
         results = optimizer.run_comprehensive_optimization()
-        
+
         print("\n" + "="*80)
         print("CPU AFFINITY AND MULTI-CORE OPTIMIZATION SUMMARY")
         print("="*80)
-        
+
         topology = results["cpu_topology"]
         config = results["affinity_configuration"]
-        
+
         print(f"CPU Topology:")
         print(f"  Total Cores: {topology['total_cores']}")
         print(f"  Physical Cores: {topology['physical_cores']}")
         print(f"  P-Cores: {len(topology['p_cores'])} {topology['p_cores']}")
         print(f"  E-Cores: {len(topology['e_cores'])} {topology['e_cores']}")
         print(f"  Architecture: {topology['architecture']}")
-        
+
         print(f"\nOptimal Configuration:")
         print(f"  ONNX Cores: {config['onnx_cores']}")
         print(f"  System Cores: {config['system_cores']}")
         print(f"  Thread Pool Size: {config['thread_pool_size']}")
         print(f"  Inter-op Threads: {config['inter_op_threads']}")
         print(f"  Intra-op Threads: {config['intra_op_threads']}")
-        
+
         print(f"\nAffinity Applied: {'✅' if results['affinity_applied'] else '❌'}")
-        
+
         print(f"\nRecommendations:")
         for i, rec in enumerate(results["recommendations"], 1):
             print(f"  {i}. {rec}")
-        
+
         print(f"\nConfiguration File: {results['configuration_file']}")
         print("\n" + "="*80)
-        
+
     except Exception as e:
         logger.error(f"CPU optimization failed: {e}")
         import traceback

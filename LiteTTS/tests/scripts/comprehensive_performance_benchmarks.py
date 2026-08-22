@@ -37,22 +37,22 @@ class PerformanceMetrics:
     audio_duration: float = 0.0
     text_length: int = 0
     words_per_minute: float = 0.0
-    
+
     # System metrics
     cpu_usage_avg: float = 0.0
     cpu_usage_peak: float = 0.0
     memory_usage_mb: float = 0.0
     memory_peak_mb: float = 0.0
     cpu_temperature: float = 0.0
-    
+
     # Model metrics
     model_variant: str = ""
     voice_model: str = ""
-    
+
     # Quality indicators
     audio_size_bytes: int = 0
     sample_rate: int = 0
-    
+
     # Test metadata
     test_category: str = ""
     timestamp: float = field(default_factory=time.time)
@@ -68,14 +68,14 @@ class BenchmarkResult:
 
 class SystemMonitor:
     """System resource monitoring during benchmarks"""
-    
+
     def __init__(self):
         self.monitoring = False
         self.cpu_readings = []
         self.memory_readings = []
         self.temperature_readings = []
         self.monitor_thread = None
-        
+
     def start_monitoring(self):
         """Start system monitoring"""
         self.monitoring = True
@@ -84,13 +84,13 @@ class SystemMonitor:
         self.temperature_readings = []
         self.monitor_thread = threading.Thread(target=self._monitor_loop)
         self.monitor_thread.start()
-        
+
     def stop_monitoring(self) -> Dict[str, float]:
         """Stop monitoring and return statistics"""
         self.monitoring = False
         if self.monitor_thread:
             self.monitor_thread.join()
-        
+
         return {
             "cpu_avg": statistics.mean(self.cpu_readings) if self.cpu_readings else 0.0,
             "cpu_peak": max(self.cpu_readings) if self.cpu_readings else 0.0,
@@ -98,7 +98,7 @@ class SystemMonitor:
             "memory_peak": max(self.memory_readings) if self.memory_readings else 0.0,
             "temperature_avg": statistics.mean(self.temperature_readings) if self.temperature_readings else 0.0
         }
-    
+
     def _monitor_loop(self):
         """Monitoring loop"""
         while self.monitoring:
@@ -106,11 +106,11 @@ class SystemMonitor:
                 # CPU usage
                 cpu_percent = psutil.cpu_percent(interval=0.1)
                 self.cpu_readings.append(cpu_percent)
-                
+
                 # Memory usage
                 memory = psutil.virtual_memory()
                 self.memory_readings.append(memory.used / (1024 * 1024))  # MB
-                
+
                 # Temperature (if available)
                 try:
                     temps = psutil.sensors_temperatures()
@@ -125,33 +125,33 @@ class SystemMonitor:
                                 break
                 except:
                     pass  # Temperature monitoring not available
-                
+
                 time.sleep(0.5)  # Monitor every 500ms
             except Exception as e:
                 logger.warning(f"Monitoring error: {e}")
 
 class ComprehensivePerformanceBenchmarker:
     """Comprehensive performance benchmarking framework"""
-    
+
     def __init__(self, api_base_url: str = "http://localhost:8354"):
         self.api_base_url = api_base_url
         self.results_dir = Path("test_results/comprehensive_performance")
         self.results_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # System monitor
         self.system_monitor = SystemMonitor()
-        
+
         # Test configurations
         self.model_variants = ["model_q4.onnx", "model_f16.onnx", "model_q8f16.onnx"]
         self.voice_models = ["af_heart", "af_sky", "am_adam", "am_michael"]
-        
+
         # Create comprehensive test cases
         self.test_cases = self._create_performance_test_cases()
-        
+
     def _create_performance_test_cases(self) -> List[Dict[str, Any]]:
         """Create comprehensive performance test cases"""
         test_cases = []
-        
+
         # Short text performance tests (< 20 characters)
         short_texts = [
             "Hi",
@@ -160,7 +160,7 @@ class ComprehensivePerformanceBenchmarker:
             "How are you?",
             "Thank you very much"
         ]
-        
+
         for i, text in enumerate(short_texts):
             test_cases.append({
                 "test_id": f"short_text_{i+1}",
@@ -169,7 +169,7 @@ class ComprehensivePerformanceBenchmarker:
                 "target_rtf": 0.2,
                 "description": f"Short text performance: {len(text)} chars"
             })
-        
+
         # Medium text performance tests (20-100 characters)
         medium_texts = [
             "The quick brown fox jumps over the lazy dog",
@@ -178,7 +178,7 @@ class ComprehensivePerformanceBenchmarker:
             "Natural language processing requires careful attention to detail",
             "Text-to-speech systems must balance quality with processing speed"
         ]
-        
+
         for i, text in enumerate(medium_texts):
             test_cases.append({
                 "test_id": f"medium_text_{i+1}",
@@ -187,14 +187,14 @@ class ComprehensivePerformanceBenchmarker:
                 "target_rtf": 0.25,
                 "description": f"Medium text performance: {len(text)} chars"
             })
-        
+
         # Long text performance tests (> 100 characters)
         long_texts = [
             "This is a comprehensive test of the text-to-speech system's ability to handle longer passages of text while maintaining both quality and performance. The system should process this text efficiently while preserving natural speech patterns and pronunciation accuracy.",
             "Performance benchmarking is essential for ensuring that text-to-speech systems meet production requirements. This includes measuring real-time factor, CPU utilization, memory usage, and thermal characteristics under various workloads and text lengths.",
             "The Kokoro ONNX TTS API represents a significant advancement in neural text-to-speech technology, combining high-quality audio generation with optimized performance characteristics suitable for production deployment in various environments and use cases."
         ]
-        
+
         for i, text in enumerate(long_texts):
             test_cases.append({
                 "test_id": f"long_text_{i+1}",
@@ -203,14 +203,14 @@ class ComprehensivePerformanceBenchmarker:
                 "target_rtf": 0.25,
                 "description": f"Long text performance: {len(text)} chars"
             })
-        
+
         # Stress test cases
         stress_texts = [
             "A" * 50,  # Repetitive short
             "The quick brown fox jumps over the lazy dog. " * 5,  # Repetitive medium
             "Performance testing with numbers: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10. Special characters: @, #, $, %, &, *, +, =. Punctuation: ?, !, ., ,, ;, :. Mixed content for comprehensive evaluation.",
         ]
-        
+
         for i, text in enumerate(stress_texts):
             test_cases.append({
                 "test_id": f"stress_test_{i+1}",
@@ -219,17 +219,17 @@ class ComprehensivePerformanceBenchmarker:
                 "target_rtf": 0.3,
                 "description": f"Stress test: {len(text)} chars"
             })
-        
+
         return test_cases
-    
+
     async def generate_audio_with_monitoring(self, text: str, voice: str = "af_heart") -> Tuple[bool, bytes, float, Dict[str, float], str]:
         """Generate audio with system monitoring"""
         try:
             # Start system monitoring
             self.system_monitor.start_monitoring()
-            
+
             start_time = time.time()
-            
+
             async with aiohttp.ClientSession() as session:
                 payload = {
                     'model': 'kokoro',
@@ -237,54 +237,54 @@ class ComprehensivePerformanceBenchmarker:
                     'voice': voice,
                     'response_format': 'wav'
                 }
-                
+
                 async with session.post(
                     f"{self.api_base_url}/v1/audio/speech",
                     json=payload,
                     timeout=aiohttp.ClientTimeout(total=60)
                 ) as response:
                     generation_time = time.time() - start_time
-                    
+
                     # Stop monitoring
                     system_stats = self.system_monitor.stop_monitoring()
-                    
+
                     if response.status == 200:
                         audio_data = await response.read()
                         return True, audio_data, generation_time, system_stats, ""
                     else:
                         error_text = await response.text()
                         return False, b"", generation_time, system_stats, f"HTTP {response.status}: {error_text}"
-                        
+
         except Exception as e:
             generation_time = time.time() - start_time
             system_stats = self.system_monitor.stop_monitoring()
             return False, b"", generation_time, system_stats, str(e)
-    
+
     def analyze_audio_properties(self, audio_data: bytes) -> Dict[str, Any]:
         """Analyze audio properties"""
         try:
             import wave
             import tempfile
-            
+
             with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_file:
                 temp_file.write(audio_data)
                 temp_path = temp_file.name
-            
+
             with wave.open(temp_path, 'rb') as wav_file:
                 frames = wav_file.getnframes()
                 sample_rate = wav_file.getframerate()
                 duration = frames / float(sample_rate)
                 channels = wav_file.getnchannels()
-            
+
             os.unlink(temp_path)
-            
+
             return {
                 "duration": duration,
                 "sample_rate": sample_rate,
                 "channels": channels,
                 "size_bytes": len(audio_data)
             }
-            
+
         except Exception as e:
             logger.warning(f"Audio analysis failed: {e}")
             return {
@@ -293,16 +293,16 @@ class ComprehensivePerformanceBenchmarker:
                 "channels": 0,
                 "size_bytes": len(audio_data)
             }
-    
+
     async def benchmark_single_case(self, test_case: Dict[str, Any], voice: str = "af_heart", model_variant: str = "model_q4.onnx") -> BenchmarkResult:
         """Benchmark a single test case"""
         logger.info(f"Benchmarking: {test_case['test_id']} - {test_case['description']} (Voice: {voice}, Model: {model_variant})")
-        
+
         # Generate audio with monitoring
         success, audio_data, generation_time, system_stats, error = await self.generate_audio_with_monitoring(
             test_case["input_text"], voice
         )
-        
+
         if not success:
             logger.error(f"Benchmark failed for {test_case['test_id']}: {error}")
             return BenchmarkResult(
@@ -318,16 +318,16 @@ class ComprehensivePerformanceBenchmarker:
                 success=False,
                 error_message=error
             )
-        
+
         # Analyze audio properties
         audio_props = self.analyze_audio_properties(audio_data)
         duration = audio_props.get("duration", 0)
-        
+
         # Calculate performance metrics
         rtf = generation_time / duration if duration > 0 else float('inf')
         words = len(test_case["input_text"].split())
         words_per_minute = (words * 60) / duration if duration > 0 else 0
-        
+
         metrics = PerformanceMetrics(
             rtf=rtf,
             generation_time=generation_time,
@@ -345,9 +345,9 @@ class ComprehensivePerformanceBenchmarker:
             sample_rate=audio_props.get("sample_rate", 0),
             test_category=test_case["category"]
         )
-        
+
         logger.info(f"Completed: {test_case['test_id']} - RTF: {rtf:.3f}, CPU: {system_stats.get('cpu_avg', 0):.1f}%, Memory: {system_stats.get('memory_avg', 0):.1f}MB")
-        
+
         return BenchmarkResult(
             test_id=test_case["test_id"],
             input_text=test_case["input_text"],

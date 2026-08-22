@@ -14,20 +14,20 @@ logger = logging.getLogger(__name__)
 
 class EnhancedDateTimeProcessor:
     """Enhanced date and time processing for natural TTS pronunciation"""
-    
+
     def __init__(self):
         self.date_patterns = self._load_date_patterns()
         self.time_patterns = self._load_time_patterns()
         self.month_names = self._load_month_names()
         self.ordinal_suffixes = self._load_ordinal_suffixes()
         self.weekday_names = self._load_weekday_names()
-        
+
         # Configuration
         self.use_ordinal_dates = True
         self.use_full_month_names = True
         self.use_natural_time_format = False  # CHANGED: Use literal format for TTS
         self.handle_relative_dates = True
-        
+
     def _load_date_patterns(self) -> List[Tuple[str, str]]:
         """Load date pattern matching rules"""
         return [
@@ -54,22 +54,22 @@ class EnhancedDateTimeProcessor:
             # Month-day format: MM-DD or MM/DD (avoid matching time ranges)
             (r'(?<!\d:)(?<!\d\d:)\b(\d{1,2})-(\d{1,2})\b(?!\d)(?!:)', 'month_day_dash'),
             (r'(?<!\d:)(?<!\d\d:)\b(\d{1,2})/(\d{1,2})\b(?!\d)(?!:)', 'month_day_slash'),
-            
+
             # Year only
             (r'\b(19|20)\d{2}\b', 'year_only'),
-            
+
             # Relative dates
             (r'\b(today|tomorrow|yesterday)\b', 'relative_date'),
             (r'\b(next|last)\s+(week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b', 'relative_period'),
-            
+
             # Written dates: January 1, 2023 or 1 January 2023
             (r'\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2}),?\s+(\d{4})\b', 'written_date_us'),
             (r'\b(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})\b', 'written_date_eu'),
-            
+
             # Abbreviated months
             (r'\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+(\d{1,2}),?\s+(\d{4})\b', 'abbrev_date'),
         ]
-    
+
     def _load_time_patterns(self) -> List[Tuple[str, str]]:
         """Load time pattern matching rules"""
         return [
@@ -97,7 +97,7 @@ class EnhancedDateTimeProcessor:
             (r'\b(noon|midnight|midday)\b', 'casual_time'),
             (r'\b(\d{1,2})\s*o\'?clock\b', 'oclock_time'),
         ]
-    
+
     def _load_month_names(self) -> Dict[str, str]:
         """Load month number to name mappings"""
         return {
@@ -114,7 +114,7 @@ class EnhancedDateTimeProcessor:
             '11': 'November',
             '12': 'December'
         }
-    
+
     def _load_ordinal_suffixes(self) -> Dict[str, str]:
         """Load ordinal number suffixes"""
         return {
@@ -139,40 +139,40 @@ class EnhancedDateTimeProcessor:
             '19': 'nineteenth',
             '20': 'twentieth'
         }
-    
+
     def _load_weekday_names(self) -> Dict[int, str]:
         """Load weekday names"""
         return {
             0: 'Monday', 1: 'Tuesday', 2: 'Wednesday', 3: 'Thursday',
             4: 'Friday', 5: 'Saturday', 6: 'Sunday'
         }
-    
+
     def process_dates_and_times(self, text: str) -> str:
         """Process all dates and times in text for natural pronunciation"""
         logger.debug(f"Processing dates and times in: {text[:100]}...")
-        
+
         # Process dates first
         text = self._process_dates(text)
-        
+
         # Then process times
         text = self._process_times(text)
-        
+
         logger.debug(f"Date/time processing result: {text[:100]}...")
         return text
-    
+
     def _process_dates(self, text: str) -> str:
         """Process date expressions"""
         for pattern, date_type in self.date_patterns:
             matches = list(re.finditer(pattern, text, re.IGNORECASE))
-            
+
             # Process matches in reverse order to maintain positions
             for match in reversed(matches):
                 natural_date = self._convert_date_to_natural(match, date_type)
                 if natural_date:
                     text = text[:match.start()] + natural_date + text[match.end():]
-        
+
         return text
-    
+
     def _process_times(self, text: str) -> str:
         """Process time expressions"""
         processed_ranges = []  # Track processed character ranges
@@ -200,7 +200,7 @@ class EnhancedDateTimeProcessor:
                         processed_ranges.append((match_start, match_start + len(natural_time)))
 
         return text
-    
+
     def _convert_date_to_natural(self, match, date_type: str) -> Optional[str]:
         """Convert a date match to natural language"""
         try:
@@ -234,59 +234,59 @@ class EnhancedDateTimeProcessor:
                 # MM-DD-YYYY format
                 month, day, year = match.groups()
                 return self._format_natural_date(year, month, day)
-            
+
             elif date_type == 'short_us_date':
                 # MM/DD/YY format
                 month, day, year = match.groups()
                 full_year = f"20{year}" if int(year) < 50 else f"19{year}"
                 return self._format_natural_date(full_year, month, day)
-            
+
             elif date_type == 'short_dash_date':
                 # MM-DD-YY format
                 month, day, year = match.groups()
                 full_year = f"20{year}" if int(year) < 50 else f"19{year}"
                 return self._format_natural_date(full_year, month, day)
-            
+
             elif date_type == 'month_day_dash' or date_type == 'month_day_slash':
                 # MM-DD or MM/DD format
                 month, day = match.groups()
                 return self._format_natural_date(None, month, day)
-            
+
             elif date_type == 'year_only':
                 # Just a year
                 year = match.group(0)
                 return self._format_year(year)
-            
+
             elif date_type == 'relative_date':
                 # today, tomorrow, yesterday
                 return match.group(0)  # Keep as-is, they're already natural
-            
+
             elif date_type == 'relative_period':
                 # next week, last month, etc.
                 return match.group(0)  # Keep as-is, they're already natural
-            
+
             elif date_type == 'written_date_us':
                 # January 1, 2023
                 month_name, day, year = match.groups()
                 return self._format_written_date(month_name, day, year)
-            
+
             elif date_type == 'written_date_eu':
                 # 1 January 2023
                 day, month_name, year = match.groups()
                 return self._format_written_date(month_name, day, year)
-            
+
             elif date_type == 'abbrev_date':
                 # Jan 1, 2023
                 month_abbrev, day, year = match.groups()
                 month_name = self._expand_month_abbreviation(month_abbrev)
                 return self._format_written_date(month_name, day, year)
-            
+
         except Exception as e:
             logger.warning(f"Failed to convert date {match.group(0)}: {e}")
             return None
-        
+
         return None
-    
+
     def _convert_time_to_natural(self, match, time_type: str) -> Optional[str]:
         """Convert a time match to natural language"""
         try:
@@ -370,36 +370,36 @@ class EnhancedDateTimeProcessor:
                 # 3 o'clock
                 hour = match.group(1)
                 return f"{self._number_to_words(hour)} o'clock"
-            
+
         except Exception as e:
             logger.warning(f"Failed to convert time {match.group(0)}: {e}")
             return None
-        
+
         return None
-    
+
     def _format_natural_date(self, year: Optional[str], month: str, day: str) -> str:
         """Format a date in natural language"""
         month_name = self.month_names.get(month, month)
-        
+
         if self.use_ordinal_dates:
             day_ordinal = self._get_ordinal_day(day)
         else:
             day_ordinal = day
-        
+
         if year:
             return f"{month_name} {day_ordinal}, {year}"
         else:
             return f"{month_name} {day_ordinal}"
-    
+
     def _format_written_date(self, month_name: str, day: str, year: str) -> str:
         """Format an already written date"""
         if self.use_ordinal_dates:
             day_ordinal = self._get_ordinal_day(day)
         else:
             day_ordinal = day
-        
+
         return f"{month_name} {day_ordinal}, {year}"
-    
+
     def _format_year(self, year: str) -> str:
         """Format a year for natural pronunciation"""
         year_int = int(year)
@@ -429,7 +429,7 @@ class EnhancedDateTimeProcessor:
         else:
             # Default to reading as a regular number
             return self._number_to_words(year)
-    
+
     def _format_natural_time(self, hour: int, minute: int, seconds: Optional[int] = None,
                            ampm: Optional[str] = None, is_24_hour: bool = False) -> str:
         """Format time in natural language"""
@@ -447,7 +447,7 @@ class EnhancedDateTimeProcessor:
             # DO NOT add AM/PM automatically - preserve clean format
             hour_12 = hour
             ampm = None  # Explicitly set to None to prevent auto-addition
-        
+
         # Format the time based on configuration
         if self.use_natural_time_format:
             # Natural time format (original behavior)
@@ -473,7 +473,7 @@ class EnhancedDateTimeProcessor:
             else:
                 minute_word = self._format_time_minutes(minute)
                 time_str = f"{hour_word} {minute_word}"
-        
+
         if ampm:
             # Convert AM/PM to proper TTS format
             if ampm.upper() == "AM":
@@ -482,13 +482,13 @@ class EnhancedDateTimeProcessor:
                 time_str += " p m"
             else:
                 time_str += f" {ampm}"
-        
+
         if seconds:
             seconds_word = self._number_to_words(str(seconds))
             time_str += f" and {seconds_word} seconds"
-        
+
         return time_str
-    
+
     def _get_ordinal_day(self, day: str) -> str:
         """Convert day number to ordinal word"""
         day_str = str(int(day))  # Remove leading zeros
@@ -508,7 +508,7 @@ class EnhancedDateTimeProcessor:
             suffix_map = {1: "st", 2: "nd", 3: "rd"}
             suffix = suffix_map.get(day_int % 10, "th")
             return f"{day_words}{suffix}"
-    
+
     def _expand_month_abbreviation(self, abbrev: str) -> str:
         """Expand month abbreviation to full name"""
         abbrev_map = {
@@ -569,7 +569,7 @@ class EnhancedDateTimeProcessor:
                 return number_str
         except ValueError:
             return number_str
-    
+
     def analyze_datetime_patterns(self, text: str) -> Dict[str, List[str]]:
         """Analyze text for date and time patterns"""
         info = {
@@ -579,29 +579,29 @@ class EnhancedDateTimeProcessor:
             'relative_dates': [],
             'problematic_patterns': []
         }
-        
+
         # Find ISO dates (the problematic ones)
         iso_dates = re.findall(r'\b(\d{4})-(\d{1,2})-(\d{1,2})\b', text)
         info['iso_dates'] = [f"{y}-{m}-{d}" for y, m, d in iso_dates]
-        
+
         # Find US dates
         us_dates = re.findall(r'\b(\d{1,2})/(\d{1,2})/(\d{4})\b', text)
         info['us_dates'] = [f"{m}/{d}/{y}" for m, d, y in us_dates]
-        
+
         # Find times
         times = re.findall(r'\b(\d{1,2}):(\d{2})\b', text)
         info['times'] = [f"{h}:{m}" for h, m in times]
-        
+
         # Find relative dates
         relative_dates = re.findall(r'\b(today|tomorrow|yesterday|next|last)\b', text, re.IGNORECASE)
         info['relative_dates'] = relative_dates
-        
+
         # Check for problematic patterns
         if re.search(r'\d{4}-\d{1,2}-\d{1,2}', text):
             info['problematic_patterns'].append('ISO date format (causes dash pronunciation)')
-        
+
         return info
-    
+
     def set_configuration(self, use_ordinal_dates: bool = None,
                          use_full_month_names: bool = None,
                          use_natural_time_format: bool = None,
@@ -615,7 +615,7 @@ class EnhancedDateTimeProcessor:
             self.use_natural_time_format = use_natural_time_format
         if handle_relative_dates is not None:
             self.handle_relative_dates = handle_relative_dates
-        
+
         logger.info(f"DateTime processor configuration updated: "
                    f"use_ordinal_dates={self.use_ordinal_dates}, "
                    f"use_full_month_names={self.use_full_month_names}, "

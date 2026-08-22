@@ -82,7 +82,7 @@ class TextNormalizer:
             'year': re.compile(r'\b(19|20)\d{2}\b'),
             'currency': re.compile(r'\$([0-9,]+(?:\.[0-9]{2})?)')
         }
-    
+
     def _load_abbreviations(self) -> Dict[str, str]:
         """Load common abbreviations and their expansions"""
         return {
@@ -108,7 +108,7 @@ class TextNormalizer:
             'CPU': 'C P U', 'GPU': 'G P U', 'USB': 'U S B',
             'URL': 'U R L', 'HTML': 'H T M L', 'CSS': 'C S S', 'JS': 'J S'
         }
-    
+
     def _load_currency_symbols(self) -> Dict[str, str]:
         """Load currency symbols and their names"""
         return {
@@ -197,10 +197,10 @@ class TextNormalizer:
         text = self._normalize_possessives(text)
         text = self._normalize_punctuation(text)
         text = self._clean_whitespace(text)
-        
+
         logger.debug(f"Normalized result: {text[:100]}...")
         return text
-    
+
     def _normalize_currency(self, text: str) -> str:
         """Normalize currency expressions with improved handling"""
         def replace_currency(match):
@@ -361,7 +361,7 @@ class TextNormalizer:
         )
 
         return text
-   
+
     def _normalize_dates_times(self, text: str) -> str:
         """Normalize date and time expressions"""
         # Time format (HH:MM)
@@ -391,7 +391,7 @@ class TextNormalizer:
 
         text = self.number_patterns['time'].sub(replace_time, text)
         return text
-    
+
     def _normalize_abbreviations(self, text: str) -> str:
         """Expand abbreviations"""
         # Sort by length (longest first) to avoid partial matches
@@ -411,7 +411,7 @@ class TextNormalizer:
             text = re.sub(pattern, expansion, text, flags=re.IGNORECASE)
 
         return text
-    
+
     def _normalize_urls_emails(self, text: str) -> str:
         """Normalize URLs and email addresses"""
         # Email addresses
@@ -427,7 +427,7 @@ class TextNormalizer:
         text = re.sub(domain_pattern, lambda m: self._domain_to_words(m.group()), text, flags=re.IGNORECASE)
 
         return text
-    
+
     def _normalize_punctuation(self, text: str) -> str:
         """Normalize punctuation for better prosody and pronunciation"""
         # Multiple exclamation marks
@@ -455,7 +455,7 @@ class TextNormalizer:
         text = re.sub(r"(\w)'(\w)", r"\1'\2", text)  # Normalize apostrophes in contractions
 
         return text
-   
+
     def _clean_whitespace(self, text: str) -> str:
         """Clean up whitespace"""
         # Multiple spaces
@@ -463,13 +463,13 @@ class TextNormalizer:
         # Trim
         text = text.strip()
         return text
-    
+
     def _number_to_words(self, number_str: str) -> str:
         """Convert number to words (simplified implementation)"""
         try:
             # Remove commas
             number_str = number_str.replace(',', '')
-            
+
             # Handle decimals
             if '.' in number_str:
                 integer_part, decimal_part = number_str.split('.')
@@ -480,18 +480,18 @@ class TextNormalizer:
                 return self._integer_to_words(int(number_str))
         except ValueError:
             return number_str
-    
+
     def _integer_to_words(self, num: int) -> str:
         """Convert integer to words"""
         if num == 0:
             return "zero"
-        
+
         ones = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
                 "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen",
                 "seventeen", "eighteen", "nineteen"]
-        
+
         tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"]
-        
+
         if num < 20:
             return ones[num]
         elif num < 100:
@@ -503,8 +503,8 @@ class TextNormalizer:
         elif num < 1000000000:
             return self._integer_to_words(num // 1000000) + " million" + (" " + self._integer_to_words(num % 1000000) if num % 1000000 != 0 else "")
         else:
-            return str(num)  # Fallback for very large numbers  
-  
+            return str(num)  # Fallback for very large numbers
+
     def _digit_to_word(self, digit: str) -> str:
         """Convert single digit to word"""
         digits = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
@@ -512,13 +512,13 @@ class TextNormalizer:
             return digits[int(digit)]
         except (ValueError, IndexError):
             return digit
-    
+
     def _ordinal_to_words(self, number_str: str) -> str:
         """Convert ordinal number to words"""
         try:
             num = int(number_str)
             base_word = self._integer_to_words(num)
-            
+
             # Special cases
             if base_word.endswith("one"):
                 return base_word[:-3] + "first"
@@ -532,33 +532,33 @@ class TextNormalizer:
                 return base_word + "th"
         except ValueError:
             return number_str
-    
+
     def _year_to_words(self, year_str: str) -> str:
         """Convert year to words with special pronunciation"""
         try:
             year = int(year_str)
-            
+
             # Years 2000-2009
             if 2000 <= year <= 2009:
                 return f"two thousand {self._integer_to_words(year - 2000)}" if year > 2000 else "two thousand"
-            
+
             # Years 2010-2099
             elif 2010 <= year <= 2099:
                 return f"twenty {self._integer_to_words(year - 2000)}"
-            
+
             # Years 1900-1999
             elif 1900 <= year <= 1999:
                 if year % 100 == 0:
                     return "nineteen hundred"
                 else:
                     return f"nineteen {self._integer_to_words(year % 100)}"
-            
+
             # Other years
             else:
                 return self._integer_to_words(year)
         except ValueError:
-            return year_str    
-  
+            return year_str
+
     def _fraction_to_words(self, fraction_str: str) -> str:
         """Convert fraction to words"""
         # Handle Unicode fractions like ½ (U+00BD), ¼ (U+00BC), ¾ (U+00BE)
@@ -619,7 +619,7 @@ class TextNormalizer:
             return f"{num_word} {denom_word}"
         except ValueError:
             return fraction_str
-    
+
     def _number_to_words_currency(self, amount_str: str) -> str:
         """Convert currency amount to words"""
         try:
@@ -627,10 +627,10 @@ class TextNormalizer:
                 dollars, cents = amount_str.split('.')
                 dollar_words = self._integer_to_words(int(dollars))
                 cent_words = self._integer_to_words(int(cents))
-                
+
                 dollar_unit = "dollar" if int(dollars) == 1 else "dollars"
                 cent_unit = "cent" if int(cents) == 1 else "cents"
-                
+
                 if int(cents) == 0:
                     return f"{dollar_words} {dollar_unit}"
                 else:
@@ -641,13 +641,13 @@ class TextNormalizer:
                 return f"{dollar_words} {dollar_unit}"
         except ValueError:
             return amount_str
-    
+
     def _email_to_words(self, email: str) -> str:
         """Convert email to speakable format"""
         email = email.replace('@', ' at ')
         email = email.replace('.', ' dot ')
         return email
-    
+
     def _url_to_words(self, url: str) -> str:
         """Convert URL to speakable format - skip protocol, just read domain"""
         # Remove protocol entirely (https:// → skip entirely, just read domain)

@@ -46,11 +46,11 @@ class EspeakOptimizationResult:
 
 class EspeakIntegrationEnhancer:
     """Enhanced eSpeak integration optimizer"""
-    
+
     def __init__(self):
         self.results_dir = Path("test_results/espeak_enhancement")
         self.results_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # Test cases for symbol pronunciation
         self.symbol_test_cases = [
             {
@@ -96,7 +96,7 @@ class EspeakIntegrationEnhancer:
                 "category": "symbols"
             }
         ]
-        
+
         # Interjection test cases
         self.interjection_test_cases = [
             {
@@ -112,7 +112,7 @@ class EspeakIntegrationEnhancer:
                 "category": "interjections"
             }
         ]
-        
+
         # Contraction test cases
         self.contraction_test_cases = [
             {
@@ -128,47 +128,47 @@ class EspeakIntegrationEnhancer:
                 "category": "contractions"
             }
         ]
-    
+
     def check_espeak_installation(self) -> Tuple[bool, str, Dict[str, Any]]:
         """Check if eSpeak is installed and get version info"""
         logger.info("Checking eSpeak installation...")
-        
+
         # Try to find eSpeak executable
         espeak_path = shutil.which("espeak") or shutil.which("espeak-ng")
-        
+
         if not espeak_path:
             return False, "eSpeak not found in PATH", {}
-        
+
         try:
             # Get version information
-            result = subprocess.run([espeak_path, "--version"], 
+            result = subprocess.run([espeak_path, "--version"],
                                   capture_output=True, text=True, timeout=5)
-            
+
             if result.returncode == 0:
                 version_info = {
                     "path": espeak_path,
                     "version": result.stdout.strip(),
                     "available": True
                 }
-                
+
                 # Test basic functionality
-                test_result = subprocess.run([espeak_path, "-q", "-x", "hello"], 
+                test_result = subprocess.run([espeak_path, "-q", "-x", "hello"],
                                            capture_output=True, text=True, timeout=5)
-                
+
                 if test_result.returncode == 0:
                     version_info["phoneme_output"] = test_result.stdout.strip()
                     version_info["functional"] = True
                 else:
                     version_info["functional"] = False
                     version_info["error"] = test_result.stderr
-                
+
                 return True, espeak_path, version_info
             else:
                 return False, f"eSpeak version check failed: {result.stderr}", {}
-                
+
         except Exception as e:
             return False, f"Error checking eSpeak: {str(e)}", {}
-    
+
     def install_espeak_if_missing(self) -> bool:
         """Check eSpeak availability and provide installation guidance"""
         available, path_or_error, info = self.check_espeak_installation()
@@ -184,37 +184,37 @@ class EspeakIntegrationEnhancer:
         logger.warning("Continuing without eSpeak installation...")
 
         return False
-    
+
     def test_espeak_phonemization(self, test_cases: List[Dict[str, str]]) -> List[EspeakTestResult]:
         """Test eSpeak phonemization with various inputs"""
         logger.info("Testing eSpeak phonemization...")
-        
+
         available, espeak_path, info = self.check_espeak_installation()
         if not available:
             logger.error("eSpeak not available for testing")
             return []
-        
+
         results = []
-        
+
         for test_case in test_cases:
             logger.info(f"Testing: {test_case['name']}")
-            
+
             try:
                 start_time = time.perf_counter()
-                
+
                 # Test ASCII phonemes
                 result = subprocess.run([
                     espeak_path, "-q", "-x", "-v", "en-us", test_case["input"]
                 ], capture_output=True, text=True, timeout=10)
-                
+
                 processing_time = time.perf_counter() - start_time
-                
+
                 if result.returncode == 0:
                     phonemes = result.stdout.strip()
-                    
+
                     # Check if expected output is present
                     success = test_case["expected"].lower() in test_case["input"].lower()
-                    
+
                     results.append(EspeakTestResult(
                         test_name=test_case["name"],
                         input_text=test_case["input"],
@@ -233,7 +233,7 @@ class EspeakIntegrationEnhancer:
                         processing_time=processing_time,
                         error_message=result.stderr
                     ))
-                    
+
             except Exception as e:
                 results.append(EspeakTestResult(
                     test_name=test_case["name"],
@@ -244,13 +244,13 @@ class EspeakIntegrationEnhancer:
                     processing_time=0.0,
                     error_message=str(e)
                 ))
-        
+
         return results
-    
+
     def optimize_espeak_configuration(self) -> Dict[str, Any]:
         """Optimize eSpeak configuration for better performance"""
         logger.info("Optimizing eSpeak configuration...")
-        
+
         # Load current configuration
         config_path = Path("config.json")
         if config_path.exists():
@@ -258,7 +258,7 @@ class EspeakIntegrationEnhancer:
                 config = json.load(f)
         else:
             config = {}
-        
+
         # Enhanced eSpeak configuration
         optimized_espeak_config = {
             "enabled": True,
@@ -277,7 +277,7 @@ class EspeakIntegrationEnhancer:
                 "batch_processing": True
             }
         }
-        
+
         # Enhanced symbol processing configuration
         optimized_symbol_config = {
             "enabled": True,
@@ -300,28 +300,28 @@ class EspeakIntegrationEnhancer:
                 "performance_mode": "balanced"
             }
         }
-        
+
         # Update configuration
         config["espeak_integration"] = optimized_espeak_config
         config["symbol_processing"] = optimized_symbol_config
-        
+
         # Save optimized configuration
         optimized_config_path = self.results_dir / "optimized_config.json"
         with open(optimized_config_path, 'w') as f:
             json.dump(config, f, indent=2)
-        
+
         logger.info(f"Optimized configuration saved to: {optimized_config_path}")
-        
+
         return {
             "espeak_config": optimized_espeak_config,
             "symbol_config": optimized_symbol_config,
             "config_file": str(optimized_config_path)
         }
-    
+
     def create_enhanced_symbol_mappings(self) -> Dict[str, str]:
         """Create enhanced symbol mappings for better pronunciation"""
         logger.info("Creating enhanced symbol mappings...")
-        
+
         enhanced_mappings = {
             # Punctuation symbols
             "?": "question mark",
@@ -330,7 +330,7 @@ class EspeakIntegrationEnhancer:
             ",": "comma",
             ";": "semicolon",
             ":": "colon",
-            
+
             # Mathematical symbols
             "*": "asterisk",
             "+": "plus",
@@ -339,13 +339,13 @@ class EspeakIntegrationEnhancer:
             "/": "slash",
             "\\": "backslash",
             "%": "percent",
-            
+
             # Currency symbols
             "$": "dollar",
             "€": "euro",
             "£": "pound",
             "¥": "yen",
-            
+
             # Other symbols
             "&": "and",
             "@": "at",
@@ -355,7 +355,7 @@ class EspeakIntegrationEnhancer:
             "|": "pipe",
             "~": "tilde",
             "`": "backtick",
-            
+
             # Brackets
             "(": "open parenthesis",
             ")": "close parenthesis",
@@ -365,7 +365,7 @@ class EspeakIntegrationEnhancer:
             "}": "close brace",
             "<": "less than",
             ">": "greater than",
-            
+
             # Quotes
             '"': "",  # Remove quotes to prevent pronunciation issues
             "'": "",  # Remove apostrophes in quotes
@@ -374,24 +374,24 @@ class EspeakIntegrationEnhancer:
             "'": "",
             "'": ""
         }
-        
+
         # Save enhanced mappings
         mappings_file = self.results_dir / "enhanced_symbol_mappings.json"
         with open(mappings_file, 'w') as f:
             json.dump(enhanced_mappings, f, indent=2)
-        
+
         logger.info(f"Enhanced symbol mappings saved to: {mappings_file}")
         return enhanced_mappings
-    
+
     def benchmark_espeak_performance(self) -> Dict[str, Any]:
         """Benchmark eSpeak performance with various configurations"""
         logger.info("Benchmarking eSpeak performance...")
-        
+
         available, espeak_path, info = self.check_espeak_installation()
         if not available:
             logger.error("eSpeak not available for benchmarking")
             return {}
-        
+
         test_texts = [
             "Hello world",
             "What is your name?",
@@ -400,21 +400,21 @@ class EspeakIntegrationEnhancer:
             "Use the * symbol and the @ sign in your email.",
             "This is a longer text that contains multiple sentences. It should test the performance of eSpeak with more complex input. The goal is to measure processing time and accuracy."
         ]
-        
+
         benchmark_results = {
             "ascii_phonemes": [],
             "ipa_phonemes": [],
             "with_punctuation": [],
             "without_punctuation": []
         }
-        
+
         for text in test_texts:
             # Test ASCII phonemes
             start_time = time.perf_counter()
-            result = subprocess.run([espeak_path, "-q", "-x", "-v", "en-us", text], 
+            result = subprocess.run([espeak_path, "-q", "-x", "-v", "en-us", text],
                                   capture_output=True, text=True, timeout=10)
             ascii_time = time.perf_counter() - start_time
-            
+
             if result.returncode == 0:
                 benchmark_results["ascii_phonemes"].append({
                     "text": text[:30] + "..." if len(text) > 30 else text,
@@ -422,13 +422,13 @@ class EspeakIntegrationEnhancer:
                     "output_length": len(result.stdout.strip()),
                     "success": True
                 })
-            
+
             # Test IPA phonemes
             start_time = time.perf_counter()
-            result = subprocess.run([espeak_path, "-q", "--ipa", "-v", "en-us", text], 
+            result = subprocess.run([espeak_path, "-q", "--ipa", "-v", "en-us", text],
                                   capture_output=True, text=True, timeout=10)
             ipa_time = time.perf_counter() - start_time
-            
+
             if result.returncode == 0:
                 benchmark_results["ipa_phonemes"].append({
                     "text": text[:30] + "..." if len(text) > 30 else text,
@@ -436,19 +436,19 @@ class EspeakIntegrationEnhancer:
                     "output_length": len(result.stdout.strip()),
                     "success": True
                 })
-        
+
         # Calculate averages
         for category, results in benchmark_results.items():
             if results:
                 avg_time = sum(r["processing_time"] for r in results) / len(results)
                 benchmark_results[f"{category}_avg_time"] = avg_time
-        
+
         return benchmark_results
-    
+
     def run_comprehensive_enhancement(self) -> Dict[str, Any]:
         """Run comprehensive eSpeak integration enhancement"""
         logger.info("Starting comprehensive eSpeak integration enhancement...")
-        
+
         enhancement_results = {
             "timestamp": time.time(),
             "installation_check": {},
@@ -457,7 +457,7 @@ class EspeakIntegrationEnhancer:
             "performance_benchmarks": {},
             "recommendations": []
         }
-        
+
         # Step 1: Check eSpeak availability
         logger.info("Step 1: Checking eSpeak installation...")
         available, path_or_error, info = self.check_espeak_installation()
@@ -478,17 +478,17 @@ class EspeakIntegrationEnhancer:
         if not available:
             logger.warning("eSpeak not available - proceeding with configuration optimization only")
             # Continue with configuration optimization even without eSpeak
-        
+
         # Step 2: Optimize configuration
         logger.info("Step 2: Optimizing eSpeak configuration...")
         optimization_results = self.optimize_espeak_configuration()
         enhancement_results["optimization_results"] = optimization_results
-        
+
         # Step 3: Create enhanced symbol mappings
         logger.info("Step 3: Creating enhanced symbol mappings...")
         enhanced_mappings = self.create_enhanced_symbol_mappings()
         enhancement_results["enhanced_mappings_count"] = len(enhanced_mappings)
-        
+
         # Step 4: Test symbol pronunciation (if eSpeak available)
         if available:
             logger.info("Step 4: Testing symbol pronunciation...")
@@ -522,67 +522,67 @@ class EspeakIntegrationEnhancer:
             enhancement_results["performance_benchmarks"] = {
                 "skipped_reason": "eSpeak not available"
             }
-        
+
         # Step 6: Generate recommendations
         logger.info("Step 6: Generating recommendations...")
         recommendations = self._generate_enhancement_recommendations(enhancement_results)
         enhancement_results["recommendations"] = recommendations
-        
+
         # Save results
         results_file = self.results_dir / f"espeak_enhancement_{int(time.time())}.json"
         with open(results_file, 'w') as f:
             json.dump(enhancement_results, f, indent=2, default=str)
-        
+
         logger.info(f"Enhancement completed. Results saved to: {results_file}")
         return enhancement_results
-    
+
     def _generate_enhancement_recommendations(self, results: Dict[str, Any]) -> List[str]:
         """Generate recommendations based on enhancement results"""
         recommendations = []
-        
+
         # Installation recommendations
         if not results["installation_check"]["available"]:
             recommendations.append("Install eSpeak for improved phonetic processing")
-        
+
         # Performance recommendations
         test_results = results.get("test_results", {})
         if test_results.get("failed_tests", 0) > 0:
             recommendations.append("Review failed test cases and improve symbol mappings")
-        
+
         avg_time = test_results.get("average_processing_time", 0)
         if avg_time > 0.1:
             recommendations.append("Optimize eSpeak processing for better performance")
-        
+
         # Configuration recommendations
         success_rate = test_results.get("successful_tests", 0) / max(1, test_results.get("total_tests", 1))
         if success_rate < 0.8:
             recommendations.append("Improve eSpeak configuration for better accuracy")
-        
+
         # Integration recommendations
         recommendations.append("Enable eSpeak integration in production configuration")
         recommendations.append("Monitor eSpeak performance in production environment")
         recommendations.append("Consider caching frequently used phoneme patterns")
-        
+
         return recommendations
 
 def main():
     """Main function to run eSpeak integration enhancement"""
     enhancer = EspeakIntegrationEnhancer()
-    
+
     try:
         results = enhancer.run_comprehensive_enhancement()
-        
+
         print("\n" + "="*80)
         print("ESPEAK INTEGRATION ENHANCEMENT SUMMARY")
         print("="*80)
-        
+
         # Installation status
         install_check = results["installation_check"]
         print(f"eSpeak Available: {'✅' if install_check['available'] else '❌'}")
         if install_check["available"]:
             print(f"eSpeak Path: {install_check['path']}")
             print(f"Version: {install_check['info'].get('version', 'Unknown')}")
-        
+
         # Test results
         test_results = results["test_results"]
         print(f"\nTest Results:")
@@ -591,7 +591,7 @@ def main():
         print(f"  Failed: {test_results['failed_tests']}")
         print(f"  Success Rate: {test_results['successful_tests']/max(1,test_results['total_tests'])*100:.1f}%")
         print(f"  Avg Processing Time: {test_results['average_processing_time']:.4f}s")
-        
+
         # Performance benchmarks
         benchmarks = results["performance_benchmarks"]
         if "ascii_phonemes_avg_time" in benchmarks:
@@ -599,14 +599,14 @@ def main():
             print(f"  ASCII Phonemes Avg Time: {benchmarks['ascii_phonemes_avg_time']:.4f}s")
             if "ipa_phonemes_avg_time" in benchmarks:
                 print(f"  IPA Phonemes Avg Time: {benchmarks['ipa_phonemes_avg_time']:.4f}s")
-        
+
         # Recommendations
         print(f"\nRecommendations:")
         for i, rec in enumerate(results["recommendations"], 1):
             print(f"  {i}. {rec}")
-        
+
         print("\n" + "="*80)
-        
+
     except Exception as e:
         logger.error(f"Enhancement failed: {e}")
         import traceback

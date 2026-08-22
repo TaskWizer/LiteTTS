@@ -52,7 +52,7 @@ class AudioSegment:
     duration: float
     format: str = "wav"
     metadata: Dict[str, Any] = field(default_factory=dict)
-    
+
     def __post_init__(self):
         if self.duration == 0 and len(self.audio_data) > 0:
             self.duration = len(self.audio_data) / self.sample_rate
@@ -118,53 +118,53 @@ class ProsodyInfo:
 # Protocol Interfaces
 class TTSEngineProtocol(Protocol):
     """Interface for TTS engines"""
-    
+
     def synthesize(self, text: str, voice: str, speed: float) -> AudioSegment:
         """Synthesize text to audio"""
         ...
-    
+
     def load_voice(self, voice_name: str) -> VoiceEmbedding:
         """Load a voice embedding"""
         ...
-    
+
     def get_available_voices(self) -> List[str]:
         """Get list of available voices"""
         ...
 
 class NLPProcessorProtocol(Protocol):
     """Interface for NLP processors"""
-    
+
     def normalize_text(self, text: str) -> str:
         """Normalize input text"""
         ...
-    
+
     def resolve_homographs(self, text: str) -> str:
         """Resolve homograph pronunciations"""
         ...
-    
+
     def process_phonetics(self, text: str) -> str:
         """Process phonetic markers"""
         ...
-    
+
     def analyze_prosody(self, text: str) -> ProsodyInfo:
         """Analyze text for prosody information"""
         ...
 
 class CacheManagerProtocol(Protocol):
     """Interface for cache management"""
-    
+
     def get_cached_audio(self, cache_key: str) -> Optional[AudioSegment]:
         """Get cached audio segment"""
         ...
-    
+
     def cache_audio(self, cache_key: str, audio: AudioSegment, ttl: int = 3600):
         """Cache audio segment"""
         ...
-    
+
     def get_voice_embedding(self, voice_name: str) -> Optional[VoiceEmbedding]:
         """Get cached voice embedding"""
         ...
-    
+
     def preload_voices(self, voice_names: List[str]):
         """Preload voice embeddings"""
         ...
@@ -288,14 +288,14 @@ def generate_cache_key(text: str, voice: str, speed: float, format: str) -> str:
 def validate_tts_request(request: TTSRequest) -> List[str]:
     """Validate TTS request and return list of errors"""
     errors = []
-    
+
     if not request.input or not request.input.strip():
         errors.append("Input text cannot be empty")
-    
+
     if len(request.input) > 10000:  # Reasonable limit
         errors.append("Input text too long (max 10000 characters)")
-    
+
     if request.response_format not in ["mp3", "wav", "ogg", "flac"]:
         errors.append("Invalid response format")
-    
+
     return errors

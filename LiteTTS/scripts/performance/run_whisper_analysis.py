@@ -25,75 +25,75 @@ logger = logging.getLogger(__name__)
 
 class ComprehensiveAnalysisRunner:
     """Main runner for comprehensive Whisper alternatives analysis"""
-    
+
     def __init__(self, output_dir: str = "whisper_analysis_output"):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
-        
+
         # Initialize components
         self.whisper_analyzer = WhisperAlternativesAnalyzer(str(self.output_dir / "whisper_benchmarks"))
         self.voice_cloner = EnhancedVoiceCloner()
         self.voice_manager = VoiceFileSystemManager()
-        
+
         # Analysis results
         self.results = {}
-        
+
     async def run_full_analysis(self) -> Dict[str, Any]:
         """Run the complete analysis suite"""
         logger.info("Starting comprehensive Whisper alternatives analysis")
-        
+
         start_time = datetime.now()
-        
+
         try:
             # Phase 1: Whisper Alternatives Performance Analysis
             logger.info("Phase 1: Whisper Alternatives Performance Analysis")
             whisper_results = await self._run_whisper_analysis()
             self.results['whisper_analysis'] = whisper_results
-            
+
             # Phase 2: Voice Cloning Enhancement Testing
             logger.info("Phase 2: Voice Cloning Enhancement Testing")
             cloning_results = await self._test_enhanced_cloning()
             self.results['voice_cloning'] = cloning_results
-            
+
             # Phase 3: File System Integration Testing
             logger.info("Phase 3: File System Integration Testing")
             filesystem_results = await self._test_filesystem_integration()
             self.results['filesystem_integration'] = filesystem_results
-            
+
             # Phase 4: Integration Assessment
             logger.info("Phase 4: LiteTTS Integration Assessment")
             integration_results = await self._assess_integration()
             self.results['integration_assessment'] = integration_results
-            
+
             # Phase 5: Generate Comprehensive Report
             logger.info("Phase 5: Generating Comprehensive Report")
             final_report = self._generate_final_report()
-            
+
             end_time = datetime.now()
             analysis_duration = (end_time - start_time).total_seconds()
-            
+
             final_report['analysis_metadata'] = {
                 'start_time': start_time.isoformat(),
                 'end_time': end_time.isoformat(),
                 'duration_seconds': analysis_duration,
                 'output_directory': str(self.output_dir)
             }
-            
+
             # Save final report
             self._save_final_report(final_report)
-            
+
             logger.info(f"Comprehensive analysis completed in {analysis_duration:.1f} seconds")
             return final_report
-            
+
         except Exception as e:
             logger.error(f"Analysis failed: {e}")
             raise
-            
+
     async def _run_whisper_analysis(self) -> Dict[str, Any]:
         """Run Whisper alternatives performance analysis"""
         try:
             results = await self.whisper_analyzer.run_comprehensive_analysis()
-            
+
             # Extract key findings
             key_findings = {
                 'models_meeting_rtf_target': results.get('models_meeting_rtf_target', []),
@@ -104,14 +104,14 @@ class ComprehensiveAnalysisRunner:
                 'hardware_compatibility': self._assess_hardware_compatibility(results),
                 'recommendations': self._generate_whisper_recommendations(results)
             }
-            
+
             return {
                 'status': 'completed',
                 'detailed_results': results,
                 'key_findings': key_findings,
                 'summary': self._summarize_whisper_results(results)
             }
-            
+
         except Exception as e:
             logger.error(f"Whisper analysis failed: {e}")
             return {
@@ -119,7 +119,7 @@ class ComprehensiveAnalysisRunner:
                 'error': str(e),
                 'recommendations': ['Install required dependencies', 'Check hardware compatibility']
             }
-            
+
     async def _test_enhanced_cloning(self) -> Dict[str, Any]:
         """Test enhanced voice cloning capabilities"""
         try:
@@ -130,9 +130,9 @@ class ComprehensiveAnalysisRunner:
                 segment_overlap=2.0,
                 max_reference_clips=5
             )
-            
+
             cloner = EnhancedVoiceCloner(config=config)
-            
+
             # Test scenarios
             test_results = {
                 'single_clip_120s': await self._test_single_long_clip(cloner),
@@ -140,7 +140,7 @@ class ComprehensiveAnalysisRunner:
                 'segmentation': await self._test_audio_segmentation(cloner),
                 'quality_analysis': await self._test_quality_analysis(cloner)
             }
-            
+
             return {
                 'status': 'completed',
                 'test_results': test_results,
@@ -152,7 +152,7 @@ class ComprehensiveAnalysisRunner:
                 },
                 'performance_metrics': self._calculate_cloning_performance(test_results)
             }
-            
+
         except Exception as e:
             logger.error(f"Enhanced cloning test failed: {e}")
             return {
@@ -160,13 +160,13 @@ class ComprehensiveAnalysisRunner:
                 'error': str(e),
                 'fallback_options': ['Use original 30s limit', 'Manual audio segmentation']
             }
-            
+
     async def _test_filesystem_integration(self) -> Dict[str, Any]:
         """Test file system integration capabilities"""
         try:
             # Start monitoring
             self.voice_manager.start_monitoring()
-            
+
             # Test scenarios
             test_results = {
                 'real_time_monitoring': await self._test_real_time_monitoring(),
@@ -174,10 +174,10 @@ class ComprehensiveAnalysisRunner:
                 'metadata_management': await self._test_metadata_management(),
                 'performance': await self._test_filesystem_performance()
             }
-            
+
             # Stop monitoring
             self.voice_manager.stop_monitoring()
-            
+
             return {
                 'status': 'completed',
                 'test_results': test_results,
@@ -189,7 +189,7 @@ class ComprehensiveAnalysisRunner:
                 },
                 'performance_metrics': self._calculate_filesystem_performance(test_results)
             }
-            
+
         except Exception as e:
             logger.error(f"Filesystem integration test failed: {e}")
             return {
@@ -197,22 +197,22 @@ class ComprehensiveAnalysisRunner:
                 'error': str(e),
                 'impact': 'Manual voice management required'
             }
-            
+
     async def _assess_integration(self) -> Dict[str, Any]:
         """Assess integration with existing LiteTTS system"""
         try:
             # Check current system compatibility
             compatibility = self._check_system_compatibility()
-            
+
             # Estimate development effort
             development_effort = self._estimate_development_effort()
-            
+
             # Identify integration points
             integration_points = self._identify_integration_points()
-            
+
             # Risk assessment
             risks = self._assess_integration_risks()
-            
+
             return {
                 'compatibility': compatibility,
                 'development_effort': development_effort,
@@ -221,7 +221,7 @@ class ComprehensiveAnalysisRunner:
                 'migration_strategy': self._create_migration_strategy(),
                 'testing_requirements': self._define_testing_requirements()
             }
-            
+
         except Exception as e:
             logger.error(f"Integration assessment failed: {e}")
             return {
@@ -229,7 +229,7 @@ class ComprehensiveAnalysisRunner:
                 'error': str(e),
                 'recommendation': 'Manual integration assessment required'
             }
-            
+
     def _generate_final_report(self) -> Dict[str, Any]:
         """Generate comprehensive final report"""
         return {
@@ -242,18 +242,18 @@ class ComprehensiveAnalysisRunner:
             'success_criteria_evaluation': self._evaluate_success_criteria(),
             'detailed_results': self.results
         }
-        
+
     def _create_executive_summary(self) -> Dict[str, Any]:
         """Create executive summary with key findings and recommendations"""
         whisper_results = self.results.get('whisper_analysis', {})
-        
+
         # Find best performing models
         best_models = []
         if 'key_findings' in whisper_results:
             rtf_performers = whisper_results['key_findings'].get('best_performers', {}).get('rtf', [])
             if rtf_performers:
                 best_models = [model[0] for model in rtf_performers[:3]]
-                
+
         return {
             'recommendation': self._get_primary_recommendation(),
             'key_findings': {
@@ -275,16 +275,16 @@ class ComprehensiveAnalysisRunner:
                 'Conduct edge device testing'
             ]
         }
-        
+
     def _create_performance_matrix(self) -> Dict[str, Any]:
         """Create detailed performance comparison matrix"""
         whisper_results = self.results.get('whisper_analysis', {})
-        
+
         if 'detailed_results' not in whisper_results:
             return {'error': 'No detailed results available'}
-            
+
         model_summary = whisper_results['detailed_results'].get('model_summary', {})
-        
+
         matrix = {}
         for model_name, stats in model_summary.items():
             if isinstance(stats, dict) and 'avg_rtf' in stats:
@@ -298,9 +298,9 @@ class ComprehensiveAnalysisRunner:
                     'meets_rtf_target': stats.get('avg_rtf', float('inf')) < 1.0,
                     'edge_hardware_compatible': self._assess_edge_compatibility(stats)
                 }
-                
+
         return matrix
-        
+
     def _create_implementation_roadmap(self) -> Dict[str, Any]:
         """Create 8-week implementation roadmap"""
         return {
@@ -408,26 +408,26 @@ class ComprehensiveAnalysisRunner:
                 'Week 8: Production deployment'
             ]
         }
-        
+
     def _save_final_report(self, report: Dict[str, Any]):
         """Save the final comprehensive report"""
         # Save main report
         report_file = self.output_dir / "comprehensive_analysis_report.json"
         with open(report_file, 'w') as f:
             json.dump(report, f, indent=2, default=str)
-            
+
         # Save executive summary separately
         summary_file = self.output_dir / "executive_summary.json"
         with open(summary_file, 'w') as f:
             json.dump(report['executive_summary'], f, indent=2, default=str)
-            
+
         # Save performance matrix
         matrix_file = self.output_dir / "performance_matrix.json"
         with open(matrix_file, 'w') as f:
             json.dump(report['performance_comparison_matrix'], f, indent=2, default=str)
-            
+
         logger.info(f"Final report saved to {self.output_dir}")
-        
+
     # Placeholder methods for testing (would be implemented with actual test logic)
     async def _test_single_long_clip(self, cloner): return {'status': 'simulated', 'duration_tested': 120}
     async def _test_multiple_clips(self, cloner): return {'status': 'simulated', 'clips_tested': 5}
@@ -437,7 +437,7 @@ class ComprehensiveAnalysisRunner:
     async def _test_voice_search(self): return {'status': 'simulated', 'search_time_ms': 50}
     async def _test_metadata_management(self): return {'status': 'simulated', 'metadata_operations': 100}
     async def _test_filesystem_performance(self): return {'status': 'simulated', 'throughput_ops_sec': 1000}
-    
+
     def _assess_hardware_compatibility(self, results): return {'arm64': True, 'x86_64': True}
     def _generate_whisper_recommendations(self, results): return ['Use faster-whisper with INT8']
     def _summarize_whisper_results(self, results): return 'Multiple models meet RTF < 1.0 target'
@@ -459,40 +459,40 @@ class ComprehensiveAnalysisRunner:
 async def main():
     """Main function"""
     parser = argparse.ArgumentParser(description='Run comprehensive Whisper alternatives analysis')
-    parser.add_argument('--output-dir', default='whisper_analysis_output', 
+    parser.add_argument('--output-dir', default='whisper_analysis_output',
                        help='Output directory for results')
-    parser.add_argument('--verbose', '-v', action='store_true', 
+    parser.add_argument('--verbose', '-v', action='store_true',
                        help='Enable verbose logging')
-    
+
     args = parser.parse_args()
-    
+
     # Setup logging
     log_level = logging.DEBUG if args.verbose else logging.INFO
     logging.basicConfig(
         level=log_level,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
-    
+
     # Run analysis
     runner = ComprehensiveAnalysisRunner(args.output_dir)
-    
+
     try:
         report = await runner.run_full_analysis()
-        
+
         print("\n" + "="*80)
         print("COMPREHENSIVE WHISPER ALTERNATIVES ANALYSIS COMPLETE")
         print("="*80)
-        
+
         print(f"\nPrimary Recommendation: {report['executive_summary']['recommendation']}")
         print(f"Development Timeline: {report['implementation_roadmap']['total_duration_weeks']} weeks")
         print(f"Total Effort: {report['implementation_roadmap']['total_effort_hours']} hours")
-        
+
         print(f"\nResults saved to: {args.output_dir}")
         print("Key files:")
         print(f"  - comprehensive_analysis_report.json")
         print(f"  - executive_summary.json")
         print(f"  - performance_matrix.json")
-        
+
     except Exception as e:
         logger.error(f"Analysis failed: {e}")
         print(f"❌ Analysis failed: {e}")

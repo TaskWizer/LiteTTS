@@ -59,22 +59,22 @@ class BaselineMetrics:
 
 class PronunciationAccuracyBenchmarker:
     """Comprehensive pronunciation accuracy benchmarking system"""
-    
+
     def __init__(self, api_base_url: str = "http://localhost:8354"):
         self.api_base_url = api_base_url
         self.results_dir = Path("test_results/pronunciation_benchmarks")
         self.results_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # Create comprehensive benchmark test cases
         self.benchmark_cases = self._create_benchmark_test_cases()
-        
+
         # ASR fallback mechanisms (heuristic-based for now)
         self.asr_available = False
-        
+
     def _create_benchmark_test_cases(self) -> List[Dict[str, Any]]:
         """Create comprehensive benchmark test cases"""
         test_cases = []
-        
+
         # Critical symbol pronunciation benchmarks
         test_cases.extend([
             {
@@ -114,7 +114,7 @@ class PronunciationAccuracyBenchmarker:
                 "description": "Ampersand as 'and'"
             }
         ])
-        
+
         # Critical interjection benchmarks
         test_cases.extend([
             {
@@ -136,7 +136,7 @@ class PronunciationAccuracyBenchmarker:
                 "description": "Extended hmm pronunciation"
             }
         ])
-        
+
         # Critical contraction benchmarks
         test_cases.extend([
             {
@@ -158,7 +158,7 @@ class PronunciationAccuracyBenchmarker:
                 "description": "Multiple contractions"
             }
         ])
-        
+
         # Critical word pronunciation benchmarks
         test_cases.extend([
             {
@@ -180,7 +180,7 @@ class PronunciationAccuracyBenchmarker:
                 "description": "Well in different contexts"
             }
         ])
-        
+
         # Performance benchmarks
         test_cases.extend([
             {
@@ -214,7 +214,7 @@ class PronunciationAccuracyBenchmarker:
                 "description": "Medium text performance"
             }
         ])
-        
+
         # Complex mixed benchmarks
         test_cases.extend([
             {
@@ -236,14 +236,14 @@ class PronunciationAccuracyBenchmarker:
                 "description": "Complex business context"
             }
         ])
-        
+
         return test_cases
-    
+
     async def generate_audio(self, text: str, voice: str = "af_heart") -> Tuple[bool, bytes, float, str]:
         """Generate audio for given text"""
         try:
             start_time = time.time()
-            
+
             async with aiohttp.ClientSession() as session:
                 payload = {
                     'model': 'kokoro',
@@ -251,25 +251,25 @@ class PronunciationAccuracyBenchmarker:
                     'voice': voice,
                     'response_format': 'wav'
                 }
-                
+
                 async with session.post(
                     f"{self.api_base_url}/v1/audio/speech",
                     json=payload,
                     timeout=aiohttp.ClientTimeout(total=30)
                 ) as response:
                     generation_time = time.time() - start_time
-                    
+
                     if response.status == 200:
                         audio_data = await response.read()
                         return True, audio_data, generation_time, ""
                     else:
                         error_text = await response.text()
                         return False, b"", generation_time, f"HTTP {response.status}: {error_text}"
-                        
+
         except Exception as e:
             generation_time = time.time() - start_time
             return False, b"", generation_time, str(e)
-    
+
     def analyze_audio_duration(self, audio_data: bytes) -> float:
         """Analyze audio duration"""
         try:
@@ -277,72 +277,72 @@ class PronunciationAccuracyBenchmarker:
             with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_file:
                 temp_file.write(audio_data)
                 temp_path = temp_file.name
-            
+
             with wave.open(temp_path, 'rb') as wav_file:
                 frames = wav_file.getnframes()
                 sample_rate = wav_file.getframerate()
                 duration = frames / float(sample_rate)
-            
+
             os.unlink(temp_path)
             return duration
         except Exception as e:
             logger.warning(f"Audio duration analysis failed: {e}")
             return 0.0
-    
+
     def calculate_pronunciation_accuracy_heuristic(self, expected: str, input_text: str, test_case: Dict[str, Any]) -> Tuple[float, float, float]:
         """Calculate pronunciation accuracy using heuristic methods"""
         # Normalize texts for comparison
         expected_words = expected.lower().split()
         input_words = input_text.lower().split()
-        
+
         # Basic word-level accuracy
         word_accuracy = 0.0
         if expected_words:
             # Use sequence matching for better accuracy
             matcher = difflib.SequenceMatcher(None, expected_words, input_words)
             word_accuracy = matcher.ratio()
-        
+
         # Calculate WER (Word Error Rate)
         wer = 1.0 - word_accuracy
-        
+
         # Phoneme-level accuracy (heuristic based on character similarity)
         expected_chars = ''.join(expected_words)
         input_chars = ''.join(input_words)
-        
+
         if expected_chars:
             char_matcher = difflib.SequenceMatcher(None, expected_chars, input_chars)
             phoneme_accuracy = char_matcher.ratio()
         else:
             phoneme_accuracy = 1.0 if not input_chars else 0.0
-        
+
         # Adjust accuracy based on test category and known issues
         category = test_case.get("category", "")
-        
+
         # Apply category-specific adjustments
         if "critical" in category:
             # More stringent requirements for critical categories
             word_accuracy *= 0.9 if word_accuracy > 0.8 else word_accuracy
-        
+
         # Check for specific pronunciation issues
         if "hmm" in input_text.lower() and "hum" not in expected.lower():
             # Bonus for correct hmm pronunciation
             word_accuracy = min(1.0, word_accuracy + 0.1)
-        
+
         if "question mark" in expected.lower() and "?" in input_text:
             # Check if question mark context is preserved
             word_accuracy = min(1.0, word_accuracy + 0.05)
-        
+
         return word_accuracy, wer, phoneme_accuracy
-    
+
     async def benchmark_single_case(self, test_case: Dict[str, Any], voice: str = "af_heart") -> PronunciationBenchmark:
         """Benchmark a single pronunciation test case"""
         logger.info(f"Benchmarking: {test_case['test_id']} - {test_case['description']}")
-        
+
         # Generate audio
         success, audio_data, processing_time, error = await self.generate_audio(
             test_case["input_text"], voice
         )
-        
+
         if not success:
             logger.error(f"Audio generation failed for {test_case['test_id']}: {error}")
             return PronunciationBenchmark(
@@ -360,18 +360,18 @@ class PronunciationAccuracyBenchmarker:
                 test_category=test_case["category"],
                 asr_service_used="failed"
             )
-        
+
         # Analyze audio duration
         audio_duration = self.analyze_audio_duration(audio_data)
         rtf = processing_time / audio_duration if audio_duration > 0 else float('inf')
-        
+
         # Calculate pronunciation accuracy (heuristic method)
         pronunciation_accuracy, wer, phoneme_accuracy = self.calculate_pronunciation_accuracy_heuristic(
             test_case["expected_pronunciation"],
             test_case["input_text"],
             test_case
         )
-        
+
         # Calculate confidence score based on multiple factors
         confidence_score = 0.7  # Base confidence for heuristic method
         if rtf <= test_case.get("target_rtf", 0.25):
@@ -379,7 +379,7 @@ class PronunciationAccuracyBenchmarker:
         if pronunciation_accuracy >= test_case.get("target_accuracy", 0.9):
             confidence_score += 0.1
         confidence_score = min(1.0, confidence_score)
-        
+
         benchmark = PronunciationBenchmark(
             test_id=test_case["test_id"],
             input_text=test_case["input_text"],
@@ -396,7 +396,7 @@ class PronunciationAccuracyBenchmarker:
             confidence_score=confidence_score,
             asr_service_used="heuristic"
         )
-        
+
         logger.info(f"Completed: {test_case['test_id']} - Accuracy: {pronunciation_accuracy:.3f}, WER: {wer:.3f}, RTF: {rtf:.3f}")
         return benchmark
 

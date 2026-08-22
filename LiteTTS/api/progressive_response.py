@@ -16,11 +16,11 @@ logger = logging.getLogger(__name__)
 
 class ProgressiveResponseHandler:
     """Handles progressive audio responses for chunked generation"""
-    
+
     def __init__(self, progressive_generator: ProgressiveAudioGenerator):
         self.progressive_generator = progressive_generator
         self.active_streams = {}
-    
+
     async def create_progressive_response(
         self,
         text: str,
@@ -45,7 +45,7 @@ class ProgressiveResponseHandler:
             StreamingResponse with progressive audio
         """
         generation_id = generation_id or f"stream_{int(time.time() * 1000)}"
-        
+
         # Store stream info
         self.active_streams[generation_id] = {
             "start_time": time.time(),
@@ -53,7 +53,7 @@ class ProgressiveResponseHandler:
             "voice": voice,
             "format": response_format
         }
-        
+
         try:
             if streaming:
                 # Create streaming response with chunked audio
@@ -97,7 +97,7 @@ class ProgressiveResponseHandler:
             if generation_id in self.active_streams:
                 del self.active_streams[generation_id]
             raise
-    
+
     async def _stream_chunked_audio(
         self,
         text: str,
@@ -107,11 +107,11 @@ class ProgressiveResponseHandler:
         generation_id: str
     ) -> AsyncIterator[bytes]:
         """Stream audio chunks as they become available"""
-        
+
         try:
             chunk_count = 0
             total_bytes = 0
-            
+
             async for chunk_result in self.progressive_generator.generate_progressive(
                 text=text,
                 voice=voice,
@@ -121,16 +121,16 @@ class ProgressiveResponseHandler:
             ):
                 # Yield the audio data
                 yield chunk_result.audio_data
-                
+
                 chunk_count += 1
                 total_bytes += len(chunk_result.audio_data)
-                
+
                 logger.debug(
                     f"Streamed chunk {chunk_result.chunk_id} "
                     f"({len(chunk_result.audio_data)} bytes) "
                     f"for generation {generation_id}"
                 )
-                
+
                 # Update stream info
                 if generation_id in self.active_streams:
                     self.active_streams[generation_id].update({
@@ -138,7 +138,7 @@ class ProgressiveResponseHandler:
                         "bytes_sent": total_bytes,
                         "last_chunk_time": time.time()
                     })
-                
+
                 # If this is the final chunk, log completion
                 if chunk_result.is_final:
                     elapsed_time = time.time() - self.active_streams[generation_id]["start_time"]
@@ -147,7 +147,7 @@ class ProgressiveResponseHandler:
                         f"{chunk_count} chunks, {total_bytes} bytes in {elapsed_time:.2f}s"
                     )
                     break
-                    
+
         except Exception as e:
             logger.error(f"Streaming failed for generation {generation_id}: {e}")
             raise
@@ -155,7 +155,7 @@ class ProgressiveResponseHandler:
             # Cleanup
             if generation_id in self.active_streams:
                 del self.active_streams[generation_id]
-    
+
     async def _stream_complete_audio(
         self,
         text: str,
@@ -165,11 +165,11 @@ class ProgressiveResponseHandler:
         generation_id: str
     ) -> AsyncIterator[bytes]:
         """Generate complete audio using chunked processing but return as single stream"""
-        
+
         try:
             audio_chunks = []
             chunk_count = 0
-            
+
             # Collect all chunks
             async for chunk_result in self.progressive_generator.generate_progressive(
                 text=text,
@@ -180,31 +180,31 @@ class ProgressiveResponseHandler:
             ):
                 audio_chunks.append(chunk_result.audio_data)
                 chunk_count += 1
-                
+
                 logger.debug(
                     f"Generated chunk {chunk_result.chunk_id} "
                     f"({len(chunk_result.audio_data)} bytes) "
                     f"for generation {generation_id}"
                 )
-                
+
                 if chunk_result.is_final:
                     break
-            
+
             # Combine all chunks and yield as single response
             if audio_chunks:
                 combined_audio = b''.join(audio_chunks)
-                
+
                 elapsed_time = time.time() - self.active_streams[generation_id]["start_time"]
                 logger.info(
                     f"Completed chunked generation {generation_id}: "
                     f"{chunk_count} chunks combined into {len(combined_audio)} bytes "
                     f"in {elapsed_time:.2f}s"
                 )
-                
+
                 yield combined_audio
             else:
                 logger.warning(f"No audio chunks generated for {generation_id}")
-                
+
         except Exception as e:
             logger.error(f"Complete audio generation failed for {generation_id}: {e}")
             raise
@@ -212,7 +212,7 @@ class ProgressiveResponseHandler:
             # Cleanup
             if generation_id in self.active_streams:
                 del self.active_streams[generation_id]
-    
+
     async def create_server_sent_events_response(
         self,
         text: str,
@@ -228,7 +228,7 @@ class ProgressiveResponseHandler:
             StreamingResponse with SSE format
         """
         generation_id = generation_id or f"sse_{int(time.time() * 1000)}"
-        
+
         return StreamingResponse(
             self._stream_sse_events(
                 text, voice, response_format, speed, generation_id
@@ -243,7 +243,7 @@ class ProgressiveResponseHandler:
                 "Access-Control-Allow-Headers": "*"
             }
         )
-    
+
     async def _stream_sse_events(
         self,
         text: str,
@@ -253,14 +253,14 @@ class ProgressiveResponseHandler:
         generation_id: str
     ) -> AsyncIterator[str]:
         """Stream Server-Sent Events with audio chunks and progress"""
-        
+
         try:
             chunk_count = 0
-            
+
             # Send initial event
             yield "event: start\n"
             yield f"data: {json.dumps({'generation_id': generation_id, 'status': 'started'})}\n\n"
-            
+
             async for chunk_result in self.progressive_generator.generate_progressive(
                 text=text,
                 voice=voice,
@@ -269,11 +269,11 @@ class ProgressiveResponseHandler:
                 generation_id=generation_id
             ):
                 chunk_count += 1
-                
+
                 # Encode audio data as base64 for SSE
                 import base64
                 encoded_audio = base64.b64encode(chunk_result.audio_data).decode('utf-8')
-                
+
                 # Send chunk event
                 event_data = {
                     "chunk_id": chunk_result.chunk_id,
@@ -284,30 +284,30 @@ class ProgressiveResponseHandler:
                     "is_final": chunk_result.is_final,
                     "metadata": chunk_result.metadata
                 }
-                
+
                 yield "event: chunk\n"
                 yield f"data: {json.dumps(event_data)}\n\n"
-                
+
                 # Send progress event
                 if chunk_result.metadata:
                     total_chunks = chunk_result.metadata.get("total_chunks", 1)
                     progress = (chunk_count / total_chunks) * 100
-                    
+
                     progress_data = {
                         "progress": progress,
                         "completed_chunks": chunk_count,
                         "total_chunks": total_chunks
                     }
-                    
+
                     yield "event: progress\n"
                     yield f"data: {json.dumps(progress_data)}\n\n"
-                
+
                 if chunk_result.is_final:
                     # Send completion event
                     yield "event: complete\n"
                     yield f"data: {json.dumps({'generation_id': generation_id, 'status': 'completed'})}\n\n"
                     break
-                    
+
         except Exception as e:
             logger.error(f"SSE streaming failed for generation {generation_id}: {e}")
             # Send error event
@@ -318,15 +318,15 @@ class ProgressiveResponseHandler:
             }
             yield "event: error\n"
             yield f"data: {json.dumps(error_data)}\n\n"
-    
+
     def get_stream_status(self, generation_id: str) -> Optional[Dict[str, Any]]:
         """Get status of an active stream"""
         if generation_id not in self.active_streams:
             return None
-        
+
         stream_info = self.active_streams[generation_id]
         current_time = time.time()
-        
+
         status = {
             "generation_id": generation_id,
             "start_time": stream_info["start_time"],
@@ -335,7 +335,7 @@ class ProgressiveResponseHandler:
             "voice": stream_info["voice"],
             "format": stream_info["format"]
         }
-        
+
         # Add progress info if available
         if "chunks_sent" in stream_info:
             status.update({
@@ -343,9 +343,9 @@ class ProgressiveResponseHandler:
                 "bytes_sent": stream_info["bytes_sent"],
                 "last_chunk_time": stream_info.get("last_chunk_time")
             })
-        
+
         return status
-    
+
     def cancel_stream(self, generation_id: str) -> bool:
         """Cancel an active stream"""
         if generation_id in self.active_streams:
@@ -353,25 +353,25 @@ class ProgressiveResponseHandler:
             # Also cancel the underlying generation
             return self.progressive_generator.cancel_generation(generation_id)
         return False
-    
+
     def get_active_streams(self) -> Dict[str, Dict[str, Any]]:
         """Get information about all active streams"""
         return {
             stream_id: self.get_stream_status(stream_id)
             for stream_id in self.active_streams.keys()
         }
-    
+
     def cleanup_expired_streams(self, max_age_seconds: int = 3600):
         """Clean up streams that have been active too long"""
         current_time = time.time()
         expired_streams = []
-        
+
         for stream_id, stream_info in self.active_streams.items():
             if current_time - stream_info["start_time"] > max_age_seconds:
                 expired_streams.append(stream_id)
-        
+
         for stream_id in expired_streams:
             del self.active_streams[stream_id]
             logger.info(f"Cleaned up expired stream: {stream_id}")
-        
+
         return len(expired_streams)

@@ -25,15 +25,15 @@ def get_performance_metrics(base_url: str = "http://localhost:8354") -> Dict[str
 
 def analyze_rtf_performance(base_url: str = "http://localhost:8354") -> List[float]:
     """Analyze RTF performance with accurate measurements"""
-    
+
     print("🔍 Accurate RTF Performance Analysis")
     print("=" * 40)
-    
+
     # Test cases designed to avoid problematic phrases
     test_cases = [
         "Hello world",
         "This is a test",
-        "Good morning everyone", 
+        "Good morning everyone",
         "Thank you very much",
         "How are you today",
         "The weather is nice",
@@ -47,19 +47,19 @@ def analyze_rtf_performance(base_url: str = "http://localhost:8354") -> List[flo
         "The system is running well",
         "Everything looks good"
     ]
-    
+
     rtf_values = []
     response_times = []
-    
+
     for i, text in enumerate(test_cases, 1):
         print(f"\nTest {i}: '{text}'")
-        
+
         payload = {
             "input": text,
             "voice": "af_heart",
             "response_format": "mp3"
         }
-        
+
         try:
             start_time = time.time()
             response = requests.post(
@@ -68,38 +68,38 @@ def analyze_rtf_performance(base_url: str = "http://localhost:8354") -> List[flo
                 timeout=15
             )
             end_time = time.time()
-            
+
             if response.status_code == 200:
                 response_time = end_time - start_time
                 response_times.append(response_time)
                 print(f"   ✅ Response time: {response_time:.3f}s")
-                
+
                 # Get the actual RTF from server metrics (this is more accurate)
                 # We'll collect these and analyze them separately
-                
+
             else:
                 print(f"   ❌ HTTP {response.status_code}")
-                
+
         except Exception as e:
             print(f"   ❌ Error: {e}")
-        
+
         # Small delay to avoid overwhelming the server
         time.sleep(0.1)
-    
+
     return response_times
 
 def analyze_server_metrics(base_url: str = "http://localhost:8354"):
     """Analyze server-side performance metrics"""
-    
+
     print("\n\n📊 Server-Side Performance Metrics")
     print("=" * 40)
-    
+
     metrics = get_performance_metrics(base_url)
-    
+
     if not metrics:
         print("❌ Could not retrieve server metrics")
         return
-    
+
     # Extract summary data
     summary = metrics.get('summary', {})
 
@@ -121,15 +121,15 @@ def analyze_server_metrics(base_url: str = "http://localhost:8354"):
         print(f"\n✅ GOOD: Server RTF {avg_rtf:.3f} is acceptable")
     else:
         print(f"\n⚠️ NEEDS IMPROVEMENT: Server RTF {avg_rtf:.3f} is above target")
-    
+
     return metrics
 
 def test_problematic_inputs(base_url: str = "http://localhost:8354"):
     """Test inputs that are known to cause issues"""
-    
+
     print("\n\n🔍 Testing Problematic Inputs")
     print("=" * 40)
-    
+
     problematic_cases = [
         "I am doing well",  # Known to cause empty audio
         "This is a much longer sentence that contains more words and should take longer to process but we want to see how the RTF scales with length",  # Known to cause empty audio
@@ -137,16 +137,16 @@ def test_problematic_inputs(base_url: str = "http://localhost:8354"):
         "Performance optimization",
         "Real-time factor analysis"
     ]
-    
+
     for i, text in enumerate(problematic_cases, 1):
         print(f"\nProblematic Test {i}: '{text[:50]}{'...' if len(text) > 50 else ''}'")
-        
+
         payload = {
             "input": text,
-            "voice": "af_heart", 
+            "voice": "af_heart",
             "response_format": "mp3"
         }
-        
+
         try:
             start_time = time.time()
             response = requests.post(
@@ -155,38 +155,38 @@ def test_problematic_inputs(base_url: str = "http://localhost:8354"):
                 timeout=15
             )
             end_time = time.time()
-            
+
             response_time = end_time - start_time
-            
+
             if response.status_code == 200:
                 print(f"   ✅ Success: {response_time:.3f}s")
             else:
                 print(f"   ❌ HTTP {response.status_code}: {response_time:.3f}s")
-                
+
         except Exception as e:
             print(f"   ❌ Error: {e}")
 
 def main():
     """Main analysis function"""
-    
+
     print("🎯 Accurate Performance Analysis")
     print("Using server-side RTF metrics for precision")
     print("=" * 50)
-    
+
     base_url = "http://localhost:8354"
-    
+
     # Test basic performance
     response_times = analyze_rtf_performance(base_url)
-    
+
     # Analyze server metrics
     metrics = analyze_server_metrics(base_url)
-    
+
     # Test problematic inputs
     test_problematic_inputs(base_url)
-    
+
     print("\n" + "=" * 50)
     print("🎯 ANALYSIS COMPLETE")
-    
+
     if metrics:
         summary = metrics.get('summary', {})
         avg_rtf = summary.get('avg_rtf', 0)
@@ -196,7 +196,7 @@ def main():
         print(f"   • Server RTF: {avg_rtf:.3f}")
         print(f"   • Cache Hit Rate: {cache_hit_rate:.1f}%")
         print(f"   • Average Response Time: {statistics.mean(response_times):.3f}s" if response_times else "   • No response time data")
-        
+
         if avg_rtf <= 0.30:
             print("\n✅ Performance is EXCELLENT")
             print("   RTF is within target range")

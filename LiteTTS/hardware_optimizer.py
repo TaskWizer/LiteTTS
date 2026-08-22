@@ -44,31 +44,31 @@ class OptimizedSettings:
 
 class HardwareOptimizer:
     """Automatic hardware optimization system"""
-    
+
     def __init__(self):
         self.hardware_profile: Optional[HardwareProfile] = None
         self.optimized_settings: Optional[OptimizedSettings] = None
         self.benchmark_results: Dict[str, float] = {}
-        
+
     def detect_hardware(self) -> HardwareProfile:
         """Detect hardware capabilities"""
         logger.info("🔍 Detecting hardware capabilities...")
-        
+
         # CPU information
         cpu_cores = psutil.cpu_count(logical=False)
         cpu_threads = psutil.cpu_count(logical=True)
         cpu_freq = psutil.cpu_freq()
         cpu_frequency = cpu_freq.current if cpu_freq else 0.0
-        
+
         # Memory information
         memory = psutil.virtual_memory()
         total_memory_gb = memory.total / (1024**3)
         available_memory_gb = memory.available / (1024**3)
-        
+
         # GPU detection
         has_gpu = False
         gpu_memory_gb = None
-        
+
         try:
             import torch
             if torch.cuda.is_available():
@@ -79,11 +79,11 @@ class HardwareOptimizer:
             logger.info("ℹ️  PyTorch not available, GPU detection skipped")
         except Exception as e:
             logger.warning(f"⚠️  GPU detection failed: {e}")
-        
+
         # Platform information
         platform_system = platform.system()
         architecture = platform.machine()
-        
+
         profile = HardwareProfile(
             cpu_cores=cpu_cores,
             cpu_threads=cpu_threads,
@@ -95,25 +95,25 @@ class HardwareOptimizer:
             platform_system=platform_system,
             architecture=architecture
         )
-        
+
         logger.info(f"📊 Hardware Profile:")
         logger.info(f"   CPU: {cpu_cores} cores, {cpu_threads} threads @ {cpu_frequency:.0f}MHz")
         logger.info(f"   Memory: {total_memory_gb:.1f}GB total, {available_memory_gb:.1f}GB available")
         logger.info(f"   GPU: {'Yes' if has_gpu else 'No'}{f' ({gpu_memory_gb:.1f}GB)' if gpu_memory_gb else ''}")
         logger.info(f"   Platform: {platform_system} {architecture}")
-        
+
         self.hardware_profile = profile
         return profile
-    
+
     def run_benchmarks(self) -> Dict[str, float]:
         """Run performance benchmarks to determine optimal settings"""
         logger.info("🏃 Running performance benchmarks...")
-        
+
         if not self.hardware_profile:
             raise ValueError("Hardware profile not detected. Run detect_hardware() first.")
-        
+
         benchmarks = {}
-        
+
         # CPU benchmark
         logger.info("   📈 CPU performance test...")
         cpu_start = time.time()
@@ -121,7 +121,7 @@ class HardwareOptimizer:
         result = sum(i * i for i in range(100000))
         cpu_time = time.time() - cpu_start
         benchmarks['cpu_performance'] = 1.0 / cpu_time  # Higher is better
-        
+
         # Memory benchmark
         logger.info("   💾 Memory performance test...")
         memory_start = time.time()
@@ -130,7 +130,7 @@ class HardwareOptimizer:
         memory_time = time.time() - memory_start
         benchmarks['memory_performance'] = 1.0 / memory_time
         del test_data
-        
+
         # I/O benchmark
         logger.info("   💿 I/O performance test...")
         io_start = time.time()
@@ -146,25 +146,25 @@ class HardwareOptimizer:
             logger.warning(f"I/O benchmark failed: {e}")
         io_time = time.time() - io_start
         benchmarks['io_performance'] = 1.0 / io_time
-        
+
         logger.info(f"📊 Benchmark Results:")
         logger.info(f"   CPU: {benchmarks['cpu_performance']:.2f}")
         logger.info(f"   Memory: {benchmarks['memory_performance']:.2f}")
         logger.info(f"   I/O: {benchmarks['io_performance']:.2f}")
-        
+
         self.benchmark_results = benchmarks
         return benchmarks
-    
+
     def calculate_optimal_settings(self) -> OptimizedSettings:
         """Calculate optimal settings based on hardware profile and benchmarks"""
         logger.info("⚙️  Calculating optimal settings...")
-        
+
         if not self.hardware_profile or not self.benchmark_results:
             raise ValueError("Hardware profile and benchmarks required")
-        
+
         hw = self.hardware_profile
         bench = self.benchmark_results
-        
+
         # Determine optimal workers
         if hw.cpu_cores >= 8:
             workers = min(4, hw.cpu_cores // 2)
@@ -172,7 +172,7 @@ class HardwareOptimizer:
             workers = 2
         else:
             workers = 1
-        
+
         # Determine optimal chunk size based on memory and CPU
         if hw.total_memory_gb >= 16 and hw.cpu_cores >= 8:
             chunk_size = 200
@@ -182,7 +182,7 @@ class HardwareOptimizer:
             chunk_size = 100
         else:
             chunk_size = 50
-        
+
         # Cache settings based on available memory
         cache_enabled = hw.available_memory_gb >= 2.0
         if hw.available_memory_gb >= 8:
@@ -191,10 +191,10 @@ class HardwareOptimizer:
             cache_size = 100
         else:
             cache_size = 50
-        
+
         # Preload models if we have enough memory
         preload_models = hw.available_memory_gb >= 4.0
-        
+
         # Text length limits based on memory
         if hw.total_memory_gb >= 16:
             max_text_length = 8000
@@ -202,7 +202,7 @@ class HardwareOptimizer:
             max_text_length = 5000
         else:
             max_text_length = 3000
-        
+
         # Timeout based on CPU performance
         cpu_perf = bench.get('cpu_performance', 1.0)
         if cpu_perf > 2.0:  # Fast CPU
@@ -211,10 +211,10 @@ class HardwareOptimizer:
             timeout_seconds = 45
         else:  # Slow CPU
             timeout_seconds = 60
-        
+
         # Device selection
         device = "cuda" if hw.has_gpu and hw.gpu_memory_gb and hw.gpu_memory_gb >= 2.0 else "cpu"
-        
+
         settings = OptimizedSettings(
             workers=workers,
             chunk_size=chunk_size,
@@ -225,7 +225,7 @@ class HardwareOptimizer:
             timeout_seconds=timeout_seconds,
             device=device
         )
-        
+
         logger.info(f"🎯 Optimal Settings:")
         logger.info(f"   Workers: {workers}")
         logger.info(f"   Chunk Size: {chunk_size}")
@@ -234,17 +234,17 @@ class HardwareOptimizer:
         logger.info(f"   Max Text Length: {max_text_length}")
         logger.info(f"   Timeout: {timeout_seconds}s")
         logger.info(f"   Device: {device}")
-        
+
         self.optimized_settings = settings
         return settings
-    
+
     def generate_override_config(self) -> Dict[str, Any]:
         """Generate override.json configuration"""
         if not self.optimized_settings:
             raise ValueError("Optimal settings not calculated")
-        
+
         settings = self.optimized_settings
-        
+
         config = {
             "_comment": "Auto-generated hardware-optimized configuration",
             "_generated_by": "Kokoro Hardware Optimizer",
@@ -270,23 +270,23 @@ class HardwareOptimizer:
                 "max_size": settings.cache_size
             }
         }
-        
+
         # Add device setting if GPU is available
         if settings.device == "cuda":
             config["tts"] = {"device": "cuda"}
-        
+
         return config
-    
+
     def save_override_config(self, config: Dict[str, Any], backup_existing: bool = True) -> bool:
         """Save override configuration to file"""
         override_path = Path("override.json")
-        
+
         # Backup existing override.json if it exists
         if backup_existing and override_path.exists():
             backup_path = Path(f"override.json.backup.{int(time.time())}")
             override_path.rename(backup_path)
             logger.info(f"📁 Backed up existing override.json to {backup_path}")
-        
+
         try:
             with open(override_path, 'w') as f:
                 json.dump(config, f, indent=2)
@@ -295,11 +295,11 @@ class HardwareOptimizer:
         except Exception as e:
             logger.error(f"❌ Failed to save override.json: {e}")
             return False
-    
+
     def optimize_system(self, force: bool = False) -> bool:
         """Run complete hardware optimization process"""
         override_path = Path("override.json")
-        
+
         # Check if optimization already exists
         if not force and override_path.exists():
             try:
@@ -311,23 +311,23 @@ class HardwareOptimizer:
                     return True
             except Exception:
                 pass  # Continue with optimization if we can't read existing config
-        
+
         try:
             logger.info("🚀 Starting automatic hardware optimization...")
-            
+
             # Step 1: Detect hardware
             self.detect_hardware()
-            
+
             # Step 2: Run benchmarks
             self.run_benchmarks()
-            
+
             # Step 3: Calculate optimal settings
             self.calculate_optimal_settings()
-            
+
             # Step 4: Generate and save configuration
             config = self.generate_override_config()
             success = self.save_override_config(config)
-            
+
             if success:
                 logger.info("🎉 Hardware optimization completed successfully!")
                 logger.info("💡 Restart the server to apply optimized settings")
@@ -335,7 +335,7 @@ class HardwareOptimizer:
             else:
                 logger.error("❌ Hardware optimization failed")
                 return False
-                
+
         except Exception as e:
             logger.error(f"❌ Hardware optimization failed: {e}")
             return False
@@ -347,13 +347,13 @@ def run_hardware_optimization(force: bool = False) -> bool:
 
 if __name__ == "__main__":
     import argparse
-    
+
     parser = argparse.ArgumentParser(description="Kokoro Hardware Optimizer")
     parser.add_argument("--force", action="store_true", help="Force re-optimization even if already done")
     args = parser.parse_args()
-    
+
     # Set up logging
     logging.basicConfig(level=logging.INFO, format='%(asctime)s | %(levelname)s | %(message)s')
-    
+
     success = run_hardware_optimization(force=args.force)
     exit(0 if success else 1)

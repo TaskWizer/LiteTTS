@@ -76,13 +76,13 @@ EMOJIS = {
     'memo': get_safe_emoji('📝', '[FILE]'),
     'page': get_safe_emoji('📄', '[DOC]'),
     'package': get_safe_emoji('📦', '[PKG]'),
-    
+
     # Status indicators
     'check': get_safe_emoji('✅', '[OK]'),
     'cross': get_safe_emoji('❌', '[ERROR]'),
     'warning': get_safe_emoji('⚠️', '[WARN]'),
     'stop': get_safe_emoji('🛑', '[STOP]'),
-    
+
     # Actions and processes
     'rocket': get_safe_emoji('🚀', '[START]'),
     'gear': get_safe_emoji('🔧', '[CONFIG]'),
@@ -92,7 +92,7 @@ EMOJIS = {
     'electric_plug': get_safe_emoji('🔌', '[PLUG]'),
     'magnifying': get_safe_emoji('🔍', '[SEARCH]'),
     'test_tube': get_safe_emoji('🧪', '[TEST]'),
-    
+
     # Network and communication
     'globe': get_safe_emoji('🌍', '[GLOBAL]'),
     'globe_web': get_safe_emoji('🌐', '[WEB]'),
@@ -100,13 +100,13 @@ EMOJIS = {
     'upload': get_safe_emoji('📤', '[UP]'),
     'inbox': get_safe_emoji('📥', '[IN]'),
     'outbox': get_safe_emoji('📤', '[OUT]'),
-    
+
     # Performance and optimization
     'fire': get_safe_emoji('🔥', '[HOT]'),
     'lightning': get_safe_emoji('⚡', '[FAST]'),
     'target': get_safe_emoji('🎯', '[TARGET]'),
     'clock': get_safe_emoji('⏰', '[TIME]'),
-    
+
     # Audio and TTS specific
     'microphone': get_safe_emoji('🎤', '[MIC]'),
     'speaker': get_safe_emoji('🔊', '[SPEAKER]'),
@@ -114,13 +114,13 @@ EMOJIS = {
     'musical_notes': get_safe_emoji('♫', '[NOTES]'),
     'masks': get_safe_emoji('🎭', '[VOICE]'),
     'party': get_safe_emoji('🎉', '[READY]'),
-    
+
     # Books and documentation
     'books': get_safe_emoji('📚', '[DOCS]'),
     'book': get_safe_emoji('📖', '[BOOK]'),
     'link': get_safe_emoji('🔗', '[LINK]'),
     'bulb': get_safe_emoji('💡', '[IDEA]'),
-    
+
     # Music instruments (for audio processing)
     'trumpet': get_safe_emoji('🎺', '[TRUMPET]'),
     'saxophone': get_safe_emoji('🎷', '[SAX]'),
@@ -128,13 +128,13 @@ EMOJIS = {
     'violin': get_safe_emoji('🎻', '[VIOLIN]'),
     'guitar': get_safe_emoji('🎸', '[GUITAR]'),
     'piano': get_safe_emoji('🎹', '[PIANO]'),
-    
+
     # Volume controls
     'volume_high': get_safe_emoji('🔊', '[VOL_HIGH]'),
     'volume_medium': get_safe_emoji('🔉', '[VOL_MED]'),
     'volume_low': get_safe_emoji('🔈', '[VOL_LOW]'),
     'volume_mute': get_safe_emoji('🔇', '[MUTE]'),
-    
+
     # Announcements
     'megaphone': get_safe_emoji('📢', '[ANNOUNCE]'),
     'loudspeaker': get_safe_emoji('📣', '[LOUD]'),
@@ -183,7 +183,7 @@ def clean_message_for_json(message: str) -> str:
         Message with emojis removed
     """
     import re
-    
+
     # Remove emoji characters (comprehensive Unicode ranges)
     emoji_pattern = re.compile(
         "["
@@ -198,13 +198,13 @@ def clean_message_for_json(message: str) -> str:
         "]+",
         flags=re.UNICODE
     )
-    
+
     # Apply emoji pattern removal
     cleaned = emoji_pattern.sub("", message)
-    
+
     # Clean up extra whitespace
     cleaned = re.sub(r'\s+', ' ', cleaned).strip()
-    
+
     return cleaned
 
 

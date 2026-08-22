@@ -8,6 +8,6 @@ from .synthesizer import TTSSynthesizer
 __all__ = [
     'KokoroTTSEngine',
     'EmotionController',
-    'ChunkProcessor', 
+    'ChunkProcessor',
     'TTSSynthesizer'
 ]

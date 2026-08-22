@@ -52,9 +52,9 @@ def setup_test_environment():
     test_dirs = ["docs/logs", "docs/benchmark", "LiteTTS/models", "LiteTTS/voices"]
     for dir_path in test_dirs:
         Path(dir_path).mkdir(parents=True, exist_ok=True)
-    
+
     yield
-    
+
     # Cleanup after test if needed
     pass
 
@@ -62,7 +62,7 @@ def setup_test_environment():
 def mock_audio_data():
     """Generate mock audio data for testing"""
     import numpy as np
-    
+
     def generate_audio(duration_seconds=2.0, sample_rate=24000):
         """Generate mock audio data"""
         num_samples = int(duration_seconds * sample_rate)
@@ -71,7 +71,7 @@ def mock_audio_data():
         frequency = 440  # A4 note
         audio = np.sin(2 * np.pi * frequency * t).astype(np.float32)
         return audio, sample_rate
-    
+
     return generate_audio
 
 @pytest.fixture
@@ -120,15 +120,15 @@ def pytest_collection_modifyitems(config, items):
         # Mark slow tests
         if "slow" in item.name or "stress" in item.name:
             item.add_marker(pytest.mark.slow)
-        
+
         # Mark integration tests
         if "integration" in item.name or "test_comprehensive" in item.nodeid:
             item.add_marker(pytest.mark.integration)
-        
+
         # Mark performance tests
         if "performance" in item.name or "test_performance" in item.nodeid:
             item.add_marker(pytest.mark.performance)
-        
+
         # Mark API tests
         if "api" in item.name or "endpoint" in item.name:
             item.add_marker(pytest.mark.api)

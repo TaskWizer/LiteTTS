@@ -20,7 +20,7 @@ from .json_sanitizer import (
 
 __all__ = [
     'sanitize_float',
-    'sanitize_value', 
+    'sanitize_value',
     'sanitize_dashboard_data',
     'sanitize_performance_data',
     'sanitize_performance_summary',

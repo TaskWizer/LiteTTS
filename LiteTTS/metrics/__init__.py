@@ -4,6 +4,6 @@ from .performance_logger import PerformanceLogger, PerformanceMetrics, performan
 
 __all__ = [
     'PerformanceLogger',
-    'PerformanceMetrics', 
+    'PerformanceMetrics',
     'performance_logger'
 ]

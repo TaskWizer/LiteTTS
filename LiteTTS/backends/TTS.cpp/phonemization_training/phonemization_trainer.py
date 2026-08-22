@@ -150,7 +150,7 @@ class PhonemizationTrainer:
                         e_word = self.phonemizer.phonemize([word + " blah"])[0].strip()[:-6]
                         dict_key = word
                         if found_sub_key:
-                            dict_key = word.split(" ")[0]              
+                            dict_key = word.split(" ")[0]
                         if e_s_word != s_word and e_s_word != e_word and e_s_word != expected:
                             eskey = "#"+dict_key+"#"
                             val = e_s_word if not found_sub_key else f"{e_s_word}:{word[len(dict_key):]}"
@@ -173,7 +173,7 @@ class PhonemizationTrainer:
                             else:
                                 out_dict[ekey].append(val)
                         if found_sub_key:
-                            # python dictionaries respect the order of added items such that these keys are always after stressed cases. 
+                            # python dictionaries respect the order of added items such that these keys are always after stressed cases.
                             # This is actually important to functionality here as end stressed and forward stressed cases need to be checked first
                             # via the phonemizer.
                             if dict_key not in out_dict:
@@ -813,7 +813,7 @@ class RuleSet:
         for part, before_data in self.rule_map.items():
             default = before_data["$default"]
             data[part] = {}
-            data[part]["$default"] = default 
+            data[part]["$default"] = default
             for before, after_data in before_data.items():
                 if before == "$default":
                     continue

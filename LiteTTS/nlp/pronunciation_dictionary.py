@@ -11,19 +11,19 @@ logger = logging.getLogger(__name__)
 
 class PronunciationDictionary:
     """Comprehensive pronunciation dictionary for TTS accuracy"""
-    
+
     def __init__(self):
         self.common_mispronunciations = self._load_common_mispronunciations()
         self.technical_terms = self._load_technical_terms()
         self.proper_nouns = self._load_proper_nouns()
         self.foreign_words = self._load_foreign_words()
-        
+
     def _load_common_mispronunciations(self) -> Dict[str, str]:
         """Load commonly mispronounced words with correct pronunciations"""
         return {
             # Words identified in the audit - removed hedonism and inherently for natural pronunciation
             # 'asterisk': 'AS-ter-isk',  # Let natural pronunciation handle this too
-            
+
             # Additional commonly mispronounced words
             'often': 'OF-en',  # Not "OF-ten"
             'comfortable': 'KUMF-ter-bul',  # Not "com-FOR-table"
@@ -106,7 +106,7 @@ class PronunciationDictionary:
             'furniture': 'FUR-ni-chur',  # Not "FUR-ni-shur"
             'legislature': 'LEJ-is-lay-chur',  # Not "LEJ-is-lay-shur"
         }
-    
+
     def _load_technical_terms(self) -> Dict[str, str]:
         """Load technical terms and their pronunciations"""
         return {
@@ -131,7 +131,7 @@ class PronunciationDictionary:
             'wifi': 'WY-fy',
             'xml': 'eks-em-el',
             'yaml': 'yam-el',
-            
+
             # Scientific terms
             'genome': 'JEE-nohm',
             'enzyme': 'EN-zym',
@@ -141,7 +141,7 @@ class PronunciationDictionary:
             'chromosome': 'KROH-muh-sohm',
             'mitochondria': 'my-tuh-KON-dree-uh',
             'deoxyribonucleic': 'dee-ok-see-ry-boh-noo-KLEE-ik',
-            
+
             # Medical terms
             'alzheimer': 'ALTS-hy-mer',
             'diabetes': 'dy-uh-BEE-teez',
@@ -151,7 +151,7 @@ class PronunciationDictionary:
             'diagnosis': 'dy-ug-NOH-sis',
             'prognosis': 'prog-NOH-sis',
             'stethoscope': 'STETH-uh-skohp',
-            
+
             # Mathematical terms
             'coefficient': 'koh-uh-FISH-unt',
             'derivative': 'duh-RIV-uh-tiv',
@@ -177,7 +177,7 @@ class PronunciationDictionary:
             'realtor': 'REEL-tur',
             'mortgage': 'MOR-gij',
         }
-    
+
     def _load_proper_nouns(self) -> Dict[str, str]:
         """Load proper nouns and their pronunciations"""
         return {
@@ -194,7 +194,7 @@ class PronunciationDictionary:
             'louisiana': 'loo-ee-zee-AN-uh',
             'massachusetts': 'mas-uh-CHOO-sits',
             'connecticut': 'kuh-NET-ih-kut',
-            
+
             # Brand names
             'nike': 'NY-kee',
             'adidas': 'uh-DEE-dus',
@@ -218,7 +218,7 @@ class PronunciationDictionary:
 
             # People names (proper pronunciation)
             'elon': 'EE-lahn',   # Elon Musk - not "alon"
-            
+
             # Names
             'joaquin': 'wah-KEEN',
             'siobhan': 'shuh-VAWN',
@@ -230,7 +230,7 @@ class PronunciationDictionary:
             'jacques': 'ZHAHK',
             'guillaume': 'gee-YOHM',
         }
-    
+
     def _load_foreign_words(self) -> Dict[str, str]:
         """Load foreign words commonly used in English"""
         return {
@@ -250,14 +250,14 @@ class PronunciationDictionary:
             'resume': 'REZ-oo-may',
             'sabotage': 'SAB-uh-tahzh',
             'valet': 'va-LAY',
-            
+
             # German
             'schadenfreude': 'SHAH-den-froy-duh',
             'zeitgeist': 'TSYT-gyst',
             'kindergarten': 'KIN-der-gar-ten',
             'gesundheit': 'guh-ZOONT-hyt',
             'wanderlust': 'WAN-der-lust',
-            
+
             # Italian
             'cappuccino': 'kap-oo-CHEE-noh',
             'paparazzi': 'pap-uh-RAT-see',
@@ -266,14 +266,14 @@ class PronunciationDictionary:
             'bruschetta': 'broo-SKET-uh',
             'gnocchi': 'NYOH-kee',
             'chianti': 'kee-AHN-tee',
-            
+
             # Spanish
             'jalapeno': 'hah-luh-PEH-nyoh',
             'quinoa': 'KEEN-wah',
             'chorizo': 'chuh-REE-soh',
             'tortilla': 'tor-TEE-yah',
             'quesadilla': 'kay-suh-DEE-yah',
-            
+
             # Japanese
             'karaoke': 'kar-ee-OH-kee',
             'tsunami': 'tsoo-NAH-mee',
@@ -284,7 +284,7 @@ class PronunciationDictionary:
             'karate': 'kuh-RAH-tay',
             'anime': 'AN-ih-may',
             'manga': 'MAHN-gah',
-            
+
             # Other languages
             'schadenfreude': 'SHAH-den-froy-duh',  # German
             'fjord': 'fee-YORD',  # Norwegian
@@ -305,38 +305,38 @@ class PronunciationDictionary:
             'hmm': 'hmm',  # Natural thinking sound
             'well': 'wel',  # Natural conversation starter
         }
-    
+
     def get_pronunciation(self, word: str) -> str:
         """Get the correct pronunciation for a word if available"""
         word_lower = word.lower()
-        
+
         # Check all dictionaries
-        for dictionary in [self.common_mispronunciations, self.technical_terms, 
+        for dictionary in [self.common_mispronunciations, self.technical_terms,
                           self.proper_nouns, self.foreign_words]:
             if word_lower in dictionary:
                 return dictionary[word_lower]
-        
+
         return word  # Return original if no pronunciation found
-    
+
     def has_pronunciation(self, word: str) -> bool:
         """Check if a pronunciation is available for a word"""
         word_lower = word.lower()
-        
-        for dictionary in [self.common_mispronunciations, self.technical_terms, 
+
+        for dictionary in [self.common_mispronunciations, self.technical_terms,
                           self.proper_nouns, self.foreign_words]:
             if word_lower in dictionary:
                 return True
-        
+
         return False
-    
+
     def get_all_words(self) -> List[str]:
         """Get all words that have pronunciation entries"""
         all_words = []
-        for dictionary in [self.common_mispronunciations, self.technical_terms, 
+        for dictionary in [self.common_mispronunciations, self.technical_terms,
                           self.proper_nouns, self.foreign_words]:
             all_words.extend(dictionary.keys())
         return sorted(list(set(all_words)))
-    
+
     def get_statistics(self) -> Dict[str, int]:
         """Get statistics about the pronunciation dictionary"""
         return {

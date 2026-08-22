@@ -29,13 +29,13 @@ def setup_environment():
         from LiteTTS.performance.cpu_optimizer import get_cpu_optimizer
         cpu_optimizer = get_cpu_optimizer()
         env_vars = cpu_optimizer.optimize_environment_variables()
-        
+
         for key, value in env_vars.items():
             os.environ[key] = value
-        
+
         logger.info(f"Applied CPU optimizations: {list(env_vars.keys())}")
         return cpu_optimizer.cpu_info
-        
+
     except ImportError:
         logger.warning("CPU optimizer not available, using default settings")
         return None
@@ -157,7 +157,7 @@ def benchmark_batch_synthesis(texts: List[str], voice: str = "af_heart") -> Dict
 def run_comprehensive_benchmark() -> Dict[str, Any]:
     """Run comprehensive RTF benchmarks"""
     logger.info("Starting comprehensive RTF benchmark...")
-    
+
     # Test texts of varying lengths
     test_texts = [
         "Hello world!",  # Short
@@ -165,7 +165,7 @@ def run_comprehensive_benchmark() -> Dict[str, Any]:
         "This is a much longer text that will test the performance of the TTS system with more complex synthesis requirements and longer processing times.",  # Long
         "The quick brown fox jumps over the lazy dog. This pangram contains every letter of the alphabet and is commonly used for testing purposes."  # Complex
     ]
-    
+
     results = {
         'timestamp': time.strftime('%Y-%m-%d %H:%M:%S'),
         'cpu_info': None,
@@ -173,7 +173,7 @@ def run_comprehensive_benchmark() -> Dict[str, Any]:
         'batch_synthesis': {},
         'summary': {}
     }
-    
+
     # Setup environment and get CPU info
     cpu_info = setup_environment()
     if cpu_info:
@@ -186,38 +186,38 @@ def run_comprehensive_benchmark() -> Dict[str, Any]:
             'supports_avx2': cpu_info.supports_avx2,
             'supports_avx512': cpu_info.supports_avx512
         }
-    
+
     # Benchmark single synthesis for each test text
     logger.info("Benchmarking single synthesis...")
     for i, text in enumerate(test_texts):
         text_label = f"text_{i+1}_{'short' if len(text) < 50 else 'medium' if len(text) < 150 else 'long'}"
         logger.info(f"Testing {text_label}: '{text[:50]}{'...' if len(text) > 50 else ''}'")
-        
+
         benchmark_result = benchmark_single_synthesis(text, iterations=3)
         results['single_synthesis'][text_label] = benchmark_result
-    
+
     # Benchmark batch synthesis
     logger.info("Benchmarking batch synthesis...")
     batch_result = benchmark_batch_synthesis(test_texts)
     results['batch_synthesis'] = batch_result
-    
+
     # Calculate summary statistics
     rtf_values = []
     for test_result in results['single_synthesis'].values():
         if 'rtf_mean' in test_result:
             rtf_values.append(test_result['rtf_mean'])
-    
+
     if rtf_values:
         results['summary'] = {
             'overall_rtf_mean': statistics.mean(rtf_values),
             'overall_rtf_median': statistics.median(rtf_values),
             'overall_rtf_min': min(rtf_values),
             'overall_rtf_max': max(rtf_values),
-            'performance_rating': 'excellent' if statistics.mean(rtf_values) < 0.3 else 
+            'performance_rating': 'excellent' if statistics.mean(rtf_values) < 0.3 else
                                  'good' if statistics.mean(rtf_values) < 0.5 else
                                  'acceptable' if statistics.mean(rtf_values) < 1.0 else 'poor'
         }
-    
+
     return results
 
 def main():
@@ -227,15 +227,15 @@ def main():
     parser.add_argument('--text', '-t', type=str, help='Custom text to benchmark')
     parser.add_argument('--voice', '-v', type=str, default='af_heart', help='Voice to use for testing')
     parser.add_argument('--iterations', '-i', type=int, default=5, help='Number of iterations per test')
-    
+
     args = parser.parse_args()
-    
+
     try:
         if args.text:
             # Benchmark custom text
             logger.info(f"Benchmarking custom text: '{args.text[:50]}{'...' if len(args.text) > 50 else ''}'")
             results = benchmark_single_synthesis(args.text, args.voice, args.iterations)
-            
+
             print(f"\nBenchmark Results:")
             rtf_mean = results.get('rtf_mean', 0)
             rtf_median = results.get('rtf_median', 0)
@@ -250,11 +250,11 @@ def main():
                 print(f"Synthesis Time: {synthesis_time:.3f}s")
             else:
                 print("Benchmark failed - no valid results")
-            
+
         else:
             # Run comprehensive benchmark
             results = run_comprehensive_benchmark()
-            
+
             print(f"\nComprehensive Benchmark Results:")
             summary = results.get('summary', {})
             rtf_mean = summary.get('overall_rtf_mean', 0)
@@ -272,13 +272,13 @@ def main():
             if 'speedup_factor' in batch_results:
                 speedup = batch_results['speedup_factor']
                 print(f"Batch Processing Speedup: {speedup:.2f}x")
-        
+
         # Save results to file if requested
         if args.output:
             with open(args.output, 'w') as f:
                 json.dump(results, f, indent=2)
             logger.info(f"Results saved to {args.output}")
-        
+
     except Exception as e:
         logger.error(f"Benchmark failed: {e}")
         sys.exit(1)

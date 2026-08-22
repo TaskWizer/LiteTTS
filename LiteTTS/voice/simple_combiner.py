@@ -49,7 +49,7 @@ class SimplifiedVoiceCombiner:
         self.voice_index_file = self.voices_dir / "voice_index.json"
 
         logger.warning("SimplifiedVoiceCombiner is deprecated. Consider using individual voice loading strategy.")
-    
+
     def _load_individual_voice(self, voice_name: str) -> Optional[np.ndarray]:
         """Load an individual voice file"""
         voice_file = self.voices_dir / f"{voice_name}.bin"
@@ -97,13 +97,13 @@ class SimplifiedVoiceCombiner:
         except Exception as e:
             logger.error(f"Failed to load voice {voice_name}: {e}")
             return None
-    
+
     def _get_available_voices(self) -> List[str]:
         """Get list of available voice files"""
         voice_files = list(self.voices_dir.glob("*.bin"))
         voice_names = [f.stem for f in voice_files]
         return sorted(voice_names)
-    
+
     def create_combined_file(self) -> bool:
         """
         Create combined voices file from individual .bin files
@@ -126,12 +126,12 @@ class SimplifiedVoiceCombiner:
                 return False
 
             logger.info(f"🔄 Creating combined voices file from {len(available_voices)} individual voices...")
-            
+
             # Load all voice data
             voice_data_dict = {}
             voice_arrays = []
             voice_index = {}
-            
+
             for i, voice_name in enumerate(available_voices):
                 voice_data = self._load_individual_voice(voice_name)
                 if voice_data is not None:
@@ -141,11 +141,11 @@ class SimplifiedVoiceCombiner:
                     logger.debug(f"✅ Loaded voice: {voice_name}")
                 else:
                     logger.warning(f"⚠️ Failed to load voice: {voice_name}")
-            
+
             if not voice_arrays:
                 logger.error("No valid voice data loaded")
                 return False
-            
+
             # Create NPZ file with individual voice arrays as separate keys
             # This is the format expected by kokoro_onnx
             npz_data = {}
@@ -166,23 +166,23 @@ class SimplifiedVoiceCombiner:
 
             # Save combined file with individual voice keys
             np.savez_compressed(self.combined_file, **npz_data)
-            
+
             # Save voice index
             with open(self.voice_index_file, 'w') as f:
                 json.dump(voice_index, f, indent=2)
-            
+
             logger.info(f"✅ Created combined voices file: {self.combined_file}")
             logger.info(f"📋 Voice index saved: {self.voice_index_file}")
             logger.info(f"🎭 Combined {len(voice_arrays)} voices successfully")
-            
+
             return True
-        
+
         except Exception as e:
             logger.error(f"❌ Failed to create combined voices file: {e}")
             import traceback
             logger.error(f"Full traceback: {traceback.format_exc()}")
             return False
-    
+
     def ensure_combined_file(self) -> str:
         """Ensure combined voices file exists and is current"""
         # Check if combined file exists
@@ -193,22 +193,22 @@ class SimplifiedVoiceCombiner:
         else:
             # Check if we need to update (if any .bin file is newer than combined file)
             combined_mtime = self.combined_file.stat().st_mtime
-            
+
             needs_update = False
             for voice_file in self.voices_dir.glob("*.bin"):
                 if voice_file.stat().st_mtime > combined_mtime:
                     needs_update = True
                     break
-            
+
             if needs_update:
                 logger.info("🔄 Voice files updated, recreating combined file...")
                 if not self.create_combined_file():
                     raise RuntimeError("Failed to update combined voices file")
             else:
                 logger.info("✅ Combined voices file is current")
-        
+
         return str(self.combined_file)
-    
+
     def get_voice_list(self) -> List[str]:
         """Get list of voices in the combined file"""
         if self.voice_index_file.exists():
@@ -218,10 +218,10 @@ class SimplifiedVoiceCombiner:
                 return sorted(voice_index.keys())
             except Exception as e:
                 logger.warning(f"Failed to load voice index: {e}")
-        
+
         # Fallback to scanning .bin files
         return self._get_available_voices()
-    
+
     def get_voice_count(self) -> int:
         """Get number of voices in the combined file"""
         return len(self.get_voice_list())

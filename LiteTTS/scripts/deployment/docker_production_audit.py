@@ -54,11 +54,11 @@ class DockerAuditResult:
 
 class DockerProductionAuditor:
     """Docker production readiness auditor"""
-    
+
     def __init__(self):
         self.results_dir = Path("test_results/docker_audit")
         self.results_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # Docker files to audit
         self.docker_files = [
             "Dockerfile",
@@ -66,14 +66,14 @@ class DockerProductionAuditor:
             "docker-compose.yaml",
             ".dockerignore"
         ]
-        
+
         # Issues found during audit
         self.issues = []
-        
+
     def audit_dockerfile(self, dockerfile_path: Path) -> List[DockerAuditIssue]:
         """Audit Dockerfile for production readiness"""
         logger.info(f"Auditing Dockerfile: {dockerfile_path}")
-        
+
         if not dockerfile_path.exists():
             return [DockerAuditIssue(
                 category="missing_files",
@@ -83,38 +83,38 @@ class DockerProductionAuditor:
                 recommendation="Create a production-ready Dockerfile",
                 file_path=str(dockerfile_path)
             )]
-        
+
         issues = []
-        
+
         try:
             with open(dockerfile_path, 'r') as f:
                 content = f.read()
                 lines = content.split('\n')
-            
+
             # Check Python version
             python_version_issues = self._check_python_version(lines, str(dockerfile_path))
             issues.extend(python_version_issues)
-            
+
             # Check base image security
             base_image_issues = self._check_base_image_security(lines, str(dockerfile_path))
             issues.extend(base_image_issues)
-            
+
             # Check user privileges
             user_issues = self._check_user_privileges(lines, str(dockerfile_path))
             issues.extend(user_issues)
-            
+
             # Check port configuration
             port_issues = self._check_port_configuration(lines, str(dockerfile_path))
             issues.extend(port_issues)
-            
+
             # Check build optimization
             build_issues = self._check_build_optimization(lines, str(dockerfile_path))
             issues.extend(build_issues)
-            
+
             # Check security practices
             security_issues = self._check_security_practices(lines, str(dockerfile_path))
             issues.extend(security_issues)
-            
+
         except Exception as e:
             issues.append(DockerAuditIssue(
                 category="file_errors",
@@ -124,20 +124,20 @@ class DockerProductionAuditor:
                 recommendation="Fix Dockerfile syntax and permissions",
                 file_path=str(dockerfile_path)
             ))
-        
+
         return issues
-    
+
     def _check_python_version(self, lines: List[str], file_path: str) -> List[DockerAuditIssue]:
         """Check Python version alignment"""
         issues = []
-        
+
         python_version_found = False
         recommended_version = "3.12"
-        
+
         for i, line in enumerate(lines):
             if line.strip().startswith('FROM python:'):
                 python_version_found = True
-                
+
                 # Extract version
                 version_match = re.search(r'python:(\d+\.\d+)', line)
                 if version_match:
@@ -162,7 +162,7 @@ class DockerProductionAuditor:
                         file_path=file_path,
                         line_number=i + 1
                     ))
-        
+
         if not python_version_found:
             issues.append(DockerAuditIssue(
                 category="python_version",
@@ -172,13 +172,13 @@ class DockerProductionAuditor:
                 recommendation="Use official Python base image",
                 file_path=file_path
             ))
-        
+
         return issues
-    
+
     def _check_base_image_security(self, lines: List[str], file_path: str) -> List[DockerAuditIssue]:
         """Check base image security practices"""
         issues = []
-        
+
         for i, line in enumerate(lines):
             if line.strip().startswith('FROM'):
                 # Check for latest tag
@@ -192,7 +192,7 @@ class DockerProductionAuditor:
                         file_path=file_path,
                         line_number=i + 1
                     ))
-                
+
                 # Check for slim/alpine variants
                 if 'slim' not in line and 'alpine' not in line:
                     issues.append(DockerAuditIssue(
@@ -204,15 +204,15 @@ class DockerProductionAuditor:
                         file_path=file_path,
                         line_number=i + 1
                     ))
-        
+
         return issues
-    
+
     def _check_user_privileges(self, lines: List[str], file_path: str) -> List[DockerAuditIssue]:
         """Check user privilege configuration"""
         issues = []
-        
+
         user_found = False
-        
+
         for i, line in enumerate(lines):
             if line.strip().startswith('USER'):
                 user_found = True
@@ -227,7 +227,7 @@ class DockerProductionAuditor:
                         file_path=file_path,
                         line_number=i + 1
                     ))
-        
+
         if not user_found:
             issues.append(DockerAuditIssue(
                 category="security",
@@ -237,21 +237,21 @@ class DockerProductionAuditor:
                 recommendation="Add USER directive to run as non-root user",
                 file_path=file_path
             ))
-        
+
         return issues
-    
+
     def _check_port_configuration(self, lines: List[str], file_path: str) -> List[DockerAuditIssue]:
         """Check port configuration"""
         issues = []
-        
+
         exposed_ports = []
-        
+
         for i, line in enumerate(lines):
             if line.strip().startswith('EXPOSE'):
                 port_match = re.findall(r'\d+', line)
                 if port_match:
                     exposed_ports.extend(port_match)
-        
+
         # Check for common port conflicts
         common_ports = ['80', '443', '22', '21', '25', '53', '110', '143', '993', '995']
         for port in exposed_ports:
@@ -264,7 +264,7 @@ class DockerProductionAuditor:
                     recommendation="Use non-standard ports to avoid conflicts",
                     file_path=file_path
                 ))
-        
+
         # Check for privileged ports
         for port in exposed_ports:
             if int(port) < 1024:
@@ -276,13 +276,13 @@ class DockerProductionAuditor:
                     recommendation="Use ports > 1024 for non-root users",
                     file_path=file_path
                 ))
-        
+
         return issues
-    
+
     def _check_build_optimization(self, lines: List[str], file_path: str) -> List[DockerAuditIssue]:
         """Check build optimization practices"""
         issues = []
-        
+
         # Check for layer optimization
         run_commands = [i for i, line in enumerate(lines) if line.strip().startswith('RUN')]
         if len(run_commands) > 5:
@@ -294,7 +294,7 @@ class DockerProductionAuditor:
                 recommendation="Combine RUN commands to reduce image layers",
                 file_path=file_path
             ))
-        
+
         # Check for cache optimization
         copy_before_install = False
         for i, line in enumerate(lines):
@@ -313,13 +313,13 @@ class DockerProductionAuditor:
                         line_number=i + 1
                     ))
                 break
-        
+
         return issues
-    
+
     def _check_security_practices(self, lines: List[str], file_path: str) -> List[DockerAuditIssue]:
         """Check security best practices"""
         issues = []
-        
+
         # Check for secrets in Dockerfile
         for i, line in enumerate(lines):
             # Check for potential secrets
@@ -329,7 +329,7 @@ class DockerProductionAuditor:
                 r'key\s*=\s*["\'].*["\']',
                 r'secret\s*=\s*["\'].*["\']'
             ]
-            
+
             for pattern in secret_patterns:
                 if re.search(pattern, line, re.IGNORECASE):
                     issues.append(DockerAuditIssue(
@@ -341,14 +341,14 @@ class DockerProductionAuditor:
                         file_path=file_path,
                         line_number=i + 1
                     ))
-        
+
         # Check for package manager cache cleanup
         cache_cleanup_found = False
         for line in lines:
             if 'rm -rf' in line and ('/var/lib/apt/lists/*' in line or '/tmp/*' in line):
                 cache_cleanup_found = True
                 break
-        
+
         if not cache_cleanup_found:
             issues.append(DockerAuditIssue(
                 category="optimization",
@@ -358,18 +358,18 @@ class DockerProductionAuditor:
                 recommendation="Add cache cleanup to reduce image size",
                 file_path=file_path
             ))
-        
+
         return issues
-    
+
     def audit_docker_compose(self, compose_path: Path) -> List[DockerAuditIssue]:
         """Audit docker-compose file for production readiness"""
         logger.info(f"Auditing docker-compose: {compose_path}")
-        
+
         if not compose_path.exists():
             return []  # Not required, so no issues if missing
-        
+
         issues = []
-        
+
         try:
             with open(compose_path, 'r') as f:
                 if compose_path.suffix == '.yml' or compose_path.suffix == '.yaml':
@@ -386,7 +386,7 @@ class DockerProductionAuditor:
                     compose_data = yaml.safe_load(f)
                 else:
                     return []
-            
+
             # Check version
             if 'version' not in compose_data:
                 issues.append(DockerAuditIssue(
@@ -397,13 +397,13 @@ class DockerProductionAuditor:
                     recommendation="Specify Docker Compose version for compatibility",
                     file_path=str(compose_path)
                 ))
-            
+
             # Check services
             if 'services' in compose_data:
                 for service_name, service_config in compose_data['services'].items():
                     service_issues = self._check_compose_service(service_name, service_config, str(compose_path))
                     issues.extend(service_issues)
-            
+
         except Exception as e:
             issues.append(DockerAuditIssue(
                 category="file_errors",
@@ -413,13 +413,13 @@ class DockerProductionAuditor:
                 recommendation="Fix docker-compose syntax",
                 file_path=str(compose_path)
             ))
-        
+
         return issues
-    
+
     def _check_compose_service(self, service_name: str, service_config: Dict[str, Any], file_path: str) -> List[DockerAuditIssue]:
         """Check individual service configuration"""
         issues = []
-        
+
         # Check restart policy
         if 'restart' not in service_config:
             issues.append(DockerAuditIssue(
@@ -430,7 +430,7 @@ class DockerProductionAuditor:
                 recommendation="Add restart policy (e.g., 'unless-stopped') for production",
                 file_path=file_path
             ))
-        
+
         # Check resource limits
         if 'deploy' not in service_config or 'resources' not in service_config.get('deploy', {}):
             issues.append(DockerAuditIssue(
@@ -441,7 +441,7 @@ class DockerProductionAuditor:
                 recommendation="Add resource limits to prevent resource exhaustion",
                 file_path=file_path
             ))
-        
+
         # Check health checks
         if 'healthcheck' not in service_config:
             issues.append(DockerAuditIssue(
@@ -452,15 +452,15 @@ class DockerProductionAuditor:
                 recommendation="Add health check for better monitoring",
                 file_path=file_path
             ))
-        
+
         return issues
-    
+
     def check_dockerignore(self, dockerignore_path: Path) -> List[DockerAuditIssue]:
         """Check .dockerignore file"""
         logger.info("Checking .dockerignore file...")
-        
+
         issues = []
-        
+
         if not dockerignore_path.exists():
             issues.append(DockerAuditIssue(
                 category="optimization",
@@ -471,11 +471,11 @@ class DockerProductionAuditor:
                 file_path=str(dockerignore_path)
             ))
             return issues
-        
+
         try:
             with open(dockerignore_path, 'r') as f:
                 content = f.read()
-            
+
             # Check for common exclusions
             recommended_exclusions = [
                 '.git',
@@ -489,12 +489,12 @@ class DockerProductionAuditor:
                 '.coverage',
                 'test_results'
             ]
-            
+
             missing_exclusions = []
             for exclusion in recommended_exclusions:
                 if exclusion not in content:
                     missing_exclusions.append(exclusion)
-            
+
             if missing_exclusions:
                 issues.append(DockerAuditIssue(
                     category="optimization",
@@ -504,7 +504,7 @@ class DockerProductionAuditor:
                     recommendation="Add recommended exclusions to reduce build context",
                     file_path=str(dockerignore_path)
                 ))
-        
+
         except Exception as e:
             issues.append(DockerAuditIssue(
                 category="file_errors",
@@ -514,7 +514,7 @@ class DockerProductionAuditor:
                 recommendation="Fix .dockerignore file permissions",
                 file_path=str(dockerignore_path)
             ))
-        
+
         return issues
 
     def run_comprehensive_docker_audit(self) -> DockerAuditResult:

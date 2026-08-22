@@ -66,13 +66,13 @@ class ProcessingMode(Enum):
 class ProcessingOptions:
     """Unified processing options"""
     mode: ProcessingMode = ProcessingMode.ENHANCED
-    
+
     # Core processing options
     normalize_text: bool = True
     resolve_homographs: bool = True
     process_phonetics: bool = True
     handle_spell_functions: bool = True
-    
+
     # Enhanced processing options
     use_advanced_currency: bool = True
     use_enhanced_datetime: bool = True
@@ -84,7 +84,7 @@ class ProcessingOptions:
     use_pronunciation_rules: bool = True    # Natural contraction pronunciation rules (NEW DEFAULT)
     use_ticker_symbol_processing: bool = True  # Fix TSLA→TEE-SLAW to T-S-L-A
     use_proper_name_pronunciation: bool = True  # Fix Elon→alon, Joy→joie, acquisition→ek-wah-zi·shn
-    
+
     # Audio quality options
     enhance_audio_quality: bool = True
     apply_voice_modulation: bool = True
@@ -112,12 +112,12 @@ class ProcessingResult:
     original_text: str
     processing_time: float
     mode_used: ProcessingMode
-    
+
     # Processing stages completed
     stages_completed: List[str] = field(default_factory=list)
     changes_made: List[str] = field(default_factory=list)
     issues_found: List[str] = field(default_factory=list)
-    
+
     # Enhancement data
     currency_enhancements: int = 0
     datetime_enhancements: int = 0
@@ -132,7 +132,7 @@ class ProcessingResult:
 
 class UnifiedTextProcessor:
     """Unified text processing pipeline integrating all processors"""
-    
+
     def __init__(self, enable_advanced_features: bool = True, config: Optional[Dict] = None):
         """Initialize unified text processor
 
@@ -203,7 +203,7 @@ class UnifiedTextProcessor:
         # Then check if specific feature is enabled
         section = self.config.get(section_name, {})
         return section.get(feature_name, True)  # Default to enabled if not specified
-    
+
     def _init_core_processors(self):
         """Initialize core text processors"""
         self.text_normalizer = TextNormalizer()
@@ -212,12 +212,12 @@ class UnifiedTextProcessor:
         self.phonetic_processor = PhoneticProcessor(config=self.config)
         self.spell_processor = SpellProcessor()
         self.prosody_analyzer = ProsodyAnalyzer()
-        
+
         if self.enable_advanced_features:
             self.emotion_detector = EmotionDetector()
             self.context_adapter = ContextAdapter()
             self.naturalness_enhancer = NaturalnessEnhancer()
-    
+
     def _init_enhanced_processors(self):
         """Initialize enhanced processors"""
         self.currency_processor = AdvancedCurrencyProcessor()
@@ -235,7 +235,7 @@ class UnifiedTextProcessor:
         self.proper_name_processor = ProperNamePronunciationProcessor(config=self.config)
 
         logger.debug("Enhanced processors initialized")
-    
+
     def _init_audio_processors(self):
         """Initialize audio quality processors"""
         try:
@@ -260,7 +260,7 @@ class UnifiedTextProcessor:
         except Exception as e:
             logger.warning(f"Phase 6 processors failed to initialize: {e}")
             self.phase6_processor = None
-    
+
     def process_text(self, text: str, options: Optional[ProcessingOptions] = None) -> ProcessingResult:
         """Main text processing method
 
@@ -289,7 +289,7 @@ class UnifiedTextProcessor:
             processing_time=0.0,
             mode_used=options.mode
         )
-        
+
         try:
             # Route to appropriate processing pipeline
             if options.mode == ProcessingMode.BASIC:
@@ -300,26 +300,26 @@ class UnifiedTextProcessor:
                 text = self._process_enhanced(text, options, result)
             elif options.mode == ProcessingMode.PREMIUM:
                 text = self._process_premium(text, options, result)
-            
+
             result.processed_text = text
             result.processing_time = time.perf_counter() - start_time
-            
+
             logger.info(f"Text processing complete in {result.processing_time:.3f}s")
             logger.debug(f"Output text: {text[:100]}...")
-            
+
             return result
-            
+
         except Exception as e:
             logger.error(f"Text processing failed: {e}")
             result.issues_found.append(f"Processing error: {e}")
             result.processing_time = time.perf_counter() - start_time
-            
+
             if options.preserve_original_on_error:
                 result.processed_text = original_text
                 logger.warning("Returning original text due to processing error")
-            
+
             return result
-    
+
     def _process_basic(self, text: str, options: ProcessingOptions, result: ProcessingResult) -> str:
         """Basic processing pipeline"""
         stage_start = time.perf_counter()
@@ -333,23 +333,23 @@ class UnifiedTextProcessor:
 
         result.stage_timings["basic"] = time.perf_counter() - stage_start
         return text
-    
+
     def _process_standard(self, text: str, options: ProcessingOptions, result: ProcessingResult) -> str:
         """Standard processing pipeline"""
         stage_start = time.perf_counter()
-        
+
         # Phonemizer preprocessing
         preprocessing_result = phonemizer_preprocessor.preprocess_text(text, preserve_word_count=True)
         text = preprocessing_result.processed_text
         if preprocessing_result.changes_made:
             result.changes_made.extend(preprocessing_result.changes_made)
             result.stages_completed.append("phonemizer_preprocessing")
-        
+
         # Core processing steps
         if options.handle_spell_functions:
             text = self.spell_processor.handle_spell_functions(text)
             result.stages_completed.append("spell_processing")
-        
+
         if options.process_phonetics:
             # Check if phonetic processing is enabled in beta features
             beta_features = self.config.get("beta_features", {})
@@ -361,20 +361,20 @@ class UnifiedTextProcessor:
             else:
                 logger.debug("Phonetic processing disabled (beta feature not enabled)")
                 result.stages_completed.append("phonetic_processing_skipped")
-        
+
         if options.resolve_homographs:
             text = self.homograph_resolver.resolve_homographs(text)
             result.stages_completed.append("homograph_resolution")
-        
+
         if options.normalize_text:
             text = self.text_normalizer.normalize_text(text)
             result.stages_completed.append("text_normalization")
-        
+
         # Prosody processing
         text = self.prosody_analyzer.process_conversational_features(text)
         text = self.prosody_analyzer.enhance_intonation_markers(text)
         result.stages_completed.append("prosody_analysis")
-        
+
         result.stage_timings["standard"] = time.perf_counter() - stage_start
         return text
 

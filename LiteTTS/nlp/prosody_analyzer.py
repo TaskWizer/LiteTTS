@@ -20,11 +20,11 @@ class ProsodyMarker:
 
 class ProsodyAnalyzer:
     """Analyzes text for prosody control based on punctuation and conversational markers"""
-    
+
     def __init__(self):
         self.punctuation_patterns = self._compile_punctuation_patterns()
         self.conversational_patterns = self._compile_conversational_patterns()
-        
+
     def _compile_punctuation_patterns(self) -> Dict[str, Tuple[re.Pattern, float, float]]:
         """Compile punctuation patterns with pause durations and intonation markers"""
         return {
@@ -39,7 +39,7 @@ class ProsodyAnalyzer:
             'parentheses': (re.compile(r'[()]'), 0.3, 0.2), # Parentheses
             'quotes': (re.compile(r'["\']'), 0.2, 0.1)      # Quotes
         }
-    
+
     def _compile_conversational_patterns(self) -> Dict[str, Tuple[re.Pattern, str, float]]:
         """Compile conversational marker patterns"""
         return {
@@ -64,25 +64,25 @@ class ProsodyAnalyzer:
                 'hesitation', 0.4
             )
         }
-    
+
     def analyze_prosody(self, text: str) -> List[ProsodyMarker]:
         """Analyze text and return prosody markers"""
         logger.debug(f"Analyzing prosody in: {text[:100]}...")
-        
+
         markers = []
-        
+
         # Analyze punctuation-based prosody
         markers.extend(self._analyze_punctuation(text))
-        
+
         # Analyze conversational markers
         markers.extend(self._analyze_conversational_markers(text))
-        
+
         # Sort markers by position
         markers.sort(key=lambda x: x.position)
-        
+
         logger.debug(f"Found {len(markers)} prosody markers")
         return markers
-    
+
     def _analyze_punctuation(self, text: str) -> List[ProsodyMarker]:
         """Analyze punctuation for prosody markers with enhanced intonation handling"""
         markers = []
@@ -130,25 +130,25 @@ class ProsodyAnalyzer:
                     ))
 
         return markers
-  
+
     def _analyze_conversational_markers(self, text: str) -> List[ProsodyMarker]:
         """Analyze conversational markers"""
         markers = []
-        
+
         for marker_type, (pattern, marker_name, intensity) in self.conversational_patterns.items():
             for match in pattern.finditer(text):
                 # Determine duration based on marker type
                 duration = self._get_marker_duration(marker_name)
-                
+
                 markers.append(ProsodyMarker(
                     position=match.start(),
                     marker_type=marker_name,
                     intensity=intensity,
                     duration=duration
                 ))
-        
+
         return markers
-    
+
     def _get_marker_duration(self, marker_name: str) -> float:
         """Get duration for different marker types"""
         durations = {
@@ -159,23 +159,23 @@ class ProsodyAnalyzer:
             'hesitation': 0.4
         }
         return durations.get(marker_name, 0.3)
-    
+
     def process_conversational_features(self, text: str) -> str:
         """Process and enhance conversational features in text"""
         logger.debug(f"Processing conversational features in: {text[:100]}...")
-        
+
         # Process false starts
         text = self._process_false_starts(text)
-        
+
         # Process filler words
         text = self._process_filler_words(text)
-        
+
         # Process breathing and laughter tokens
         text = self._process_action_tokens(text)
-        
+
         logger.debug(f"Conversational processing result: {text[:100]}...")
         return text
-    
+
     def _process_false_starts(self, text: str) -> str:
         """Process false starts for natural speech"""
         # Pattern: "I uh I think" -> "I... uh... I think"
@@ -183,15 +183,15 @@ class ProsodyAnalyzer:
             r'\b(I|we|you|they|he|she|it)\s+(uh|um|er|ah)\s+\1\b',
             re.IGNORECASE
         )
-        
+
         def replace_false_start(match):
             pronoun1 = match.group(1)
             filler = match.group(2)
             pronoun2 = match.group(3)
             return f"{pronoun1}... {filler}... {pronoun2}"
-        
+
         return false_start_pattern.sub(replace_false_start, text)
-    
+
     def _process_filler_words(self, text: str) -> str:
         """Add natural pauses around filler words"""
         # FIXED: Exclude filler processing for pronunciation guides (words with hyphens or mixed case)
@@ -203,14 +203,14 @@ class ProsodyAnalyzer:
             r'\b(uh|um|er|ah|like|you know|I mean|well|so)\b',
             re.IGNORECASE
         )
-        
+
         def replace_filler(match):
             filler = match.group(1)
             # Add slight pauses around filler words
             return f"... {filler} ..."
-        
+
         return filler_pattern.sub(replace_filler, text)
-    
+
     def _process_action_tokens(self, text: str) -> str:
         """Process action tokens like *breathes*, *laughs*"""
         # Breathing tokens
@@ -219,30 +219,30 @@ class ProsodyAnalyzer:
             re.IGNORECASE
         )
         text = breathing_pattern.sub(r'... \1 ...', text)
-        
+
         # Laughter tokens
         laughter_pattern = re.compile(
             r'\*\s*(laughs?|chuckles?|giggles?)\s*\*',
             re.IGNORECASE
         )
         text = laughter_pattern.sub(r'... \1 ...', text)
-        
+
         # Generic action tokens
         action_pattern = re.compile(r'\*([^*]+)\*')
         text = action_pattern.sub(r'... \1 ...', text)
-        
+
         return text
-    
+
     def get_prosody_info(self, text: str) -> Dict[str, List[Dict]]:
         """Get detailed prosody information"""
         markers = self.analyze_prosody(text)
-        
+
         prosody_info = {
             'pauses': [],
             'emphasis': [],
             'intonation': []
         }
-        
+
         for marker in markers:
             marker_info = {
                 'position': marker.position,
@@ -250,14 +250,14 @@ class ProsodyAnalyzer:
                 'intensity': marker.intensity,
                 'duration': marker.duration
             }
-            
+
             if 'pause' in marker.marker_type:
                 prosody_info['pauses'].append(marker_info)
             elif marker.marker_type in ['false_start', 'hesitation']:
                 prosody_info['emphasis'].append(marker_info)
             else:
                 prosody_info['intonation'].append(marker_info)
-        
+
         return prosody_info
 
     def enhance_intonation_markers(self, text: str) -> str:

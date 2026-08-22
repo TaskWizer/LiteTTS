@@ -13,18 +13,18 @@ logger = logging.getLogger(__name__)
 
 class AdvancedSymbolProcessor:
     """Advanced symbol and punctuation processing for natural TTS pronunciation"""
-    
+
     def __init__(self):
         self.symbol_mappings = self._load_symbol_mappings()
         self.quote_patterns = self._load_quote_patterns()
         self.markdown_symbols = self._load_markdown_symbols()
         self.punctuation_rules = self._load_punctuation_rules()
-        
+
         # Configuration
         self.preserve_markdown = False
         self.handle_quotes_naturally = True
         self.fix_html_entities = True
-        
+
     def _load_symbol_mappings(self) -> Dict[str, str]:
         """Load symbol-to-word mappings with pronunciation fixes"""
         return {
@@ -117,7 +117,7 @@ class AdvancedSymbolProcessor:
             '⇓': ' double down arrow ',
             '↔': ' left right arrow ',
             '⇔': ' double left right arrow ',
-            
+
             # Mathematical symbols
             '±': ' plus or minus ',
             '×': ' times ',
@@ -128,7 +128,7 @@ class AdvancedSymbolProcessor:
             '≥': ' greater than or equal to ',
             '∞': ' infinity ',
         }
-    
+
     def _load_quote_patterns(self) -> List[Tuple[str, str]]:
         """Load quote handling patterns to prevent 'in quat' issues"""
         return [
@@ -136,12 +136,12 @@ class AdvancedSymbolProcessor:
             (r'&quot;', ''),  # Remove HTML quote entities
             (r'&#34;', ''),   # Remove numeric HTML quote entities
             (r'&#x22;', ''),  # Remove hex HTML quote entities
-            
+
             # Various quote types - remove them naturally
             (r'"([^"]*)"', r'\1'),  # Remove double quotes around text
             # (r'[''"]([^''"]*)[''"]', r'\1'),  # Remove smart quotes around text - DISABLED due to regex issues
             (r'`([^`]*)`', r'\1'),  # Remove backticks around text
-            
+
             # Standalone quotes
             (r'\s*"\s*', ' '),  # Remove standalone double quotes
             # Smart quote patterns disabled due to regex syntax issues
@@ -149,7 +149,7 @@ class AdvancedSymbolProcessor:
             # (r'\s*'\s*', ' '),  # Remove standalone smart quotes
             (r'\s*`\s*', ' '),  # Remove standalone backticks
         ]
-    
+
     def _load_markdown_symbols(self) -> Dict[str, str]:
         """Load markdown symbol handling"""
         return {
@@ -160,14 +160,14 @@ class AdvancedSymbolProcessor:
             '_': '',   # Italic markers
             '~~': '',  # Strikethrough markers
             '`': '',   # Code markers
-            
+
             # Markdown structural elements
             '#': '',   # Headers (when at start of line)
             '-': '',   # List items (when at start of line)
             '+': '',   # List items (when at start of line)
             '>': '',   # Blockquotes (when at start of line)
         }
-    
+
     def _load_punctuation_rules(self) -> List[Tuple[str, str]]:
         """Load punctuation normalization rules (ENHANCED)"""
         return [
@@ -220,7 +220,7 @@ class AdvancedSymbolProcessor:
             (r'^\s+', ''),       # Remove leading whitespace
             (r'\s+$', ''),       # Remove trailing whitespace
         ]
-    
+
     def process_symbols(self, text: str) -> str:
         """Process symbols and punctuation for natural TTS pronunciation"""
         logger.debug(f"Processing symbols in: {text[:100]}...")
@@ -308,44 +308,44 @@ class AdvancedSymbolProcessor:
             '&gt;': ' greater than ',
             '&nbsp;': ' ',  # Non-breaking space
         }
-        
+
         for entity, replacement in html_fixes.items():
             text = text.replace(entity, replacement)
-        
+
         # Use html.unescape for any remaining entities
         try:
             text = html.unescape(text)
         except Exception as e:
             logger.warning(f"HTML unescape failed: {e}")
-        
+
         return text
-    
+
     def _process_quotes(self, text: str) -> str:
         """Process quotes to prevent 'in quat' pronunciation issues"""
         for pattern, replacement in self.quote_patterns:
             text = re.sub(pattern, replacement, text)
         return text
-    
+
     def _preserve_markdown_context(self, text: str) -> str:
         """Preserve markdown context while handling symbols"""
         # This is a more complex function that would analyze markdown structure
         # For now, implement basic preservation
-        
+
         # Detect if we're in a markdown context
         has_markdown = any(marker in text for marker in ['**', '__', '*', '_', '`', '#'])
-        
+
         if has_markdown:
             # Handle asterisks in markdown context differently
             # Single asterisk in markdown is italic, double is bold
             text = re.sub(r'\*\*([^*]+)\*\*', r'\1', text)  # Remove bold markers
             text = re.sub(r'(?<!\*)\*(?!\*)([^*]+)\*(?!\*)', r'\1', text)  # Remove italic markers
-            
+
             # Handle other markdown elements
             text = re.sub(r'`([^`]+)`', r'\1', text)  # Remove code markers
             text = re.sub(r'^#+\s*', '', text, flags=re.MULTILINE)  # Remove header markers
-        
+
         return text
-    
+
     def _remove_markdown_symbols(self, text: str) -> str:
         """Remove markdown symbols when not preserving markdown"""
         for symbol, replacement in self.markdown_symbols.items():
@@ -365,7 +365,7 @@ class AdvancedSymbolProcessor:
                 text = text.replace(symbol, replacement)
 
         return text
-    
+
     def _process_regular_symbols(self, text: str) -> str:
         """Process regular symbols using the symbol mappings"""
         for symbol, replacement in self.symbol_mappings.items():
@@ -375,7 +375,7 @@ class AdvancedSymbolProcessor:
                 text = re.sub(r'(?<!\*)\*(?!\*)', replacement, text)
             else:
                 text = text.replace(symbol, replacement)
-        
+
         return text
 
     def _normalize_punctuation_safe(self, text: str) -> str:
@@ -419,21 +419,21 @@ class AdvancedSymbolProcessor:
         for pattern, replacement in self.punctuation_rules:
             text = re.sub(pattern, replacement, text)
         return text
-    
+
     def _clean_whitespace(self, text: str) -> str:
         """Clean up whitespace after symbol processing"""
         # Remove multiple spaces
         text = re.sub(r'\s+', ' ', text)
-        
+
         # Remove leading/trailing whitespace
         text = text.strip()
-        
+
         # Fix spacing around punctuation
         text = re.sub(r'\s+([,.!?;:])', r'\1', text)  # Remove space before punctuation
         text = re.sub(r'([,.!?;:])\s*', r'\1 ', text)  # Ensure space after punctuation
-        
+
         return text
-    
+
     def analyze_symbols(self, text: str) -> Dict[str, List[str]]:
         """Analyze symbols in text and return information"""
         info = {
@@ -443,23 +443,23 @@ class AdvancedSymbolProcessor:
             'regular_symbols': [],
             'problematic_patterns': []
         }
-        
+
         # Find HTML entities
         html_entities = re.findall(r'&[a-zA-Z]+;|&#\d+;|&#x[0-9a-fA-F]+;', text)
         info['html_entities'] = html_entities
-        
+
         # Find quotes
         quotes = re.findall(r'["\'\`]', text)
         info['quotes'] = quotes
-        
+
         # Find markdown symbols
         markdown_patterns = re.findall(r'\*+|_+|`+|#+', text)
         info['markdown_symbols'] = markdown_patterns
-        
+
         # Find regular symbols
         regular_symbols = re.findall(r'[&+=%@#~^|\\/<>]', text)
         info['regular_symbols'] = regular_symbols
-        
+
         # Find problematic patterns
         if '&#x27;' in text:
             info['problematic_patterns'].append('HTML apostrophe entity (causes x 27 pronunciation)')
@@ -467,10 +467,10 @@ class AdvancedSymbolProcessor:
             info['problematic_patterns'].append('HTML quote entity (causes in quat pronunciation)')
         if re.search(r'\*(?!\*)', text):
             info['problematic_patterns'].append('Standalone asterisk (may cause astrisk pronunciation)')
-        
+
         return info
-    
-    def set_configuration(self, preserve_markdown: bool = None, 
+
+    def set_configuration(self, preserve_markdown: bool = None,
                          handle_quotes_naturally: bool = None,
                          fix_html_entities: bool = None):
         """Set configuration options"""
@@ -480,7 +480,7 @@ class AdvancedSymbolProcessor:
             self.handle_quotes_naturally = handle_quotes_naturally
         if fix_html_entities is not None:
             self.fix_html_entities = fix_html_entities
-        
+
         logger.info(f"Symbol processor configuration updated: "
                    f"preserve_markdown={self.preserve_markdown}, "
                    f"handle_quotes_naturally={self.handle_quotes_naturally}, "

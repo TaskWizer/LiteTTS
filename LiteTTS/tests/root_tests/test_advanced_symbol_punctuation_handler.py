@@ -16,11 +16,11 @@ pytestmark = pytest.mark.skip(reason="Internal NLP component tests with incorrec
 
 class TestAdvancedSymbolPunctuationHandler(unittest.TestCase):
     """Test cases for Advanced Symbol & Punctuation Handler"""
-    
+
     def setUp(self):
         """Set up test fixtures"""
         self.processor = AdvancedSymbolProcessor()
-    
+
     def test_critical_pronunciation_fixes(self):
         """Test critical pronunciation issue fixes"""
         test_cases = [
@@ -31,7 +31,7 @@ class TestAdvancedSymbolPunctuationHandler(unittest.TestCase):
             ("&quot;Hello&quot;", "Hello"),  # quote → in quat pronunciation
             ("Press * to continue", "Press  asterisk  to continue"),
         ]
-        
+
         for input_text, expected in test_cases:
             with self.subTest(input=input_text):
                 result = self.processor.process_symbols(input_text)
@@ -47,7 +47,7 @@ class TestAdvancedSymbolPunctuationHandler(unittest.TestCase):
                 if "&quot;" in input_text:
                     self.assertNotIn("in quat", result)
                     self.assertNotIn("&quot;", result)
-    
+
     def test_html_entity_processing(self):
         """Test HTML entity processing"""
         test_cases = [
@@ -60,7 +60,7 @@ class TestAdvancedSymbolPunctuationHandler(unittest.TestCase):
             ("&lt;tag&gt;", " less than tag greater than "),
             ("&nbsp;space", " space"),
         ]
-        
+
         for input_text, expected in test_cases:
             with self.subTest(input=input_text):
                 result = self.processor.process_symbols(input_text)
@@ -68,7 +68,7 @@ class TestAdvancedSymbolPunctuationHandler(unittest.TestCase):
                 self.assertNotIn("&#", result)
                 self.assertNotIn("&quot;", result)
                 self.assertNotIn("&amp;", result)
-    
+
     def test_enhanced_special_characters(self):
         """Test enhanced special character support"""
         test_cases = [
@@ -87,7 +87,7 @@ class TestAdvancedSymbolPunctuationHandler(unittest.TestCase):
             ("≥ greater equal", " greater than or equal to  greater equal"),
             ("∞ infinity", " infinity  infinity"),
         ]
-        
+
         for input_text, expected in test_cases:
             with self.subTest(input=input_text):
                 result = self.processor.process_symbols(input_text)
@@ -99,7 +99,7 @@ class TestAdvancedSymbolPunctuationHandler(unittest.TestCase):
                 self.assertNotIn("±", result)
                 self.assertNotIn("×", result)
                 self.assertNotIn("÷", result)
-    
+
     def test_international_currency_symbols(self):
         """Test international currency symbol support"""
         test_cases = [
@@ -111,14 +111,14 @@ class TestAdvancedSymbolPunctuationHandler(unittest.TestCase):
             ("₪50", " shekel 50"),
             ("₫1000", " dong 1000"),
         ]
-        
+
         for input_text, expected in test_cases:
             with self.subTest(input=input_text):
                 result = self.processor.process_symbols(input_text)
                 # Check that currency symbols are converted
                 for symbol in ["₹", "₽", "₩", "¢", "₦", "₪", "₫"]:
                     self.assertNotIn(symbol, result)
-    
+
     def test_advanced_punctuation_handling(self):
         """Test advanced punctuation handling"""
         test_cases = [
@@ -132,7 +132,7 @@ class TestAdvancedSymbolPunctuationHandler(unittest.TestCase):
             ("'Single quotes'", "Single quotes"),  # Smart single quotes
             ("Text   spaces", "Text spaces"),  # Multiple spaces
         ]
-        
+
         for input_text, expected in test_cases:
             with self.subTest(input=input_text):
                 result = self.processor.process_symbols(input_text)
@@ -146,7 +146,7 @@ class TestAdvancedSymbolPunctuationHandler(unittest.TestCase):
                 if """ in input_text or """ in input_text:
                     self.assertNotIn(""", result)
                     self.assertNotIn(""", result)
-    
+
     def test_context_aware_processing(self):
         """Test context-aware symbol processing"""
         test_cases = [
@@ -157,13 +157,13 @@ class TestAdvancedSymbolPunctuationHandler(unittest.TestCase):
             ("8 / 2 = 4", "8 divided by 2 equals 4"),
             ("50%", "50 percent"),
             ("90°", "90 degrees"),
-            
+
             # Programming context
             ("function()", "function function"),
             ("array[0]", "array array index 0"),
             ("object.property", "object dot property"),
         ]
-        
+
         for input_text, expected in test_cases:
             with self.subTest(input=input_text):
                 result = self.processor.process_context_aware_symbols(input_text)
@@ -176,7 +176,7 @@ class TestAdvancedSymbolPunctuationHandler(unittest.TestCase):
                     self.assertIn("times", result)
                 if "/" in input_text and input_text.count("/") == 1:
                     self.assertIn("divided by", result)
-    
+
     def test_markdown_processing(self):
         """Test markdown symbol processing"""
         # Test with markdown preservation disabled (default)
@@ -188,7 +188,7 @@ class TestAdvancedSymbolPunctuationHandler(unittest.TestCase):
             ("# Header", "Header"),
             ("- List item", "List item"),
         ]
-        
+
         for input_text, expected in test_cases:
             with self.subTest(input=input_text):
                 result = self.processor.process_symbols(input_text)
@@ -196,38 +196,38 @@ class TestAdvancedSymbolPunctuationHandler(unittest.TestCase):
                 self.assertNotIn("**", result)
                 self.assertNotIn("~~", result)
                 self.assertNotIn("`", result)
-    
+
     def test_symbol_complexity_analysis(self):
         """Test symbol complexity analysis"""
         simple_text = "Hello world"
         complex_text = "John&#x27;s car costs $100 & has 90° turn with **bold** text"
-        
+
         simple_analysis = self.processor.analyze_symbol_complexity(simple_text)
         complex_analysis = self.processor.analyze_symbol_complexity(complex_text)
-        
+
         # Simple text should have lower complexity
         self.assertLess(simple_analysis['complexity_score'], complex_analysis['complexity_score'])
-        
+
         # Complex text should detect various elements
         self.assertGreater(len(complex_analysis['html_entities']), 0)
         self.assertGreater(len(complex_analysis['special_characters']), 0)
         self.assertGreater(len(complex_analysis['processing_recommendations']), 0)
-    
+
     def test_configuration_options(self):
         """Test configuration options"""
         # Test HTML entity processing toggle
         self.processor.set_configuration(fix_html_entities=False)
         result = self.processor.process_symbols("John&#x27;s car")
         self.assertIn("&#x27;", result)  # Should not be processed
-        
+
         # Re-enable for other tests
         self.processor.set_configuration(fix_html_entities=True)
-        
+
         # Test quote handling toggle
         self.processor.set_configuration(handle_quotes_naturally=False)
         result = self.processor.process_symbols('"Hello"')
         # Should not remove quotes when disabled
-        
+
         # Re-enable for other tests
         self.processor.set_configuration(handle_quotes_naturally=True)
 
@@ -235,68 +235,68 @@ def run_comprehensive_test():
     """Run comprehensive test with detailed output"""
     print("🧪 Advanced Symbol & Punctuation Handler Comprehensive Test")
     print("=" * 70)
-    
+
     processor = AdvancedSymbolProcessor()
-    
+
     # Test cases covering all major functionality
     test_cases = [
         # Critical pronunciation fixes
         ("The * symbol", "asterisk"),
         ("John&#x27;s car", "John's car"),
         ("&quot;Hello&quot;", "Hello"),
-        
+
         # Enhanced special characters
         ("© 2024 Company", "copyright"),
         ("90° angle", "degrees"),
         ("± 5%", "plus or minus"),
-        
+
         # International currencies
         ("₹100 rupees", "rupee"),
         ("₩1000 won", "won"),
-        
+
         # Advanced punctuation
         ("Text...", "ellipsis"),
         ("Text—dash", "em dash"),
         ('"Smart quotes"', "Smart quotes"),
-        
+
         # Context-aware processing
         ("2 + 3 = 5", "plus"),
         ("function()", "function"),
     ]
-    
+
     passed = 0
     failed = 0
-    
+
     for i, (input_text, expected_content) in enumerate(test_cases, 1):
         print(f"\nTest {i}: '{input_text}'")
-        
+
         try:
             result = processor.process_symbols(input_text)
             print(f"Result: '{result}'")
-            
+
             if expected_content in result:
                 print("✅ PASSED")
                 passed += 1
             else:
                 print("❌ FAILED")
                 failed += 1
-                
+
         except Exception as e:
             print(f"❌ ERROR: {e}")
             failed += 1
-    
+
     print(f"\n" + "=" * 70)
     print(f"📊 Test Results: {passed} passed, {failed} failed")
     print(f"Success rate: {passed/(passed+failed)*100:.1f}%")
-    
+
     return failed == 0
 
 if __name__ == "__main__":
     # Run comprehensive test
     success = run_comprehensive_test()
-    
+
     print(f"\n🎯 Advanced Symbol & Punctuation Handler: {'✅ READY' if success else '❌ NEEDS FIXES'}")
-    
+
     # Run unit tests
     print("\n" + "=" * 70)
     print("Running Unit Tests...")

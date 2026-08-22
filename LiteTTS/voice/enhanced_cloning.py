@@ -76,142 +76,142 @@ class VoiceQualityMetrics:
 
 class AudioPreprocessor:
     """Advanced audio preprocessing for voice cloning"""
-    
+
     def __init__(self, config: EnhancedVoiceCloneConfig):
         self.config = config
-        
+
     def preprocess_audio(self, audio_data: np.ndarray, sample_rate: int) -> Tuple[np.ndarray, VoiceQualityMetrics]:
         """Comprehensive audio preprocessing"""
         processed_audio = audio_data.copy()
-        
+
         # Convert to mono if stereo
         if processed_audio.ndim == 2:
             processed_audio = np.mean(processed_audio, axis=1)
-            
+
         # Resample if needed
         if sample_rate != self.config.target_sample_rate:
             processed_audio = self._resample_audio(processed_audio, sample_rate, self.config.target_sample_rate)
             sample_rate = self.config.target_sample_rate
-            
+
         # Noise reduction
         if self.config.enable_noise_reduction:
             processed_audio = self._reduce_noise(processed_audio)
-            
+
         # Silence trimming
         if self.config.enable_silence_trimming:
             processed_audio = self._trim_silence(processed_audio)
-            
+
         # Normalization
         if self.config.enable_normalization:
             processed_audio = self._normalize_audio(processed_audio)
-            
+
         # Calculate quality metrics
         quality_metrics = self._calculate_quality_metrics(processed_audio, sample_rate)
-        
+
         return processed_audio, quality_metrics
-        
+
     def _resample_audio(self, audio_data: np.ndarray, original_rate: int, target_rate: int) -> np.ndarray:
         """Resample audio to target sample rate"""
         if original_rate == target_rate:
             return audio_data
-            
+
         # Simple linear interpolation resampling
         ratio = target_rate / original_rate
         new_length = int(len(audio_data) * ratio)
         indices = np.linspace(0, len(audio_data) - 1, new_length)
         return np.interp(indices, np.arange(len(audio_data)), audio_data)
-        
+
     def _reduce_noise(self, audio_data: np.ndarray) -> np.ndarray:
         """Basic noise reduction using spectral subtraction"""
         # Simple noise reduction - estimate noise from first 0.5 seconds
         noise_duration = min(0.5 * self.config.target_sample_rate, len(audio_data) // 4)
         noise_sample = audio_data[:int(noise_duration)]
         noise_level = np.std(noise_sample)
-        
+
         # Apply gentle noise gate
         threshold = noise_level * 2
         mask = np.abs(audio_data) > threshold
         return audio_data * mask
-        
+
     def _trim_silence(self, audio_data: np.ndarray) -> np.ndarray:
         """Trim silence from beginning and end"""
         # Simple energy-based silence detection
         frame_length = int(0.025 * self.config.target_sample_rate)  # 25ms frames
         energy_threshold = 0.01
-        
+
         # Calculate frame energies
         energies = []
         for i in range(0, len(audio_data) - frame_length, frame_length):
             frame = audio_data[i:i + frame_length]
             energy = np.sum(frame ** 2)
             energies.append(energy)
-            
+
         energies = np.array(energies)
-        
+
         # Find start and end of speech
         speech_frames = energies > energy_threshold
         if not np.any(speech_frames):
             return audio_data  # No speech detected, return original
-            
+
         start_frame = np.argmax(speech_frames)
         end_frame = len(speech_frames) - np.argmax(speech_frames[::-1]) - 1
-        
+
         start_sample = start_frame * frame_length
         end_sample = min((end_frame + 1) * frame_length, len(audio_data))
-        
+
         return audio_data[start_sample:end_sample]
-        
+
     def _normalize_audio(self, audio_data: np.ndarray) -> np.ndarray:
         """Normalize audio amplitude"""
         max_val = np.max(np.abs(audio_data))
         if max_val > 0:
             return audio_data / max_val * 0.95  # Normalize to 95% to avoid clipping
         return audio_data
-        
+
     def _calculate_quality_metrics(self, audio_data: np.ndarray, sample_rate: int) -> VoiceQualityMetrics:
         """Calculate comprehensive quality metrics"""
         # Signal-to-noise ratio estimation
         signal_power = np.mean(audio_data ** 2)
         noise_power = np.var(audio_data[:int(0.1 * sample_rate)])  # Estimate from first 0.1s
         snr_db = 10 * np.log10(signal_power / (noise_power + 1e-10)) if noise_power > 0 else 60.0
-        
+
         # Silence ratio
         silence_threshold = 0.01
         silence_ratio = np.sum(np.abs(audio_data) < silence_threshold) / len(audio_data)
-        
+
         # Clipping ratio
         clipping_ratio = np.sum(np.abs(audio_data) > 0.95) / len(audio_data)
-        
+
         # Frequency analysis
         fft = np.fft.fft(audio_data)
         freqs = np.fft.fftfreq(len(fft), 1/sample_rate)
         magnitude = np.abs(fft[:len(fft)//2])
-        
+
         # Find frequency range (where magnitude > 10% of max)
         threshold = 0.1 * np.max(magnitude)
         active_freqs = freqs[:len(freqs)//2][magnitude > threshold]
         freq_range = (np.min(active_freqs), np.max(active_freqs)) if len(active_freqs) > 0 else (0, sample_rate/2)
-        
+
         # Dynamic range
         dynamic_range_db = 20 * np.log10(np.max(np.abs(audio_data)) / (np.min(np.abs(audio_data[audio_data != 0])) + 1e-10))
-        
+
         # Spectral centroid
         spectral_centroid = np.sum(freqs[:len(freqs)//2] * magnitude) / np.sum(magnitude)
-        
+
         # Voice activity detection (simple energy-based)
         frame_length = int(0.025 * sample_rate)
         voice_frames = 0
         total_frames = 0
-        
+
         for i in range(0, len(audio_data) - frame_length, frame_length):
             frame = audio_data[i:i + frame_length]
             energy = np.sum(frame ** 2)
             total_frames += 1
             if energy > 0.001:  # Voice activity threshold
                 voice_frames += 1
-                
+
         voice_activity_ratio = voice_frames / total_frames if total_frames > 0 else 0
-        
+
         # Overall quality score (weighted combination)
         quality_score = (
             min(snr_db / 30, 1.0) * 0.3 +  # SNR component (max 30dB)
@@ -219,7 +219,7 @@ class AudioPreprocessor:
             (1 - clipping_ratio) * 0.2 +     # Less clipping is better
             voice_activity_ratio * 0.3       # More voice activity is better
         )
-        
+
         return VoiceQualityMetrics(
             snr_db=snr_db,
             silence_ratio=silence_ratio,
@@ -233,14 +233,14 @@ class AudioPreprocessor:
 
 class IntelligentAudioSegmenter:
     """Intelligent audio segmentation for long clips"""
-    
+
     def __init__(self, config: EnhancedVoiceCloneConfig):
         self.config = config
-        
+
     def segment_audio(self, audio_data: np.ndarray, sample_rate: int) -> List[AudioSegment]:
         """Segment long audio into optimal chunks"""
         duration = len(audio_data) / sample_rate
-        
+
         if duration <= self.config.max_segment_duration:
             # No segmentation needed
             return [AudioSegment(
@@ -251,21 +251,21 @@ class IntelligentAudioSegmenter:
                 quality_score=1.0,
                 segment_id="single"
             )]
-            
+
         segments = []
         overlap_samples = int(self.config.segment_overlap * sample_rate)
         segment_samples = int(self.config.max_segment_duration * sample_rate)
-        
+
         start_idx = 0
         segment_count = 0
-        
+
         while start_idx < len(audio_data):
             end_idx = min(start_idx + segment_samples, len(audio_data))
-            
+
             # Extract segment
             segment_audio = audio_data[start_idx:end_idx]
             segment_duration = len(segment_audio) / sample_rate
-            
+
             # Find optimal cut points to avoid cutting mid-word
             if end_idx < len(audio_data):  # Not the last segment
                 cut_point = self._find_optimal_cut_point(
@@ -275,7 +275,7 @@ class IntelligentAudioSegmenter:
                 end_idx = end_idx - overlap_samples + cut_point
                 segment_audio = audio_data[start_idx:end_idx]
                 segment_duration = len(segment_audio) / sample_rate
-                
+
             segment = AudioSegment(
                 audio_data=segment_audio,
                 start_time=start_idx / sample_rate,
@@ -286,95 +286,95 @@ class IntelligentAudioSegmenter:
                 overlap_start=start_idx > 0,
                 overlap_end=end_idx < len(audio_data)
             )
-            
+
             segments.append(segment)
-            
+
             # Move to next segment with overlap
             start_idx = end_idx - overlap_samples
             segment_count += 1
-            
+
         return segments
-        
+
     def _find_optimal_cut_point(self, audio_window: np.ndarray, sample_rate: int) -> int:
         """Find optimal cut point in audio window to avoid cutting mid-word"""
         # Simple approach: find point with lowest energy (likely silence or pause)
         frame_length = int(0.01 * sample_rate)  # 10ms frames
         energies = []
-        
+
         for i in range(0, len(audio_window) - frame_length, frame_length):
             frame = audio_window[i:i + frame_length]
             energy = np.sum(frame ** 2)
             energies.append(energy)
-            
+
         if energies:
             min_energy_idx = np.argmin(energies)
             return min_energy_idx * frame_length
         else:
             return len(audio_window) // 2  # Fallback to middle
-            
+
     def _assess_segment_quality(self, segment_audio: np.ndarray) -> float:
         """Assess quality of an audio segment"""
         # Simple quality assessment based on energy distribution
         energy = np.sum(segment_audio ** 2)
         length = len(segment_audio)
-        
+
         if length == 0:
             return 0.0
-            
+
         # Normalize by length
         normalized_energy = energy / length
-        
+
         # Quality score based on energy (more energy generally means better quality)
         quality_score = min(normalized_energy * 1000, 1.0)  # Scale and cap at 1.0
-        
+
         return quality_score
 
 class EnhancedVoiceCloner:
     """Enhanced voice cloning system with extended capabilities"""
-    
+
     def __init__(self, voices_dir: str = "LiteTTS/voices", config: Optional[EnhancedVoiceCloneConfig] = None):
         self.voices_dir = Path(voices_dir)
         self.voices_dir.mkdir(exist_ok=True)
         self.config = config or EnhancedVoiceCloneConfig()
-        
+
         # Initialize components
         self.preprocessor = AudioPreprocessor(self.config)
         self.segmenter = IntelligentAudioSegmenter(self.config)
-        
+
         # Thread pool for parallel processing
         self.executor = ThreadPoolExecutor(max_workers=4)
-        
+
         logger.info(f"EnhancedVoiceCloner initialized with max duration: {self.config.max_audio_duration}s")
-        
-    def clone_voice_from_multiple_clips(self, audio_files: List[str], voice_name: str, 
+
+    def clone_voice_from_multiple_clips(self, audio_files: List[str], voice_name: str,
                                       description: str = "") -> MultiClipVoiceProfile:
         """Clone voice from multiple audio clips"""
         if len(audio_files) > self.config.max_reference_clips:
             raise ValueError(f"Too many clips: {len(audio_files)} (max: {self.config.max_reference_clips})")
-            
+
         clips_data = []
         total_duration = 0.0
-        
+
         # Process each clip
         for i, audio_file in enumerate(audio_files):
             try:
                 clip_data = self._process_single_clip(audio_file, f"clip_{i:02d}")
                 clips_data.append(clip_data)
                 total_duration += clip_data['duration']
-                
+
                 if total_duration > self.config.max_total_reference_duration:
                     raise ValueError(f"Total duration exceeds limit: {total_duration:.1f}s > {self.config.max_total_reference_duration}s")
-                    
+
             except Exception as e:
                 logger.error(f"Failed to process clip {audio_file}: {e}")
                 raise
-                
+
         # Combine embeddings from all clips
         combined_embedding = self._combine_clip_embeddings(clips_data)
-        
+
         # Calculate overall quality metrics
         quality_metrics = self._calculate_combined_quality_metrics(clips_data)
-        
+
         # Generate voice profile
         profile = MultiClipVoiceProfile(
             voice_name=voice_name,
@@ -390,10 +390,10 @@ class EnhancedVoiceCloner:
             total_duration=total_duration,
             clip_count=len(clips_data)
         )
-        
+
         # Save voice profile
         self._save_voice_profile(profile)
-        
+
         return profile
 
     def _process_single_clip(self, audio_file: str, clip_id: str) -> Dict[str, Any]:

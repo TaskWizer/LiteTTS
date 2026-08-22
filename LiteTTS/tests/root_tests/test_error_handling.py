@@ -24,11 +24,11 @@ from LiteTTS.api.error_handler import ErrorHandler
 
 class TestInputValidationErrors:
     """Test input validation error handling"""
-    
+
     def setup_method(self):
         self.client = TestClient(app)
         self.base_endpoint = "/v1/audio/speech"
-    
+
     def test_empty_input_text(self):
         """Test empty input text handling"""
         response = self.client.post(
@@ -40,7 +40,7 @@ class TestInputValidationErrors:
         # Response is nested: {"detail": {"error": "message", "type": "..."}}
         assert "error" in data["detail"]
         assert "empty" in data["detail"]["error"].lower()
-    
+
     def test_none_input_text(self):
         """Test None input text handling"""
         response = self.client.post(
@@ -48,7 +48,7 @@ class TestInputValidationErrors:
             json={"input": None, "voice": "af_heart"}
         )
         assert response.status_code == 422  # Pydantic validation error
-    
+
     def test_missing_input_field(self):
         """Test missing input field"""
         response = self.client.post(
@@ -56,7 +56,7 @@ class TestInputValidationErrors:
             json={"voice": "af_heart"}
         )
         assert response.status_code == 422
-    
+
     def test_invalid_voice_name(self):
         """Test invalid voice name"""
         response = self.client.post(
@@ -68,7 +68,7 @@ class TestInputValidationErrors:
         # Response is nested: {"detail": {"error": "message", "type": "..."}}
         assert "error" in data["detail"]
         assert "voice" in data["detail"]["error"].lower()
-    
+
     def test_invalid_response_format(self):
         """Test invalid response format"""
         response = self.client.post(
@@ -84,7 +84,7 @@ class TestInputValidationErrors:
         # Response is nested: {"detail": {"error": "message", "type": "..."}}
         assert "error" in data["detail"]
         assert "format" in data["detail"]["error"].lower()
-    
+
     def test_invalid_speed_value(self):
         """Test invalid speed values"""
         # None is valid (means use default), but these are truly invalid
@@ -100,7 +100,7 @@ class TestInputValidationErrors:
                 }
             )
             assert response.status_code in [400, 422], f"Speed {speed} should be invalid"
-    
+
     def test_extremely_long_text(self):
         """Test extremely long text input"""
         long_text = "A" * 10000  # 10k characters
@@ -115,7 +115,7 @@ class TestInputValidationErrors:
             data = response.json()
             # Response is nested: {"detail": {"error": "..."}}
             assert "error" in data["detail"]
-    
+
     def test_malformed_json(self):
         """Test malformed JSON input"""
         response = self.client.post(
@@ -124,7 +124,7 @@ class TestInputValidationErrors:
             headers={"Content-Type": "application/json"}
         )
         assert response.status_code == 422
-    
+
     def test_wrong_content_type(self):
         """Test wrong content type"""
         response = self.client.post(
@@ -137,11 +137,11 @@ class TestInputValidationErrors:
 
 class TestSpecialCharacterHandling:
     """Test handling of special characters and edge cases"""
-    
+
     def setup_method(self):
         self.client = TestClient(app)
         self.base_endpoint = "/v1/audio/speech"
-    
+
     def test_unicode_characters(self):
         """Test Unicode character handling"""
         unicode_texts = [
@@ -152,7 +152,7 @@ class TestSpecialCharacterHandling:
             "مرحبا بالعالم",  # Arabic
             "🎵🎶🎼🎹🎸",  # Musical emojis
         ]
-        
+
         for text in unicode_texts:
             response = self.client.post(
                 self.base_endpoint,
@@ -160,11 +160,11 @@ class TestSpecialCharacterHandling:
             )
             # Should either succeed or fail gracefully
             assert response.status_code in [200, 400]
-            
+
             if response.status_code == 400:
                 data = response.json()
                 assert "error" in data
-    
+
     def test_control_characters(self):
         """Test control character handling"""
         control_chars = [
@@ -174,7 +174,7 @@ class TestSpecialCharacterHandling:
             "Hello\r\nWorld",  # CRLF
             "Hello\tWorld",    # Tab
         ]
-        
+
         for text in control_chars:
             response = self.client.post(
                 self.base_endpoint,
@@ -182,7 +182,7 @@ class TestSpecialCharacterHandling:
             )
             # Should handle gracefully
             assert response.status_code in [200, 400]
-    
+
     def test_html_entities(self):
         """Test HTML entity handling"""
         html_texts = [
@@ -190,7 +190,7 @@ class TestSpecialCharacterHandling:
             "&amp; &quot; &apos; &lt; &gt;",
             "&#x27; &#x22; &#x3C; &#x3E;",
         ]
-        
+
         for text in html_texts:
             response = self.client.post(
                 self.base_endpoint,
@@ -201,13 +201,13 @@ class TestSpecialCharacterHandling:
 
 class TestConcurrencyAndRaceConditions:
     """Test concurrent access and race conditions"""
-    
+
     def setup_method(self):
         self.client = TestClient(app)
         self.base_endpoint = "/v1/audio/speech"
         self.results = []
         self.errors = []
-    
+
     def _make_request(self, text, voice="af_heart"):
         """Helper method to make a request"""
         try:
@@ -222,51 +222,51 @@ class TestConcurrencyAndRaceConditions:
             })
         except Exception as e:
             self.errors.append(str(e))
-    
+
     def test_concurrent_requests(self):
         """Test multiple concurrent requests"""
         threads = []
         test_texts = [f"Test message {i}" for i in range(10)]
-        
+
         # Create threads for concurrent requests
         for text in test_texts:
             thread = threading.Thread(target=self._make_request, args=(text,))
             threads.append(thread)
-        
+
         # Start all threads
         for thread in threads:
             thread.start()
-        
+
         # Wait for all threads to complete
         for thread in threads:
             thread.join()
-        
+
         # Verify results
         assert len(self.results) == len(test_texts)
         assert len(self.errors) == 0
-        
+
         # At least some requests should succeed
         successful_requests = sum(1 for r in self.results if r["success"])
         assert successful_requests > 0
-    
+
     def test_cache_race_condition(self):
         """Test cache race conditions with identical requests"""
         threads = []
         same_text = "This is the same text for all requests"
-        
+
         # Create multiple threads with the same text
         for _ in range(5):
             thread = threading.Thread(target=self._make_request, args=(same_text,))
             threads.append(thread)
-        
+
         # Start all threads simultaneously
         for thread in threads:
             thread.start()
-        
+
         # Wait for completion
         for thread in threads:
             thread.join()
-        
+
         # All requests should succeed
         assert len(self.results) == 5
         assert all(r["success"] for r in self.results)
@@ -274,11 +274,11 @@ class TestConcurrencyAndRaceConditions:
 
 class TestResourceLimits:
     """Test resource limit handling"""
-    
+
     def setup_method(self):
         self.client = TestClient(app)
         self.base_endpoint = "/v1/audio/speech"
-    
+
     def test_memory_pressure_simulation(self):
         """Test behavior under simulated memory pressure"""
         # Generate large requests to simulate memory pressure
@@ -287,7 +287,7 @@ class TestResourceLimits:
             "Another large text block. " * 200,  # ~5.4KB
             "Yet another big text. " * 300,      # ~8.1KB
         ]
-        
+
         for text in large_texts:
             response = self.client.post(
                 self.base_endpoint,
@@ -295,21 +295,21 @@ class TestResourceLimits:
             )
             # Should handle gracefully
             assert response.status_code in [200, 400, 413, 500]
-    
+
     def test_rapid_fire_requests(self):
         """Test rapid consecutive requests"""
         results = []
-        
+
         for i in range(20):
             response = self.client.post(
                 self.base_endpoint,
                 json={"input": f"Rapid request {i}", "voice": "af_heart"}
             )
             results.append(response.status_code)
-            
+
             # Small delay to avoid overwhelming
             time.sleep(0.01)
-        
+
         # Most requests should succeed or fail gracefully
         valid_status_codes = [200, 400, 429, 500, 503]
         assert all(status in valid_status_codes for status in results)
@@ -367,25 +367,25 @@ class TestErrorHandlerUnit:
 
 class TestNetworkAndTimeouts:
     """Test network-related error conditions"""
-    
+
     def setup_method(self):
         self.client = TestClient(app)
-    
+
     @patch('requests.post')
     def test_external_service_timeout(self, mock_post):
         """Test handling of external service timeouts"""
         mock_post.side_effect = requests.exceptions.Timeout("Request timed out")
-        
+
         # This would test external service calls if any exist
         # For now, just verify the mock works
         with pytest.raises(requests.exceptions.Timeout):
             requests.post("http://example.com", timeout=1)
-    
+
     @patch('requests.get')
     def test_external_service_connection_error(self, mock_get):
         """Test handling of connection errors"""
         mock_get.side_effect = requests.exceptions.ConnectionError("Connection failed")
-        
+
         with pytest.raises(requests.exceptions.ConnectionError):
             requests.get("http://example.com")
 

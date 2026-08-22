@@ -12,12 +12,12 @@ logger = logging.getLogger(__name__)
 
 class HomographResolver:
     """Resolves homograph pronunciations based on context and explicit markers"""
-    
+
     def __init__(self):
         self.homograph_dict = self._load_homograph_dictionary()
         self.context_patterns = self._compile_context_patterns()
         self.pronunciation_dict = PronunciationDictionary()  # Enhanced pronunciation dictionary
-        
+
     def _load_homograph_dictionary(self) -> Dict[str, Dict[str, str]]:
         """Load homograph dictionary with different pronunciations"""
         return {
@@ -72,12 +72,12 @@ class HomographResolver:
                 'document': 'rek-ord',  # Keep a record
                 'capture': 'ri-kord'    # Record a song
             }
-        }    
+        }
 
     def _compile_context_patterns(self) -> Dict[str, List[Tuple[re.Pattern, str]]]:
         """Compile context patterns for automatic disambiguation"""
         patterns = {}
-        
+
         # Read patterns - FIXED: better past tense detection
         patterns['read'] = [
             (re.compile(r'\b(will|can|should|must|to)\s+read\b', re.IGNORECASE), 'present'),
@@ -87,55 +87,55 @@ class HomographResolver:
             (re.compile(r'\bread\s+yesterday\b', re.IGNORECASE), 'past'),  # More specific pattern
             (re.compile(r'\bI\s+read\s+yesterday\b', re.IGNORECASE), 'past')  # Very specific pattern
         ]
-        
+
         # Lead patterns
         patterns['lead'] = [
             (re.compile(r'\blead\s+(pipe|paint|poisoning|bullet)\b', re.IGNORECASE), 'metal'),
             (re.compile(r'\b(will|can|should|must|to)\s+lead\b', re.IGNORECASE), 'verb'),
             (re.compile(r'\blead\s+(the|a|an)\s+(way|team|group|charge)\b', re.IGNORECASE), 'verb')
         ]
-        
+
         # Tear patterns
         patterns['tear'] = [
             (re.compile(r'\btear\s+(up|down|apart|off)\b', re.IGNORECASE), 'rip'),
             (re.compile(r'\b(shed|wipe|dry)\s+(a\s+)?tear\b', re.IGNORECASE), 'cry'),
             (re.compile(r'\btears?\s+(of|from|in)\b', re.IGNORECASE), 'cry')
         ]
-        
+
         # Wind patterns
         patterns['wind'] = [
             (re.compile(r'\bwind\s+(blows?|speed|direction|storm)\b', re.IGNORECASE), 'air'),
             (re.compile(r'\bwind\s+(up|down|the|a)\s+(clock|watch|toy)\b', re.IGNORECASE), 'coil'),
             (re.compile(r'\b(strong|cold|warm|gentle)\s+wind\b', re.IGNORECASE), 'air')
         ]
-        
+
         # Close patterns
         patterns['close'] = [
             (re.compile(r'\bclose\s+(the|a|an)\s+(door|window|book|eyes?)\b', re.IGNORECASE), 'shut'),
             (re.compile(r'\b(very|too|so|quite)\s+close\b', re.IGNORECASE), 'near'),
             (re.compile(r'\bclose\s+(to|by|together)\b', re.IGNORECASE), 'near')
         ]
-        
+
         # Produce patterns
         patterns['produce'] = [
             (re.compile(r'\bproduce\s+(goods|results|energy|music)\b', re.IGNORECASE), 'create'),
             (re.compile(r'\b(fresh|organic|local)\s+produce\b', re.IGNORECASE), 'food'),
             (re.compile(r'\bproduce\s+(section|aisle|department)\b', re.IGNORECASE), 'food')
         ]
-        
+
         # Record patterns
         patterns['record'] = [
             (re.compile(r'\brecord\s+(a|the)\s+(song|album|video|sound)\b', re.IGNORECASE), 'capture'),
             (re.compile(r'\b(keep|maintain|check)\s+(a\s+)?record\b', re.IGNORECASE), 'document'),
             (re.compile(r'\brecord\s+(book|keeping|player)\b', re.IGNORECASE), 'document')
         ]
-        
-        return patterns    
+
+        return patterns
 
     def resolve_homographs(self, text: str) -> str:
         """Main function to resolve homographs in text"""
         logger.debug(f"Resolving homographs in: {text[:100]}...")
-        
+
         # First, handle explicit markers
         text = self._process_explicit_markers(text)
 
@@ -147,22 +147,22 @@ class HomographResolver:
 
         # Then, use context-based resolution
         text = self._resolve_by_context(text)
-        
+
         logger.debug(f"Homograph resolution result: {text[:100]}...")
         return text
-    
+
     def _process_explicit_markers(self, text: str) -> str:
         """Process explicit homograph markers like 'produce_noun'"""
         # Pattern for explicit markers: word_type
         marker_pattern = re.compile(r'\b(\w+)_(\w+)\b')
-        
+
         def replace_marker(match):
             word = match.group(1).lower()
             marker = match.group(2).lower()
-            
+
             if word in self.homograph_dict:
                 pronunciations = self.homograph_dict[word]
-                
+
                 # Map common markers to pronunciation keys
                 marker_map = {
                     'noun': self._find_noun_pronunciation(word, pronunciations),
@@ -175,15 +175,15 @@ class HomographResolver:
                     'document': 'document',
                     'capture': 'capture'
                 }
-                
+
                 if marker in marker_map and marker_map[marker] in pronunciations:
                     return pronunciations[marker_map[marker]]
                 elif marker in pronunciations:
                     return pronunciations[marker]
-            
+
             # If no match found, return original word without marker
             return word
-        
+
         return marker_pattern.sub(replace_marker, text)
 
     def _process_simple_replacements(self, text: str) -> str:
@@ -201,7 +201,7 @@ class HomographResolver:
             text = re.sub(pattern, pronunciation, text, flags=re.IGNORECASE)
 
         return text
-    
+
     def _resolve_by_context(self, text: str) -> str:
         """Resolve homographs using context patterns"""
         for word, patterns in self.context_patterns.items():
@@ -215,9 +215,9 @@ class HomographResolver:
                             word_pattern = re.compile(r'\b' + re.escape(word) + r'\b', re.IGNORECASE)
                             text = word_pattern.sub(pronunciation, text)
                             break  # Use first matching pattern
-        
-        return text    
- 
+
+        return text
+
     def _find_noun_pronunciation(self, word: str, pronunciations: Dict[str, str]) -> Optional[str]:
         """Find the noun pronunciation for a word"""
         # Common noun keys
@@ -226,7 +226,7 @@ class HomographResolver:
             if key in pronunciations:
                 return key
         return None
-    
+
     def _find_verb_pronunciation(self, word: str, pronunciations: Dict[str, str]) -> Optional[str]:
         """Find the verb pronunciation for a word"""
         # Common verb keys
@@ -235,16 +235,16 @@ class HomographResolver:
             if key in pronunciations:
                 return key
         return None
-    
+
     def add_homograph(self, word: str, pronunciations: Dict[str, str]):
         """Add a new homograph to the dictionary"""
         self.homograph_dict[word] = pronunciations
         logger.info(f"Added homograph: {word} with pronunciations: {list(pronunciations.keys())}")
-    
+
     def get_homograph_info(self, word: str) -> Optional[Dict[str, str]]:
         """Get pronunciation options for a homograph"""
         return self.homograph_dict.get(word.lower())
-    
+
     def list_homographs(self) -> List[str]:
         """Get list of all known homographs"""
         return list(self.homograph_dict.keys())

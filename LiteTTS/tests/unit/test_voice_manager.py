@@ -47,7 +47,7 @@ class TestVoiceManager:
         mock_cache = Mock()
         mock_cache.get_voice_embedding.return_value = Mock()
         mock_cache.get_voice_embedding.return_value.name = "test_voice"
-        
+
         with patch('LiteTTS.voice.manager.VoiceDownloader'), \
              patch('LiteTTS.voice.manager.VoiceValidator'), \
              patch('LiteTTS.voice.manager.VoiceMetadataManager'), \
@@ -62,10 +62,10 @@ class TestVoiceManager:
         mock_downloader = Mock()
         mock_downloader.discovered_voices = {"hf_voice": {}}
         mock_downloader.is_voice_downloaded.return_value = False
-        
+
         mock_cache = Mock()
         mock_cache.get_voice_embedding.return_value = None  # Cache miss
-        
+
         with patch('LiteTTS.voice.manager.VoiceDownloader', return_value=mock_downloader), \
              patch('LiteTTS.voice.manager.VoiceValidator'), \
              patch('LiteTTS.voice.manager.VoiceMetadataManager'), \
@@ -80,10 +80,10 @@ class TestVoiceManager:
         """Test getting custom voice (non-HuggingFace)"""
         mock_downloader = Mock()
         mock_downloader.discovered_voices = {}
-        
+
         mock_cache = Mock()
         mock_cache.get_voice_embedding.return_value = None
-        
+
         with patch('LiteTTS.voice.manager.VoiceDownloader', return_value=mock_downloader), \
              patch('LiteTTS.voice.manager.VoiceValidator'), \
              patch('LiteTTS.voice.manager.VoiceMetadataManager'), \
@@ -99,15 +99,15 @@ class TestVoiceManager:
         """Test successful voice download"""
         mock_downloader = Mock()
         mock_downloader.download_voice.return_value = True
-        
+
         mock_validator = Mock()
         mock_validation_result = Mock()
         mock_validation_result.is_valid = True
         mock_validator.validate_voice.return_value = mock_validation_result
-        
+
         mock_cache = Mock()
         mock_cache.preload_voice.return_value = True
-        
+
         with patch('LiteTTS.voice.manager.VoiceDownloader', return_value=mock_downloader), \
              patch('LiteTTS.voice.manager.VoiceValidator', return_value=mock_validator), \
              patch('LiteTTS.voice.manager.VoiceMetadataManager'), \
@@ -120,13 +120,13 @@ class TestVoiceManager:
         """Test voice download with validation failure"""
         mock_downloader = Mock()
         mock_downloader.download_voice.return_value = True
-        
+
         mock_validator = Mock()
         mock_validation_result = Mock()
         mock_validation_result.is_valid = False
         mock_validation_result.errors = ["Invalid voice file"]
         mock_validator.validate_voice.return_value = mock_validation_result
-        
+
         with patch('LiteTTS.voice.manager.VoiceDownloader', return_value=mock_downloader), \
              patch('LiteTTS.voice.manager.VoiceValidator', return_value=mock_validator), \
              patch('LiteTTS.voice.manager.VoiceMetadataManager'), \
@@ -141,7 +141,7 @@ class TestVoiceManager:
         mock_validation_result = Mock()
         mock_validation_result.is_valid = True
         mock_validator.validate_voice.return_value = mock_validation_result
-        
+
         with patch('LiteTTS.voice.manager.VoiceDownloader'), \
              patch('LiteTTS.voice.manager.VoiceValidator', return_value=mock_validator), \
              patch('LiteTTS.voice.manager.VoiceMetadataManager'), \
@@ -154,7 +154,7 @@ class TestVoiceManager:
         """Test validating all voices"""
         mock_validator = Mock()
         mock_validator.validate_all_voices.return_value = {"voice1": Mock(is_valid=True)}
-        
+
         with patch('LiteTTS.voice.manager.VoiceDownloader'), \
              patch('LiteTTS.voice.manager.VoiceValidator', return_value=mock_validator), \
              patch('LiteTTS.voice.manager.VoiceMetadataManager'), \
@@ -168,7 +168,7 @@ class TestVoiceManager:
         mock_downloader = Mock()
         mock_downloader.discovered_voices = {"hf_voice": {}}
         mock_downloader.is_voice_downloaded.return_value = True
-        
+
         with patch('LiteTTS.voice.manager.VoiceDownloader', return_value=mock_downloader), \
              patch('LiteTTS.voice.manager.VoiceValidator'), \
              patch('LiteTTS.voice.manager.VoiceMetadataManager'), \
@@ -183,12 +183,12 @@ class TestVoiceManager:
         mock_downloader = Mock()
         mock_downloader.discovered_voices = {"hf_voice": {}}
         mock_downloader.is_voice_downloaded.return_value = True
-        
+
         mock_validator = Mock()
         mock_validation_result = Mock()
         mock_validation_result.is_valid = True
         mock_validator.validate_voice.return_value = mock_validation_result
-        
+
         with patch('LiteTTS.voice.manager.VoiceDownloader', return_value=mock_downloader), \
              patch('LiteTTS.voice.manager.VoiceValidator', return_value=mock_validator), \
              patch('LiteTTS.voice.manager.VoiceMetadataManager'), \
@@ -202,7 +202,7 @@ class TestVoiceManager:
         mock_downloader = Mock()
         mock_downloader.discovered_voices = {"hf_voice": {}}
         mock_downloader.is_voice_downloaded.return_value = False
-        
+
         with patch('LiteTTS.voice.manager.VoiceDownloader', return_value=mock_downloader), \
              patch('LiteTTS.voice.manager.VoiceValidator'), \
              patch('LiteTTS.voice.manager.VoiceMetadataManager'), \
@@ -215,7 +215,7 @@ class TestVoiceManager:
         """Test getting voice metadata"""
         mock_metadata_manager = Mock()
         mock_metadata_manager.get_voice_metadata.return_value = Mock()
-        
+
         with patch('LiteTTS.voice.manager.VoiceDownloader'), \
              patch('LiteTTS.voice.manager.VoiceValidator'), \
              patch('LiteTTS.voice.manager.VoiceMetadataManager', return_value=mock_metadata_manager), \
@@ -228,7 +228,7 @@ class TestVoiceManager:
         """Test filtering voices"""
         mock_metadata_manager = Mock()
         mock_metadata_manager.filter_voices.return_value = []
-        
+
         with patch('LiteTTS.voice.manager.VoiceDownloader'), \
              patch('LiteTTS.voice.manager.VoiceValidator'), \
              patch('LiteTTS.voice.manager.VoiceMetadataManager', return_value=mock_metadata_manager), \
@@ -241,7 +241,7 @@ class TestVoiceManager:
         """Test getting recommended voices"""
         mock_metadata_manager = Mock()
         mock_metadata_manager.get_recommended_voices.return_value = []
-        
+
         with patch('LiteTTS.voice.manager.VoiceDownloader'), \
              patch('LiteTTS.voice.manager.VoiceValidator'), \
              patch('LiteTTS.voice.manager.VoiceMetadataManager', return_value=mock_metadata_manager), \
@@ -254,7 +254,7 @@ class TestVoiceManager:
         """Test preloading a voice"""
         mock_cache = Mock()
         mock_cache.preload_voice.return_value = True
-        
+
         with patch('LiteTTS.voice.manager.VoiceDownloader'), \
              patch('LiteTTS.voice.manager.VoiceValidator'), \
              patch('LiteTTS.voice.manager.VoiceMetadataManager'), \
@@ -267,7 +267,7 @@ class TestVoiceManager:
         """Test preloading multiple voices"""
         mock_cache = Mock()
         mock_cache.preload_voices_batch.return_value = {"v1": True, "v2": True}
-        
+
         with patch('LiteTTS.voice.manager.VoiceDownloader'), \
              patch('LiteTTS.voice.manager.VoiceValidator'), \
              patch('LiteTTS.voice.manager.VoiceMetadataManager'), \
@@ -280,7 +280,7 @@ class TestVoiceManager:
         """Test checking if voice is cached"""
         mock_cache = Mock()
         mock_cache.is_voice_cached.return_value = True
-        
+
         with patch('LiteTTS.voice.manager.VoiceDownloader'), \
              patch('LiteTTS.voice.manager.VoiceValidator'), \
              patch('LiteTTS.voice.manager.VoiceMetadataManager'), \
@@ -293,7 +293,7 @@ class TestVoiceManager:
         """Test getting list of cached voices"""
         mock_cache = Mock()
         mock_cache.get_cached_voices.return_value = ["voice1", "voice2"]
-        
+
         with patch('LiteTTS.voice.manager.VoiceDownloader'), \
              patch('LiteTTS.voice.manager.VoiceValidator'), \
              patch('LiteTTS.voice.manager.VoiceMetadataManager'), \

@@ -196,7 +196,7 @@ class TestChunkProcessor:
         """Test getting chunk statistics"""
         processor = ChunkProcessor()
         chunks = [
-            TextChunk(text="Hello world", chunk_index=0, total_chunks=1, 
+            TextChunk(text="Hello world", chunk_index=0, total_chunks=1,
                      is_sentence_boundary=True, pause_after=0.2),
             TextChunk(text="Test text", chunk_index=1, total_chunks=1,
                      is_paragraph_boundary=True, pause_after=0.5)

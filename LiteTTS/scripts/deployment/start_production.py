@@ -166,11 +166,11 @@ Examples:
         from app import tts_app, app
 
         logger.info("🚀 Starting Kokoro ONNX TTS API (Production Mode)")
-        
+
         # Use command line args or config defaults
         host = args.host
         port = args.port or tts_app.config.server.port
-        
+
         logger.info(f"📍 Target host: {host}")
         logger.info(f"📍 Target port: {port}")
 
@@ -190,7 +190,7 @@ Examples:
         logger.info(f"📊 Dashboard: http://{host}:{port}/dashboard")
         logger.info(f"📚 API docs: http://{host}:{port}/docs")
         logger.info(f"🎤 TTS endpoint: http://{host}:{port}/v1/audio/speech")
-        
+
         # OpenWebUI integration info
         if port != 8080:
             logger.info(f"🔗 OpenWebUI API Base URL: http://YOUR_VPS_IP:{port}/v1")

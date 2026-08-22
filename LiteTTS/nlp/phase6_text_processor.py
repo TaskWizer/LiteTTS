@@ -78,7 +78,7 @@ class Phase6TextProcessor:
     - Enhanced contraction processing
     - Context-aware text normalization
     """
-    
+
     def __init__(self, config: Optional[Dict] = None):
         """Initialize Phase 6 text processor
         
@@ -87,14 +87,14 @@ class Phase6TextProcessor:
         """
         self.config = config or {}
         self.mode = Phase6ProcessingMode.STANDARD
-        
+
         # Initialize processing components
         self._init_advanced_processors()
         self._init_number_processors()
         self._init_unit_processors()
         self._init_homograph_processors()
         self._init_contraction_processors()
-        
+
         logger.debug("Phase 6 text processor initialized")
 
     def _init_advanced_processors(self):
@@ -146,7 +146,7 @@ class Phase6TextProcessor:
         self.fraction_pattern = re.compile(r'\d+/\d+')
         self.decimal_pattern = re.compile(r'\d+\.\d+')
         self.large_number_pattern = re.compile(r'\d{4,}')
-        
+
         # Number word mappings
         self.number_words = {
             '0': 'zero', '1': 'one', '2': 'two', '3': 'three', '4': 'four',
@@ -157,7 +157,7 @@ class Phase6TextProcessor:
             '40': 'forty', '50': 'fifty', '60': 'sixty', '70': 'seventy',
             '80': 'eighty', '90': 'ninety', '100': 'hundred', '1000': 'thousand'
         }
-    
+
     def _init_unit_processors(self):
         """Initialize unit processing components"""
         # Common unit abbreviations and their spoken forms
@@ -165,27 +165,27 @@ class Phase6TextProcessor:
             # Distance/Length
             'mm': 'millimeters', 'cm': 'centimeters', 'm': 'meters', 'km': 'kilometers',
             'in': 'inches', 'ft': 'feet', 'yd': 'yards', 'mi': 'miles',
-            
+
             # Weight/Mass
             'mg': 'milligrams', 'g': 'grams', 'kg': 'kilograms', 't': 'tons',
             'oz': 'ounces', 'lb': 'pounds', 'lbs': 'pounds',
-            
+
             # Volume
             'ml': 'milliliters', 'l': 'liters', 'gal': 'gallons', 'qt': 'quarts',
             'pt': 'pints', 'fl oz': 'fluid ounces',
-            
+
             # Time
             'ms': 'milliseconds', 's': 'seconds', 'min': 'minutes', 'hr': 'hours',
             'hrs': 'hours', 'h': 'hours',
-            
+
             # Technology
             'GB': 'gigabytes', 'MB': 'megabytes', 'KB': 'kilobytes', 'TB': 'terabytes',
             'GHz': 'gigahertz', 'MHz': 'megahertz', 'kHz': 'kilohertz',
-            
+
             # Temperature
             '°C': 'degrees celsius', '°F': 'degrees fahrenheit', 'K': 'kelvin'
         }
-    
+
     def _init_homograph_processors(self):
         """Initialize homograph resolution components"""
         # Context-sensitive homograph mappings
@@ -215,7 +215,7 @@ class Phase6TextProcessor:
                 ]
             }
         }
-    
+
     def _init_contraction_processors(self):
         """Initialize contraction processing components"""
         # Initialize enhanced contraction processor if available
@@ -267,7 +267,7 @@ class Phase6TextProcessor:
             "we'll": "we will",
             "they'll": "they will"
         }
-    
+
     def process_text(self, text: str, mode: Optional[Phase6ProcessingMode] = None) -> Phase6ProcessingResult:
         """
         Process text with Phase 6 enhancements
@@ -281,15 +281,15 @@ class Phase6TextProcessor:
         """
         if mode is None:
             mode = self.mode
-        
+
         start_time = time.perf_counter()
         original_text = text
         changes_by_category = {}
         processing_stages = []
         warnings = []
-        
+
         logger.debug(f"Phase 6 processing text with mode: {mode.value}")
-        
+
         try:
             # Stage 1: Enhanced contraction processing (first to avoid interference)
             text, contraction_changes = self._process_contractions(text)
@@ -314,17 +314,17 @@ class Phase6TextProcessor:
             changes_by_category['homographs'] = homograph_changes
             if homograph_changes > 0:
                 processing_stages.append('homograph_resolution')
-            
+
             # Stage 5: Context normalization (advanced modes only)
             if mode in [Phase6ProcessingMode.ADVANCED, Phase6ProcessingMode.COMPREHENSIVE]:
                 text, context_changes = self._process_context_normalization(text)
                 changes_by_category['context'] = context_changes
                 if context_changes > 0:
                     processing_stages.append('context_normalization')
-            
+
             total_changes = sum(changes_by_category.values())
             processing_time = time.perf_counter() - start_time
-            
+
             result = Phase6ProcessingResult(
                 processed_text=text,
                 original_text=original_text,
@@ -335,10 +335,10 @@ class Phase6TextProcessor:
                 warnings=warnings,
                 metadata={'mode': mode.value}
             )
-            
+
             logger.debug(f"Phase 6 processing complete: {total_changes} changes in {processing_time:.3f}s")
             return result
-            
+
         except Exception as e:
             logger.error(f"Phase 6 processing failed: {e}")
             # Return original text with error information
@@ -349,7 +349,7 @@ class Phase6TextProcessor:
                 total_changes=0,
                 warnings=[f"Processing failed: {str(e)}"]
             )
-    
+
     def _process_numbers(self, text: str) -> Tuple[str, int]:
         """Process numbers, currency, and dates for better TTS pronunciation"""
         changes = 0
@@ -420,7 +420,7 @@ class Phase6TextProcessor:
         text = self.percentage_pattern.sub(replace_percentage, text)
 
         return text, changes
-    
+
     def _process_units(self, text: str) -> Tuple[str, int]:
         """Process unit abbreviations with contraction and time format protection"""
         changes = 0
@@ -482,15 +482,15 @@ class Phase6TextProcessor:
     def _process_homographs(self, text: str) -> Tuple[str, int]:
         """Process homographs with context awareness"""
         changes = 0
-        
+
         for word, rules in self.homograph_rules.items():
             for pattern, replacement in rules.get('patterns', []):
                 if re.search(pattern, text, re.IGNORECASE):
                     text = re.sub(r'\b' + word + r'\b', replacement, text, flags=re.IGNORECASE)
                     changes += 1
-        
+
         return text, changes
-    
+
     def _process_contractions(self, text: str) -> Tuple[str, int]:
         """Process contractions for better pronunciation using enhanced processor"""
         if not text or not text.strip():
@@ -527,11 +527,11 @@ class Phase6TextProcessor:
                 changes += 1
 
         return text, changes
-    
+
     def _process_context_normalization(self, text: str) -> Tuple[str, int]:
         """Advanced context-aware normalization"""
         changes = 0
-        
+
         # Example: Handle scientific notation
         scientific_pattern = r'(\d+\.?\d*)[eE]([+-]?\d+)'
         def replace_scientific(match):
@@ -539,11 +539,11 @@ class Phase6TextProcessor:
             base, exponent = match.groups()
             changes += 1
             return f"{base} times ten to the power of {exponent}"
-        
+
         text = re.sub(scientific_pattern, replace_scientific, text)
-        
+
         return text, changes
-    
+
     def get_capabilities(self) -> Dict[str, bool]:
         """Get Phase 6 processing capabilities"""
         return {
@@ -557,7 +557,7 @@ class Phase6TextProcessor:
             'percentage_processing': True,
             'fraction_processing': True
         }
-    
+
     def set_mode(self, mode: Phase6ProcessingMode):
         """Set processing mode"""
         self.mode = mode
@@ -572,14 +572,14 @@ def create_phase6_processor(config: Optional[Dict] = None) -> Phase6TextProcesso
 if __name__ == "__main__":
     # Test the Phase 6 processor
     processor = Phase6TextProcessor()
-    
+
     test_texts = [
         "I can't believe it costs $1,234.56 and weighs 5.5 kg!",
         "The temperature is 25°C and the speed is 100 km/h.",
         "He read the book yesterday and will read another tomorrow.",
         "The lead pipe contains lead metal."
     ]
-    
+
     for text in test_texts:
         result = processor.process_text(text)
         print(f"Original: {result.original_text}")

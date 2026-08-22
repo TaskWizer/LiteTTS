@@ -23,7 +23,7 @@ class ContractionFix:
 
 class PhoneticContractionProcessor:
     """Advanced contraction processor with phonetic awareness"""
-    
+
     def __init__(self, config: Dict = None):
         self.config = config or {}
         self.contraction_fixes = self._load_contraction_fixes()
@@ -44,7 +44,7 @@ class PhoneticContractionProcessor:
             return False
 
         return True
-    
+
     def _load_contraction_fixes(self) -> Dict[str, ContractionFix]:
         """Load comprehensive contraction fixes with phonetic mappings"""
         return {
@@ -56,24 +56,24 @@ class PhoneticContractionProcessor:
                 priority=10
             ),
             "weren't": ContractionFix(
-                original="weren't", 
+                original="weren't",
                 expanded="were not",
                 phonetic="wɜr nɑt",
                 priority=10
             ),
             "isn't": ContractionFix(
                 original="isn't",
-                expanded="is not", 
+                expanded="is not",
                 phonetic="ɪz nɑt",
                 priority=10
             ),
             "aren't": ContractionFix(
                 original="aren't",
                 expanded="are not",
-                phonetic="ɑr nɑt", 
+                phonetic="ɑr nɑt",
                 priority=10
             ),
-            
+
             # Problematic 'll contractions
             "i'll": ContractionFix(
                 original="i'll",
@@ -82,7 +82,7 @@ class PhoneticContractionProcessor:
                 priority=10
             ),
             "you'll": ContractionFix(
-                original="you'll", 
+                original="you'll",
                 expanded="you will",
                 phonetic="ju wɪl",  # Not "yaw-wl"
                 priority=10
@@ -95,7 +95,7 @@ class PhoneticContractionProcessor:
             ),
             "she'll": ContractionFix(
                 original="she'll",
-                expanded="she will", 
+                expanded="she will",
                 phonetic="ʃi wɪl",
                 priority=10
             ),
@@ -117,7 +117,7 @@ class PhoneticContractionProcessor:
                 phonetic="ðeɪ wɪl",
                 priority=10
             ),
-            
+
             # Problematic 'd contractions
             "i'd": ContractionFix(
                 original="i'd",
@@ -134,7 +134,7 @@ class PhoneticContractionProcessor:
                 context_sensitive=True
             ),
             "he'd": ContractionFix(
-                original="he'd", 
+                original="he'd",
                 expanded="he would",
                 phonetic="hi wʊd",
                 priority=10,
@@ -143,11 +143,11 @@ class PhoneticContractionProcessor:
             "she'd": ContractionFix(
                 original="she'd",
                 expanded="she would",
-                phonetic="ʃi wʊd", 
+                phonetic="ʃi wʊd",
                 priority=10,
                 context_sensitive=True
             ),
-            
+
             # Problematic 'm contractions
             "i'm": ContractionFix(
                 original="i'm",
@@ -155,7 +155,7 @@ class PhoneticContractionProcessor:
                 phonetic="aɪ æm",  # Not "im"
                 priority=10
             ),
-            
+
             # Problematic 's contractions (context-sensitive)
             "that's": ContractionFix(
                 original="that's",
@@ -185,7 +185,7 @@ class PhoneticContractionProcessor:
                 priority=10,
                 context_sensitive=True
             ),
-            
+
             # Additional common contractions
             "don't": ContractionFix(
                 original="don't",
@@ -308,7 +308,7 @@ class PhoneticContractionProcessor:
                 priority=5
             ),
         }
-    
+
     def _load_phonetic_mappings(self) -> Dict[str, str]:
         """Load IPA to readable phonetic mappings"""
         return {
@@ -316,17 +316,17 @@ class PhoneticContractionProcessor:
             'ɪ': 'ih', 'i': 'ee', 'ɛ': 'eh', 'æ': 'ae', 'ɑ': 'ah', 'ɔ': 'aw',
             'ʊ': 'uh', 'u': 'oo', 'ʌ': 'uh', 'ə': 'uh', 'ɜ': 'er', 'aɪ': 'eye',
             'aʊ': 'ow', 'ɔɪ': 'oy', 'eɪ': 'ay', 'oʊ': 'oh',
-            
-            # Consonants  
+
+            # Consonants
             'p': 'p', 'b': 'b', 't': 't', 'd': 'd', 'k': 'k', 'g': 'g',
             'f': 'f', 'v': 'v', 'θ': 'th', 'ð': 'th', 's': 's', 'z': 'z',
             'ʃ': 'sh', 'ʒ': 'zh', 'h': 'h', 'm': 'm', 'n': 'n', 'ŋ': 'ng',
             'l': 'l', 'r': 'r', 'w': 'w', 'j': 'y',
-            
+
             # Affricates
             'tʃ': 'ch', 'dʒ': 'j'
         }
-    
+
     def _load_context_patterns(self) -> Dict[str, List[str]]:
         """Load context patterns for context-sensitive contractions"""
         return {
@@ -336,28 +336,28 @@ class PhoneticContractionProcessor:
                 r'\b\w+\'d\s+(already|just|never|ever|once|twice)',
                 r'\b\w+\'d\s+(not|n\'t)',
             ],
-            
-            # Patterns that suggest 's = "has" vs "is"  
+
+            # Patterns that suggest 's = "has" vs "is"
             'has_context': [
                 r'\b\w+\'s\s+(been|done|seen|gone|come|taken|given|written|spoken)',
                 r'\b\w+\'s\s+(already|just|never|ever|once|twice)',
                 r'\b\w+\'s\s+(not|n\'t)',
             ]
         }
-    
+
     def _compile_patterns(self):
         """Compile regex patterns for efficiency"""
         # Create pattern for all contractions (case-insensitive) with capturing group
         contraction_words = '|'.join(re.escape(word) for word in self.contraction_fixes.keys())
         self.contraction_pattern = re.compile(rf'\b({contraction_words})\b', re.IGNORECASE)
-        
+
         # Compile context patterns
         self.compiled_context_patterns = {}
         for context_type, patterns in self.context_patterns.items():
             self.compiled_context_patterns[context_type] = [
                 re.compile(pattern, re.IGNORECASE) for pattern in patterns
             ]
-    
+
     def process_contractions(self, text: str, mode: str = "phonetic_expansion") -> str:
         """
         Process contractions with phonetic awareness
@@ -382,7 +382,7 @@ class PhoneticContractionProcessor:
         else:
             logger.warning(f"Unknown mode {mode}, using phonetic_expansion")
             return self._phonetic_expansion(text)
-    
+
     def _phonetic_expansion(self, text: str) -> str:
         """Expand contractions with phonetic guidance"""
         # Sort by priority (higher first) to handle overlapping patterns
@@ -421,7 +421,7 @@ class PhoneticContractionProcessor:
             text = pattern.sub(replacer, text)
 
         return text
-    
+
     def _simple_expansion(self, text: str) -> str:
         """Simple contraction expansion without phonetic processing"""
         def replace_contraction(match):
@@ -445,7 +445,7 @@ class PhoneticContractionProcessor:
             return expanded
 
         return self.contraction_pattern.sub(replace_contraction, text)
-    
+
     def _phonetic_only(self, text: str) -> str:
         """Apply phonetic representations without expansion"""
         def replace_contraction(match):
@@ -464,11 +464,11 @@ class PhoneticContractionProcessor:
             return phonetic
 
         return self.contraction_pattern.sub(replace_contraction, text)
-    
+
     def _resolve_context_sensitive(self, contraction: str, full_text: str, fix: ContractionFix) -> str:
         """Resolve context-sensitive contractions like 'd and 's"""
         contraction_lower = contraction.lower()
-        
+
         # Handle 'd contractions (had vs would)
         if contraction_lower.endswith("'d"):
             for pattern in self.compiled_context_patterns.get('had_context', []):
@@ -476,10 +476,10 @@ class PhoneticContractionProcessor:
                     # Context suggests "had"
                     base = contraction_lower[:-2]  # Remove 'd
                     return f"{base} had"
-            
+
             # Default to "would"
             return fix.expanded
-        
+
         # Handle 's contractions (has vs is)
         elif contraction_lower.endswith("'s"):
             for pattern in self.compiled_context_patterns.get('has_context', []):
@@ -487,12 +487,12 @@ class PhoneticContractionProcessor:
                     # Context suggests "has"
                     base = contraction_lower[:-2]  # Remove 's
                     return f"{base} has"
-            
+
             # Default to "is"
             return fix.expanded
-        
+
         return fix.expanded
-    
+
     def analyze_contractions(self, text: str) -> Dict[str, any]:
         """Analyze text for contraction processing opportunities"""
         analysis = {
@@ -501,36 +501,36 @@ class PhoneticContractionProcessor:
             'context_sensitive_contractions': [],
             'phonetic_issues': []
         }
-        
+
         # Find all contractions
         matches = self.contraction_pattern.finditer(text)
         for match in matches:
             contraction = match.group(1).lower()
             analysis['contractions_found'].append(contraction)
-            
+
             if contraction in self.contraction_fixes:
                 fix = self.contraction_fixes[contraction]
-                
+
                 if fix.priority >= 10:
                     analysis['problematic_contractions'].append(contraction)
-                
+
                 if fix.context_sensitive:
                     analysis['context_sensitive_contractions'].append(contraction)
-        
+
         return analysis
-    
+
     def get_phonetic_representation(self, contraction: str) -> Optional[str]:
         """Get phonetic representation of a contraction"""
         contraction_lower = contraction.lower()
-        
+
         if contraction_lower not in self.contraction_fixes:
             return None
-        
+
         fix = self.contraction_fixes[contraction_lower]
-        
+
         # Convert IPA to readable phonetics
         phonetic = fix.phonetic
         for ipa, readable in self.phonetic_mappings.items():
             phonetic = phonetic.replace(ipa, readable)
-        
+
         return phonetic

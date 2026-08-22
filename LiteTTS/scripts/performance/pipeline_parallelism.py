@@ -66,7 +66,7 @@ class PipelineConfiguration:
 
 class TTSPipelineStage:
     """Individual TTS pipeline stage"""
-    
+
     def __init__(self, stage_config: PipelineStage):
         self.config = stage_config
         self.input_queue = queue.Queue(maxsize=stage_config.input_queue_size)
@@ -84,12 +84,12 @@ class TTSPipelineStage:
         )
         self.running = False
         self.start_time = None
-    
+
     def start_workers(self):
         """Start worker threads for this stage"""
         self.running = True
         self.start_time = time.time()
-        
+
         for i in range(self.config.worker_count):
             worker = threading.Thread(
                 target=self._worker_loop,
@@ -98,26 +98,26 @@ class TTSPipelineStage:
             )
             worker.start()
             self.workers.append(worker)
-        
+
         logger.info(f"Started {self.config.worker_count} workers for stage: {self.config.stage_name}")
-    
+
     def stop_workers(self):
         """Stop worker threads"""
         self.running = False
-        
+
         # Add sentinel values to wake up workers
         for _ in range(self.config.worker_count):
             try:
                 self.input_queue.put(None, timeout=1.0)
             except queue.Full:
                 pass
-        
+
         # Wait for workers to finish
         for worker in self.workers:
             worker.join(timeout=5.0)
-        
+
         logger.info(f"Stopped workers for stage: {self.config.stage_name}")
-    
+
     def _worker_loop(self):
         """Main worker loop"""
         while self.running:
@@ -126,26 +126,26 @@ class TTSPipelineStage:
                 queue_wait_start = time.time()
                 item = self.input_queue.get(timeout=1.0)
                 queue_wait_time = time.time() - queue_wait_start
-                
+
                 if item is None:  # Sentinel value to stop
                     break
-                
+
                 # Process item
                 process_start = time.time()
                 result = self._process_item(item)
                 process_time = time.time() - process_start
-                
+
                 # Update metrics
                 self.metrics.total_processed += 1
                 self.metrics.processing_time += process_time
                 self.metrics.queue_wait_time += queue_wait_time
-                
+
                 # Put result in output queue
                 if result is not None:
                     self.output_queue.put(result, timeout=self.config.timeout_seconds)
-                
+
                 self.input_queue.task_done()
-                
+
             except queue.Empty:
                 continue
             except queue.Full:
@@ -154,32 +154,32 @@ class TTSPipelineStage:
             except Exception as e:
                 self.metrics.error_count += 1
                 logger.error(f"Error in stage {self.config.stage_name}: {e}")
-    
+
     def _process_item(self, item: Any) -> Any:
         """Process individual item (to be overridden by specific stages)"""
         # Simulate processing time
         time.sleep(0.001)
         return item
-    
+
     def get_metrics(self) -> PipelineMetrics:
         """Get current stage metrics"""
         if self.start_time:
             elapsed_time = time.time() - self.start_time
             if elapsed_time > 0:
                 self.metrics.throughput_per_second = self.metrics.total_processed / elapsed_time
-        
+
         return self.metrics
 
 class TextPreprocessingStage(TTSPipelineStage):
     """Text preprocessing pipeline stage"""
-    
+
     def _process_item(self, item: Dict[str, Any]) -> Dict[str, Any]:
         """Process text preprocessing"""
         text = item.get("text", "")
-        
+
         # Simulate text preprocessing
         processed_text = text.strip().lower()
-        
+
         return {
             **item,
             "processed_text": processed_text,
@@ -188,14 +188,14 @@ class TextPreprocessingStage(TTSPipelineStage):
 
 class PhonemizationStage(TTSPipelineStage):
     """Phonemization pipeline stage"""
-    
+
     def _process_item(self, item: Dict[str, Any]) -> Dict[str, Any]:
         """Process phonemization"""
         processed_text = item.get("processed_text", "")
-        
+
         # Simulate phonemization
         phonemes = f"/{processed_text.replace(' ', '/')}/".replace("//", "/")
-        
+
         return {
             **item,
             "phonemes": phonemes,
@@ -204,14 +204,14 @@ class PhonemizationStage(TTSPipelineStage):
 
 class AudioGenerationStage(TTSPipelineStage):
     """Audio generation pipeline stage"""
-    
+
     def _process_item(self, item: Dict[str, Any]) -> Dict[str, Any]:
         """Process audio generation"""
         phonemes = item.get("phonemes", "")
-        
+
         # Simulate audio generation (more CPU intensive)
         time.sleep(0.01)  # Simulate ONNX inference time
-        
+
         return {
             **item,
             "audio_data": f"audio_for_{phonemes}",
@@ -220,14 +220,14 @@ class AudioGenerationStage(TTSPipelineStage):
 
 class PostProcessingStage(TTSPipelineStage):
     """Post-processing pipeline stage"""
-    
+
     def _process_item(self, item: Dict[str, Any]) -> Dict[str, Any]:
         """Process post-processing"""
         audio_data = item.get("audio_data", "")
-        
+
         # Simulate post-processing
         processed_audio = f"processed_{audio_data}"
-        
+
         return {
             **item,
             "final_audio": processed_audio,
@@ -236,31 +236,31 @@ class PostProcessingStage(TTSPipelineStage):
 
 class PipelineParallelismManager:
     """Pipeline parallelism manager"""
-    
+
     def __init__(self):
         self.results_dir = Path("test_results/pipeline_parallelism")
         self.results_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # CPU information
         self.cpu_count = psutil.cpu_count()
         self.target_cpu_utilization = 0.92  # 92% target
-        
+
         # Pipeline stages
         self.stages = {}
         self.pipeline_config = None
-        
+
         # Monitoring
         self.monitoring_active = False
         self.monitor_thread = None
         self.cpu_history = []
-        
+
     def create_optimal_pipeline_config(self) -> PipelineConfiguration:
         """Create optimal pipeline configuration"""
         logger.info("Creating optimal pipeline configuration...")
-        
+
         # Calculate optimal worker distribution
         total_workers = max(4, int(self.cpu_count * 0.8))  # Use 80% of cores
-        
+
         # Stage configurations with different CPU requirements
         stage_configs = [
             PipelineStage(
@@ -304,7 +304,7 @@ class PipelineParallelismManager:
                 timeout_seconds=5.0
             )
         ]
-        
+
         config = PipelineConfiguration(
             enable_pipeline_parallelism=True,
             target_cpu_utilization=self.target_cpu_utilization,
@@ -316,16 +316,16 @@ class PipelineParallelismManager:
             adaptive_worker_scaling=True,
             stages=stage_configs
         )
-        
+
         logger.info(f"Created pipeline config with {total_workers} total workers across {len(stage_configs)} stages")
         return config
-    
+
     def initialize_pipeline(self, config: PipelineConfiguration):
         """Initialize pipeline with given configuration"""
         logger.info("Initializing pipeline...")
-        
+
         self.pipeline_config = config
-        
+
         # Create stage instances
         stage_classes = {
             "text_preprocessing": TextPreprocessingStage,
@@ -333,12 +333,12 @@ class PipelineParallelismManager:
             "audio_generation": AudioGenerationStage,
             "post_processing": PostProcessingStage
         }
-        
+
         for stage_config in config.stages:
             stage_class = stage_classes.get(stage_config.stage_function, TTSPipelineStage)
             stage = stage_class(stage_config)
             self.stages[stage_config.stage_name] = stage
-        
+
         # Connect stages
         stage_names = [s.stage_name for s in config.stages]
         for i in range(len(stage_names) - 1):
@@ -346,40 +346,40 @@ class PipelineParallelismManager:
             next_stage = self.stages[stage_names[i + 1]]
             # Output of current stage becomes input of next stage
             # This would be implemented with proper queue connections in production
-        
+
         logger.info(f"Initialized {len(self.stages)} pipeline stages")
-    
+
     def start_pipeline(self):
         """Start all pipeline stages"""
         logger.info("Starting pipeline...")
-        
+
         for stage in self.stages.values():
             stage.start_workers()
-        
+
         # Start monitoring
         self.start_cpu_monitoring()
-        
+
         logger.info("Pipeline started successfully")
-    
+
     def stop_pipeline(self):
         """Stop all pipeline stages"""
         logger.info("Stopping pipeline...")
-        
+
         # Stop monitoring
         self.stop_cpu_monitoring()
-        
+
         # Stop stages in reverse order
         stage_names = list(self.stages.keys())
         for stage_name in reversed(stage_names):
             self.stages[stage_name].stop_workers()
-        
+
         logger.info("Pipeline stopped successfully")
-    
+
     def start_cpu_monitoring(self):
         """Start CPU utilization monitoring"""
         self.monitoring_active = True
         self.cpu_history = []
-        
+
         def monitor_loop():
             while self.monitoring_active:
                 try:
@@ -390,22 +390,22 @@ class PipelineParallelismManager:
                     })
                 except Exception as e:
                     logger.warning(f"CPU monitoring error: {e}")
-        
+
         self.monitor_thread = threading.Thread(target=monitor_loop, daemon=True)
         self.monitor_thread.start()
         logger.info("CPU monitoring started")
-    
+
     def stop_cpu_monitoring(self) -> Dict[str, float]:
         """Stop CPU monitoring and return statistics"""
         self.monitoring_active = False
         if self.monitor_thread:
             self.monitor_thread.join(timeout=5.0)
-        
+
         if not self.cpu_history:
             return {"error": "No monitoring data"}
-        
+
         cpu_values = [entry["cpu_percent"] for entry in self.cpu_history]
-        
+
         stats = {
             "avg_cpu_utilization": sum(cpu_values) / len(cpu_values),
             "max_cpu_utilization": max(cpu_values),
@@ -414,16 +414,16 @@ class PipelineParallelismManager:
             "target_achieved": (sum(cpu_values) / len(cpu_values)) >= (self.target_cpu_utilization * 100 * 0.9),
             "monitoring_duration": self.cpu_history[-1]["timestamp"] - self.cpu_history[0]["timestamp"]
         }
-        
+
         logger.info("CPU monitoring stopped")
         return stats
-    
+
     def simulate_pipeline_workload(self, num_requests: int = 100) -> Dict[str, Any]:
         """Simulate pipeline workload"""
         logger.info(f"Simulating pipeline workload with {num_requests} requests...")
-        
+
         start_time = time.time()
-        
+
         # Generate test requests
         test_requests = []
         for i in range(num_requests):
@@ -433,14 +433,14 @@ class PipelineParallelismManager:
                 "voice": "af_heart",
                 "timestamp": time.time()
             })
-        
+
         # Process requests through pipeline (simulation)
         processed_requests = []
-        
+
         for request in test_requests:
             # Simulate pipeline processing
             current_item = request
-            
+
             for stage_name in self.stages.keys():
                 stage = self.stages[stage_name]
                 # Simulate stage processing
@@ -452,14 +452,14 @@ class PipelineParallelismManager:
                     current_item = AudioGenerationStage(stage.config)._process_item(current_item)
                 elif stage_name == "post_processing":
                     current_item = PostProcessingStage(stage.config)._process_item(current_item)
-                
+
                 # Update stage metrics
                 stage.metrics.total_processed += 1
-            
+
             processed_requests.append(current_item)
-        
+
         total_time = time.time() - start_time
-        
+
         workload_stats = {
             "total_requests": num_requests,
             "processed_requests": len(processed_requests),
@@ -467,39 +467,39 @@ class PipelineParallelismManager:
             "requests_per_second": len(processed_requests) / total_time if total_time > 0 else 0,
             "avg_request_time": total_time / len(processed_requests) if processed_requests else 0
         }
-        
+
         logger.info(f"Workload simulation completed: {workload_stats['requests_per_second']:.2f} req/s")
         return workload_stats
-    
+
     def run_comprehensive_pipeline_test(self, test_duration: int = 60) -> Dict[str, Any]:
         """Run comprehensive pipeline parallelism test"""
         logger.info("Starting comprehensive pipeline parallelism test...")
-        
+
         # Create optimal configuration
         config = self.create_optimal_pipeline_config()
-        
+
         # Initialize pipeline
         self.initialize_pipeline(config)
-        
+
         # Start pipeline
         self.start_pipeline()
-        
+
         # Run workload simulation
         workload_stats = self.simulate_pipeline_workload(num_requests=200)
-        
+
         # Let pipeline run for test duration
         logger.info(f"Running pipeline for {test_duration} seconds...")
         time.sleep(test_duration)
-        
+
         # Collect metrics
         stage_metrics = {}
         for stage_name, stage in self.stages.items():
             stage_metrics[stage_name] = asdict(stage.get_metrics())
-        
+
         # Stop pipeline
         cpu_stats = self.stop_cpu_monitoring()
         self.stop_pipeline()
-        
+
         # Compile results
         results = {
             "test_timestamp": time.time(),
@@ -511,12 +511,12 @@ class PipelineParallelismManager:
             "performance_analysis": self._analyze_pipeline_performance(stage_metrics, cpu_stats, workload_stats),
             "recommendations": self._generate_pipeline_recommendations(config, stage_metrics, cpu_stats)
         }
-        
+
         # Save results
         results_file = self.results_dir / f"pipeline_parallelism_results_{int(time.time())}.json"
         with open(results_file, 'w') as f:
             json.dump(results, f, indent=2, default=str)
-        
+
         logger.info(f"Pipeline test completed. Results saved to: {results_file}")
         return results
 

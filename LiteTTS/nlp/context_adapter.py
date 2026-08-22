@@ -73,14 +73,14 @@ class AdaptationParameters:
 
 class ContextAdapter:
     """Dynamic context-aware synthesis parameter adaptation"""
-    
+
     def __init__(self):
         """Initialize context adapter with adaptation rules"""
         self.register_adaptations = self._load_register_adaptations()
         self.content_adaptations = self._load_content_adaptations()
         self.audience_adaptations = self._load_audience_adaptations()
         self.environment_adaptations = self._load_environment_adaptations()
-        
+
     def _load_register_adaptations(self) -> Dict[SpeechRegister, Dict[str, float]]:
         """Load speech register adaptation parameters"""
         return {
@@ -130,7 +130,7 @@ class ContextAdapter:
                 "emphasis_strength": 0.9  # Professional emphasis
             }
         }
-    
+
     def _load_content_adaptations(self) -> Dict[ContentType, Dict[str, float]]:
         """Load content type adaptation parameters"""
         return {
@@ -170,7 +170,7 @@ class ContextAdapter:
                 "emphasis_strength": 1.0  # Factual emphasis
             }
         }
-    
+
     def _load_audience_adaptations(self) -> Dict[AudienceType, Dict[str, float]]:
         """Load audience-specific adaptation parameters"""
         return {
@@ -205,7 +205,7 @@ class ContextAdapter:
                 "encouragement_tone": 1.1  # Supportive
             }
         }
-    
+
     def _load_environment_adaptations(self) -> Dict[str, Dict[str, float]]:
         """Load environment-specific adaptations"""
         return {
@@ -232,25 +232,25 @@ class ContextAdapter:
                 "intimacy_boost": 1.2  # Enhanced intimacy
             }
         }
-    
+
     def analyze_context(self, text: str, metadata: Optional[Dict[str, Any]] = None) -> SpeechContext:
         """Analyze text and metadata to determine speech context"""
-        
+
         # Extract context clues from text
         register = self._detect_speech_register(text)
         content_type = self._detect_content_type(text)
         audience = self._detect_audience_type(text, metadata)
-        
+
         # Analyze contextual factors
         urgency = self._analyze_urgency(text)
         formality = self._analyze_formality(text)
         intimacy = self._analyze_intimacy(text)
         complexity = self._analyze_technical_complexity(text)
-        
+
         # Extract metadata
         time_constraints = metadata.get("time_limit") if metadata else None
         environment = metadata.get("environment", "quiet") if metadata else "quiet"
-        
+
         return SpeechContext(
             register=register,
             content_type=content_type,
@@ -263,11 +263,11 @@ class ContextAdapter:
             time_constraints=time_constraints,
             environment=environment
         )
-    
+
     def _detect_speech_register(self, text: str) -> SpeechRegister:
         """Detect speech register from text content"""
         text_lower = text.lower()
-        
+
         # Formal indicators
         formal_indicators = [
             r'\b(therefore|furthermore|consequently|nevertheless)\b',
@@ -275,54 +275,54 @@ class ContextAdapter:
             r'\b(regarding|concerning|pursuant)\b',
             r'\b(ladies and gentlemen|distinguished)\b'
         ]
-        
+
         # Casual indicators
         casual_indicators = [
             r'\b(yeah|yep|nope|gonna|wanna|gotta)\b',
             r'\b(hey|hi|sup|cool|awesome)\b',
             r'\b(like|you know|I mean)\b'
         ]
-        
+
         # Professional indicators
         professional_indicators = [
             r'\b(analysis|strategy|implementation|optimization)\b',
             r'\b(meeting|presentation|report|proposal)\b',
             r'\b(client|customer|stakeholder)\b'
         ]
-        
+
         formal_score = sum(len(re.findall(pattern, text_lower)) for pattern in formal_indicators)
         casual_score = sum(len(re.findall(pattern, text_lower)) for pattern in casual_indicators)
         professional_score = sum(len(re.findall(pattern, text_lower)) for pattern in professional_indicators)
-        
+
         if professional_score > max(formal_score, casual_score):
             return SpeechRegister.PROFESSIONAL
         elif formal_score > casual_score:
             return SpeechRegister.FORMAL
         else:
             return SpeechRegister.CASUAL
-    
+
     def _detect_content_type(self, text: str) -> ContentType:
         """Detect content type from text structure and content"""
         text_lower = text.lower()
-        
+
         # Conversational indicators
         if re.search(r'\b(how are you|what do you think|tell me)\b', text_lower):
             return ContentType.CONVERSATIONAL
-        
+
         # Narrative indicators
         if re.search(r'\b(once upon|story|character|plot)\b', text_lower):
             return ContentType.NARRATIVE
-        
+
         # Instructional indicators
         if re.search(r'\b(step|first|next|then|finally|how to)\b', text_lower):
             return ContentType.INSTRUCTIONAL
-        
+
         # Presentational indicators
         if re.search(r'\b(today|presentation|agenda|overview)\b', text_lower):
             return ContentType.PRESENTATIONAL
-        
+
         return ContentType.INFORMATIONAL
-    
+
     def _detect_audience_type(self, text: str, metadata: Optional[Dict[str, Any]]) -> AudienceType:
         """Detect target audience from text and metadata"""
         if metadata and "audience" in metadata:
@@ -330,19 +330,19 @@ class ContextAdapter:
             for audience_type in AudienceType:
                 if audience_type.value in audience_str:
                     return audience_type
-        
+
         text_lower = text.lower()
-        
+
         # Children indicators
         if re.search(r'\b(kids|children|fun|play|learn)\b', text_lower):
             return AudienceType.CHILDREN
-        
+
         # Professional indicators
         if re.search(r'\b(business|corporate|professional|industry)\b', text_lower):
             return AudienceType.PROFESSIONALS
-        
+
         return AudienceType.GENERAL
-    
+
     def _analyze_urgency(self, text: str) -> float:
         """Analyze urgency level from text"""
         urgency_indicators = [
@@ -352,45 +352,45 @@ class ContextAdapter:
             (r'!{2,}', 0.8),
             (r'\b(deadline|time-sensitive)\b', 0.9)
         ]
-        
+
         max_urgency = 0.0
         for pattern, urgency in urgency_indicators:
             if re.search(pattern, text.lower()):
                 max_urgency = max(max_urgency, urgency)
-        
+
         return max_urgency
-    
+
     def _analyze_formality(self, text: str) -> float:
         """Analyze formality level from text"""
         formal_score = 0.0
         informal_score = 0.0
-        
+
         # Formal indicators
         formal_patterns = [
             r'\b(please|thank you|sincerely|respectfully)\b',
             r'\b(Mr\.|Mrs\.|Dr\.|Professor)\b',
             r'\b(would|could|might|shall)\b'
         ]
-        
+
         # Informal indicators
         informal_patterns = [
             r'\b(hey|hi|yeah|nope|gonna)\b',
             r'\b(cool|awesome|great|nice)\b',
             r"[.!?]{2,}"  # Multiple punctuation
         ]
-        
+
         for pattern in formal_patterns:
             formal_score += len(re.findall(pattern, text.lower()))
-        
+
         for pattern in informal_patterns:
             informal_score += len(re.findall(pattern, text.lower()))
-        
+
         total_score = formal_score + informal_score
         if total_score == 0:
             return 0.5  # Neutral
-        
+
         return formal_score / total_score
-    
+
     def _analyze_intimacy(self, text: str) -> float:
         """Analyze intimacy level from text"""
         intimate_indicators = [
@@ -398,15 +398,15 @@ class ContextAdapter:
             r'\b(personal|private|between us)\b',
             r'\b(feel|emotion|heart)\b'
         ]
-        
+
         intimacy_score = 0.0
         for pattern in intimate_indicators:
             intimacy_score += len(re.findall(pattern, text.lower()))
-        
+
         # Normalize by text length
         words = len(text.split())
         return min(intimacy_score / max(words, 1) * 10, 1.0)
-    
+
     def _analyze_technical_complexity(self, text: str) -> float:
         """Analyze technical complexity from text"""
         technical_indicators = [
@@ -415,18 +415,18 @@ class ContextAdapter:
             r'\d+\.\d+',       # Numbers with decimals
             r'\b(algorithm|implementation|optimization|configuration)\b'
         ]
-        
+
         complexity_score = 0.0
         for pattern in technical_indicators:
             complexity_score += len(re.findall(pattern, text))
-        
+
         # Normalize by text length
         words = len(text.split())
         return min(complexity_score / max(words, 1) * 5, 1.0)
-    
+
     def adapt_synthesis_parameters(self, context: SpeechContext) -> AdaptationParameters:
         """Generate adapted synthesis parameters for given context"""
-        
+
         # Start with base parameters
         params = AdaptationParameters(
             speech_rate=1.0,
@@ -439,32 +439,32 @@ class ContextAdapter:
             emphasis_strength=1.0,
             voice_quality_adjustments={}
         )
-        
+
         # Apply register adaptations
         if context.register in self.register_adaptations:
             self._apply_adaptations(params, self.register_adaptations[context.register])
-        
+
         # Apply content type adaptations
         if context.content_type in self.content_adaptations:
             self._apply_adaptations(params, self.content_adaptations[context.content_type])
-        
+
         # Apply audience adaptations
         if context.audience in self.audience_adaptations:
             self._apply_adaptations(params, self.audience_adaptations[context.audience])
-        
+
         # Apply environment adaptations
         if context.environment in self.environment_adaptations:
             self._apply_adaptations(params, self.environment_adaptations[context.environment])
-        
+
         # Apply emotional adaptations
         if context.emotional_state:
             self._apply_emotional_adaptations(params, context.emotional_state)
-        
+
         # Apply contextual factor adjustments
         self._apply_contextual_adjustments(params, context)
-        
+
         return params
-    
+
     def _apply_adaptations(self, params: AdaptationParameters, adaptations: Dict[str, float]):
         """Apply adaptation values to parameters"""
         for key, value in adaptations.items():
@@ -472,7 +472,7 @@ class ContextAdapter:
                 current_value = getattr(params, key)
                 if isinstance(current_value, float):
                     # Multiplicative adaptation for most parameters
-                    if key in ["speech_rate", "pitch_range", "volume_level", 
+                    if key in ["speech_rate", "pitch_range", "volume_level",
                               "pause_duration_multiplier", "emphasis_strength"]:
                         setattr(params, key, current_value * value)
                     # Additive adaptation for adjustments
@@ -481,8 +481,8 @@ class ContextAdapter:
                     # Direct assignment for others
                     else:
                         setattr(params, key, value)
-    
-    def _apply_emotional_adaptations(self, params: AdaptationParameters, 
+
+    def _apply_emotional_adaptations(self, params: AdaptationParameters,
                                    emotion: EmotionProfile):
         """Apply emotional adaptations to parameters"""
         if emotion.prosodic_parameters:
@@ -495,33 +495,33 @@ class ContextAdapter:
                     params.speech_rate *= (1.0 + (value - 1.0) * emotion.intensity)
                 elif key == "energy":
                     params.volume_level *= (1.0 + (value - 1.0) * emotion.intensity)
-    
-    def _apply_contextual_adjustments(self, params: AdaptationParameters, 
+
+    def _apply_contextual_adjustments(self, params: AdaptationParameters,
                                     context: SpeechContext):
         """Apply contextual factor adjustments"""
-        
+
         # Urgency adjustments
         if context.urgency_level > 0.5:
             params.speech_rate *= (1.0 + context.urgency_level * 0.2)
             params.emphasis_strength *= (1.0 + context.urgency_level * 0.3)
-        
+
         # Formality adjustments
         formality_factor = context.formality_level
-        params.articulation_clarity = max(params.articulation_clarity, 
+        params.articulation_clarity = max(params.articulation_clarity,
                                         0.8 + formality_factor * 0.2)
         params.emotional_expressiveness *= (1.0 - formality_factor * 0.3)
-        
+
         # Intimacy adjustments
         if context.intimacy_level > 0.5:
             params.volume_level *= (1.0 - context.intimacy_level * 0.2)
             params.emotional_expressiveness *= (1.0 + context.intimacy_level * 0.3)
-        
+
         # Technical complexity adjustments
         if context.technical_complexity > 0.5:
             params.speech_rate *= (1.0 - context.technical_complexity * 0.2)
             params.pause_duration_multiplier *= (1.0 + context.technical_complexity * 0.3)
             params.articulation_clarity = max(params.articulation_clarity, 0.95)
-        
+
         # Time constraint adjustments
         if context.time_constraints and context.time_constraints < 30:
             # Speed up for time constraints

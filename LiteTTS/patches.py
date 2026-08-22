@@ -59,10 +59,10 @@ def patch_kokoro_onnx():
     try:
         import kokoro_onnx
         import onnxruntime as ort
-        
+
         # Store original __init__ method to add ONNX optimizations
         original_init = kokoro_onnx.Kokoro.__init__
-        
+
         def patched_init(self, model_path, voices_path):
             """Patched __init__ with aggressive ONNX Runtime optimizations"""
             # Apply model-level optimizations
@@ -179,7 +179,7 @@ def patch_kokoro_onnx():
                         model_optimizer.warm_up_model(self.sess, first_voice)
             except Exception as e:
                 logger.warning(f"Model warm-up failed: {e}")
-        
+
         # Store original _create_audio method
         original_create_audio = kokoro_onnx.Kokoro._create_audio
 
@@ -211,7 +211,7 @@ def patch_kokoro_onnx():
             if len(phonemes) > MAX_PHONEME_LENGTH:
                 log.warning(f"Phonemes are too long, truncating to {MAX_PHONEME_LENGTH} phonemes")
             phonemes = phonemes[:MAX_PHONEME_LENGTH]
-            
+
             import time
             start_t = time.time()
             tokens = np.array(self.tokenizer.tokenize(phonemes), dtype=np.int64)
@@ -236,13 +236,13 @@ def patch_kokoro_onnx():
                 style_vector = voice[voice_size - 1]  # Use the last available style vector
             else:
                 style_vector = voice[token_length]
-            
+
             # FIX: Ensure style vector has correct shape [1, 256] for ONNX model
             if style_vector.ndim == 1:
                 style_vector = style_vector.reshape(1, -1)  # Add batch dimension
-            
+
             tokens = [[0, *tokens, 0]]
-            
+
             # Optimize input preparation
             if "input_ids" in [i.name for i in self.sess.get_inputs()]:
                 # Newer export versions
@@ -260,15 +260,15 @@ def patch_kokoro_onnx():
 
             # Run inference with optimized session
             audio = self.sess.run(None, inputs)[0]
-            
+
             # Ensure audio is properly flattened for quantized models
             if audio.ndim > 1:
                 audio = audio.flatten()
-            
+
             # Ensure audio is contiguous in memory for better performance
             if not audio.flags['C_CONTIGUOUS']:
                 audio = np.ascontiguousarray(audio)
-                
+
             SAMPLE_RATE = 24000  # From kokoro_onnx constants
             audio_duration = len(audio) / SAMPLE_RATE
             create_duration = time.time() - start_t
@@ -277,14 +277,14 @@ def patch_kokoro_onnx():
                 f"Created audio in length of {audio_duration:.2f}s for {len(phonemes)} phonemes in {create_duration:.2f}s (RTF: {rtf:.2f})"
             )
             return audio, SAMPLE_RATE
-        
+
         # Apply the patches
         kokoro_onnx.Kokoro.__init__ = patched_init
         kokoro_onnx.Kokoro._create_audio = patched_create_audio
-        
+
         logger.info("✅ Applied kokoro_onnx performance optimization patches")
         return True
-        
+
     except Exception as e:
         logger.error(f"❌ Failed to apply kokoro_onnx patches: {e}")
         return False

@@ -33,18 +33,18 @@ class AudioQualityMetrics:
     audio_duration: float = 0.0  # Duration of generated audio
     rtf: float = 0.0  # Real-time factor
     confidence_score: float = 0.0  # Overall confidence in metrics
-    
+
     # Detailed metrics
     pitch_variance: float = 0.0
     speaking_rate: float = 0.0  # Words per minute
     silence_ratio: float = 0.0
     spectral_quality: float = 0.0
-    
+
     # Test-specific metrics
     symbol_processing_accuracy: float = 0.0
     currency_processing_accuracy: float = 0.0
     datetime_processing_accuracy: float = 0.0
-    
+
     # Metadata
     voice_model: str = ""
     text_length: int = 0
@@ -62,13 +62,13 @@ class AudioTestCase:
     test_category: str = "general"
     description: str = ""
     priority: str = "normal"  # low, normal, high, critical
-    
+
     # Expected quality thresholds
     min_mos_score: float = 3.0
     max_wer: float = 0.1
     min_pronunciation_accuracy: float = 0.9
     max_rtf: float = 0.25
-    
+
     # Test-specific expectations
     expected_symbols: List[str] = field(default_factory=list)
     expected_pronunciations: Dict[str, str] = field(default_factory=dict)
@@ -78,19 +78,19 @@ class AudioQualityTester:
     """
     Comprehensive automated audio quality testing framework
     """
-    
+
     def __init__(self, config: Optional[Dict] = None):
         self.config = config or {}
         self.audio_config = self.config.get("audio_quality_testing", {})
-        
+
         # API configuration
         self.api_base_url = self.audio_config.get("api_base_url", "http://localhost:8354")
         self.api_timeout = self.audio_config.get("api_timeout", 30)
-        
+
         # External services configuration
         self.asr_config = self.audio_config.get("asr_services", {})
         self.enable_external_asr = self.asr_config.get("enabled", False)
-        
+
         # Quality thresholds
         self.quality_thresholds = self.audio_config.get("quality_thresholds", {
             "min_mos_score": 3.0,
@@ -99,32 +99,32 @@ class AudioQualityTester:
             "max_rtf": 0.25,
             "min_prosody_score": 0.7
         })
-        
+
         # Performance settings
         self.max_concurrent_tests = self.audio_config.get("max_concurrent_tests", 3)
         self.cache_enabled = self.audio_config.get("cache_enabled", True)
         self.cache_dir = Path(self.audio_config.get("cache_dir", "cache/audio_quality"))
-        
+
         # Initialize components
         self._init_cache_directory()
         self._init_external_services()
-        
+
         # Test results storage
         self.test_results: List[Tuple[AudioTestCase, AudioQualityMetrics]] = []
         self.baseline_metrics: Optional[Dict[str, AudioQualityMetrics]] = None
-        
+
     def _init_cache_directory(self):
         """Initialize cache directory for audio files and results"""
         if self.cache_enabled:
             self.cache_dir.mkdir(parents=True, exist_ok=True)
             logger.info(f"Audio quality testing cache directory: {self.cache_dir}")
-    
+
     def _init_external_services(self):
         """Initialize external ASR and analysis services"""
         if self.enable_external_asr:
             # Initialize ASR service clients based on configuration
             self.asr_services = {}
-            
+
             # Deepgram configuration
             if self.asr_config.get("deepgram", {}).get("enabled", False):
                 try:
@@ -136,7 +136,7 @@ class AudioQualityTester:
                     logger.info("Deepgram ASR service initialized")
                 except ImportError:
                     logger.warning("Deepgram client not available")
-            
+
             # Azure Speech configuration
             if self.asr_config.get("azure_speech", {}).get("enabled", False):
                 try:
@@ -149,7 +149,7 @@ class AudioQualityTester:
                     logger.info("Azure Speech ASR service initialized")
                 except ImportError:
                     logger.warning("Azure Speech client not available")
-            
+
             # Google Speech-to-Text configuration
             if self.asr_config.get("google_stt", {}).get("enabled", False):
                 try:
@@ -164,7 +164,7 @@ class AudioQualityTester:
         else:
             self.asr_services = {}
             logger.info("External ASR services disabled")
-    
+
     async def generate_audio(self, test_case: AudioTestCase) -> Tuple[bytes, float]:
         """
         Generate audio using the Kokoro TTS API
@@ -173,7 +173,7 @@ class AudioQualityTester:
             Tuple of (audio_bytes, processing_time)
         """
         import aiohttp
-        
+
         payload = {
             "model": "kokoro",
             "input": test_case.input_text,
@@ -181,9 +181,9 @@ class AudioQualityTester:
             "response_format": "wav",  # Use WAV for better analysis
             "speed": 1.0
         }
-        
+
         start_time = time.perf_counter()
-        
+
         async with aiohttp.ClientSession() as session:
             async with session.post(
                 f"{self.api_base_url}/v1/audio/speech",
@@ -197,7 +197,7 @@ class AudioQualityTester:
                 else:
                     error_text = await response.text()
                     raise Exception(f"TTS API error {response.status}: {error_text}")
-    
+
     def analyze_audio_properties(self, audio_data: bytes) -> Dict[str, float]:
         """
         Analyze basic audio properties (duration, spectral quality, etc.)
@@ -252,7 +252,7 @@ class AudioQualityTester:
                 "sample_rate": 22050,
                 "frames": len(audio_data) // 2
             }
-    
+
     async def transcribe_audio(self, audio_data: bytes, service: str = "auto") -> Tuple[str, float]:
         """
         Transcribe audio using external ASR services
@@ -264,15 +264,15 @@ class AudioQualityTester:
             # Fallback: return empty transcription
             logger.warning("External ASR not available, skipping transcription")
             return "", 0.0
-        
+
         # Select ASR service
         if service == "auto":
             # Use the first available service
             service = next(iter(self.asr_services.keys()))
-        
+
         if service not in self.asr_services:
             raise ValueError(f"ASR service '{service}' not available")
-        
+
         try:
             asr_client = self.asr_services[service]
             transcription, confidence = await asr_client.transcribe(audio_data)
@@ -280,7 +280,7 @@ class AudioQualityTester:
         except Exception as e:
             logger.error(f"Error transcribing audio with {service}: {e}")
             return "", 0.0
-    
+
     def calculate_wer(self, reference: str, hypothesis: str) -> float:
         """
         Calculate Word Error Rate between reference and hypothesis text
@@ -288,25 +288,25 @@ class AudioQualityTester:
         # Simple WER calculation (can be enhanced with more sophisticated algorithms)
         ref_words = reference.lower().split()
         hyp_words = hypothesis.lower().split()
-        
+
         if not ref_words:
             return 0.0 if not hyp_words else 1.0
-        
+
         # Simple edit distance calculation
         d = [[0] * (len(hyp_words) + 1) for _ in range(len(ref_words) + 1)]
-        
+
         for i in range(len(ref_words) + 1):
             d[i][0] = i
         for j in range(len(hyp_words) + 1):
             d[0][j] = j
-        
+
         for i in range(1, len(ref_words) + 1):
             for j in range(1, len(hyp_words) + 1):
                 if ref_words[i-1] == hyp_words[j-1]:
                     d[i][j] = d[i-1][j-1]
                 else:
                     d[i][j] = min(d[i-1][j], d[i][j-1], d[i-1][j-1]) + 1
-        
+
         return d[len(ref_words)][len(hyp_words)] / len(ref_words)
 
     def predict_mos_score(self, audio_data: bytes, text: str) -> float:

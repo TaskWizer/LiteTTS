@@ -26,21 +26,21 @@ class WorkerConfig:
     worker_timeout: float = 30.0
     worker_memory_limit_mb: int = 2048
     worker_cpu_limit_percent: float = 90.0
-    
+
     # Health monitoring
     health_check_interval: float = 10.0
     memory_check_interval: float = 5.0
     restart_threshold_failures: int = 3
-    
+
     # Graceful shutdown
     graceful_shutdown_timeout: float = 30.0
     force_shutdown_timeout: float = 10.0
-    
+
     # Resource management
     enable_memory_monitoring: bool = True
     enable_cpu_monitoring: bool = True
     enable_auto_restart: bool = True
-    
+
     # Uvicorn specific
     uvicorn_backlog: int = 2048
     uvicorn_limit_concurrency: int = 1000
@@ -52,7 +52,7 @@ class WorkerManager:
     """
     Manages Uvicorn worker processes with stability monitoring
     """
-    
+
     def __init__(self, config: Optional[WorkerConfig] = None):
         self.config = config or WorkerConfig()
         self.workers: Dict[int, Dict[str, Any]] = {}
@@ -79,7 +79,7 @@ class WorkerManager:
         self._setup_signal_handlers()
 
         logger.info("Worker manager initialized")
-    
+
     def _setup_signal_handlers(self):
         """Setup signal handlers for graceful shutdown with protection against recursive calls"""
         def signal_handler(signum, frame):
@@ -119,33 +119,33 @@ class WorkerManager:
             except (OSError, ValueError):
                 # Some signals may not be available on all platforms
                 pass
-    
+
     def get_optimal_worker_count(self) -> int:
         """Calculate optimal worker count based on system resources"""
         try:
             # Get system information
             cpu_count = os.cpu_count() or 1
             memory_gb = psutil.virtual_memory().total / (1024**3)
-            
+
             # Conservative worker calculation
             # - Leave at least 1 CPU core for system
             # - Ensure each worker has enough memory
             max_workers_by_cpu = max(1, cpu_count - 1)
             max_workers_by_memory = max(1, int(memory_gb * 1024 / self.config.worker_memory_limit_mb))
-            
+
             # Use the more conservative limit
             optimal_workers = min(max_workers_by_cpu, max_workers_by_memory, self.config.max_workers)
-            
+
             logger.info(f"Optimal worker count: {optimal_workers} "
                        f"(CPU: {max_workers_by_cpu}, Memory: {max_workers_by_memory}, "
                        f"Config limit: {self.config.max_workers})")
-            
+
             return optimal_workers
-            
+
         except Exception as e:
             logger.warning(f"Failed to calculate optimal worker count: {e}")
             return 1
-    
+
     def get_uvicorn_config(self) -> Dict[str, Any]:
         """Get optimized Uvicorn configuration for stable workers"""
         return {
@@ -154,31 +154,31 @@ class WorkerManager:
             "worker_class": "uvicorn.workers.UvicornWorker",
             "max_requests": self.config.uvicorn_limit_max_requests,
             "max_requests_jitter": self.config.uvicorn_limit_max_requests // 10,
-            
+
             # Connection settings
             "backlog": self.config.uvicorn_backlog,
             "limit_concurrency": self.config.uvicorn_limit_concurrency,
-            
+
             # Timeout settings
             "timeout": self.config.worker_timeout,
             "keep_alive": self.config.uvicorn_timeout_keep_alive,
             "graceful_timeout": self.config.uvicorn_timeout_graceful_shutdown,
-            
+
             # Performance settings
             "preload_app": True,  # Preload for better memory efficiency
             "worker_connections": 1000,
             "max_worker_connections": 1000,
-            
+
             # Logging
             "access_log": True,
             "error_log": True,
             "capture_output": True,
-            
+
             # Security
             "server_header": False,
             "date_header": False,
         }
-    
+
     def apply_worker_environment_variables(self):
         """Apply environment variables for worker stability"""
         worker_env_vars = {
@@ -188,68 +188,68 @@ class WorkerManager:
             "UVICORN_LIMIT_MAX_REQUESTS": str(self.config.uvicorn_limit_max_requests),
             "UVICORN_TIMEOUT_KEEP_ALIVE": str(self.config.uvicorn_timeout_keep_alive),
             "UVICORN_TIMEOUT_GRACEFUL_SHUTDOWN": str(self.config.uvicorn_timeout_graceful_shutdown),
-            
+
             # Memory management
             "MALLOC_ARENA_MAX": "4",
             "MALLOC_MMAP_THRESHOLD_": "131072",
             "MALLOC_TRIM_THRESHOLD_": "131072",
-            
+
             # Python optimization
             "PYTHONOPTIMIZE": "1",
             "PYTHONDONTWRITEBYTECODE": "1",
             "PYTHONUNBUFFERED": "1",
-            
+
             # Process management
             "WORKER_MEMORY_LIMIT_MB": str(self.config.worker_memory_limit_mb),
             "WORKER_CPU_LIMIT_PERCENT": str(self.config.worker_cpu_limit_percent),
         }
-        
+
         # Apply environment variables
         for key, value in worker_env_vars.items():
             if key not in os.environ:
                 os.environ[key] = value
-        
+
         logger.info(f"Applied {len(worker_env_vars)} worker environment variables")
-    
+
     def start_monitoring(self):
         """Start worker monitoring thread"""
         if self.monitoring_thread and self.monitoring_thread.is_alive():
             logger.warning("Worker monitoring already running")
             return
-        
+
         self.shutdown_event.clear()
         self.monitoring_thread = threading.Thread(target=self._monitoring_worker, daemon=True)
         self.monitoring_thread.start()
-        
+
         logger.info("Worker monitoring started")
-    
+
     def _monitoring_worker(self):
         """Background worker monitoring thread"""
         logger.info("Worker monitoring thread started")
-        
+
         while not self.shutdown_event.is_set():
             try:
                 if self.config.enable_memory_monitoring or self.config.enable_cpu_monitoring:
                     self._check_worker_health()
-                
+
                 # Sleep until next check
                 self.shutdown_event.wait(self.config.health_check_interval)
-                
+
             except Exception as e:
                 logger.error(f"Worker monitoring error: {e}")
                 self.shutdown_event.wait(5.0)  # Wait before retrying
-        
+
         logger.info("Worker monitoring thread stopped")
-    
+
     def _check_worker_health(self):
         """Check health of all workers"""
         try:
             current_process = psutil.Process()
             children = current_process.children(recursive=True)
-            
+
             with self.lock:
                 self.stats['current_workers'] = len(children)
-            
+
             for child in children:
                 try:
                     # Check memory usage
@@ -258,32 +258,32 @@ class WorkerManager:
                         if memory_mb > self.config.worker_memory_limit_mb:
                             logger.warning(f"Worker {child.pid} exceeds memory limit: "
                                          f"{memory_mb:.1f}MB > {self.config.worker_memory_limit_mb}MB")
-                            
+
                             if self.config.enable_auto_restart:
                                 self._restart_worker(child.pid, "memory_limit_exceeded")
-                    
+
                     # Check CPU usage
                     if self.config.enable_cpu_monitoring:
                         cpu_percent = child.cpu_percent()
                         if cpu_percent > self.config.worker_cpu_limit_percent:
                             logger.warning(f"Worker {child.pid} high CPU usage: {cpu_percent:.1f}%")
-                
+
                 except (psutil.NoSuchProcess, psutil.AccessDenied):
                     # Worker already terminated
                     continue
-                    
+
         except Exception as e:
             logger.error(f"Worker health check failed: {e}")
-    
+
     def _restart_worker(self, worker_pid: int, reason: str):
         """Restart a specific worker"""
         try:
             logger.info(f"Restarting worker {worker_pid} (reason: {reason})")
-            
+
             # Terminate the worker gracefully
             worker_process = psutil.Process(worker_pid)
             worker_process.terminate()
-            
+
             # Wait for graceful shutdown
             try:
                 worker_process.wait(timeout=self.config.graceful_shutdown_timeout)
@@ -291,16 +291,16 @@ class WorkerManager:
                 # Force kill if graceful shutdown failed
                 logger.warning(f"Force killing worker {worker_pid}")
                 worker_process.kill()
-            
+
             with self.lock:
                 self.stats['total_workers_restarted'] += 1
                 self.stats['last_restart_time'] = time.time()
-            
+
             logger.info(f"Worker {worker_pid} restarted successfully")
-            
+
         except Exception as e:
             logger.error(f"Failed to restart worker {worker_pid}: {e}")
-    
+
     def _shutdown_with_timeout(self):
         """Shutdown with timeout protection to prevent infinite loops"""
         max_shutdown_time = 10.0  # Maximum 10 seconds for shutdown
@@ -374,12 +374,12 @@ class WorkerManager:
         except Exception as e:
             logger.error(f"Error during worker shutdown: {e}")
             # Don't re-raise, let the timeout mechanism handle it
-    
+
     def get_worker_stats(self) -> Dict[str, Any]:
         """Get worker statistics"""
         with self.lock:
             stats = self.stats.copy()
-        
+
         # Add current system information
         try:
             current_process = psutil.Process()
@@ -388,7 +388,7 @@ class WorkerManager:
             stats['cpu_percent'] = current_process.cpu_percent()
         except Exception:
             pass
-        
+
         return stats
 
 # Global worker manager instance

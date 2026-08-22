@@ -14,10 +14,10 @@ logger = logging.getLogger(__name__)
 
 class DirectoryReadmeCreator:
     """Creates comprehensive README files for all directories"""
-    
+
     def __init__(self):
         self.project_root = Path(".")
-        
+
         # Define README content for each directory
         self.readme_templates = {
             "kokoro": {
@@ -39,14 +39,14 @@ class DirectoryReadmeCreator:
                 "sections": [
                     "## Components\n",
                     "- **AudioSegment** - Core audio data structure with processing methods",
-                    "- **AudioProcessor** - Main audio processing orchestrator", 
+                    "- **AudioProcessor** - Main audio processing orchestrator",
                     "- **FormatConverter** - Multi-format audio conversion (WAV, MP3, OGG, FLAC)",
                     "- **AudioStreamer** - Chunked streaming for real-time playback",
                     "- **TimeStretcher** - Beta time-stretching optimization feature"
                 ]
             },
             "LiteTTS/voice": {
-                "title": "Voice Management System", 
+                "title": "Voice Management System",
                 "description": "Advanced voice loading, caching, and blending system with 54+ voice support.",
                 "sections": [
                     "## Features\n",
@@ -131,91 +131,91 @@ class DirectoryReadmeCreator:
                 "sections": [
                     "## Voice Categories\n",
                     "- **American Female (af_*)** - Various American female voices",
-                    "- **American Male (am_*)** - Various American male voices", 
+                    "- **American Male (am_*)** - Various American male voices",
                     "- **British Female/Male (bf_*, bm_*)** - British accents",
                     "- **International (ef_*, em_*, etc.)** - Global voice collection",
                     "- **Specialized** - Character and unique voices"
                 ]
             }
         }
-        
+
         logger.info("Directory README creator initialized")
-    
+
     def create_all_readmes(self):
         """Create README files for all directories"""
         logger.info("Creating comprehensive README files")
-        
+
         try:
             # Create README for each defined directory
             for dir_path, template in self.readme_templates.items():
                 self._create_readme(dir_path, template)
-            
+
             # Create CONTRIBUTIONS.md
             self._create_contributions_file()
-            
+
             # Create LICENSE file
             self._create_license_file()
-            
+
             # Update CHANGELOG.md
             self._update_changelog()
-            
+
             logger.info("All README files created successfully")
-            
+
         except Exception as e:
             logger.error(f"Failed to create README files: {e}")
             raise
-    
+
     def _create_readme(self, dir_path: str, template: Dict):
         """Create README for a specific directory"""
         directory = Path(dir_path)
-        
+
         if not directory.exists():
             logger.warning(f"Directory {dir_path} does not exist, skipping")
             return
-        
+
         readme_path = directory / "README.md"
-        
+
         content = f"# {template['title']}\n\n"
         content += f"{template['description']}\n\n"
-        
+
         # Add template sections
         for section in template['sections']:
             content += f"{section}\n"
-        
+
         content += "\n## Directory Contents\n\n"
-        
+
         # List actual files and directories
         items = []
         for item in sorted(directory.iterdir()):
             if item.name.startswith('.') or item.name == 'README.md':
                 continue
-                
+
             if item.is_file():
                 items.append(f"- **{item.name}** - {self._get_file_description(item)}")
             elif item.is_dir():
                 items.append(f"- **{item.name}/** - {self._get_dir_description(item)}")
-        
+
         if items:
             content += "\n".join(items) + "\n"
         else:
             content += "*(Directory contents will be populated as development progresses)*\n"
-        
+
         # Add navigation
         content += "\n## Navigation\n\n"
         content += "- [← Back to Main README](../README.md)\n"
         content += "- [📚 Documentation](../docs/README.md)\n"
         content += "- [🎵 Voice Samples](../samples/README.md)\n"
         content += "- [💡 Examples](../examples/README.md)\n"
-        
+
         with open(readme_path, 'w') as f:
             f.write(content)
-        
+
         logger.info(f"Created README for {dir_path}")
-    
+
     def _get_file_description(self, file_path: Path) -> str:
         """Get description for a file based on its name and extension"""
         name = file_path.name.lower()
-        
+
         descriptions = {
             '__init__.py': 'Package initialization',
             'app.py': 'Main application entry point',
@@ -236,7 +236,7 @@ class DirectoryReadmeCreator:
             'logging_config.py': 'Logging configuration',
             'startup.py': 'Application startup logic'
         }
-        
+
         if name in descriptions:
             return descriptions[name]
         elif name.endswith('.json'):
@@ -251,11 +251,11 @@ class DirectoryReadmeCreator:
             return 'Text file'
         else:
             return 'Project file'
-    
+
     def _get_dir_description(self, dir_path: Path) -> str:
         """Get description for a directory based on its name"""
         name = dir_path.name.lower()
-        
+
         descriptions = {
             'audio': 'Audio processing components',
             'voice': 'Voice management system',
@@ -280,9 +280,9 @@ class DirectoryReadmeCreator:
             'benchmarks': 'Benchmark code',
             'root_tests': 'Root-level test files'
         }
-        
+
         return descriptions.get(name, 'Project directory')
-    
+
     def _create_contributions_file(self):
         """Create CONTRIBUTIONS.md file"""
         content = """# Contributing to Kokoro ONNX TTS API
@@ -387,12 +387,12 @@ By contributing, you agree that your contributions will be licensed under the MI
 
 Thank you for contributing! 🎉
 """
-        
+
         with open("CONTRIBUTIONS.md", 'w') as f:
             f.write(content)
-        
+
         logger.info("Created CONTRIBUTIONS.md")
-    
+
     def _create_license_file(self):
         """Create LICENSE file with MIT license"""
         content = """MIT License
@@ -417,23 +417,23 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-        
+
         with open("LICENSE", 'w') as f:
             f.write(content)
-        
+
         logger.info("Created LICENSE file")
-    
+
     def _update_changelog(self):
         """Update CHANGELOG.md with recent changes"""
         changelog_path = Path("docs/CHANGELOG.md")
-        
+
         if changelog_path.exists():
             # Read existing changelog
             with open(changelog_path, 'r') as f:
                 existing_content = f.read()
         else:
             existing_content = "# Changelog\n\nAll notable changes to this project will be documented in this file.\n\n"
-        
+
         # Add new entry for current changes
         new_entry = """## [1.0.0] - 2025-08-16
 
@@ -466,39 +466,39 @@ SOFTWARE.
 - 🧪 **Comprehensive test suite** - Extensive validation and edge case testing
 
 """
-        
+
         # Insert new entry after the header
         lines = existing_content.split('\n')
         header_end = 2  # After "# Changelog" and description
-        
+
         new_lines = lines[:header_end] + new_entry.split('\n') + lines[header_end:]
-        
+
         with open(changelog_path, 'w') as f:
             f.write('\n'.join(new_lines))
-        
+
         logger.info("Updated CHANGELOG.md")
 
 def main():
     """Main execution"""
     print("Creating Comprehensive Directory README Files")
     print("=" * 50)
-    
+
     try:
         creator = DirectoryReadmeCreator()
         creator.create_all_readmes()
-        
+
         print("\n✅ All README files created successfully!")
         print("\nFiles created/updated:")
         print("- README.md files in all major directories")
         print("- CONTRIBUTIONS.md - Contributing guidelines")
         print("- LICENSE - MIT license")
         print("- docs/CHANGELOG.md - Updated with recent changes")
-        
+
     except Exception as e:
         logger.error(f"Failed to create README files: {e}")
         print(f"\n❌ Failed: {e}")
         return False
-    
+
     return True
 
 if __name__ == "__main__":

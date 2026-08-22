@@ -45,7 +45,7 @@ class EnhancedContractionProcessorV2:
     - Phonetic hints and stress patterns for natural pronunciation
     - Comprehensive logging and debugging support
     """
-    
+
     def __init__(self, config: Optional[Dict] = None):
         """Initialize the enhanced contraction processor"""
         self.config = config or {}
@@ -108,7 +108,7 @@ class EnhancedContractionProcessorV2:
                 syllable_boundary="will|not",
                 notes="Often mispronounced as /wont/ instead of /wɪl nɑt/"
             ),
-            
+
             "I'll": ContractionRule(
                 contraction="I'll",
                 primary_expansion="I will",
@@ -118,7 +118,7 @@ class EnhancedContractionProcessorV2:
                 syllable_boundary="I|will",
                 notes="Critical for natural first-person speech"
             ),
-            
+
             "I'm": ContractionRule(
                 contraction="I'm",
                 primary_expansion="I am",
@@ -128,7 +128,7 @@ class EnhancedContractionProcessorV2:
                 syllable_boundary="I|am",
                 notes="Most common first-person contraction"
             ),
-            
+
             "isn't": ContractionRule(
                 contraction="isn't",
                 primary_expansion="is not",
@@ -138,7 +138,7 @@ class EnhancedContractionProcessorV2:
                 syllable_boundary="is|not",
                 notes="Common negative contraction"
             ),
-            
+
             "it's": ContractionRule(
                 contraction="it's",
                 primary_expansion="it is",
@@ -155,7 +155,7 @@ class EnhancedContractionProcessorV2:
                 syllable_boundary="it|is or it|has",
                 notes="Context-sensitive: 'it is' vs 'it has'"
             ),
-            
+
             # HIGH PRIORITY - Frequently mispronounced
             "wouldn't": ContractionRule(
                 contraction="wouldn't",
@@ -165,7 +165,7 @@ class EnhancedContractionProcessorV2:
                 priority=ContractionPriority.HIGH,
                 syllable_boundary="would|not"
             ),
-            
+
             "we'll": ContractionRule(
                 contraction="we'll",
                 primary_expansion="we will",
@@ -174,7 +174,7 @@ class EnhancedContractionProcessorV2:
                 priority=ContractionPriority.HIGH,
                 syllable_boundary="we|will"
             ),
-            
+
             "we're": ContractionRule(
                 contraction="we're",
                 primary_expansion="we are",
@@ -183,7 +183,7 @@ class EnhancedContractionProcessorV2:
                 priority=ContractionPriority.HIGH,
                 syllable_boundary="we|are"
             ),
-            
+
             "I've": ContractionRule(
                 contraction="I've",
                 primary_expansion="I have",
@@ -192,7 +192,7 @@ class EnhancedContractionProcessorV2:
                 priority=ContractionPriority.HIGH,
                 syllable_boundary="I|have"
             ),
-            
+
             "I'd": ContractionRule(
                 contraction="I'd",
                 primary_expansion="I would",
@@ -208,7 +208,7 @@ class EnhancedContractionProcessorV2:
                 syllable_boundary="I|would or I|had",
                 notes="Context-sensitive: 'I would' vs 'I had'"
             ),
-            
+
             # MEDIUM PRIORITY - Occasionally mispronounced
             "wasn't": ContractionRule(
                 contraction="wasn't",
@@ -218,7 +218,7 @@ class EnhancedContractionProcessorV2:
                 priority=ContractionPriority.MEDIUM,
                 syllable_boundary="was|not"
             ),
-            
+
             "weren't": ContractionRule(
                 contraction="weren't",
                 primary_expansion="were not",
@@ -227,7 +227,7 @@ class EnhancedContractionProcessorV2:
                 priority=ContractionPriority.MEDIUM,
                 syllable_boundary="were|not"
             ),
-            
+
             "we've": ContractionRule(
                 contraction="we've",
                 primary_expansion="we have",
@@ -236,7 +236,7 @@ class EnhancedContractionProcessorV2:
                 priority=ContractionPriority.MEDIUM,
                 syllable_boundary="we|have"
             ),
-            
+
             "we'd": ContractionRule(
                 contraction="we'd",
                 primary_expansion="we would",
@@ -250,7 +250,7 @@ class EnhancedContractionProcessorV2:
                 priority=ContractionPriority.MEDIUM,
                 syllable_boundary="we|would or we|had"
             ),
-            
+
             "it'll": ContractionRule(
                 contraction="it'll",
                 primary_expansion="it will",
@@ -260,7 +260,7 @@ class EnhancedContractionProcessorV2:
                 syllable_boundary="it|will"
             ),
         }
-    
+
     def _compile_patterns(self):
         """Compile regex patterns for performance optimization"""
         self.compiled_patterns = {}
@@ -276,7 +276,7 @@ class EnhancedContractionProcessorV2:
                 for pattern, expansion in rule.context_patterns:
                     context_compiled.append((re.compile(pattern, re.IGNORECASE), expansion))
                 self.compiled_patterns[f"{contraction.lower()}_context"] = context_compiled
-    
+
     def process_contractions(self, text: str, mode: str = "enhanced") -> str:
         """
         Process contractions with enhanced context awareness and phonetic guidance
@@ -290,18 +290,18 @@ class EnhancedContractionProcessorV2:
         """
         if not text or not text.strip():
             return text
-        
+
         original_text = text
         processed_text = text
         changes_made = []
-        
+
         # Sort rules by priority (highest first)
         sorted_rules = sorted(
             self.contraction_rules.items(),
             key=lambda x: x[1].priority.value,
             reverse=True
         )
-        
+
         # Process each contraction rule
         for contraction, rule in sorted_rules:
             contraction_lower = contraction.lower()
@@ -359,13 +359,13 @@ class EnhancedContractionProcessorV2:
                         changes_made.append(f"{contraction} → {rule.primary_expansion}")
                         if self.debug_mode:
                             logger.debug(f"Standard expansion: {contraction} → {rule.primary_expansion}")
-        
+
         # Log summary if changes were made
         if changes_made and self.debug_mode:
             logger.info(f"Enhanced contraction processing: {len(changes_made)} changes made")
             for change in changes_made:
                 logger.debug(f"  - {change}")
-        
+
         return processed_text
 
     def _preserve_case(self, original: str, replacement: str) -> str:

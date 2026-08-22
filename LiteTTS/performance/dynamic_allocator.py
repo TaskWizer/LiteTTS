@@ -29,19 +29,19 @@ class DynamicAllocationConfig:
 
 class DynamicCPUAllocator:
     """Dynamic CPU core allocator that integrates with existing systems"""
-    
+
     def __init__(self, config: Optional[DynamicAllocationConfig] = None):
         self.config = config or DynamicAllocationConfig()
         self.cpu_optimizer = get_cpu_optimizer()
         self.cpu_monitor: Optional[CPUUtilizationMonitor] = None
         self._current_onnx_session = None
         self._lock = threading.RLock()
-        
+
         # Auto-detect max cores if not specified
         total_cores = os.cpu_count() or 4
         if self.config.max_cores is None:
             self.config.max_cores = max(1, total_cores - 1)
-        
+
         logger.info(f"🎯 Dynamic CPU Allocator initialized: "
                    f"cores={self.config.min_cores}-{self.config.max_cores}, "
                    f"aggressive={self.config.aggressive_mode}, "
@@ -53,29 +53,29 @@ class DynamicCPUAllocator:
             logger.info("⚡ AGGRESSIVE MODE ENABLED - Maximum performance optimizations active")
         else:
             logger.info("🔒 Conservative mode - Balanced performance optimizations")
-    
+
     def initialize_monitoring(self, monitor_config: Optional[Dict] = None):
         """Initialize CPU monitoring with allocation callbacks"""
         from .cpu_monitor import initialize_cpu_monitoring
-        
+
         self.cpu_monitor = initialize_cpu_monitoring(monitor_config)
         self.cpu_monitor.add_allocation_callback(self._on_allocation_change)
         logger.info("Dynamic CPU allocation monitoring initialized")
-    
+
     def _on_allocation_change(self, allocation: CPUAllocation):
         """Callback when CPU allocation changes"""
         try:
             with self._lock:
                 # Validate allocation bounds
-                bounded_cores = max(self.config.min_cores, 
+                bounded_cores = max(self.config.min_cores,
                                   min(self.config.max_cores, allocation.allocated_cores))
-                
+
                 if bounded_cores != allocation.allocated_cores:
                     logger.info(f"Bounded core allocation: {allocation.allocated_cores} → {bounded_cores}")
                     allocation.allocated_cores = bounded_cores
                     allocation.inter_op_threads, allocation.intra_op_threads = \
                         self.cpu_monitor.calculate_thread_allocation(bounded_cores)
-                
+
                 # Apply thermal protection if enabled
                 if self.config.thermal_protection:
                     thermal_status = self.cpu_optimizer.get_thermal_status()
@@ -87,24 +87,24 @@ class DynamicCPUAllocator:
                             allocation.allocated_cores = safe_cores
                             allocation.inter_op_threads, allocation.intra_op_threads = \
                                 self.cpu_monitor.calculate_thread_allocation(safe_cores)
-                
+
                 # Update ONNX Runtime configuration if enabled
                 if self.config.onnx_integration:
                     self._update_onnx_configuration(allocation)
-                
+
                 # Update environment variables if enabled
                 if self.config.update_environment:
                     self._update_environment_variables(allocation)
-                
+
                 logger.info(f"Applied dynamic CPU allocation: "
                            f"cores={allocation.allocated_cores}, "
                            f"inter_op={allocation.inter_op_threads}, "
                            f"intra_op={allocation.intra_op_threads}, "
                            f"reason={allocation.allocation_reason}")
-                
+
         except Exception as e:
             logger.error(f"Failed to apply CPU allocation change: {e}")
-    
+
     def _update_onnx_configuration(self, allocation: CPUAllocation):
         """Update ONNX Runtime session configuration"""
         try:
@@ -115,25 +115,25 @@ class DynamicCPUAllocator:
                 "intra_op_num_threads": allocation.intra_op_threads,
                 "allocated_cores": allocation.allocated_cores
             }
-            
+
             logger.debug(f"Updated ONNX configuration: {self._current_onnx_config}")
-            
+
         except Exception as e:
             logger.error(f"Failed to update ONNX configuration: {e}")
-    
+
     def _update_environment_variables(self, allocation: CPUAllocation):
         """Update environment variables for threading libraries"""
         try:
             # Calculate environment variable values based on allocation
             omp_threads = allocation.intra_op_threads
-            
+
             env_updates = {
                 "OMP_NUM_THREADS": str(omp_threads),
                 "OPENBLAS_NUM_THREADS": str(omp_threads),
                 "MKL_NUM_THREADS": str(omp_threads),
                 "NUMEXPR_NUM_THREADS": str(max(1, allocation.allocated_cores // 3)),
             }
-            
+
             # Apply aggressive settings if enabled
             if self.config.aggressive_mode:
                 aggressive_env_vars = {
@@ -151,43 +151,43 @@ class DynamicCPUAllocator:
             # Update environment
             for key, value in env_updates.items():
                 os.environ[key] = value
-            
+
             logger.debug(f"Updated environment variables: {env_updates}")
-            
+
         except Exception as e:
             logger.error(f"Failed to update environment variables: {e}")
-    
+
     def get_current_onnx_config(self) -> Optional[Dict]:
         """Get current ONNX configuration for new sessions"""
         with self._lock:
             return getattr(self, '_current_onnx_config', None)
-    
+
     def apply_to_onnx_session_options(self, session_options) -> bool:
         """Apply current allocation to ONNX session options"""
         try:
             config = self.get_current_onnx_config()
             if not config:
                 return False
-            
+
             session_options.inter_op_num_threads = config["inter_op_num_threads"]
             session_options.intra_op_num_threads = config["intra_op_num_threads"]
-            
+
             logger.debug(f"Applied dynamic allocation to ONNX session: "
                         f"inter_op={config['inter_op_num_threads']}, "
                         f"intra_op={config['intra_op_num_threads']}")
             return True
-            
+
         except Exception as e:
             logger.error(f"Failed to apply allocation to ONNX session: {e}")
             return False
-    
+
     def get_recommended_settings(self) -> Dict[str, Any]:
         """Get recommended settings based on current allocation"""
         if not self.cpu_monitor:
             return {}
-        
+
         allocation = self.cpu_monitor.get_current_allocation()
-        
+
         return {
             "workers": min(3, max(1, allocation.allocated_cores // 3)),
             "onnx_inter_op_threads": allocation.inter_op_threads,
@@ -198,7 +198,7 @@ class DynamicCPUAllocator:
             "utilization_percent": allocation.utilization_percent,
             "allocation_reason": allocation.allocation_reason
         }
-    
+
     def get_allocation_stats(self) -> Dict:
         """Get comprehensive allocation statistics"""
         stats = {
@@ -211,25 +211,25 @@ class DynamicCPUAllocator:
                 "onnx_integration": self.config.onnx_integration
             }
         }
-        
+
         if self.cpu_monitor:
             stats.update(self.cpu_monitor.get_monitoring_stats())
-        
+
         current_config = self.get_current_onnx_config()
         if current_config:
             stats["current_onnx_config"] = current_config
-        
+
         return stats
-    
+
     def force_allocation_update(self, cores: int, reason: str = "manual") -> bool:
         """Force a specific core allocation (for testing/debugging)"""
         if not self.cpu_monitor:
             logger.error("CPU monitor not initialized")
             return False
-        
+
         # Validate bounds
         cores = max(self.config.min_cores, min(self.config.max_cores, cores))
-        
+
         # Create allocation
         inter_op, intra_op = self.cpu_monitor.calculate_thread_allocation(cores)
         allocation = CPUAllocation(
@@ -241,11 +241,11 @@ class DynamicCPUAllocator:
             intra_op_threads=intra_op,
             allocation_reason=reason
         )
-        
+
         # Apply the allocation
         self._on_allocation_change(allocation)
         return True
-    
+
     def shutdown(self):
         """Shutdown dynamic allocation system"""
         if self.cpu_monitor:

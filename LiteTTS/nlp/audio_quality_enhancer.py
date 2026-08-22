@@ -59,13 +59,13 @@ class AudioQualityProfile:
 
 class AudioQualityEnhancer:
     """Advanced audio quality enhancement system"""
-    
+
     def __init__(self, profile: AudioQualityProfile = None):
         self.profile = profile or AudioQualityProfile()
         self.emotion_patterns = self._load_emotion_patterns()
         self.prosody_rules = self._load_prosody_rules()
         self.context_patterns = self._load_context_patterns()
-        
+
     def _load_emotion_patterns(self) -> Dict[str, EmotionType]:
         """Load patterns for emotion detection"""
         return {
@@ -74,21 +74,21 @@ class AudioQualityEnhancer:
             r'\b(yay|hooray|awesome|brilliant|superb|marvelous|incredible)\b': EmotionType.EXCITED,
             r'\b(calm|peaceful|serene|relaxed|tranquil|gentle|soothing)\b': EmotionType.CALM,
             r'\b(confident|sure|certain|determined|strong|powerful)\b': EmotionType.CONFIDENT,
-            
+
             # Negative emotions
             r'\b(sad|sorry|disappointed|upset|hurt|heartbroken|devastated)\b': EmotionType.SAD,
             r'\b(angry|mad|furious|irritated|annoyed|frustrated|outraged)\b': EmotionType.ANGRY,
             r'\b(surprised|shocked|amazed|astonished|stunned|bewildered)\b': EmotionType.SURPRISED,
-            
+
             # Uncertain emotions
             r'\b(maybe|perhaps|possibly|might|could|uncertain|unsure|confused)\b': EmotionType.UNCERTAIN,
             r'\b(hmm|uh|um|well|I think|I guess|I suppose)\b': EmotionType.UNCERTAIN,
-            
+
             # Empathetic emotions
             r'\b(understand|feel|empathize|sympathize|care|support|comfort)\b': EmotionType.EMPATHETIC,
             r'\b(I\'m sorry|my condolences|I feel for you|that must be hard)\b': EmotionType.EMPATHETIC,
         }
-    
+
     def _load_prosody_rules(self) -> List[Tuple[str, ProsodyLevel, float, float]]:
         """Load prosodic emphasis rules"""
         return [
@@ -103,7 +103,7 @@ class AudioQualityEnhancer:
             (r'[A-Z]{2,}', ProsodyLevel.HIGH, 0.0, 0.0),   # Acronyms
             (r'\b[A-Z][a-z]*\b', ProsodyLevel.NORMAL, 0.0, 0.0),  # Proper nouns
         ]
-    
+
     def _load_context_patterns(self) -> Dict[str, Dict[str, float]]:
         """Load context-aware adaptation patterns"""
         return {
@@ -141,38 +141,38 @@ class AudioQualityEnhancer:
                 'pause_after': 0.05
             }
         }
-    
+
     def enhance_audio_quality(self, text: str) -> str:
         """Apply comprehensive audio quality enhancements"""
         logger.debug(f"Enhancing audio quality for: {text[:100]}...")
-        
+
         original_text = text
-        
+
         # Step 1: Analyze emotional content
         if self.profile.enable_emotional_analysis:
             text = self._apply_emotional_markers(text)
-        
+
         # Step 2: Apply prosodic modeling
         if self.profile.enable_prosodic_modeling:
             text = self._apply_prosodic_markers(text)
-        
+
         # Step 3: Add natural pauses
         if self.profile.enable_natural_pauses:
             text = self._add_natural_pauses(text)
-        
+
         # Step 4: Context-aware adaptation
         if self.profile.enable_context_adaptation:
             text = self._apply_context_adaptation(text)
-        
+
         # Step 5: Dynamic intonation
         if self.profile.enable_dynamic_intonation:
             text = self._apply_dynamic_intonation(text)
-        
+
         if text != original_text:
             logger.debug(f"Audio quality enhancements applied: '{original_text}' → '{text}'")
-        
+
         return text
-    
+
     def _apply_emotional_markers(self, text: str) -> str:
         """
         Apply emotional emphasis markers based on content analysis.
@@ -245,19 +245,19 @@ class AudioQualityEnhancer:
         # the TTS engine's native prosody handling to avoid double-processing.
         # For safety, we limit to minimal marking here.
         return text
-    
+
     def _add_natural_pauses(self, text: str) -> str:
         """Add natural pauses for better speech flow"""
         naturalness = self.profile.naturalness_level
-        
+
         # Add pauses after conjunctions in longer sentences
         if len(text.split()) > 10:
             text = re.sub(r'\b(and|but|or|so|yet|for|nor)\b', r'<break time="0.1s"/>\1<break time="0.1s"/>', text)
-        
+
         # Add pauses before important transitions
-        text = re.sub(r'\b(however|therefore|moreover|furthermore|nevertheless|consequently)\b', 
+        text = re.sub(r'\b(however|therefore|moreover|furthermore|nevertheless|consequently)\b',
                      r'<break time="0.2s"/>\1<break time="0.2s"/>', text)
-        
+
         # Add breathing pauses in very long sentences
         if len(text) > 100:
             # Add subtle pauses every 15-20 words
@@ -266,29 +266,29 @@ class AudioQualityEnhancer:
                 for i in range(15, len(words), 20):
                     words[i] = f'<break time="{0.1*naturalness:.1f}s"/>{words[i]}'
                 text = ' '.join(words)
-        
+
         return text
-    
+
     def _apply_context_adaptation(self, text: str) -> str:
         """Apply context-aware speech adaptations"""
         for context_type, context_config in self.context_patterns.items():
             pattern = context_config['pattern']
             matches = list(re.finditer(pattern, text))
-            
+
             for match in reversed(matches):
                 matched_text = match.group()
                 start, end = match.span()
-                
+
                 # Build enhanced text with context adaptations
                 enhanced_text = matched_text
-                
+
                 if 'pitch_shift' in context_config:
                     pitch = context_config['pitch_shift']
                     if pitch > 0:
                         enhanced_text = f'<prosody pitch="+{pitch:.1f}st">{enhanced_text}</prosody>'
                     elif pitch < 0:
                         enhanced_text = f'<prosody pitch="{pitch:.1f}st">{enhanced_text}</prosody>'
-                
+
                 if 'speed_factor' in context_config:
                     speed = context_config['speed_factor']
                     if speed != 1.0:
@@ -297,35 +297,35 @@ class AudioQualityEnhancer:
                             enhanced_text = f'<prosody rate="+{rate_change:.0f}%">{enhanced_text}</prosody>'
                         else:
                             enhanced_text = f'<prosody rate="{rate_change:.0f}%">{enhanced_text}</prosody>'
-                
+
                 if 'pause_before' in context_config and context_config['pause_before'] > 0:
                     enhanced_text = f'<break time="{context_config["pause_before"]:.1f}s"/>{enhanced_text}'
-                
+
                 if 'pause_after' in context_config and context_config['pause_after'] > 0:
                     enhanced_text = f'{enhanced_text}<break time="{context_config["pause_after"]:.1f}s"/>'
-                
+
                 text = text[:start] + enhanced_text + text[end:]
-        
+
         return text
-    
+
     def _apply_dynamic_intonation(self, text: str) -> str:
         """Apply dynamic intonation patterns"""
         # Enhanced question intonation
         text = re.sub(r'(\w+)\?', r'<prosody pitch="+15%">\1</prosody>?', text)
-        
+
         # Enhanced exclamation intonation
         text = re.sub(r'(\w+)!', r'<prosody pitch="+10%" volume="+10%">\1</prosody>!', text)
-        
+
         # List intonation (rising pitch for items except the last)
         list_pattern = r'(\w+),\s*(\w+),\s*and\s+(\w+)'
         def list_replacer(match):
             item1, item2, item3 = match.groups()
             return f'<prosody pitch="+5%">{item1}</prosody>, <prosody pitch="+3%">{item2}</prosody>, and <prosody pitch="-2%">{item3}</prosody>'
-        
+
         text = re.sub(list_pattern, list_replacer, text)
-        
+
         return text
-    
+
     def analyze_quality_potential(self, text: str) -> Dict[str, any]:
         """Analyze text for quality enhancement potential"""
         analysis = {
@@ -335,31 +335,31 @@ class AudioQualityEnhancer:
             'naturalness_score': 0.0,
             'enhancement_potential': 'low'
         }
-        
+
         # Analyze emotional content
         for pattern, emotion in self.emotion_patterns.items():
             if re.search(pattern, text, re.IGNORECASE):
                 analysis['emotional_content'].append(emotion.value)
-        
+
         # Analyze prosodic opportunities
         for pattern, emphasis, _, _ in self.prosody_rules:
             matches = re.findall(pattern, text, re.IGNORECASE)
             if matches:
                 analysis['prosodic_opportunities'].extend(matches)
-        
+
         # Analyze context adaptations
         for context_type, context_config in self.context_patterns.items():
             if re.search(context_config['pattern'], text):
                 analysis['context_adaptations'].append(context_type)
-        
+
         # Calculate naturalness score
         word_count = len(text.split())
         sentence_count = len(re.findall(r'[.!?]+', text))
         avg_sentence_length = word_count / max(sentence_count, 1)
-        
+
         # Score based on various factors
         naturalness_score = 0.5  # Base score
-        
+
         if avg_sentence_length < 20:  # Good sentence length
             naturalness_score += 0.2
         if len(analysis['emotional_content']) > 0:  # Has emotional content
@@ -368,21 +368,21 @@ class AudioQualityEnhancer:
             naturalness_score += 0.1
         if len(analysis['context_adaptations']) > 0:  # Has context markers
             naturalness_score += 0.1
-        
+
         analysis['naturalness_score'] = min(naturalness_score, 1.0)
-        
+
         # Determine enhancement potential
-        total_opportunities = (len(analysis['emotional_content']) + 
-                             len(analysis['prosodic_opportunities']) + 
+        total_opportunities = (len(analysis['emotional_content']) +
+                             len(analysis['prosodic_opportunities']) +
                              len(analysis['context_adaptations']))
-        
+
         if total_opportunities >= 5:
             analysis['enhancement_potential'] = 'high'
         elif total_opportunities >= 2:
             analysis['enhancement_potential'] = 'medium'
         else:
             analysis['enhancement_potential'] = 'low'
-        
+
         return analysis
 
 # Global instance for easy access

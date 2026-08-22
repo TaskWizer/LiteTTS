@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 class ConfigManager:
     """Manages both user-facing and internal configuration"""
-    
+
     def __init__(self, config_path: str = None):
         # Determine config file location with preference for comprehensive settings
         if config_path is None:
@@ -37,7 +37,7 @@ class ConfigManager:
         self.user_config = self._load_user_config()
         self.internal_config = get_internal_config()
         self.merged_config = self._merge_configs()
-        
+
     def _load_user_config(self) -> Dict[str, Any]:
         """Load user-facing configuration from config.json"""
         try:
@@ -54,7 +54,7 @@ class ConfigManager:
         except Exception as e:
             logger.error(f"Error loading config from {self.config_path}: {e}")
             return self._get_default_user_config()
-    
+
     def _get_default_user_config(self) -> Dict[str, Any]:
         """Get default user configuration"""
         return {
@@ -115,14 +115,14 @@ class ConfigManager:
                 "version": "1.0.0"
             }
         }
-    
+
     def _merge_configs(self) -> Dict[str, Any]:
         """Merge user config with internal config based on user preferences"""
         merged = self.user_config.copy()
-        
+
         # Map user settings to internal configuration
         text_processing = merged.get('text_processing', {})
-        
+
         # Apply text processing preferences
         if text_processing.get('natural_speech', True):
             # Enable natural speech processing
@@ -138,61 +138,61 @@ class ConfigManager:
                 # If pronunciation dictionary is disabled, disable these features
                 merged['use_proper_name_pronunciation'] = False
                 merged['use_ticker_symbol_processing'] = False
-        
+
         if text_processing.get('pronunciation_fixes', True):
             # Enable pronunciation fixes
             merged['use_pronunciation_rules'] = True
             merged['use_proper_name_pronunciation'] = True
-        
+
         if text_processing.get('expand_contractions', False):
             # Enable legacy contraction expansion
             merged['use_phonetic_contractions'] = True
             merged['use_pronunciation_rules'] = False
-        
+
         # Apply performance preferences
         performance = merged.get('performance', {})
         if performance.get('auto_optimize', True):
             # Enable automatic optimization
             merged['auto_optimize_enabled'] = True
-        
+
         # Apply cache preferences
         cache = merged.get('cache', {})
         if cache.get('auto_optimize', True):
             # Enable automatic cache optimization
             merged['auto_cache_optimize'] = True
-        
+
         # Add internal configuration sections
         internal_config = self.internal_config.get_all_config()
         for section, config in internal_config.items():
             merged[f'internal_{section}'] = config
-        
+
         return merged
-    
+
     def get(self, key: str, default: Any = None) -> Any:
         """Get a configuration value"""
         keys = key.split('.')
         value = self.merged_config
-        
+
         for k in keys:
             if isinstance(value, dict) and k in value:
                 value = value[k]
             else:
                 return default
-        
+
         return value
-    
+
     def get_user_config(self) -> Dict[str, Any]:
         """Get the user-facing configuration"""
         return self.user_config.copy()
-    
+
     def get_internal_config(self) -> Dict[str, Any]:
         """Get the internal configuration"""
         return self.internal_config.get_all_config()
-    
+
     def get_merged_config(self) -> Dict[str, Any]:
         """Get the merged configuration"""
         return self.merged_config.copy()
-    
+
     def update_user_config(self, updates: Dict[str, Any]):
         """Update user configuration and save to file"""
         def deep_update(base_dict, update_dict):
@@ -201,12 +201,12 @@ class ConfigManager:
                     deep_update(base_dict[key], value)
                 else:
                     base_dict[key] = value
-        
+
         deep_update(self.user_config, updates)
         self._save_user_config()
         self.merged_config = self._merge_configs()
         logger.info("User configuration updated and saved")
-    
+
     def _save_user_config(self):
         """Save user configuration to file"""
         try:
@@ -215,13 +215,13 @@ class ConfigManager:
             logger.info(f"Saved user configuration to {self.config_path}")
         except Exception as e:
             logger.error(f"Failed to save user configuration: {e}")
-    
+
     def override_internal_setting(self, section: str, key: str, value: Any):
         """Override an internal setting (for advanced users)"""
         self.internal_config.override_setting(section, key, value)
         self.merged_config = self._merge_configs()
         logger.info(f"Overrode internal setting: {section}.{key} = {value}")
-    
+
     def is_feature_enabled(self, feature: str) -> bool:
         """Check if a feature is enabled"""
         feature_map = {
@@ -233,9 +233,9 @@ class ConfigManager:
             'monitoring': self.get('monitoring.enabled', True),
             'streaming': self.get('audio.streaming.enabled', True)
         }
-        
+
         return feature_map.get(feature, False)
-    
+
     def get_processing_options(self) -> Dict[str, bool]:
         """Get processing options for the unified text processor"""
         # Respect pronunciation_dictionary.enabled setting
@@ -253,7 +253,7 @@ class ConfigManager:
             'use_advanced_symbols': self.get('use_advanced_symbols', True),
             'use_clean_normalizer': self.get('use_clean_normalizer', True)
         }
-    
+
     def validate_config(self) -> Dict[str, Any]:
         """Validate the current configuration"""
         validation = {
@@ -262,30 +262,30 @@ class ConfigManager:
             'warnings': [],
             'recommendations': []
         }
-        
+
         # Validate required sections
         required_sections = ['model', 'voice', 'audio', 'server']
         for section in required_sections:
             if section not in self.user_config:
                 validation['errors'].append(f"Missing required section: {section}")
                 validation['valid'] = False
-        
+
         # Validate audio settings
         audio = self.user_config.get('audio', {})
         if audio.get('speed', 1.0) < 0.1 or audio.get('speed', 1.0) > 3.0:
             validation['warnings'].append("Audio speed should be between 0.1 and 3.0")
-        
+
         # Validate server settings
         server = self.user_config.get('server', {})
         port = server.get('port', 8354)
         if not isinstance(port, int) or port < 1024 or port > 65535:
             validation['warnings'].append("Server port should be between 1024 and 65535")
-        
+
         # Check for conflicting settings
         text_processing = self.user_config.get('text_processing', {})
         if text_processing.get('expand_contractions', False) and text_processing.get('natural_speech', True):
             validation['warnings'].append("Contraction expansion conflicts with natural speech - natural speech will take precedence")
-        
+
         return validation
 
 # Global instance
@@ -307,23 +307,23 @@ def reload_config():
 # Example usage
 if __name__ == "__main__":
     config = get_config_manager()
-    
+
     print("🔧 Configuration Manager")
     print("=" * 30)
-    
+
     # Show user config
     print("\n📁 User Configuration:")
     user_config = config.get_user_config()
     for section, settings in user_config.items():
         print(f"  {section}: {type(settings).__name__}")
-    
+
     # Show processing options
     print(f"\n⚙️  Processing Options:")
     options = config.get_processing_options()
     for option, enabled in options.items():
         status = "✅" if enabled else "❌"
         print(f"  {status} {option}")
-    
+
     # Validate config
     print(f"\n🔍 Configuration Validation:")
     validation = config.validate_config()
@@ -332,7 +332,7 @@ if __name__ == "__main__":
         print(f"  Errors: {validation['errors']}")
     if validation['warnings']:
         print(f"  Warnings: {validation['warnings']}")
-    
+
     # Test feature checks
     print(f"\n🎛️  Feature Status:")
     features = ['natural_speech', 'pronunciation_fixes', 'auto_optimize', 'cache_enabled']

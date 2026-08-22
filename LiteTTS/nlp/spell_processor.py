@@ -11,10 +11,10 @@ logger = logging.getLogger(__name__)
 
 class SpellProcessor:
     """Handles spell() function calls for letter-by-letter pronunciation"""
-    
+
     def __init__(self):
         self.letter_names = self._load_letter_names()
-        
+
     def _load_letter_names(self) -> Dict[str, str]:
         """Load letter names for spelling"""
         return {
@@ -25,26 +25,26 @@ class SpellProcessor:
             'u': 'you', 'v': 'vee', 'w': 'double-you', 'x': 'ex',
             'y': 'why', 'z': 'zee'
         }
-    
+
     def handle_spell_functions(self, text: str) -> str:
         """Process spell() function calls in text"""
         logger.debug(f"Processing spell functions in: {text[:100]}...")
-        
+
         # Pattern: spell(word) or spell("word") or spell('word')
         pattern = re.compile(r'spell\s*\(\s*["\']?([^"\')\s]+)["\']?\s*\)', re.IGNORECASE)
-        
+
         def replace_spell(match):
             word = match.group(1).strip()
             return self._spell_word(word)
-        
+
         result = pattern.sub(replace_spell, text)
         logger.debug(f"Spell processing result: {result[:100]}...")
         return result
-    
+
     def _spell_word(self, word: str) -> str:
         """Convert word to spelled-out letters with natural pauses"""
         letters = []
-        
+
         for char in word.lower():
             if char.isalpha():
                 if char in self.letter_names:
@@ -69,10 +69,10 @@ class SpellProcessor:
                     ']': 'close bracket', '{': 'open brace', '}': 'close brace'
                 }
                 letters.append(special_chars.get(char, char))
-        
+
         # Join with natural pauses (commas create brief pauses in TTS)
         return ', '.join(letters)
-    
+
     def spell_word_direct(self, word: str) -> str:
         """Direct method to spell a word (for API use)"""
         return self._spell_word(word)

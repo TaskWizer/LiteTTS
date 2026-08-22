@@ -8,10 +8,10 @@ import json
 
 def test_api():
     base_url = "http://localhost:8000"
-    
+
     print("🧪 Testing Kokoro ONNX TTS API")
     print("=" * 40)
-    
+
     # Check if server is running
     print("\n0. Checking if server is running...")
     try:
@@ -21,7 +21,7 @@ def test_api():
         print(f"❌ Server not responding: {e}")
         print("   Please start the server first: python start_server.py")
         return
-    
+
     # Test health endpoint
     print("\n1. Testing health endpoint...")
     try:
@@ -34,7 +34,7 @@ def test_api():
     except Exception as e:
         print(f"   Error: {e}")
         return
-    
+
     # Test models endpoint
     print("\n2. Testing models endpoint...")
     try:
@@ -43,7 +43,7 @@ def test_api():
         print(f"   Models: {response.json()}")
     except Exception as e:
         print(f"   Error: {e}")
-    
+
     # Test voices endpoint
     print("\n3. Testing voices endpoint...")
     try:
@@ -54,7 +54,7 @@ def test_api():
     except Exception as e:
         print(f"   Error: {e}")
         return
-    
+
     # Test TTS generation
     print("\n4. Testing TTS generation...")
     try:
@@ -65,13 +65,13 @@ def test_api():
             "response_format": "mp3",
             "speed": 1.0
         }
-        
+
         response = requests.post(
             f"{base_url}/v1/audio/speech",
             json=tts_request,
             headers={"Content-Type": "application/json"}
         )
-        
+
         print(f"   Status: {response.status_code}")
         if response.status_code == 200:
             # Save audio file
@@ -84,7 +84,7 @@ def test_api():
             print(f"   Error: {response.text}")
     except Exception as e:
         print(f"   Error: {e}")
-    
+
     print("\n✅ API test complete!")
 
 if __name__ == "__main__":

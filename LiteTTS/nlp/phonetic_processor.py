@@ -33,7 +33,7 @@ class PhoneticProcessor:
         # Auto-load dictionaries if enabled
         if self.phonetic_config.get("auto_load_dictionaries", True):
             self._load_configured_dictionaries()
-        
+
     def _load_phonetic_alphabet(self) -> Dict[str, str]:
         """Load phonetic alphabet mappings"""
         return {
@@ -46,7 +46,7 @@ class PhoneticProcessor:
             'u': 'uniform', 'v': 'victor', 'w': 'whiskey', 'x': 'x-ray',
             'y': 'yankee', 'z': 'zulu'
         }
-    
+
     def _load_ipa_mappings(self) -> Dict[str, str]:
         """Load IPA (International Phonetic Alphabet) to readable mappings - Enhanced with RIME AI inspired phonetic alphabet"""
         return {
@@ -191,29 +191,29 @@ class PhoneticProcessor:
         for ipa_symbol, readable in self.ipa_mappings.items():
             result = result.replace(ipa_symbol, readable)
         return result
-    
+
     def _process_curly_braces(self, text: str) -> str:
         """Process phonetic markers in curly braces {pronunciation}"""
         # Pattern: {phonetic_pronunciation}
         pattern = re.compile(r'\{([^}]+)\}')
-        
+
         def replace_phonetic(match):
             phonetic = match.group(1)
             return self._convert_phonetic_to_readable(phonetic)
-        
-        return pattern.sub(replace_phonetic, text)  
-  
+
+        return pattern.sub(replace_phonetic, text)
+
     def _process_ipa_notation(self, text: str) -> str:
         """Process IPA notation markers"""
         # Pattern: /ipa_notation/
         pattern = re.compile(r'/([^/]+)/')
-        
+
         def replace_ipa(match):
             ipa = match.group(1)
             return self._convert_ipa_to_readable(ipa)
-        
+
         return pattern.sub(replace_ipa, text)
-    
+
     def _process_phonetic_alphabet(self, text: str) -> str:
         """Process NATO phonetic alphabet markers"""
         # Pattern: [phonetic_letters]
@@ -322,17 +322,17 @@ class PhoneticProcessor:
             i += 1
 
         return ''.join(result)
-    
+
     def _convert_phonetic_to_readable(self, phonetic: str) -> str:
         """Convert custom phonetic notation to readable text"""
         # Handle common phonetic patterns
         phonetic = phonetic.lower()
-        
+
         # Replace numbers with stress markers
         phonetic = re.sub(r'0', '', phonetic)  # No stress
         phonetic = re.sub(r'1', "'", phonetic)  # Primary stress
         phonetic = re.sub(r'2', ",", phonetic)  # Secondary stress
-        
+
         # Convert common phonetic symbols
         conversions = {
             'aa': 'ah', 'ae': 'a', 'ah': 'ah', 'ao': 'aw', 'aw': 'aw',
@@ -341,18 +341,18 @@ class PhoneticProcessor:
             'ch': 'ch', 'dh': 'th', 'jh': 'j', 'ng': 'ng', 'sh': 'sh',
             'th': 'th', 'zh': 'zh'
         }
-        
+
         # Apply conversions
         for phonetic_symbol, readable in conversions.items():
             phonetic = phonetic.replace(phonetic_symbol, readable)
-        
+
         return phonetic
-    
+
     def _convert_ipa_to_readable(self, ipa: str) -> str:
         """Convert IPA notation to readable pronunciation"""
         result = []
         i = 0
-        
+
         while i < len(ipa):
             # Check for two-character IPA symbols first
             if i < len(ipa) - 1:
@@ -361,14 +361,14 @@ class PhoneticProcessor:
                     result.append(self.ipa_mappings[two_char])
                     i += 2
                     continue
-            
+
             # Check for single-character IPA symbols
             char = ipa[i]
             if char in self.ipa_mappings:
                 result.append(self.ipa_mappings[char])
             else:
                 result.append(char)
-            
+
             i += 1
-        
+
         return ''.join(result)

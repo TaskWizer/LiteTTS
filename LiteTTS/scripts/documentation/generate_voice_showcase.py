@@ -127,13 +127,13 @@ def get_available_voices() -> List[str]:
 def categorize_voices(voices: List[str]) -> Dict[str, Any]:
     """Categorize voices by their prefixes"""
     categorized = {}
-    
+
     for category_name, category_info in VOICE_CATEGORIES.items():
         categorized[category_name] = {
             "description": category_info["description"],
             "voices": []
         }
-    
+
     # Categorize voices
     for voice in voices:
         categorized_voice = False
@@ -142,7 +142,7 @@ def categorize_voices(voices: List[str]) -> Dict[str, Any]:
                 categorized[category_name]["voices"].append(voice)
                 categorized_voice = True
                 break
-        
+
         if not categorized_voice:
             # Handle uncategorized voices
             if "Other" not in categorized:
@@ -151,7 +151,7 @@ def categorize_voices(voices: List[str]) -> Dict[str, Any]:
                     "voices": []
                 }
             categorized["Other"]["voices"].append(voice)
-    
+
     # Remove empty categories
     return {k: v for k, v in categorized.items() if v["voices"]}
 
@@ -159,25 +159,25 @@ def generate_audio_sample(voice: str, text: str, output_dir: str) -> str:
     """Generate audio sample for a voice"""
     filename = f"{voice}_sample.mp3"
     filepath = os.path.join(output_dir, filename)
-    
+
     # Skip if file already exists
     if os.path.exists(filepath):
         print(f"   ✓ Sample exists: {filename}")
         return filename
-    
+
     try:
         payload = {
             "input": text,
             "voice": voice,
             "response_format": "mp3"
         }
-        
+
         response = requests.post(
             "http://localhost:8354/v1/audio/speech",
             json=payload,
             timeout=30
         )
-        
+
         if response.status_code == 200:
             with open(filepath, 'wb') as f:
                 f.write(response.content)
@@ -186,7 +186,7 @@ def generate_audio_sample(voice: str, text: str, output_dir: str) -> str:
         else:
             print(f"   ❌ Failed: {voice} (HTTP {response.status_code})")
             return None
-            
+
     except Exception as e:
         print(f"   ❌ Error: {voice} - {e}")
         return None
@@ -202,69 +202,69 @@ def get_sample_text_for_voice(voice: str) -> str:
 
 def generate_voice_showcase(output_dir: str = "docs/voices") -> bool:
     """Generate the complete voice showcase"""
-    
+
     print("🎭 Generating Voice Showcase")
     print("=" * 40)
-    
+
     # Create output directory
     os.makedirs(output_dir, exist_ok=True)
-    
+
     # Get available voices
     print("📋 Getting available voices...")
     voices = get_available_voices()
     if not voices:
         print("❌ No voices available")
         return False
-    
+
     print(f"✅ Found {len(voices)} voices")
-    
+
     # Categorize voices
     print("📂 Categorizing voices...")
     categorized_voices = categorize_voices(voices)
     print(f"✅ Organized into {len(categorized_voices)} categories")
-    
+
     # Generate audio samples
     print("🎵 Generating audio samples...")
     total_samples = 0
     successful_samples = 0
-    
+
     for category_name, category_data in categorized_voices.items():
         print(f"\n📁 {category_name} ({len(category_data['voices'])} voices)")
-        
+
         for voice in category_data['voices']:
             sample_text = get_sample_text_for_voice(voice)
             filename = generate_audio_sample(voice, sample_text, output_dir)
             total_samples += 1
             if filename:
                 successful_samples += 1
-            
+
             # Small delay to avoid overwhelming the server
             time.sleep(0.1)
-    
+
     print(f"\n📊 Generated {successful_samples}/{total_samples} audio samples")
-    
+
     # Generate markdown
     print("📝 Generating markdown documentation...")
     markdown_content = generate_markdown(categorized_voices, output_dir)
-    
+
     # Write markdown file
     markdown_path = os.path.join(output_dir, "README.md")
     with open(markdown_path, 'w', encoding='utf-8') as f:
         f.write(markdown_content)
-    
+
     print(f"✅ Voice showcase generated: {markdown_path}")
-    
+
     # Update main README
     print("📝 Updating main README...")
     update_main_readme()
-    
+
     return True
 
 def generate_markdown(categorized_voices: Dict[str, Any], output_dir: str) -> str:
     """Generate markdown content for voice showcase"""
-    
+
     total_voices = sum(len(cat["voices"]) for cat in categorized_voices.values())
-    
+
     markdown = f"""# 🎭 Kokoro TTS Voice Showcase
 
 Welcome to the comprehensive showcase of all **{total_voices} voices** available in Kokoro TTS! Each voice has been carefully crafted to provide natural, expressive speech synthesis across multiple languages and accents.
@@ -272,12 +272,12 @@ Welcome to the comprehensive showcase of all **{total_voices} voices** available
 ## 🌟 Quick Navigation
 
 """
-    
+
     # Add navigation links
     for category_name in categorized_voices.keys():
         anchor = category_name.lower().replace(" ", "-")
         markdown += f"- [{category_name}](#{anchor}) ({len(categorized_voices[category_name]['voices'])} voices)\n"
-    
+
     markdown += f"""
 ## 🎯 How to Use
 
@@ -297,35 +297,35 @@ curl -X POST "http://localhost:8354/v1/audio/speech" \\
 ## 🎵 Voice Categories
 
 """
-    
+
     # Generate content for each category
     for category_name, category_data in categorized_voices.items():
         anchor = category_name.lower().replace(" ", "-")
         markdown += f"### {category_name}\n\n"
         markdown += f"*{category_data['description']}*\n\n"
-        
+
         # Create table header
         markdown += "| Voice | Sample | Description |\n"
         markdown += "|-------|--------|-------------|\n"
-        
+
         # Add each voice
         for voice in sorted(category_data['voices']):
             sample_file = f"{voice}_sample.mp3"
             sample_path = os.path.join(output_dir, sample_file)
-            
+
             # Check if sample exists
             if os.path.exists(sample_path):
                 audio_link = f'<audio controls><source src="{sample_file}" type="audio/mpeg">Your browser does not support audio.</audio>'
             else:
                 audio_link = "*Sample not available*"
-            
+
             # Generate description based on voice name
             description = generate_voice_description(voice)
-            
+
             markdown += f"| **{voice}** | {audio_link} | {description} |\n"
-        
+
         markdown += "\n"
-    
+
     # Add footer
     markdown += f"""
 ---
@@ -363,18 +363,18 @@ All audio samples are generated using:
 
 *Generated automatically by Kokoro TTS Voice Showcase Generator*
 """
-    
+
     return markdown
 
 def generate_voice_description(voice: str) -> str:
     """Generate a description for a voice based on its name"""
-    
+
     # Extract the name part after the prefix
     if '_' in voice:
         prefix, name = voice.split('_', 1)
     else:
         prefix, name = '', voice
-    
+
     # Special descriptions for known voices
     descriptions = {
         'heart': 'Warm and expressive, perfect for emotional content',
@@ -398,7 +398,7 @@ def generate_voice_description(voice: str) -> str:
         'omega': 'Powerful and commanding, perfect for dramatic content',
         'psi': 'Mysterious and intriguing, ideal for storytelling'
     }
-    
+
     # Return specific description if available, otherwise generate generic one
     if name in descriptions:
         return descriptions[name]
@@ -418,26 +418,26 @@ def generate_voice_description(voice: str) -> str:
 def update_main_readme():
     """Update the main README.md to include link to voice showcase"""
     readme_path = "README.md"
-    
+
     if not os.path.exists(readme_path):
         print("⚠️ Main README.md not found")
         return
-    
+
     try:
         with open(readme_path, 'r', encoding='utf-8') as f:
             content = f.read()
-        
+
         # Check if voice showcase link already exists
         if "docs/voices" in content or "Voice Showcase" in content:
             print("✅ Voice showcase link already exists in README")
             return
-        
+
         # Find a good place to insert the link (after features section)
         if "## Features" in content:
             # Insert after features section
             features_end = content.find("## Features")
             next_section = content.find("##", features_end + 1)
-            
+
             if next_section != -1:
                 voice_showcase_section = f"""
 ## 🎭 Voice Showcase
@@ -455,16 +455,16 @@ Featuring voices in multiple languages and accents:
 
 """
                 content = content[:next_section] + voice_showcase_section + content[next_section:]
-                
+
                 with open(readme_path, 'w', encoding='utf-8') as f:
                     f.write(content)
-                
+
                 print("✅ Added voice showcase link to main README")
             else:
                 print("⚠️ Could not find insertion point in README")
         else:
             print("⚠️ Could not find Features section in README")
-            
+
     except Exception as e:
         print(f"❌ Error updating README: {e}")
 

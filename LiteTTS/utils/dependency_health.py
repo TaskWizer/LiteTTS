@@ -58,11 +58,11 @@ class DependencyHealth:
     Provides functionality to validate dependencies at startup,
     monitor them at runtime, and attempt automatic recovery.
     """
-    
+
     def __init__(self):
         """Initialize dependency health monitor"""
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
-        
+
         # Define core dependencies
         self.dependencies = {
             # Core required dependencies
@@ -106,7 +106,7 @@ class DependencyHealth:
                 description="Audio file I/O library",
                 recovery_command="uv add soundfile"
             ),
-            
+
             # Optional dependencies
             "faster_whisper": DependencyInfo(
                 name="faster-whisper",
@@ -134,13 +134,13 @@ class DependencyHealth:
                 recovery_command="uv add watchdog"
             )
         }
-        
+
         self.health_status = {}
         self.monitoring_active = False
         self.monitoring_thread = None
-        
+
         self.logger.info("DependencyHealth initialized")
-    
+
     def check_dependency_health(self, dep_name: str) -> HealthCheckResult:
         """
         Check the health of a specific dependency.
@@ -157,21 +157,21 @@ class DependencyHealth:
                 status=DependencyStatus.FAILED,
                 error_message=f"Unknown dependency: {dep_name}"
             )
-        
+
         dep_info = self.dependencies[dep_name]
         import_name = dep_info.import_name or dep_name
-        
+
         try:
             # Try to import the module
             module = importlib.import_module(import_name)
-            
+
             # Get version if available
             version = None
             for attr in ['__version__', 'version', 'VERSION']:
                 if hasattr(module, attr):
                     version = getattr(module, attr)
                     break
-            
+
             # Check minimum version if specified
             if dep_info.min_version and version:
                 try:
@@ -186,7 +186,7 @@ class DependencyHealth:
                 except ImportError:
                     # packaging not available, skip version check
                     pass
-            
+
             # Run custom health check if provided
             if dep_info.health_check:
                 try:
@@ -198,13 +198,13 @@ class DependencyHealth:
                         version=str(version) if version else None,
                         error_message=f"Health check failed: {e}"
                     )
-            
+
             return HealthCheckResult(
                 dependency=dep_name,
                 status=DependencyStatus.HEALTHY,
                 version=str(version) if version else None
             )
-            
+
         except ImportError as e:
             return HealthCheckResult(
                 dependency=dep_name,
@@ -217,7 +217,7 @@ class DependencyHealth:
                 status=DependencyStatus.CORRUPTED,
                 error_message=str(e)
             )
-    
+
     def validate_startup_dependencies(self) -> Dict[str, HealthCheckResult]:
         """
         Validate all dependencies at startup.
@@ -226,14 +226,14 @@ class DependencyHealth:
             Dictionary mapping dependency names to health check results
         """
         self.logger.info("Starting dependency validation...")
-        
+
         results = {}
         critical_failures = []
-        
+
         for dep_name, dep_info in self.dependencies.items():
             result = self.check_dependency_health(dep_name)
             results[dep_name] = result
-            
+
             if result.status == DependencyStatus.HEALTHY:
                 self.logger.debug(f"✅ {dep_name}: {result.status.value}")
             elif result.status == DependencyStatus.MISSING and dep_info.required:
@@ -241,16 +241,16 @@ class DependencyHealth:
                 self.logger.error(f"❌ {dep_name}: {result.error_message}")
             elif result.status != DependencyStatus.HEALTHY:
                 self.logger.warning(f"⚠️ {dep_name}: {result.error_message}")
-        
+
         if critical_failures:
             self.logger.critical(f"Critical dependencies missing: {', '.join(critical_failures)}")
             raise RuntimeError(f"Critical dependencies missing: {', '.join(critical_failures)}")
-        
+
         self.health_status = results
         self.logger.info(f"Dependency validation completed: {len(results)} dependencies checked")
-        
+
         return results
-    
+
     def attempt_recovery(self, dep_name: str) -> HealthCheckResult:
         """
         Attempt to recover a failed dependency.
@@ -267,9 +267,9 @@ class DependencyHealth:
                 status=DependencyStatus.FAILED,
                 error_message=f"Unknown dependency: {dep_name}"
             )
-        
+
         dep_info = self.dependencies[dep_name]
-        
+
         if not dep_info.recovery_command:
             return HealthCheckResult(
                 dependency=dep_name,
@@ -277,9 +277,9 @@ class DependencyHealth:
                 error_message="No recovery command available",
                 recovery_attempted=False
             )
-        
+
         self.logger.info(f"Attempting recovery for {dep_name}...")
-        
+
         try:
             # Execute recovery command
             result = subprocess.run(
@@ -288,20 +288,20 @@ class DependencyHealth:
                 text=True,
                 timeout=300  # 5 minute timeout
             )
-            
+
             if result.returncode == 0:
                 self.logger.info(f"Recovery command succeeded for {dep_name}")
-                
+
                 # Re-check health after recovery
                 health_result = self.check_dependency_health(dep_name)
                 health_result.recovery_attempted = True
                 health_result.recovery_successful = (health_result.status == DependencyStatus.HEALTHY)
-                
+
                 if health_result.recovery_successful:
                     self.logger.info(f"✅ Recovery successful for {dep_name}")
                 else:
                     self.logger.warning(f"⚠️ Recovery attempted but dependency still unhealthy: {dep_name}")
-                
+
                 return health_result
             else:
                 self.logger.error(f"Recovery command failed for {dep_name}: {result.stderr}")
@@ -312,7 +312,7 @@ class DependencyHealth:
                     recovery_attempted=True,
                     recovery_successful=False
                 )
-                
+
         except subprocess.TimeoutExpired:
             self.logger.error(f"Recovery command timed out for {dep_name}")
             return HealthCheckResult(
@@ -331,7 +331,7 @@ class DependencyHealth:
                 recovery_attempted=True,
                 recovery_successful=False
             )
-    
+
     def validate_and_recover(self, auto_recover: bool = True) -> Dict[str, HealthCheckResult]:
         """
         Validate dependencies and attempt recovery for failed ones.
@@ -344,24 +344,24 @@ class DependencyHealth:
         """
         # Initial validation
         results = self.validate_startup_dependencies()
-        
+
         if not auto_recover:
             return results
-        
+
         # Attempt recovery for failed dependencies
         recovery_needed = [
             name for name, result in results.items()
             if result.status in [DependencyStatus.MISSING, DependencyStatus.CORRUPTED]
             and not self.dependencies[name].required  # Only recover optional deps automatically
         ]
-        
+
         for dep_name in recovery_needed:
             self.logger.info(f"Attempting automatic recovery for {dep_name}")
             recovery_result = self.attempt_recovery(dep_name)
             results[dep_name] = recovery_result
-        
+
         return results
-    
+
     def get_health_summary(self) -> Dict[str, Any]:
         """
         Get a summary of dependency health status.
@@ -371,7 +371,7 @@ class DependencyHealth:
         """
         if not self.health_status:
             self.validate_startup_dependencies()
-        
+
         summary = {
             "total_dependencies": len(self.health_status),
             "healthy": 0,
@@ -382,10 +382,10 @@ class DependencyHealth:
             "critical_missing": 0,
             "optional_missing": 0
         }
-        
+
         for dep_name, result in self.health_status.items():
             dep_info = self.dependencies[dep_name]
-            
+
             if result.status == DependencyStatus.HEALTHY:
                 summary["healthy"] += 1
             elif result.status == DependencyStatus.MISSING:
@@ -400,9 +400,9 @@ class DependencyHealth:
                 summary["corrupted"] += 1
             else:
                 summary["failed"] += 1
-        
+
         summary["overall_health"] = "healthy" if summary["critical_missing"] == 0 else "critical"
-        
+
         return summary
 
 

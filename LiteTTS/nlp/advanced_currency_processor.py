@@ -31,20 +31,20 @@ class FinancialContext:
 
 class AdvancedCurrencyProcessor:
     """Advanced currency and financial data processing system"""
-    
+
     def __init__(self):
         self.currency_symbols = self._load_currency_symbols()
         self.currency_patterns = self._compile_currency_patterns()
         self.financial_suffixes = self._load_financial_suffixes()
         self.number_words = self._load_number_words()
         self.ordinal_words = self._load_ordinal_words()
-        
+
         # Configuration
         self.max_number_size = 1_000_000_000_000  # 1 trillion
         self.enable_suffix_processing = True
         self.enable_approximate_processing = True
         self.enable_international_currencies = True
-        
+
     def _load_currency_symbols(self) -> Dict[str, Dict[str, str]]:
         """Load comprehensive currency symbol mappings"""
         return {
@@ -57,7 +57,7 @@ class AdvancedCurrencyProcessor:
             },
             '€': {
                 'name': 'euro',
-                'plural': 'euros', 
+                'plural': 'euros',
                 'subunit': 'cent',
                 'subunit_plural': 'cents',
                 'code': 'EUR'
@@ -105,7 +105,7 @@ class AdvancedCurrencyProcessor:
                 'code': 'USD'
             }
         }
-    
+
     def _load_financial_suffixes(self) -> Dict[str, Dict[str, Union[int, str]]]:
         """Load financial suffix mappings (M, B, K, etc.)"""
         return {
@@ -118,13 +118,13 @@ class AdvancedCurrencyProcessor:
             'b': {'multiplier': 1_000_000_000, 'name': 'billion'},
             't': {'multiplier': 1_000_000_000_000, 'name': 'trillion'}
         }
-    
+
     def _compile_currency_patterns(self) -> List[Tuple[str, str]]:
         """Compile regex patterns for currency detection"""
         # Note: This method is for reference only
         # Actual pattern matching is done in individual processing methods
         return []
-    
+
     def _load_number_words(self) -> Dict[int, str]:
         """Load number-to-words mappings"""
         return {
@@ -135,7 +135,7 @@ class AdvancedCurrencyProcessor:
             30: "thirty", 40: "forty", 50: "fifty", 60: "sixty", 70: "seventy",
             80: "eighty", 90: "ninety"
         }
-    
+
     def _load_ordinal_words(self) -> Dict[int, str]:
         """Load ordinal number mappings"""
         return {
@@ -146,14 +146,14 @@ class AdvancedCurrencyProcessor:
             30: "thirtieth", 40: "fortieth", 50: "fiftieth", 60: "sixtieth", 70: "seventieth",
             80: "eightieth", 90: "ninetieth"
         }
-    
+
     def process_currency_text(self, text: str, context: Optional[FinancialContext] = None) -> str:
         """Main method to process currency and financial text"""
         if context is None:
             context = FinancialContext()
-        
+
         logger.debug(f"Processing currency text: {text[:100]}...")
-        
+
         # Process in order of complexity (most specific first)
         text = self._process_negative_currencies(text, context)  # Process negative first
         text = self._process_currency_with_suffixes(text, context)
@@ -161,10 +161,10 @@ class AdvancedCurrencyProcessor:
         text = self._process_large_currency_amounts(text, context)
         text = self._process_basic_currencies(text, context)
         text = self._process_financial_terms(text, context)
-        
+
         logger.debug(f"Currency processing result: {text[:100]}...")
         return text
-    
+
     def _process_currency_with_suffixes(self, text: str, context: FinancialContext) -> str:
         """Process currency amounts with financial suffixes (M, B, K)"""
         if not self.enable_suffix_processing:
@@ -201,7 +201,7 @@ class AdvancedCurrencyProcessor:
             text = re.sub(pattern, replace_suffix, text, flags=re.IGNORECASE)
 
         return text
-    
+
     def _process_approximate_currencies(self, text: str, context: FinancialContext) -> str:
         """Process approximate currency amounts (~$500)"""
         if not self.enable_approximate_processing:
@@ -225,7 +225,7 @@ class AdvancedCurrencyProcessor:
             text = re.sub(pattern, replace_approximate, text)
 
         return text
-    
+
     def _process_large_currency_amounts(self, text: str, context: FinancialContext) -> str:
         """Process large currency amounts with commas ($1,234,567.89)"""
         for symbol, currency_info in self.currency_symbols.items():
@@ -245,7 +245,7 @@ class AdvancedCurrencyProcessor:
             text = re.sub(pattern, replace_large_amount, text)
 
         return text
-    
+
     def _process_negative_currencies(self, text: str, context: FinancialContext) -> str:
         """Process negative currency amounts"""
         # Process all currency symbols for negative amounts
@@ -303,7 +303,7 @@ class AdvancedCurrencyProcessor:
             text = re.sub(pattern3, replace_parenthetical_negative_suffix, text)
 
         return text
-    
+
     def _process_basic_currencies(self, text: str, context: FinancialContext) -> str:
         """Process basic currency amounts ($100, €50.25)"""
         for symbol, currency_info in self.currency_symbols.items():
@@ -324,14 +324,14 @@ class AdvancedCurrencyProcessor:
             text = re.sub(pattern, replace_basic, text)
 
         return text
-    
+
     def _process_financial_terms(self, text: str, context: FinancialContext) -> str:
         """Process financial terminology and abbreviations"""
         financial_terms = {
             r'\bbps\b': 'basis points',
             r'\bbp\b': 'basis point',
             r'\bQ1\b': 'first quarter',
-            r'\bQ2\b': 'second quarter', 
+            r'\bQ2\b': 'second quarter',
             r'\bQ3\b': 'third quarter',
             r'\bQ4\b': 'fourth quarter',
             r'\bYoY\b': 'year over year',
@@ -340,10 +340,10 @@ class AdvancedCurrencyProcessor:
             r'\bROI\b': 'return on investment',
             r'\bEBITDA\b': 'E B I T D A'
         }
-        
+
         for pattern, replacement in financial_terms.items():
             text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
-        
+
         return text
 
     def _currency_amount_to_words(self, amount: float, currency_info: Dict[str, str]) -> str:

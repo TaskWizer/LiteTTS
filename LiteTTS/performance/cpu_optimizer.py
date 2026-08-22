@@ -33,12 +33,12 @@ class CPUInfo:
 
 class CPUOptimizer:
     """CPU optimization and affinity management"""
-    
+
     def __init__(self):
         self.cpu_info = self._detect_cpu_info()
         self.affinity_set = False
         self.original_affinity = None
-        
+
     def _detect_cpu_info(self) -> CPUInfo:
         """Detect CPU information and capabilities"""
         try:
@@ -132,7 +132,7 @@ class CPUOptimizer:
                 base_frequency=base_frequency,
                 max_frequency=max_frequency
             )
-            
+
         except ImportError:
             # Fallback without psutil
             logical_cores = os.cpu_count() or 4
@@ -146,7 +146,7 @@ class CPUOptimizer:
                 supports_avx2=False,
                 supports_avx512=False
             )
-    
+
     def set_cpu_affinity(self, core_list: Optional[List[int]] = None) -> bool:
         """
         Set CPU affinity for the current process
@@ -159,28 +159,28 @@ class CPUOptimizer:
         """
         try:
             import psutil
-            
+
             if core_list is None:
                 core_list = self._get_optimal_cores()
-            
+
             # Store original affinity for restoration
             if not self.affinity_set:
                 self.original_affinity = psutil.Process().cpu_affinity()
-            
+
             # Set new affinity
             psutil.Process().cpu_affinity(core_list)
             self.affinity_set = True
-            
+
             logger.info(f"Set CPU affinity to cores: {core_list}")
             return True
-            
+
         except ImportError:
             logger.warning("psutil not available, cannot set CPU affinity")
             return False
         except Exception as e:
             logger.error(f"Failed to set CPU affinity: {e}")
             return False
-    
+
     def _get_optimal_cores(self, aggressive: bool = False) -> List[int]:
         """Get optimal CPU cores for TTS processing"""
         total_cores = self.cpu_info.total_cores
@@ -215,24 +215,24 @@ class CPUOptimizer:
             else:
                 # Low-end CPU: use most cores but leave one for system
                 return list(range(0, max(1, total_cores - 1)))
-    
+
     def restore_cpu_affinity(self) -> bool:
         """Restore original CPU affinity"""
         try:
             import psutil
-            
+
             if self.affinity_set and self.original_affinity:
                 psutil.Process().cpu_affinity(self.original_affinity)
                 self.affinity_set = False
                 logger.info("Restored original CPU affinity")
                 return True
-            
+
             return False
-            
+
         except Exception as e:
             logger.error(f"Failed to restore CPU affinity: {e}")
             return False
-    
+
     def optimize_environment_variables(self, aggressive: bool = False) -> Dict[str, str]:
         """Get optimized environment variables for current CPU"""
         env_vars = {}
@@ -292,24 +292,24 @@ class CPUOptimizer:
                 env_vars["MKL_NUM_THREADS"] = str(omp_threads)
 
         return env_vars
-    
+
     def apply_optimizations(self, enable_affinity: bool = False) -> bool:
         """Apply all CPU optimizations"""
         success = True
-        
+
         # Set environment variables
         env_vars = self.optimize_environment_variables()
         for key, value in env_vars.items():
             os.environ.setdefault(key, value)
-        
+
         logger.info(f"Applied CPU environment optimizations: {env_vars}")
-        
+
         # Set CPU affinity if requested
         if enable_affinity:
             success &= self.set_cpu_affinity()
-        
+
         return success
-    
+
     def get_recommended_settings(self, aggressive: bool = False) -> Dict[str, Any]:
         """Get recommended settings for current CPU"""
         total_cores = self.cpu_info.total_cores

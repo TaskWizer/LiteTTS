@@ -22,13 +22,13 @@ if __name__ == "__main__":
     print("📊 This will test all available models with comprehensive metrics")
     print("⏱️  Estimated time: 5-15 minutes depending on number of models")
     print()
-    
+
     exit_code = main()
-    
+
     if exit_code == 0:
         print("\n✅ Benchmark completed successfully!")
         print("📁 Check docs/benchmark/ for detailed results")
     else:
         print("\n❌ Benchmark failed!")
-    
+
     sys.exit(exit_code)

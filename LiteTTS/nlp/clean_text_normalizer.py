@@ -23,7 +23,7 @@ class NormalizationResult:
 
 class CleanTextNormalizer:
     """Clean, systematic text normalizer for TTS pronunciation fixes"""
-    
+
     def __init__(self, config: Dict = None):
         self.config = config or {}
 
@@ -54,7 +54,7 @@ class CleanTextNormalizer:
             return False
 
         return True
-        
+
     def _load_contraction_fixes(self) -> Dict[str, str]:
         """Load contraction pronunciation fixes - ONLY truly problematic contractions"""
         # CRITICAL FIX: Only include contractions that are truly problematic for TTS
@@ -80,7 +80,7 @@ class CleanTextNormalizer:
             "didn't": "did not",
             "doesn't": "does not",
         }
-    
+
     def _load_symbol_mappings(self) -> Dict[str, str]:
         """Load symbol-to-word mappings"""
         return {
@@ -99,14 +99,14 @@ class CleanTextNormalizer:
             # REMOVED: '/' -> ' slash ' (slashes should be silent per user request)
             '<': ' less than ',
             '>': ' greater than ',
-            
+
             # Currency symbols are handled separately in currency processing
             # '$': ' dollars ',  # Handled in currency processing
             # '€': ' euros ',    # Handled in currency processing
             # '£': ' pounds ',   # Handled in currency processing
             # '¥': ' yen ',      # Handled in currency processing
         }
-    
+
     def _load_currency_patterns(self) -> List[Tuple[str, callable]]:
         """Load currency processing patterns"""
         return [
@@ -119,7 +119,7 @@ class CleanTextNormalizer:
             # Euro amounts
             (r'€(\d+(?:\.\d{2})?)', self._format_euro_amount),
         ]
-    
+
     def _load_date_patterns(self) -> List[Tuple[str, callable]]:
         """Load date processing patterns"""
         return [
@@ -130,7 +130,7 @@ class CleanTextNormalizer:
             # Short year format MM/DD/YY
             (r'\b(\d{1,2})/(\d{1,2})/(\d{2})\b', self._format_short_year_date),
         ]
-    
+
     def _load_abbreviation_mappings(self) -> Dict[str, str]:
         """Load abbreviation mappings"""
         return {
@@ -175,7 +175,7 @@ class CleanTextNormalizer:
             'iOS': 'i-O-S',
             'Android': 'Android',
         }
-    
+
     def _load_pronunciation_fixes(self) -> Dict[str, str]:
         """Load specific pronunciation fixes
 
@@ -200,24 +200,24 @@ class CleanTextNormalizer:
             'VTI': 'V T I',
             # Note: Removed less common tickers to avoid conflicts with common words
         }
-    
+
     def normalize_text(self, text: str) -> NormalizationResult:
         """Main normalization function"""
         import time
         start_time = time.perf_counter()
-        
+
         original_text = text
         changes_made = []
         issues_found = []
-        
+
         logger.debug(f"Starting clean normalization: {text[:100]}...")
-        
+
         try:
             # Step 1: Fix HTML entities and encoding issues
             if '&#x27;' in text or '&quot;' in text:
                 text = self._fix_html_entities(text)
                 changes_made.append("Fixed HTML entities")
-            
+
             # Step 2: Fix contractions
             if self.fix_contractions:
                 old_text = text
@@ -245,7 +245,7 @@ class CleanTextNormalizer:
                 text = self._fix_symbols(text)
                 if text != old_text:
                     changes_made.append("Fixed symbols")
-            
+
             # Step 6: Fix abbreviations
             if self.fix_abbreviations:
                 old_text = text
@@ -258,21 +258,21 @@ class CleanTextNormalizer:
             text = self._fix_contextual_units(text)
             if text != old_text:
                 changes_made.append("Fixed contextual units")
-            
+
             # Step 7: Fix specific pronunciations
             if self.fix_pronunciations:
                 old_text = text
                 text = self._fix_pronunciations(text)
                 if text != old_text:
                     changes_made.append("Fixed pronunciations")
-            
+
             # Step 8: Clean up whitespace
             text = self._clean_whitespace(text)
-            
+
             processing_time = time.perf_counter() - start_time
-            
+
             logger.debug(f"Clean normalization complete: {text[:100]}...")
-            
+
             return NormalizationResult(
                 processed_text=text,
                 original_text=original_text,
@@ -280,12 +280,12 @@ class CleanTextNormalizer:
                 issues_found=issues_found,
                 processing_time=processing_time
             )
-            
+
         except Exception as e:
             logger.error(f"Error in clean normalization: {e}")
             issues_found.append(f"Processing error: {e}")
             processing_time = time.perf_counter() - start_time
-            
+
             return NormalizationResult(
                 processed_text=original_text,  # Return original on error
                 original_text=original_text,
@@ -293,7 +293,7 @@ class CleanTextNormalizer:
                 issues_found=issues_found,
                 processing_time=processing_time
             )
-    
+
     def _fix_html_entities(self, text: str) -> str:
         """Fix HTML entities that cause pronunciation issues"""
         # Critical fixes from conversation history
@@ -309,12 +309,12 @@ class CleanTextNormalizer:
             '&gt;': ' greater than ',
             '&nbsp;': ' ',  # Non-breaking space
         }
-        
+
         for entity, replacement in html_fixes.items():
             text = text.replace(entity, replacement)
-        
+
         return text
-    
+
     def _fix_contractions(self, text: str) -> str:
         """Fix contraction pronunciations"""
         # Check if contraction expansion is disabled in config
@@ -328,7 +328,7 @@ class CleanTextNormalizer:
             text = re.sub(pattern, expansion, text, flags=re.IGNORECASE)
 
         return text
-    
+
     def _fix_symbols(self, text: str) -> str:
         """Fix symbol pronunciations"""
         for symbol, replacement in self.symbol_mappings.items():
@@ -337,7 +337,7 @@ class CleanTextNormalizer:
                 text = re.sub(r'(?<!\*)\*(?!\*)', replacement, text)
             else:
                 text = text.replace(symbol, replacement)
-        
+
         return text
 
     def _fix_currency(self, text: str) -> str:

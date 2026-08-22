@@ -53,14 +53,14 @@ def test_ml_framework_imports():
     try:
         import onnxruntime
         logger.info("✅ ONNX Runtime imported successfully")
-        
+
         # Test optional imports
         try:
             import torch
             logger.info("✅ PyTorch imported successfully")
         except ImportError:
             logger.info("ℹ️ PyTorch not available (optional)")
-        
+
         return True
     except ImportError as e:
         logger.error(f"❌ ML framework import failed: {e}")
@@ -73,7 +73,7 @@ def test_litetts_imports():
         from LiteTTS.config import config
         from LiteTTS.logging_config import setup_logging
         logger.info("✅ LiteTTS core modules imported successfully")
-        
+
         # Test performance modules
         try:
             from LiteTTS.performance.memory_optimization import MemoryOptimizer
@@ -81,7 +81,7 @@ def test_litetts_imports():
             logger.info("✅ LiteTTS performance modules imported successfully")
         except ImportError as e:
             logger.warning(f"⚠️ Some LiteTTS performance modules not available: {e}")
-        
+
         return True
     except ImportError as e:
         logger.error(f"❌ LiteTTS import failed: {e}")
@@ -90,7 +90,7 @@ def test_litetts_imports():
 def main():
     """Run all import tests"""
     logger.info("🧪 Starting import tests...")
-    
+
     tests = [
         ("Core Python modules", test_core_imports),
         ("Web framework modules", test_web_framework_imports),
@@ -98,19 +98,19 @@ def main():
         ("ML framework modules", test_ml_framework_imports),
         ("LiteTTS modules", test_litetts_imports),
     ]
-    
+
     passed = 0
     total = len(tests)
-    
+
     for test_name, test_func in tests:
         logger.info(f"Testing {test_name}...")
         if test_func():
             passed += 1
         else:
             logger.error(f"Test failed: {test_name}")
-    
+
     logger.info(f"Import tests completed: {passed}/{total} passed")
-    
+
     if passed == total:
         logger.info("🎉 All import tests passed!")
         return 0

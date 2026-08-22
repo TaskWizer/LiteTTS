@@ -17,20 +17,20 @@ def download_file(url: str, filepath: Path, description: str = "") -> bool:
     try:
         # Create directory if it doesn't exist
         filepath.parent.mkdir(parents=True, exist_ok=True)
-        
+
         # Check if file already exists
         if filepath.exists() and filepath.stat().st_size > 0:
             logger.info(f"✓ {filepath.name} already exists ({filepath.stat().st_size} bytes)")
             return True
-        
+
         logger.info(f"📥 Downloading {description or filepath.name} from {url}")
-        
+
         response = requests.get(url, stream=True)
         response.raise_for_status()
-        
+
         total_size = int(response.headers.get('content-length', 0))
         downloaded = 0
-        
+
         with open(filepath, 'wb') as f:
             for chunk in response.iter_content(chunk_size=8192):
                 if chunk:
@@ -40,10 +40,10 @@ def download_file(url: str, filepath: Path, description: str = "") -> bool:
                         percent = (downloaded / total_size) * 100
                         if downloaded % (1024 * 1024) == 0:  # Log every MB
                             logger.info(f"   Progress: {percent:.1f}% ({downloaded}/{total_size} bytes)")
-        
+
         logger.info(f"✅ Downloaded {filepath.name} ({downloaded} bytes)")
         return True
-        
+
     except Exception as e:
         logger.error(f"❌ Failed to download {filepath.name}: {e}")
         if filepath.exists():

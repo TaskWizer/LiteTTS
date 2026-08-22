@@ -14,7 +14,7 @@ BASE_URL = "http://localhost:8354"
 def test_openwebui_typical_request():
     """Test the most common OpenWebUI request pattern"""
     print("🧪 Testing typical OpenWebUI request...")
-    
+
     # This is what OpenWebUI typically sends
     payload = {
         "input": "Hello, this is a test from OpenWebUI. The integration should work seamlessly now.",
@@ -23,7 +23,7 @@ def test_openwebui_typical_request():
         "speed": 1.0,
         "model": None  # OpenWebUI includes this field
     }
-    
+
     try:
         start_time = time.time()
         response = requests.post(
@@ -32,7 +32,7 @@ def test_openwebui_typical_request():
             timeout=30
         )
         end_time = time.time()
-        
+
         if response.status_code == 200:
             audio_size = len(response.content)
             generation_time = end_time - start_time
@@ -47,7 +47,7 @@ def test_openwebui_typical_request():
             except:
                 print(f"   Response: {response.text}")
             return False
-            
+
     except Exception as e:
         print(f"❌ EXCEPTION: {e}")
         return False
@@ -55,20 +55,20 @@ def test_openwebui_typical_request():
 def test_openwebui_minimal_request():
     """Test minimal OpenWebUI request (only required fields)"""
     print("\n🧪 Testing minimal OpenWebUI request...")
-    
+
     payload = {
         "input": "Minimal test",
         "voice": "af_heart"
         # No optional fields - should use defaults
     }
-    
+
     try:
         response = requests.post(
             f"{BASE_URL}/v1/audio/speech",
             json=payload,
             timeout=30
         )
-        
+
         if response.status_code == 200:
             audio_size = len(response.content)
             print(f"✅ SUCCESS: Generated {audio_size} bytes with defaults")
@@ -76,7 +76,7 @@ def test_openwebui_minimal_request():
         else:
             print(f"❌ FAILED: HTTP {response.status_code}")
             return False
-            
+
     except Exception as e:
         print(f"❌ EXCEPTION: {e}")
         return False
@@ -84,7 +84,7 @@ def test_openwebui_minimal_request():
 def test_openwebui_edge_cases():
     """Test edge cases that might occur with OpenWebUI"""
     print("\n🧪 Testing OpenWebUI edge cases...")
-    
+
     edge_cases = [
         {
             "name": "Empty string format",
@@ -103,7 +103,7 @@ def test_openwebui_edge_cases():
             "payload": {"input": "Test all nulls", "voice": "af_heart", "response_format": None, "speed": None, "model": None}
         }
     ]
-    
+
     success_count = 0
     for case in edge_cases:
         try:
@@ -112,24 +112,24 @@ def test_openwebui_edge_cases():
                 json=case["payload"],
                 timeout=30
             )
-            
+
             if response.status_code == 200:
                 audio_size = len(response.content)
                 print(f"✅ {case['name']}: Generated {audio_size} bytes")
                 success_count += 1
             else:
                 print(f"❌ {case['name']}: HTTP {response.status_code}")
-                
+
         except Exception as e:
             print(f"❌ {case['name']}: Exception {e}")
-    
+
     print(f"\n📊 Edge cases: {success_count}/{len(edge_cases)} passed")
     return success_count == len(edge_cases)
 
 def test_openwebui_error_handling():
     """Test that error handling works correctly for OpenWebUI"""
     print("\n🧪 Testing OpenWebUI error handling...")
-    
+
     error_cases = [
         {
             "name": "Empty text",
@@ -147,7 +147,7 @@ def test_openwebui_error_handling():
             "expected_status": 400
         }
     ]
-    
+
     success_count = 0
     for case in error_cases:
         try:
@@ -156,7 +156,7 @@ def test_openwebui_error_handling():
                 json=case["payload"],
                 timeout=30
             )
-            
+
             if response.status_code == case["expected_status"]:
                 try:
                     error_data = response.json()
@@ -169,40 +169,40 @@ def test_openwebui_error_handling():
                     print(f"❌ {case['name']}: Invalid JSON response")
             else:
                 print(f"❌ {case['name']}: Expected {case['expected_status']}, got {response.status_code}")
-                
+
         except Exception as e:
             print(f"❌ {case['name']}: Exception {e}")
-    
+
     print(f"\n📊 Error handling: {success_count}/{len(error_cases)} passed")
     return success_count == len(error_cases)
 
 def test_openwebui_performance():
     """Test performance characteristics important for OpenWebUI"""
     print("\n🧪 Testing OpenWebUI performance...")
-    
+
     # Test cache performance (important for OpenWebUI responsiveness)
     test_text = "Performance test for OpenWebUI integration"
     payload = {"input": test_text, "voice": "af_heart"}
-    
+
     try:
         # First request (cold)
         start_time = time.time()
         response1 = requests.post(f"{BASE_URL}/v1/audio/speech", json=payload, timeout=30)
         cold_time = time.time() - start_time
-        
+
         if response1.status_code != 200:
             print(f"❌ Cold request failed: {response1.status_code}")
             return False
-        
+
         # Second request (should be cached)
         start_time = time.time()
         response2 = requests.post(f"{BASE_URL}/v1/audio/speech", json=payload, timeout=30)
         cache_time = time.time() - start_time
-        
+
         if response2.status_code != 200:
             print(f"❌ Cache request failed: {response2.status_code}")
             return False
-        
+
         # Verify performance improvement
         if cache_time < cold_time and cache_time < 0.1:
             speedup = cold_time / cache_time
@@ -211,7 +211,7 @@ def test_openwebui_performance():
         else:
             print(f"❌ Cache not working: {cache_time:.3f}s vs {cold_time:.3f}s")
             return False
-            
+
     except Exception as e:
         print(f"❌ Performance test exception: {e}")
         return False
@@ -222,7 +222,7 @@ def main():
     print("=" * 60)
     print("This test simulates real OpenWebUI request patterns")
     print("=" * 60)
-    
+
     tests = [
         ("Typical Request", test_openwebui_typical_request),
         ("Minimal Request", test_openwebui_minimal_request),
@@ -230,18 +230,18 @@ def main():
         ("Error Handling", test_openwebui_error_handling),
         ("Performance", test_openwebui_performance)
     ]
-    
+
     passed = 0
     total = len(tests)
-    
+
     for test_name, test_func in tests:
         if test_func():
             passed += 1
-    
+
     print("\n" + "=" * 60)
     print("📊 FINAL RESULTS:")
     print(f"✅ Passed: {passed}/{total} test categories")
-    
+
     if passed == total:
         print("\n🎉 EXCELLENT! OpenWebUI integration is fully working!")
         print("💡 OpenWebUI users can now:")

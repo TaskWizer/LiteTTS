@@ -20,7 +20,7 @@ BASE_URL = "http://localhost:8354"
 def test_basic_functionality():
     """Test basic TTS functionality"""
     logger.info("🧪 Testing basic TTS functionality...")
-    
+
     try:
         response = requests.post(
             f"{BASE_URL}/v1/audio/speech",
@@ -32,14 +32,14 @@ def test_basic_functionality():
             headers={"Content-Type": "application/json"},
             timeout=30
         )
-        
+
         if response.status_code == 200:
             logger.info(f"   ✅ Basic TTS: SUCCESS ({len(response.content)} bytes)")
             return True
         else:
             logger.error(f"   ❌ Basic TTS: FAILED ({response.status_code})")
             return False
-            
+
     except Exception as e:
         logger.error(f"   ❌ Basic TTS: EXCEPTION ({e})")
         return False
@@ -47,7 +47,7 @@ def test_basic_functionality():
 def test_performance_targets():
     """Test that performance targets are met"""
     logger.info("🧪 Testing performance targets...")
-    
+
     test_cases = [
         {
             "name": "Short text",
@@ -65,9 +65,9 @@ def test_performance_targets():
             "target_rtf": 0.3  # Excellent performance
         }
     ]
-    
+
     all_passed = True
-    
+
     for test_case in test_cases:
         try:
             start_time = time.time()
@@ -81,12 +81,12 @@ def test_performance_targets():
                 timeout=60
             )
             synthesis_time = time.time() - start_time
-            
+
             if response.status_code == 200:
                 # Estimate audio duration (rough calculation)
                 audio_duration = len(test_case["text"]) * 0.05  # ~50ms per character
                 rtf = synthesis_time / audio_duration if audio_duration > 0 else float('inf')
-                
+
                 if rtf <= test_case["target_rtf"]:
                     logger.info(f"   ✅ {test_case['name']}: RTF={rtf:.3f} (target: {test_case['target_rtf']})")
                 else:
@@ -95,17 +95,17 @@ def test_performance_targets():
             else:
                 logger.error(f"   ❌ {test_case['name']}: HTTP {response.status_code}")
                 all_passed = False
-                
+
         except Exception as e:
             logger.error(f"   ❌ {test_case['name']}: EXCEPTION ({e})")
             all_passed = False
-    
+
     return all_passed
 
 def test_openwebui_integration():
     """Test OpenWebUI integration thoroughly"""
     logger.info("🧪 Testing OpenWebUI integration...")
-    
+
     # Test different scenarios that OpenWebUI might use
     test_scenarios = [
         {
@@ -131,57 +131,57 @@ def test_openwebui_integration():
             "endpoint": "/v1/audio/stream/audio/speech"
         }
     ]
-    
+
     all_passed = True
-    
+
     for scenario in test_scenarios:
         try:
             endpoint = scenario.get("endpoint", "/v1/audio/speech")
-            
+
             response = requests.post(
                 f"{BASE_URL}{endpoint}",
                 json=scenario["payload"],
                 headers={**scenario["headers"], "Content-Type": "application/json"},
                 timeout=30
             )
-            
+
             if response.status_code == 200 and len(response.content) > 1000:
                 logger.info(f"   ✅ {scenario['name']}: SUCCESS ({len(response.content)} bytes)")
             else:
                 logger.error(f"   ❌ {scenario['name']}: FAILED ({response.status_code}, {len(response.content)} bytes)")
                 all_passed = False
-                
+
         except Exception as e:
             logger.error(f"   ❌ {scenario['name']}: EXCEPTION ({e})")
             all_passed = False
-    
+
     return all_passed
 
 def test_voice_compatibility():
     """Test voice compatibility"""
     logger.info("🧪 Testing voice compatibility...")
-    
+
     # Get available voices
     try:
         response = requests.get(f"{BASE_URL}/v1/voices", timeout=10)
         if response.status_code != 200:
             logger.error("   ❌ Could not get voice list")
             return False
-        
+
         voices_data = response.json()
         # Handle the actual format returned by the API
         available_voices = voices_data.get("voices", [])
-        
+
         if not available_voices:
             logger.error("   ❌ No voices available")
             return False
-        
+
         logger.info(f"   📋 Found {len(available_voices)} voices")
-        
+
         # Test a few different voices
         test_voices = available_voices[:3]  # Test first 3 voices
         all_passed = True
-        
+
         for voice in test_voices:
             try:
                 response = requests.post(
@@ -193,19 +193,19 @@ def test_voice_compatibility():
                     headers={"Content-Type": "application/json"},
                     timeout=30
                 )
-                
+
                 if response.status_code == 200:
                     logger.info(f"   ✅ Voice {voice}: SUCCESS")
                 else:
                     logger.error(f"   ❌ Voice {voice}: FAILED ({response.status_code})")
                     all_passed = False
-                    
+
             except Exception as e:
                 logger.error(f"   ❌ Voice {voice}: EXCEPTION ({e})")
                 all_passed = False
-        
+
         return all_passed
-        
+
     except Exception as e:
         logger.error(f"   ❌ Voice compatibility test failed: {e}")
         return False
@@ -213,7 +213,7 @@ def test_voice_compatibility():
 def test_error_handling():
     """Test error handling"""
     logger.info("🧪 Testing error handling...")
-    
+
     error_test_cases = [
         {
             "name": "Invalid voice",
@@ -236,9 +236,9 @@ def test_error_handling():
             "expected_status": 400
         }
     ]
-    
+
     all_passed = True
-    
+
     for test_case in error_test_cases:
         try:
             response = requests.post(
@@ -247,28 +247,28 @@ def test_error_handling():
                 headers={"Content-Type": "application/json"},
                 timeout=30
             )
-            
+
             if response.status_code == test_case["expected_status"]:
                 logger.info(f"   ✅ {test_case['name']}: Correctly returned {response.status_code}")
             else:
                 logger.warning(f"   ⚠️ {test_case['name']}: Expected {test_case['expected_status']}, got {response.status_code}")
                 # Don't fail for error handling - some might be handled differently
-                
+
         except Exception as e:
             logger.error(f"   ❌ {test_case['name']}: EXCEPTION ({e})")
             all_passed = False
-    
+
     return all_passed
 
 def test_concurrent_requests():
     """Test concurrent request handling"""
     logger.info("🧪 Testing concurrent request handling...")
-    
+
     import threading
     import queue
-    
+
     results_queue = queue.Queue()
-    
+
     def make_request(request_id):
         try:
             start_time = time.time()
@@ -282,7 +282,7 @@ def test_concurrent_requests():
                 timeout=60
             )
             duration = time.time() - start_time
-            
+
             results_queue.put({
                 "id": request_id,
                 "status": response.status_code,
@@ -290,32 +290,32 @@ def test_concurrent_requests():
                 "size": len(response.content),
                 "success": response.status_code == 200
             })
-            
+
         except Exception as e:
             results_queue.put({
                 "id": request_id,
                 "error": str(e),
                 "success": False
             })
-    
+
     # Launch 5 concurrent requests
     threads = []
     for i in range(5):
         thread = threading.Thread(target=make_request, args=(i,))
         threads.append(thread)
         thread.start()
-    
+
     # Wait for all threads to complete
     for thread in threads:
         thread.join()
-    
+
     # Collect results
     results = []
     while not results_queue.empty():
         results.append(results_queue.get())
-    
+
     successful_requests = sum(1 for r in results if r.get("success", False))
-    
+
     if successful_requests >= 4:  # Allow 1 failure out of 5
         logger.info(f"   ✅ Concurrent requests: {successful_requests}/5 successful")
         return True
@@ -327,7 +327,7 @@ def main():
     """Run final validation"""
     logger.info("🚀 Starting Final System Validation")
     logger.info("=" * 60)
-    
+
     # Check server availability
     try:
         response = requests.get(f"{BASE_URL}/health", timeout=5)
@@ -338,7 +338,7 @@ def main():
     except Exception as e:
         logger.error(f"❌ Cannot connect to server: {e}")
         sys.exit(1)
-    
+
     # Run all tests
     tests = [
         ("Basic Functionality", test_basic_functionality),
@@ -348,10 +348,10 @@ def main():
         ("Error Handling", test_error_handling),
         ("Concurrent Requests", test_concurrent_requests)
     ]
-    
+
     passed_tests = 0
     total_tests = len(tests)
-    
+
     for test_name, test_func in tests:
         logger.info(f"\n{'='*20} {test_name} {'='*20}")
         try:
@@ -362,14 +362,14 @@ def main():
                 logger.error(f"❌ {test_name}: FAILED")
         except Exception as e:
             logger.error(f"❌ {test_name}: EXCEPTION - {e}")
-    
+
     # Final results
     logger.info(f"\n{'='*60}")
     logger.info(f"📊 FINAL VALIDATION RESULTS")
     logger.info(f"{'='*60}")
     logger.info(f"Tests Passed: {passed_tests}/{total_tests}")
     logger.info(f"Success Rate: {(passed_tests/total_tests)*100:.1f}%")
-    
+
     if passed_tests == total_tests:
         logger.info("🎉 ALL TESTS PASSED - System is fully validated!")
         sys.exit(0)

@@ -61,8 +61,8 @@ class PerformanceStreamer:
     Collects system and application performance metrics and streams
     them to connected dashboard clients via WebSocket.
     """
-    
-    def __init__(self, 
+
+    def __init__(self,
                  websocket_manager: WebSocketManager,
                  update_interval: float = 1.0,
                  history_size: int = 300):
@@ -77,14 +77,14 @@ class PerformanceStreamer:
         self.websocket_manager = websocket_manager
         self.update_interval = update_interval
         self.history_size = history_size
-        
+
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
-        
+
         # Metrics storage
         self.metrics_history: deque = deque(maxlen=history_size)
         self.current_metrics: Optional[PerformanceMetrics] = None
         self.current_status: Optional[SystemStatus] = None
-        
+
         # Application metrics (to be updated by TTS system)
         self.app_metrics = {
             "rtf": 0.0,
@@ -97,39 +97,39 @@ class PerformanceStreamer:
             "error_rate": 0.0,
             "last_error": None
         }
-        
+
         # System info
         self.start_time = time.time()
         self.last_cpu_times = None
-        
+
         # Background tasks
         self._streaming_task: Optional[asyncio.Task] = None
         self._running = False
-        
+
         # Thread-safe lock for metrics updates
         self._metrics_lock = threading.Lock()
-    
+
     async def start(self):
         """Start the performance streamer."""
         if self._running:
             return
-        
+
         self._running = True
         self.logger.info("Starting PerformanceStreamer...")
-        
+
         # Start streaming task
         self._streaming_task = asyncio.create_task(self._streaming_loop())
-        
+
         self.logger.info("✅ PerformanceStreamer started")
-    
+
     async def stop(self):
         """Stop the performance streamer."""
         if not self._running:
             return
-        
+
         self._running = False
         self.logger.info("Stopping PerformanceStreamer...")
-        
+
         # Cancel streaming task
         if self._streaming_task:
             self._streaming_task.cancel()
@@ -137,9 +137,9 @@ class PerformanceStreamer:
                 await self._streaming_task
             except asyncio.CancelledError:
                 pass
-        
+
         self.logger.info("PerformanceStreamer stopped")
-    
+
     def update_app_metrics(self, **metrics):
         """
         Update application-specific metrics.
@@ -151,27 +151,27 @@ class PerformanceStreamer:
             for key, value in metrics.items():
                 if key in self.app_metrics:
                     self.app_metrics[key] = value
-    
+
     def increment_requests(self):
         """Increment total request counter."""
         with self._metrics_lock:
             self.app_metrics["total_requests"] += 1
-    
+
     def set_active_requests(self, count: int):
         """Set current active request count."""
         with self._metrics_lock:
             self.app_metrics["active_requests"] = count
-    
+
     def update_rtf(self, rtf: float):
         """Update current RTF (Real-Time Factor)."""
         with self._metrics_lock:
             self.app_metrics["rtf"] = rtf
-    
+
     def update_processing_time(self, time_ms: float):
         """Update last processing time."""
         with self._metrics_lock:
             self.app_metrics["processing_time_ms"] = time_ms
-    
+
     def report_error(self, error_message: str):
         """Report an error for metrics tracking."""
         with self._metrics_lock:
@@ -182,29 +182,29 @@ class PerformanceStreamer:
                 error_count = getattr(self, '_error_count', 0) + 1
                 self._error_count = error_count
                 self.app_metrics["error_rate"] = safe_division(error_count, self.app_metrics["total_requests"], 0.0)
-    
+
     def _collect_system_metrics(self) -> PerformanceMetrics:
         """Collect current system performance metrics."""
         current_time = time.time()
-        
+
         # Memory metrics
         memory = psutil.virtual_memory()
         memory_usage_mb = (memory.total - memory.available) / (1024 * 1024)
         memory_percent = memory.percent
-        
+
         # CPU metrics
         cpu_percent = psutil.cpu_percent(interval=None)
-        
+
         # System load (Unix-like systems)
         try:
             system_load = list(psutil.getloadavg())
         except (AttributeError, OSError):
             system_load = [0.0, 0.0, 0.0]
-        
+
         # Application metrics (thread-safe copy)
         with self._metrics_lock:
             app_metrics_copy = self.app_metrics.copy()
-        
+
         # Create metrics snapshot
         metrics = PerformanceMetrics(
             timestamp=current_time,
@@ -221,25 +221,25 @@ class PerformanceStreamer:
             voices_loaded=app_metrics_copy["voices_loaded"],
             system_load=system_load
         )
-        
+
         return metrics
-    
+
     def _collect_system_status(self) -> SystemStatus:
         """Collect current system status information."""
         current_time = time.time()
-        
+
         # Memory info
         memory = psutil.virtual_memory()
         total_memory_gb = memory.total / (1024**3)
         available_memory_gb = memory.available / (1024**3)
-        
+
         # Disk usage
         try:
             disk = psutil.disk_usage('/')
             disk_usage_percent = (disk.used / disk.total) * 100
         except:
             disk_usage_percent = 0.0
-        
+
         # Temperature (if available)
         temperature = None
         try:
@@ -252,7 +252,7 @@ class PerformanceStreamer:
                         break
         except:
             pass
-        
+
         # GPU info (basic check)
         gpu_available = False
         gpu_memory_mb = None
@@ -264,12 +264,12 @@ class PerformanceStreamer:
                 gpu_memory_mb = gpus[0].memoryUsed
         except ImportError:
             pass
-        
+
         # Application status
         with self._metrics_lock:
             error_rate = self.app_metrics["error_rate"]
             last_error = self.app_metrics["last_error"]
-        
+
         # Determine overall status
         status = "healthy"
         if error_rate > 0.1:  # 10% error rate
@@ -278,10 +278,10 @@ class PerformanceStreamer:
             status = "warning"
         elif cpu_percent > 90:
             status = "warning"
-        
+
         # WebSocket connections
         active_connections = self.websocket_manager.get_client_count()
-        
+
         status_info = SystemStatus(
             timestamp=current_time,
             status=status,
@@ -296,9 +296,9 @@ class PerformanceStreamer:
             error_rate=error_rate,
             last_error=last_error
         )
-        
+
         return status_info
-    
+
     async def _streaming_loop(self):
         """Main streaming loop for performance metrics."""
         while self._running:
@@ -306,46 +306,46 @@ class PerformanceStreamer:
                 # Collect metrics
                 metrics = self._collect_system_metrics()
                 status = self._collect_system_status()
-                
+
                 # Store current metrics
                 self.current_metrics = metrics
                 self.current_status = status
                 self.metrics_history.append(metrics)
-                
+
                 # Create WebSocket messages
                 performance_message = WebSocketMessage(
                     type=MessageType.PERFORMANCE_UPDATE,
                     data=asdict(metrics),
                     timestamp=metrics.timestamp
                 )
-                
+
                 status_message = WebSocketMessage(
                     type=MessageType.SYSTEM_STATUS,
                     data=asdict(status),
                     timestamp=status.timestamp
                 )
-                
+
                 # Broadcast to dashboard clients
                 await self.websocket_manager.broadcast(performance_message, client_type="dashboard")
                 await self.websocket_manager.broadcast(status_message, client_type="dashboard")
-                
+
                 # Wait for next update
                 await asyncio.sleep(self.update_interval)
-                
+
             except asyncio.CancelledError:
                 break
             except Exception as e:
                 self.logger.error(f"Streaming loop error: {e}")
                 await asyncio.sleep(5)  # Wait before retrying
-    
+
     def get_current_metrics(self) -> Optional[PerformanceMetrics]:
         """Get current performance metrics."""
         return self.current_metrics
-    
+
     def get_current_status(self) -> Optional[SystemStatus]:
         """Get current system status."""
         return self.current_status
-    
+
     def get_metrics_history(self, limit: Optional[int] = None) -> List[PerformanceMetrics]:
         """
         Get historical performance metrics.
@@ -360,7 +360,7 @@ class PerformanceStreamer:
         if limit:
             history = history[-limit:]
         return history
-    
+
     def get_dashboard_data(self) -> Dict[str, Any]:
         """
         Get comprehensive dashboard data.
@@ -378,7 +378,7 @@ class PerformanceStreamer:
         }
 
 
-def create_performance_streamer(websocket_manager: WebSocketManager, 
+def create_performance_streamer(websocket_manager: WebSocketManager,
                               update_interval: float = 1.0) -> PerformanceStreamer:
     """
     Factory function to create PerformanceStreamer instance.

@@ -72,7 +72,7 @@ class TestVoiceDownloader:
         mock_config.voice.auto_discovery = False
         mock_config.voice.cache_discovery = False
         mock_config.voice.discovery_cache_hours = 24
-        
+
         downloader = VoiceDownloader(voices_dir="/tmp/voices", config=mock_config)
         assert downloader.hf_repo == "test/repo"
 
@@ -106,7 +106,7 @@ class TestVoiceDownloader:
             }
         }
         cache_file.write_text(json.dumps(cache_data))
-        
+
         with patch('LiteTTS.voice.downloader.requests.get'):
             downloader = VoiceDownloader(voices_dir=str(tmp_path))
             # Clear auto-discovery flag to prevent API call
@@ -142,7 +142,7 @@ class TestVoiceDownloader:
             mock_response = Mock()
             mock_response.raise_for_status.side_effect = Exception("API Error")
             mock_get.return_value = mock_response
-            
+
             downloader = VoiceDownloader(voices_dir=str(tmp_path))
             result = downloader.discover_voices_from_huggingface()
             assert result is False
@@ -172,7 +172,7 @@ class TestVoiceDownloader:
         """Test downloading voice that already exists and is valid"""
         voice_file = tmp_path / "test_voice.bin"
         voice_file.write_bytes(b'\x00' * 100)
-        
+
         with patch('LiteTTS.voice.downloader.requests.get'):
             downloader = VoiceDownloader(voices_dir=str(tmp_path))
             downloader.discovered_voices["test_voice"] = VoiceFileInfo(
@@ -220,7 +220,7 @@ class TestVoiceDownloader:
         """Test file validation with matching size"""
         voice_file = tmp_path / "test.bin"
         voice_file.write_bytes(b'\x00' * 100)
-        
+
         with patch('LiteTTS.voice.downloader.requests.get'):
             downloader = VoiceDownloader(voices_dir=str(tmp_path))
             voice_info = VoiceFileInfo(
@@ -237,7 +237,7 @@ class TestVoiceDownloader:
         """Test file validation with size mismatch"""
         voice_file = tmp_path / "test.bin"
         voice_file.write_bytes(b'\x00' * 100)
-        
+
         with patch('LiteTTS.voice.downloader.requests.get'):
             downloader = VoiceDownloader(voices_dir=str(tmp_path))
             voice_info = VoiceFileInfo(

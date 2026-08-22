@@ -24,10 +24,10 @@ def sanitize_float(value: float, default: float = 0.0) -> float:
     """
     if not isinstance(value, (int, float)):
         return default
-    
+
     if math.isnan(value) or math.isinf(value):
         return default
-    
+
     return float(value)
 
 
@@ -65,14 +65,14 @@ def sanitize_dashboard_data(data: Dict[str, Any]) -> Dict[str, Any]:
         Sanitized dashboard data safe for JSON serialization
     """
     sanitized = {}
-    
+
     for key, value in data.items():
         if key == 'performance' and isinstance(value, dict):
             # Special handling for performance data
             sanitized[key] = sanitize_performance_data(value)
         else:
             sanitized[key] = sanitize_value(value)
-    
+
     return sanitized
 
 
@@ -87,13 +87,13 @@ def sanitize_performance_data(data: Dict[str, Any]) -> Dict[str, Any]:
         Sanitized performance data
     """
     sanitized = {}
-    
+
     for key, value in data.items():
         if key == 'summary' and isinstance(value, dict):
             sanitized[key] = sanitize_performance_summary(value)
         else:
             sanitized[key] = sanitize_value(value)
-    
+
     return sanitized
 
 
@@ -108,7 +108,7 @@ def sanitize_performance_summary(summary: Dict[str, Any]) -> Dict[str, Any]:
         Sanitized performance summary
     """
     sanitized = {}
-    
+
     # Define appropriate defaults for different metrics
     metric_defaults = {
         'total_requests': 0,
@@ -121,7 +121,7 @@ def sanitize_performance_summary(summary: Dict[str, Any]) -> Dict[str, Any]:
         'max_latency_ms': 0.0,
         'efficiency_ratio': 0.0
     }
-    
+
     for key, value in summary.items():
         if key in metric_defaults:
             default = metric_defaults[key]
@@ -135,7 +135,7 @@ def sanitize_performance_summary(summary: Dict[str, Any]) -> Dict[str, Any]:
                 sanitized[key] = sanitize_float(value, default) if isinstance(value, (int, float)) else value
         else:
             sanitized[key] = sanitize_value(value)
-    
+
     return sanitized
 
 
@@ -154,7 +154,7 @@ def safe_division(numerator: float, denominator: float, default: float = 0.0) ->
     try:
         if denominator == 0:
             return default
-        
+
         result = numerator / denominator
         return sanitize_float(result, default)
     except (ZeroDivisionError, OverflowError):
@@ -180,12 +180,12 @@ class JSONSafeEncoder(json.JSONEncoder):
     """
     JSON encoder that automatically sanitizes infinite and NaN values.
     """
-    
+
     def encode(self, obj):
         """Encode object with sanitization."""
         sanitized = sanitize_value(obj)
         return super().encode(sanitized)
-    
+
     def iterencode(self, obj, _one_shot=False):
         """Iteratively encode object with sanitization."""
         sanitized = sanitize_value(obj)

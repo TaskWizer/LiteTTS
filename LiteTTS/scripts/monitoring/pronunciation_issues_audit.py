@@ -51,19 +51,19 @@ class PronunciationTestResult:
 
 class PronunciationIssuesAuditor:
     """Comprehensive pronunciation issues auditor"""
-    
+
     def __init__(self, api_base_url: str = "http://localhost:8354"):
         self.api_base_url = api_base_url
         self.results_dir = Path("test_results/pronunciation_audit")
         self.results_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # Define test cases for known pronunciation issues
         self.test_cases = self._create_test_cases()
-        
+
     def _create_test_cases(self) -> List[PronunciationTestCase]:
         """Create comprehensive test cases for pronunciation issues"""
         test_cases = []
-        
+
         # Question mark pronunciation issues
         test_cases.extend([
             PronunciationTestCase(
@@ -91,7 +91,7 @@ class PronunciationIssuesAuditor:
                 priority="normal"
             )
         ])
-        
+
         # Interjection pronunciation issues
         test_cases.extend([
             PronunciationTestCase(
@@ -111,7 +111,7 @@ class PronunciationIssuesAuditor:
                 priority="normal"
             )
         ])
-        
+
         # Contraction pronunciation issues
         test_cases.extend([
             PronunciationTestCase(
@@ -131,7 +131,7 @@ class PronunciationIssuesAuditor:
                 priority="high"
             )
         ])
-        
+
         # Word pronunciation issues
         test_cases.extend([
             PronunciationTestCase(
@@ -151,7 +151,7 @@ class PronunciationIssuesAuditor:
                 priority="high"
             )
         ])
-        
+
         # Symbol and punctuation issues
         test_cases.extend([
             PronunciationTestCase(
@@ -179,7 +179,7 @@ class PronunciationIssuesAuditor:
                 priority="normal"
             )
         ])
-        
+
         # Complex cases combining multiple issues
         test_cases.extend([
             PronunciationTestCase(
@@ -191,14 +191,14 @@ class PronunciationIssuesAuditor:
                 priority="critical"
             )
         ])
-        
+
         return test_cases
-    
+
     async def generate_audio(self, text: str, voice: str = "af_heart") -> Tuple[bool, str, float, str]:
         """Generate audio for given text and return success status, file path, generation time, and error"""
         try:
             start_time = time.time()
-            
+
             async with aiohttp.ClientSession() as session:
                 payload = {
                     'model': 'kokoro',
@@ -206,35 +206,35 @@ class PronunciationIssuesAuditor:
                     'voice': voice,
                     'response_format': 'wav'
                 }
-                
+
                 async with session.post(
                     f"{self.api_base_url}/v1/audio/speech",
                     json=payload,
                     timeout=aiohttp.ClientTimeout(total=30)
                 ) as response:
                     generation_time = time.time() - start_time
-                    
+
                     if response.status == 200:
                         # Save audio to file
                         audio_data = await response.read()
-                        
+
                         # Create unique filename
                         timestamp = int(time.time() * 1000)
                         filename = f"pronunciation_test_{timestamp}.wav"
                         file_path = self.results_dir / filename
-                        
+
                         with open(file_path, 'wb') as f:
                             f.write(audio_data)
-                        
+
                         return True, str(file_path), generation_time, ""
                     else:
                         error_text = await response.text()
                         return False, "", generation_time, f"HTTP {response.status}: {error_text}"
-                        
+
         except Exception as e:
             generation_time = time.time() - start_time
             return False, "", generation_time, str(e)
-    
+
     def analyze_audio_duration(self, audio_file_path: str) -> float:
         """Analyze audio file duration"""
         try:
@@ -246,25 +246,25 @@ class PronunciationIssuesAuditor:
         except Exception as e:
             logger.warning(f"Could not analyze audio duration: {e}")
             return 0.0
-    
+
     async def test_single_case(self, test_case: PronunciationTestCase) -> PronunciationTestResult:
         """Test a single pronunciation case"""
         logger.info(f"Testing: {test_case.test_id} - {test_case.issue_description}")
-        
+
         # Generate audio
         success, audio_path, gen_time, error = await self.generate_audio(
-            test_case.input_text, 
+            test_case.input_text,
             test_case.voice_model
         )
-        
+
         # Analyze audio if generated successfully
         audio_duration = 0.0
         rtf = 0.0
-        
+
         if success and audio_path:
             audio_duration = self.analyze_audio_duration(audio_path)
             rtf = gen_time / audio_duration if audio_duration > 0 else float('inf')
-        
+
         result = PronunciationTestResult(
             test_case=test_case,
             audio_generated=success,
@@ -276,21 +276,21 @@ class PronunciationIssuesAuditor:
             manual_review_needed=True,
             notes=f"Generated for manual review - {test_case.issue_description}"
         )
-        
+
         logger.info(f"Completed: {test_case.test_id} - Success: {success}, RTF: {rtf:.3f}")
         return result
-    
+
     async def run_comprehensive_audit(self) -> Dict[str, Any]:
         """Run comprehensive pronunciation issues audit"""
         logger.info("Starting comprehensive pronunciation issues audit...")
-        
+
         results = []
         categories = {}
-        
+
         for test_case in self.test_cases:
             result = await self.test_single_case(test_case)
             results.append(result)
-            
+
             # Categorize results
             category = test_case.category
             if category not in categories:
@@ -301,20 +301,20 @@ class PronunciationIssuesAuditor:
                     'avg_rtf': 0.0,
                     'issues': []
                 }
-            
+
             categories[category]['total'] += 1
             if result.audio_generated:
                 categories[category]['successful'] += 1
             else:
                 categories[category]['failed'] += 1
                 categories[category]['issues'].append(result.error_message)
-        
+
         # Calculate average RTF per category
         for category, stats in categories.items():
             category_results = [r for r in results if r.test_case.category == category and r.audio_generated]
             if category_results:
                 stats['avg_rtf'] = sum(r.rtf for r in category_results) / len(category_results)
-        
+
         # Generate summary report
         summary = {
             'audit_timestamp': time.time(),
@@ -326,7 +326,7 @@ class PronunciationIssuesAuditor:
             'critical_issues': [r for r in results if r.test_case.priority == 'critical'],
             'high_priority_issues': [r for r in results if r.test_case.priority == 'high']
         }
-        
+
         # Save detailed results
         results_file = self.results_dir / f"pronunciation_audit_{int(time.time())}.json"
         with open(results_file, 'w') as f:
@@ -334,17 +334,17 @@ class PronunciationIssuesAuditor:
                 'summary': summary,
                 'detailed_results': [asdict(r) for r in results]
             }, f, indent=2, default=str)
-        
+
         logger.info(f"Audit completed. Results saved to: {results_file}")
         return summary
 
 async def main():
     """Main function to run pronunciation issues audit"""
     auditor = PronunciationIssuesAuditor()
-    
+
     try:
         summary = await auditor.run_comprehensive_audit()
-        
+
         print("\n" + "="*80)
         print("PRONUNCIATION ISSUES AUDIT SUMMARY")
         print("="*80)
@@ -352,21 +352,21 @@ async def main():
         print(f"Successful Generations: {summary['successful_generations']}")
         print(f"Failed Generations: {summary['failed_generations']}")
         print(f"Overall Average RTF: {summary['overall_avg_rtf']:.3f}")
-        
+
         print(f"\nCritical Issues: {len(summary['critical_issues'])}")
         print(f"High Priority Issues: {len(summary['high_priority_issues'])}")
-        
+
         print("\nCategory Breakdown:")
         for category, stats in summary['categories'].items():
             print(f"  {category}: {stats['successful']}/{stats['total']} successful, RTF: {stats['avg_rtf']:.3f}")
-        
+
         print("\n" + "="*80)
         print("MANUAL REVIEW REQUIRED")
         print("="*80)
         print("All generated audio files require manual listening to verify pronunciation accuracy.")
         print("Audio files are saved in: test_results/pronunciation_audit/")
         print("Please listen to each file and document pronunciation issues.")
-        
+
     except Exception as e:
         logger.error(f"Audit failed: {e}")
         import traceback

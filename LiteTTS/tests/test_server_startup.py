@@ -36,7 +36,7 @@ def check_environment():
 def test_core_imports():
     """Test importing core modules"""
     print("🔍 Testing core infrastructure...")
-    
+
     core_modules = [
         ("kokoro.config", "Configuration system"),
         ("kokoro.exceptions", "Exception handling"),
@@ -44,7 +44,7 @@ def test_core_imports():
         ("kokoro.startup", "Startup validation"),
         ("kokoro.cache", "Cache system (with legacy support)")
     ]
-    
+
     for module_name, description in core_modules:
         try:
             importlib.import_module(module_name)
@@ -52,7 +52,7 @@ def test_core_imports():
         except Exception as e:
             print(f"❌ {description}: {e}")
             return False
-    
+
     return True
 
 def test_cache_manager():
@@ -60,7 +60,7 @@ def test_cache_manager():
     try:
         from LiteTTS.cache import cache_manager
         print("✅ Cache manager import")
-        
+
         # Test basic functionality
         cache_manager.enable()
         stats = cache_manager.get_stats()
@@ -73,7 +73,7 @@ def test_cache_manager():
 def check_dependencies():
     """Check required dependencies"""
     print("\n🔍 Checking dependencies...")
-    
+
     required_deps = [
         ("fastapi", "FastAPI web framework"),
         ("uvicorn", "ASGI server"),
@@ -82,15 +82,15 @@ def check_dependencies():
         ("soundfile", "Audio file I/O"),
         ("onnxruntime", "ONNX model runtime")
     ]
-    
+
     optional_deps = [
         ("torch", "PyTorch (for CUDA support)"),
         ("psutil", "System monitoring")
     ]
-    
+
     missing_required = []
     missing_optional = []
-    
+
     for dep, description in required_deps:
         try:
             importlib.import_module(dep)
@@ -98,7 +98,7 @@ def check_dependencies():
         except ImportError:
             missing_required.append((dep, description))
             print(f"❌ {description}")
-    
+
     for dep, description in optional_deps:
         try:
             importlib.import_module(dep)
@@ -106,23 +106,23 @@ def check_dependencies():
         except ImportError:
             missing_optional.append((dep, description))
             print(f"⚠️  {description} (optional)")
-    
+
     return missing_required, missing_optional
 
 def test_app_import():
     """Test importing the main app"""
     print("\n🔍 Testing main application...")
-    
+
     try:
         import app
         print("✅ Main app imports successfully")
-        
+
         # Test if the app can be created
         if hasattr(app, 'app'):
             print("✅ FastAPI app instance available")
-        
+
         return True, []
-        
+
     except ImportError as e:
         missing_dep = str(e).split("'")[1] if "'" in str(e) else "unknown"
         print(f"❌ App import failed: missing {missing_dep}")
@@ -149,18 +149,18 @@ def main():
     # Test core infrastructure
     core_success = test_core_imports()
     cache_success = test_cache_manager()
-    
+
     # Check dependencies
     missing_required, missing_optional = check_dependencies()
-    
+
     # Test app import
     app_success, app_missing = test_app_import()
-    
+
     # Summary
     print("\n" + "=" * 50)
     print("📊 SUMMARY")
     print("=" * 50)
-    
+
     if core_success and cache_success:
         print("✅ Core infrastructure: WORKING")
         print("✅ Cache system: WORKING")
@@ -168,30 +168,30 @@ def main():
     else:
         print("❌ Core infrastructure: FAILED")
         return 1
-    
+
     if not missing_required and app_success:
         print("✅ All dependencies: INSTALLED")
         print("✅ Server ready to start!")
-        
+
         print("\n🚀 Start the server with:")
         print("   uv run uvicorn app:app --host 0.0.0.0 --port 8000 --reload")
-        
+
     else:
         print("⚠️  Missing dependencies detected")
-        
+
         if missing_required:
             print("\n📦 Install required dependencies:")
             deps = " ".join([dep for dep, _ in missing_required])
             print(f"   uv add {deps}")
-        
+
         if missing_optional:
             print("\n📦 Optional dependencies (recommended):")
             deps = " ".join([dep for dep, _ in missing_optional])
             print(f"   uv add {deps}")
-        
+
         print("\n🔧 After installing dependencies, test again:")
         print("   uv run python LiteTTS/tests/test_server_startup.py")
-    
+
     return 0 if (core_success and cache_success) else 1
 
 if __name__ == "__main__":

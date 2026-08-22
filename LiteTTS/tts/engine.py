@@ -26,12 +26,12 @@ logger = logging.getLogger(__name__)
 
 class KokoroTTSEngine:
     """Main TTS engine using Kokoro model with ONNX runtime"""
-    
+
     def __init__(self, config: TTSConfiguration):
         self.config = config
         self.device = config.device
         self.sample_rate = config.sample_rate
-        
+
         # Initialize components
         self.voice_manager = VoiceManager()
         self.voice_blender = VoiceBlender(self.voice_manager)
@@ -39,7 +39,7 @@ class KokoroTTSEngine:
 
         # Initialize chunked generation components
         self._initialize_chunked_generation()
-        
+
         # ONNX session
         self.onnx_session = None
         self.tokenizer = None
@@ -54,10 +54,10 @@ class KokoroTTSEngine:
         # Model state
         self.model_loaded = False
         self.available_voices = []
-        
+
         # Initialize the engine
         self._initialize_engine()
-    
+
     def _initialize_chunked_generation(self) -> None:
         """Initialize chunked generation components"""
         try:
@@ -109,50 +109,50 @@ class KokoroTTSEngine:
     def _initialize_engine(self) -> None:
         """Initialize the TTS engine"""
         logger.info("Initializing Kokoro TTS engine")
-        
+
         try:
             # Load ONNX model
             self._load_onnx_model()
-            
+
             # Load tokenizer
             self._load_tokenizer()
-            
+
             # Setup voice system
             self._setup_voice_system()
-            
+
             self.model_loaded = True
             logger.info("Kokoro TTS engine initialized successfully")
-            
+
         except Exception as e:
             logger.error(f"Failed to initialize TTS engine: {e}")
             self.model_loaded = False
-    
+
     def _load_onnx_model(self) -> None:
         """Load the ONNX model"""
         model_path = Path(self.config.model_path)
-        
+
         if not model_path.exists():
             raise FileNotFoundError(f"ONNX model not found: {model_path}")
-        
+
         # Configure ONNX runtime providers
         providers = []
         if self.device == "cuda" and "CUDAExecutionProvider" in ort.get_available_providers():
             providers.append("CUDAExecutionProvider")
         providers.append("CPUExecutionProvider")
-        
+
         # Create ONNX session
         session_options = ort.SessionOptions()
         session_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
-        
+
         self.onnx_session = ort.InferenceSession(
             str(model_path),
             sess_options=session_options,
             providers=providers
         )
-        
+
         logger.info(f"Loaded ONNX model from {model_path}")
         logger.info(f"Using providers: {self.onnx_session.get_providers()}")
-    
+
     def _load_tokenizer(self) -> None:
         """Load the tokenizer"""
         try:
@@ -201,7 +201,7 @@ class KokoroTTSEngine:
             self.kokoro_tokenizer = None
             self.tokenizer = self._create_simple_tokenizer()
             logger.warning("Using simple character-based tokenizer")
-    
+
     def _create_simple_tokenizer(self) -> Dict[str, Any]:
         """Create a simple character-based tokenizer"""
         # Get character set from config if available
@@ -229,19 +229,19 @@ class KokoroTTSEngine:
             'pad_token_id': pad_token_id,
             'unk_token_id': unk_token_id
         }
-    
+
     def _setup_voice_system(self) -> None:
         """Setup the voice management system"""
         # Ensure default voices are available
         setup_results = self.voice_manager.setup_system(download_all=False)
-        
+
         if not setup_results['success']:
             logger.warning("Voice system setup had issues, some voices may not be available")
-        
+
         # Get available voices
         self.available_voices = self.voice_manager.get_available_voices()
         logger.info(f"Available voices: {self.available_voices}")
-    
+
     def synthesize(self, text: str, voice: str, speed: float = 1.0,
                   emotion: Optional[str] = None, emotion_strength: float = 1.0) -> AudioSegment:
         """Synthesize text to audio with PERFORMANCE OPTIMIZATION"""
@@ -326,12 +326,12 @@ class KokoroTTSEngine:
                 audio_segment = self._post_process_audio(audio_data, speed)
 
             return audio_segment
-            
+
         except Exception as e:
             logger.error(f"Synthesis failed: {e}")
             # Update error statistics
             self.voice_manager.metadata_manager.update_voice_stats(voice, 0.0, success=False)
-            raise    
+            raise
 
     def _tokenize_text(self, text: str) -> np.ndarray:
         """Tokenize input text using phoneme-based tokenization
@@ -460,7 +460,7 @@ class KokoroTTSEngine:
                     f"style shape={inputs['style'].shape}, speed shape={inputs['speed'].shape}")
 
         return inputs
-    
+
     def _run_inference(self, model_inputs: Dict[str, np.ndarray]) -> np.ndarray:
         """Run ONNX model inference with comprehensive validation"""
         try:
@@ -535,7 +535,7 @@ class KokoroTTSEngine:
                 logger.error(f"ONNX inference failed: {e}")
             logger.error(f"Model inputs were: {[(k, v.shape, v.dtype) for k, v in model_inputs.items()]}")
             raise
-    
+
     def _post_process_audio_fast(self, audio_data: np.ndarray) -> AudioSegment:
         """Fast post-processing for simple requests (minimal processing for RTF optimization)"""
         try:
@@ -627,7 +627,7 @@ class KokoroTTSEngine:
                     f"{len(audio_data)/self.sample_rate:.3f}s duration")
 
         return audio_segment
-    
+
     def _apply_speed_adjustment(self, audio_data: np.ndarray, speed: float) -> np.ndarray:
         """Apply speed adjustment to audio data"""
         if speed == 1.0:
@@ -761,31 +761,31 @@ class KokoroTTSEngine:
                 "streaming": len(comparison.streaming_metrics)
             }
         }
-        
+
         # Simple linear interpolation for speed adjustment
         original_length = len(audio_data)
         new_length = int(original_length / speed)
-        
+
         # Create new time indices
         old_indices = np.linspace(0, original_length - 1, new_length)
-        
+
         # Interpolate
         adjusted_audio = np.interp(old_indices, np.arange(original_length), audio_data)
-        
+
         return adjusted_audio.astype(np.float32)
-    
+
     def load_voice(self, voice_name: str) -> VoiceEmbedding:
         """Load a voice embedding"""
         return self.voice_manager.get_voice_embedding(voice_name)
-    
+
     def get_available_voices(self) -> List[str]:
         """Get list of available voices"""
         return self.available_voices.copy()
-    
+
     def is_voice_available(self, voice_name: str) -> bool:
         """Check if a voice is available"""
         return voice_name in self.available_voices
-    
+
     def get_engine_info(self) -> Dict[str, Any]:
         """Get engine information"""
         return {
@@ -798,19 +798,19 @@ class KokoroTTSEngine:
             'tokenizer_type': self.tokenizer['type'] if self.tokenizer else None,
             'vocab_size': self.tokenizer['vocab_size'] if self.tokenizer else 0
         }
-    
+
     def preload_voice(self, voice_name: str) -> bool:
         """Preload a voice into cache"""
         return self.voice_manager.preload_voice(voice_name)
-    
+
     def preload_voices(self, voice_names: List[str]) -> Dict[str, bool]:
         """Preload multiple voices into cache"""
         return self.voice_manager.preload_voices(voice_names)
-    
+
     def get_voice_info(self, voice_name: str) -> Dict[str, Any]:
         """Get detailed information about a voice"""
         return self.voice_manager.get_voice_info(voice_name)
-    
+
     def estimate_synthesis_time(self, text: str, voice: str) -> float:
         """Estimate synthesis time for given text"""
         # Rough estimation based on text length and model performance
@@ -1031,13 +1031,13 @@ class KokoroTTSEngine:
     def cleanup(self) -> None:
         """Clean up engine resources"""
         logger.info("Cleaning up TTS engine")
-        
+
         if self.onnx_session:
             # ONNX sessions don't need explicit cleanup, but we can clear the reference
             self.onnx_session = None
-        
+
         if self.voice_manager:
             self.voice_manager.cleanup_system()
-        
+
         self.model_loaded = False
         logger.info("TTS engine cleanup completed")

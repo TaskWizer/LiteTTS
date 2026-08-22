@@ -19,7 +19,7 @@ def log_test(test_name, success, details=""):
     print(f"{status} {test_name}")
     if details:
         print(f"    {details}")
-    
+
     TEST_RESULTS.append({
         "test": test_name,
         "success": success,
@@ -35,13 +35,13 @@ def test_openwebui_null_format():
             "voice": "af_heart",
             "response_format": None  # This is the problematic case
         }
-        
+
         response = requests.post(
             f"{BASE_URL}/v1/audio/speech",
             json=payload,
             timeout=30
         )
-        
+
         if response.status_code == 200:
             audio_size = len(response.content)
             if audio_size > 1000:
@@ -54,7 +54,7 @@ def test_openwebui_null_format():
             error_data = response.json() if response.headers.get('content-type', '').startswith('application/json') else response.text
             log_test("OpenWebUI: Null Format", False, f"HTTP {response.status_code}: {error_data}")
             return False
-        
+
     except Exception as e:
         log_test("OpenWebUI: Null Format", False, f"Exception: {e}")
         return False
@@ -67,13 +67,13 @@ def test_openwebui_missing_format():
             "voice": "af_heart"
             # response_format field completely missing
         }
-        
+
         response = requests.post(
             f"{BASE_URL}/v1/audio/speech",
             json=payload,
             timeout=30
         )
-        
+
         if response.status_code == 200:
             audio_size = len(response.content)
             if audio_size > 1000:
@@ -86,7 +86,7 @@ def test_openwebui_missing_format():
             error_data = response.json() if response.headers.get('content-type', '').startswith('application/json') else response.text
             log_test("OpenWebUI: Missing Format", False, f"HTTP {response.status_code}: {error_data}")
             return False
-        
+
     except Exception as e:
         log_test("OpenWebUI: Missing Format", False, f"Exception: {e}")
         return False
@@ -99,13 +99,13 @@ def test_openwebui_empty_format():
             "voice": "af_heart",
             "response_format": ""  # Empty string
         }
-        
+
         response = requests.post(
             f"{BASE_URL}/v1/audio/speech",
             json=payload,
             timeout=30
         )
-        
+
         if response.status_code == 200:
             audio_size = len(response.content)
             if audio_size > 1000:
@@ -118,7 +118,7 @@ def test_openwebui_empty_format():
             error_data = response.json() if response.headers.get('content-type', '').startswith('application/json') else response.text
             log_test("OpenWebUI: Empty Format", False, f"HTTP {response.status_code}: {error_data}")
             return False
-        
+
     except Exception as e:
         log_test("OpenWebUI: Empty Format", False, f"Exception: {e}")
         return False
@@ -132,13 +132,13 @@ def test_openwebui_null_speed():
             "response_format": "mp3",
             "speed": None  # Null speed
         }
-        
+
         response = requests.post(
             f"{BASE_URL}/v1/audio/speech",
             json=payload,
             timeout=30
         )
-        
+
         if response.status_code == 200:
             audio_size = len(response.content)
             if audio_size > 1000:
@@ -151,7 +151,7 @@ def test_openwebui_null_speed():
             error_data = response.json() if response.headers.get('content-type', '').startswith('application/json') else response.text
             log_test("OpenWebUI: Null Speed", False, f"HTTP {response.status_code}: {error_data}")
             return False
-        
+
     except Exception as e:
         log_test("OpenWebUI: Null Speed", False, f"Exception: {e}")
         return False
@@ -165,13 +165,13 @@ def test_openwebui_all_nulls():
             "response_format": None,
             "speed": None
         }
-        
+
         response = requests.post(
             f"{BASE_URL}/v1/audio/speech",
             json=payload,
             timeout=30
         )
-        
+
         if response.status_code == 200:
             audio_size = len(response.content)
             if audio_size > 1000:
@@ -184,7 +184,7 @@ def test_openwebui_all_nulls():
             error_data = response.json() if response.headers.get('content-type', '').startswith('application/json') else response.text
             log_test("OpenWebUI: All Nulls", False, f"HTTP {response.status_code}: {error_data}")
             return False
-        
+
     except Exception as e:
         log_test("OpenWebUI: All Nulls", False, f"Exception: {e}")
         return False
@@ -198,13 +198,13 @@ def test_openwebui_valid_request():
             "response_format": "mp3",
             "speed": 1.0
         }
-        
+
         response = requests.post(
             f"{BASE_URL}/v1/audio/speech",
             json=payload,
             timeout=30
         )
-        
+
         if response.status_code == 200:
             audio_size = len(response.content)
             if audio_size > 1000:
@@ -217,7 +217,7 @@ def test_openwebui_valid_request():
             error_data = response.json() if response.headers.get('content-type', '').startswith('application/json') else response.text
             log_test("OpenWebUI: Valid Request", False, f"HTTP {response.status_code}: {error_data}")
             return False
-        
+
     except Exception as e:
         log_test("OpenWebUI: Valid Request", False, f"Exception: {e}")
         return False
@@ -229,7 +229,7 @@ def test_openwebui_edge_cases():
         {"name": "Boolean Format", "payload": {"input": "Test", "voice": "af_heart", "response_format": True}},
         {"name": "String Speed", "payload": {"input": "Test", "voice": "af_heart", "speed": "1.0"}},
     ]
-    
+
     success_count = 0
     for case in edge_cases:
         try:
@@ -238,7 +238,7 @@ def test_openwebui_edge_cases():
                 json=case["payload"],
                 timeout=30
             )
-            
+
             # These should either succeed with conversion or fail gracefully
             if response.status_code in [200, 400]:
                 success_count += 1
@@ -248,17 +248,17 @@ def test_openwebui_edge_cases():
                     log_test(f"Edge Case: {case['name']}", True, "Failed gracefully with clear error")
             else:
                 log_test(f"Edge Case: {case['name']}", False, f"Unexpected status: {response.status_code}")
-                
+
         except Exception as e:
             log_test(f"Edge Case: {case['name']}", False, f"Exception: {e}")
-    
+
     return success_count == len(edge_cases)
 
 def run_openwebui_tests():
     """Run all OpenWebUI integration tests"""
     print("🌐 Running OpenWebUI TTS Integration Tests")
     print("=" * 50)
-    
+
     # Test null/missing field handling
     print("\n🔧 Testing Null/Missing Field Handling:")
     test_openwebui_null_format()
@@ -266,24 +266,24 @@ def run_openwebui_tests():
     test_openwebui_empty_format()
     test_openwebui_null_speed()
     test_openwebui_all_nulls()
-    
+
     # Test valid requests
     print("\n✅ Testing Valid Requests:")
     test_openwebui_valid_request()
-    
+
     # Test edge cases
     print("\n🎯 Testing Edge Cases:")
     test_openwebui_edge_cases()
-    
+
     # Summary
     print("\n" + "=" * 50)
     print("📊 OpenWebUI Integration Test Summary:")
-    
+
     passed = sum(1 for result in TEST_RESULTS if result["success"])
     total = len(TEST_RESULTS)
-    
+
     print(f"✅ Passed: {passed}/{total} tests")
-    
+
     if passed == total:
         print("🎉 All OpenWebUI integration tests passed!")
         print("💡 OpenWebUI should now work correctly with the Kokoro ONNX TTS API")

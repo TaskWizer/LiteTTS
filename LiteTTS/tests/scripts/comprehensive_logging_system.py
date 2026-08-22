@@ -56,7 +56,7 @@ class LogEntry:
 
 class StructuredFormatter(logging.Formatter):
     """Custom formatter for structured logging"""
-    
+
     def format(self, record):
         """Format log record as structured JSON"""
         log_entry = {
@@ -70,7 +70,7 @@ class StructuredFormatter(logging.Formatter):
             "thread_id": record.thread,
             "process_id": record.process
         }
-        
+
         # Add exception information if present
         if record.exc_info:
             log_entry["exception"] = {
@@ -78,38 +78,38 @@ class StructuredFormatter(logging.Formatter):
                 "message": str(record.exc_info[1]),
                 "traceback": traceback.format_exception(*record.exc_info)
             }
-        
+
         # Add extra fields
         extra_fields = {}
         for key, value in record.__dict__.items():
-            if key not in ['name', 'msg', 'args', 'levelname', 'levelno', 'pathname', 
-                          'filename', 'module', 'lineno', 'funcName', 'created', 
-                          'msecs', 'relativeCreated', 'thread', 'threadName', 
+            if key not in ['name', 'msg', 'args', 'levelname', 'levelno', 'pathname',
+                          'filename', 'module', 'lineno', 'funcName', 'created',
+                          'msecs', 'relativeCreated', 'thread', 'threadName',
                           'processName', 'process', 'exc_info', 'exc_text', 'stack_info']:
                 extra_fields[key] = value
-        
+
         if extra_fields:
             log_entry["extra"] = extra_fields
-        
+
         return json.dumps(log_entry, default=str)
 
 class PerformanceLogger:
     """Performance logging utility"""
-    
+
     def __init__(self, logger: logging.Logger):
         self.logger = logger
         self.start_times = {}
-    
+
     def start_timer(self, operation_id: str):
         """Start timing an operation"""
         self.start_times[operation_id] = time.time()
-    
+
     def end_timer(self, operation_id: str, operation_name: str, **kwargs):
         """End timing and log performance"""
         if operation_id in self.start_times:
             duration = time.time() - self.start_times[operation_id]
             del self.start_times[operation_id]
-            
+
             self.logger.info(
                 f"Performance: {operation_name} completed",
                 extra={
@@ -122,7 +122,7 @@ class PerformanceLogger:
             )
         else:
             self.logger.warning(f"Timer not found for operation: {operation_id}")
-    
+
     def log_metric(self, metric_name: str, value: float, unit: str = "", **kwargs):
         """Log a performance metric"""
         self.logger.info(
@@ -138,15 +138,15 @@ class PerformanceLogger:
 
 class SecurityLogger:
     """Security logging utility"""
-    
+
     def __init__(self, logger: logging.Logger):
         self.logger = logger
-    
+
     def log_authentication_attempt(self, username: str, success: bool, ip_address: str = "", **kwargs):
         """Log authentication attempt"""
         level = logging.INFO if success else logging.WARNING
         message = f"Authentication {'successful' if success else 'failed'} for user: {username}"
-        
+
         self.logger.log(
             level,
             message,
@@ -159,7 +159,7 @@ class SecurityLogger:
                 **kwargs
             }
         )
-    
+
     def log_authorization_failure(self, username: str, resource: str, action: str, **kwargs):
         """Log authorization failure"""
         self.logger.warning(
@@ -173,7 +173,7 @@ class SecurityLogger:
                 **kwargs
             }
         )
-    
+
     def log_suspicious_activity(self, activity_type: str, description: str, **kwargs):
         """Log suspicious activity"""
         self.logger.warning(
@@ -189,12 +189,12 @@ class SecurityLogger:
 
 class APILogger:
     """API request/response logging utility"""
-    
+
     def __init__(self, logger: logging.Logger):
         self.logger = logger
-    
-    def log_request(self, method: str, path: str, status_code: int, 
-                   duration_ms: float, request_size: int = 0, 
+
+    def log_request(self, method: str, path: str, status_code: int,
+                   duration_ms: float, request_size: int = 0,
                    response_size: int = 0, **kwargs):
         """Log API request"""
         self.logger.info(
@@ -211,7 +211,7 @@ class APILogger:
                 **kwargs
             }
         )
-    
+
     def log_error(self, method: str, path: str, error: str, **kwargs):
         """Log API error"""
         self.logger.error(
@@ -228,22 +228,22 @@ class APILogger:
 
 class ComprehensiveLoggingManager:
     """Comprehensive logging system manager"""
-    
+
     def __init__(self):
         self.results_dir = Path("test_results/logging_system")
         self.results_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # Default configuration
         self.config = self._create_default_config()
-        
+
         # Specialized loggers
         self.performance_logger = None
         self.security_logger = None
         self.api_logger = None
-        
+
         # Logger instances
         self.loggers = {}
-        
+
     def _create_default_config(self) -> LoggingConfiguration:
         """Create default logging configuration"""
         return LoggingConfiguration(
@@ -263,25 +263,25 @@ class ComprehensiveLoggingManager:
             enable_security_logging=True,
             enable_api_logging=True
         )
-    
+
     def setup_logging(self, config: Optional[LoggingConfiguration] = None) -> Dict[str, Any]:
         """Set up comprehensive logging system"""
         if config:
             self.config = config
-        
+
         # Create logs directory
         log_dir = Path(self.config.log_directory)
         log_dir.mkdir(exist_ok=True)
-        
+
         # Configure root logger
         root_logger = logging.getLogger()
         root_logger.setLevel(getattr(logging, self.config.log_level.upper()))
-        
+
         # Clear existing handlers
         root_logger.handlers.clear()
-        
+
         handlers = []
-        
+
         # Console handler
         if self.config.enable_console_logging:
             console_handler = logging.StreamHandler(sys.stdout)
@@ -290,7 +290,7 @@ class ComprehensiveLoggingManager:
             else:
                 console_handler.setFormatter(logging.Formatter(self.config.log_format))
             handlers.append(console_handler)
-        
+
         # File handlers
         if self.config.enable_file_logging:
             # Main application log
@@ -303,13 +303,13 @@ class ComprehensiveLoggingManager:
                 )
             else:
                 app_handler = logging.FileHandler(app_log_file)
-            
+
             if self.config.enable_structured_logging:
                 app_handler.setFormatter(StructuredFormatter())
             else:
                 app_handler.setFormatter(logging.Formatter(self.config.log_format))
             handlers.append(app_handler)
-            
+
             # Error log
             error_log_file = log_dir / "error.log"
             error_handler = logging.handlers.RotatingFileHandler(
@@ -323,7 +323,7 @@ class ComprehensiveLoggingManager:
             else:
                 error_handler.setFormatter(logging.Formatter(self.config.log_format))
             handlers.append(error_handler)
-            
+
             # Performance log
             if self.config.enable_performance_logging:
                 perf_log_file = log_dir / "performance.log"
@@ -338,7 +338,7 @@ class ComprehensiveLoggingManager:
                 else:
                     perf_handler.setFormatter(logging.Formatter(self.config.log_format))
                 handlers.append(perf_handler)
-            
+
             # Security log
             if self.config.enable_security_logging:
                 security_log_file = log_dir / "security.log"
@@ -353,7 +353,7 @@ class ComprehensiveLoggingManager:
                 else:
                     security_handler.setFormatter(logging.Formatter(self.config.log_format))
                 handlers.append(security_handler)
-            
+
             # API log
             if self.config.enable_api_logging:
                 api_log_file = log_dir / "api.log"
@@ -368,17 +368,17 @@ class ComprehensiveLoggingManager:
                 else:
                     api_handler.setFormatter(logging.Formatter(self.config.log_format))
                 handlers.append(api_handler)
-        
+
         # Add all handlers to root logger
         for handler in handlers:
             root_logger.addHandler(handler)
-        
+
         # Create specialized loggers
         main_logger = logging.getLogger("kokoro_tts")
         self.performance_logger = PerformanceLogger(main_logger)
         self.security_logger = SecurityLogger(main_logger)
         self.api_logger = APILogger(main_logger)
-        
+
         # Store logger references
         self.loggers = {
             "main": main_logger,
@@ -386,7 +386,7 @@ class ComprehensiveLoggingManager:
             "security": self.security_logger,
             "api": self.api_logger
         }
-        
+
         setup_result = {
             "success": True,
             "handlers_configured": len(handlers),
@@ -395,9 +395,9 @@ class ComprehensiveLoggingManager:
             "structured_logging": self.config.enable_structured_logging,
             "specialized_loggers": list(self.loggers.keys())
         }
-        
+
         main_logger.info("Comprehensive logging system initialized", extra={"setup": setup_result})
-        
+
         return setup_result
 
     def generate_logging_middleware(self) -> str:

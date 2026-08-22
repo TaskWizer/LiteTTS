@@ -58,19 +58,19 @@ _CACHE_AVAILABLE = _is_available(".cache")
 __all__ = [
     # Version and metadata
     "__version__",
-    "__author__", 
+    "__author__",
     "__description__",
-    
+
     # Configuration (always available)
     "ConfigManager",
     "config",
     "setup_logging",
     "get_request_logger",
-    
+
     # Exceptions (always available)
     "KokoroError",
     "ModelError",
-    "VoiceError", 
+    "VoiceError",
     "AudioError",
     "ValidationError",
     "CacheError",
@@ -82,7 +82,7 @@ __all__ = [
 if _API_AVAILABLE:
     __all__.extend([
         "TTSAPIRouter",
-        "RequestValidator", 
+        "RequestValidator",
         "ErrorHandler",
         "ResponseFormatter",
     ])
@@ -114,7 +114,7 @@ if _VOICE_AVAILABLE:
 if _AUDIO_AVAILABLE:
     __all__.extend([
         "AudioProcessor",
-        "AudioSegment", 
+        "AudioSegment",
         "AudioFormatConverter",
         "AudioStreamer",
     ])

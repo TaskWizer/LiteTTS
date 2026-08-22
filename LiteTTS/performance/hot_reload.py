@@ -32,29 +32,29 @@ class ModelReloadHandler:
         self.reload_callback = reload_callback
         self.last_reload = {}
         self.reload_delay = 2.0  # Seconds to wait before reloading
-        
+
     def on_modified(self, event):
         if event.is_directory:
             return
-            
+
         file_path = Path(event.src_path)
-        
+
         # Only reload for model files
         if file_path.suffix in ['.onnx', '.bin']:
             current_time = time.time()
-            
+
             # Debounce rapid file changes
-            if (file_path in self.last_reload and 
+            if (file_path in self.last_reload and
                 current_time - self.last_reload[file_path] < self.reload_delay):
                 return
-                
+
             self.last_reload[file_path] = current_time
-            
+
             logger.info(f"🔄 Detected change in {file_path.name}, scheduling reload...")
-            
+
             # Schedule reload after delay
             threading.Timer(self.reload_delay, self._delayed_reload, [str(file_path)]).start()
-    
+
     def _delayed_reload(self, file_path: str):
         """Perform delayed reload to avoid rapid reloads"""
         try:
@@ -64,7 +64,7 @@ class ModelReloadHandler:
 
 class HotReloadManager:
     """Manages hot reloading of models and voices"""
-    
+
     def __init__(self, config=None):
         self.config = config
         self.observers = []
@@ -82,7 +82,7 @@ class HotReloadManager:
             return
 
         logger.info("🔄 Hot reload manager initialized")
-    
+
     def register_model_reload(self, model_path: str, reload_callback: Callable[[str], None]):
         """Register a model for hot reloading"""
         if not self.enabled or not WATCHDOG_AVAILABLE:
@@ -103,7 +103,7 @@ class HotReloadManager:
 
         observer.start()
         logger.info(f"🔄 Hot reload enabled for model: {model_path}")
-    
+
     def register_voice_reload(self, voices_dir: str, reload_callback: Callable[[str], None]):
         """Register voices directory for hot reloading"""
         if not self.enabled or not WATCHDOG_AVAILABLE:
@@ -124,13 +124,13 @@ class HotReloadManager:
 
         observer.start()
         logger.info(f"🔄 Hot reload enabled for voices: {voices_dir}")
-    
+
     def manual_reload(self, file_path: str) -> bool:
         """Manually trigger a reload for a specific file"""
         if not self.enabled:
             logger.warning("🔄 Hot reload is disabled")
             return False
-            
+
         try:
             # Find appropriate callback
             callback = None
@@ -138,7 +138,7 @@ class HotReloadManager:
                 if file_path.startswith(registered_path) or registered_path in file_path:
                     callback = cb
                     break
-            
+
             if callback:
                 logger.info(f"🔄 Manual reload triggered for: {file_path}")
                 callback(file_path)
@@ -146,19 +146,19 @@ class HotReloadManager:
             else:
                 logger.warning(f"⚠️ No reload callback found for: {file_path}")
                 return False
-                
+
         except Exception as e:
             logger.error(f"❌ Manual reload failed for {file_path}: {e}")
             return False
-    
+
     def reload_all(self) -> Dict[str, bool]:
         """Reload all registered files"""
         if not self.enabled:
             logger.warning("🔄 Hot reload is disabled")
             return {}
-            
+
         results = {}
-        
+
         for file_path, callback in self.reload_callbacks.items():
             try:
                 logger.info(f"🔄 Reloading: {file_path}")
@@ -167,19 +167,19 @@ class HotReloadManager:
             except Exception as e:
                 logger.error(f"❌ Failed to reload {file_path}: {e}")
                 results[file_path] = False
-        
+
         return results
-    
+
     def stop(self):
         """Stop all file watchers"""
         for observer in self.observers:
             observer.stop()
             observer.join()
-        
+
         self.observers.clear()
         self.reload_callbacks.clear()
         logger.info("🔄 Hot reload manager stopped")
-    
+
     def get_status(self) -> Dict[str, Any]:
         """Get hot reload status"""
         return {
@@ -191,7 +191,7 @@ class HotReloadManager:
 
 class PerformanceMonitor:
     """Monitor performance metrics for optimization"""
-    
+
     def __init__(self):
         self.metrics = {
             "requests_total": 0,
@@ -206,42 +206,42 @@ class PerformanceMonitor:
         }
         self.start_time = time.time()
         self.lock = threading.Lock()
-    
+
     def record_request(self, response_time: float, success: bool = True):
         """Record a request with its response time"""
         with self.lock:
             self.metrics["requests_total"] += 1
-            
+
             if success:
                 self.metrics["requests_successful"] += 1
             else:
                 self.metrics["requests_failed"] += 1
-            
+
             self.metrics["total_response_time"] += response_time
             self.metrics["average_response_time"] = (
                 self.metrics["total_response_time"] / self.metrics["requests_total"]
             )
-    
+
     def record_cache_hit(self):
         """Record a cache hit"""
         with self.lock:
             self.metrics["cache_hits"] += 1
-    
+
     def record_cache_miss(self):
         """Record a cache miss"""
         with self.lock:
             self.metrics["cache_misses"] += 1
-    
+
     def record_model_load(self):
         """Record a model load"""
         with self.lock:
             self.metrics["model_loads"] += 1
-    
+
     def record_voice_load(self):
         """Record a voice load"""
         with self.lock:
             self.metrics["voice_loads"] += 1
-    
+
     def get_metrics(self) -> Dict[str, Any]:
         """Get current performance metrics"""
         with self.lock:
@@ -250,18 +250,18 @@ class PerformanceMonitor:
             cache_hit_rate = (
                 self.metrics["cache_hits"] / cache_total if cache_total > 0 else 0.0
             )
-            
+
             return {
                 **self.metrics,
                 "uptime_seconds": uptime,
                 "requests_per_second": self.metrics["requests_total"] / uptime if uptime > 0 else 0.0,
                 "success_rate": (
-                    self.metrics["requests_successful"] / self.metrics["requests_total"] 
+                    self.metrics["requests_successful"] / self.metrics["requests_total"]
                     if self.metrics["requests_total"] > 0 else 0.0
                 ),
                 "cache_hit_rate": cache_hit_rate
             }
-    
+
     def reset_metrics(self):
         """Reset all metrics"""
         with self.lock:

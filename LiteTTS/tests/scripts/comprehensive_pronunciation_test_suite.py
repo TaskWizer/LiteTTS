@@ -28,7 +28,7 @@ from LiteTTS.nlp.processor import NLPProcessor
 
 class PronunciationTestSuite:
     """Comprehensive test suite for pronunciation issues"""
-    
+
     def __init__(self, verbose: bool = False):
         self.verbose = verbose
         self.nlp_processor = NLPProcessor()
@@ -39,18 +39,18 @@ class PronunciationTestSuite:
             'text_skipping_tests': [],
             'regression_tests': []
         }
-    
+
     def log(self, message: str, level: str = "INFO"):
         """Log message with optional verbosity control"""
         if self.verbose or level in ["ERROR", "FAIL", "PASS"]:
             print(f"[{level}] {message}")
-    
+
     def test_quote_character_pronunciation(self) -> bool:
         """Test quote character pronunciation fixes"""
-        
+
         self.log("Testing Quote Character Pronunciation Fixes", "INFO")
         self.log("=" * 50, "INFO")
-        
+
         test_cases = [
             {
                 "name": "Simple quoted text",
@@ -83,45 +83,45 @@ class PronunciationTestSuite:
                 "expected_behavior": "Unicode quotes should be handled"
             }
         ]
-        
+
         all_passed = True
-        
+
         for i, test_case in enumerate(test_cases, 1):
             self.log(f"Test {i}: {test_case['name']}", "INFO")
             self.log(f"Input: '{test_case['input']}'", "INFO")
-            
+
             # Test preprocessing
             result = phonemizer_preprocessor.preprocess_text(test_case['input'])
             nlp_result = self.nlp_processor.process_text(test_case['input'])
-            
+
             self.log(f"Preprocessor: '{result.processed_text}'", "INFO")
             self.log(f"NLP: '{nlp_result}'", "INFO")
-            
+
             # Check for problematic patterns
             problematic_quotes = ['"', '"', '"']
             found_quotes = any(quote in nlp_result for quote in problematic_quotes)
-            
+
             if found_quotes:
                 self.log("FAIL: Quotes still present in output", "FAIL")
                 all_passed = False
             else:
                 self.log("PASS: Quotes successfully removed", "PASS")
-            
+
             self.test_results['quote_character_tests'].append({
                 'name': test_case['name'],
                 'input': test_case['input'],
                 'output': nlp_result,
                 'passed': not found_quotes
             })
-        
+
         return all_passed
-    
+
     def test_possessive_contractions_html_entities(self) -> bool:
         """Test possessive contractions HTML entity fixes"""
-        
+
         self.log("Testing Possessive Contractions HTML Entity Fixes", "INFO")
         self.log("=" * 55, "INFO")
-        
+
         test_cases = [
             {
                 "name": "John's with HTML entity",
@@ -154,45 +154,45 @@ class PronunciationTestSuite:
                 "expected": "Should decode to apostrophe"
             }
         ]
-        
+
         all_passed = True
-        
+
         for i, test_case in enumerate(test_cases, 1):
             self.log(f"Test {i}: {test_case['name']}", "INFO")
             self.log(f"Input: '{test_case['input']}'", "INFO")
-            
+
             # Test processing
             result = phonemizer_preprocessor.preprocess_text(test_case['input'])
             nlp_result = self.nlp_processor.process_text(test_case['input'])
-            
+
             self.log(f"Preprocessor: '{result.processed_text}'", "INFO")
             self.log(f"NLP: '{nlp_result}'", "INFO")
-            
+
             # Check for problematic patterns
             problematic_patterns = ['and hash', 'hash tag', 'x27', '&#x27;', '&#39;', '&apos;']
             found_issues = [p for p in problematic_patterns if p in nlp_result.lower()]
-            
+
             if found_issues:
                 self.log(f"FAIL: Found problematic patterns: {found_issues}", "FAIL")
                 all_passed = False
             else:
                 self.log("PASS: No problematic patterns found", "PASS")
-            
+
             self.test_results['possessive_contractions_tests'].append({
                 'name': test_case['name'],
                 'input': test_case['input'],
                 'output': nlp_result,
                 'passed': not found_issues
             })
-        
+
         return all_passed
-    
+
     def test_word_truncation_phonetic_mapping(self) -> bool:
         """Test word truncation and phonetic mapping"""
-        
+
         self.log("Testing Word Truncation/Phonetic Mapping", "INFO")
         self.log("=" * 40, "INFO")
-        
+
         test_cases = [
             {"word": "Boy", "expected_phonetic": "/bɔɪ/"},
             {"word": "June", "expected_phonetic": "/dʒuːn/"},
@@ -202,18 +202,18 @@ class PronunciationTestSuite:
             {"word": "tune", "expected_phonetic": "/tuːn/"},
             {"word": "done", "expected_phonetic": "/dʌn/"}
         ]
-        
+
         all_passed = True
-        
+
         for i, test_case in enumerate(test_cases, 1):
             word = test_case['word']
             self.log(f"Test {i}: '{word}' -> {test_case['expected_phonetic']}", "INFO")
-            
+
             # Test processing
             nlp_result = self.nlp_processor.process_text(word)
-            
+
             self.log(f"NLP Output: '{nlp_result}'", "INFO")
-            
+
             # Check if word is preserved (allowing for punctuation)
             clean_output = nlp_result.strip('.,!?;: ')
             if word.lower() == clean_output.lower():
@@ -223,14 +223,14 @@ class PronunciationTestSuite:
                 self.log(f"FAIL: Word changed from '{word}' to '{clean_output}'", "FAIL")
                 all_passed = False
                 passed = False
-            
+
             self.test_results['word_truncation_tests'].append({
                 'word': word,
                 'expected_phonetic': test_case['expected_phonetic'],
                 'output': nlp_result,
                 'passed': passed
             })
-        
+
         return all_passed
 
     def test_text_skipping_omission(self) -> bool:

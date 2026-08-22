@@ -38,7 +38,7 @@ class EnhancedAudioMetrics:
     processing_time: float = 0.0
     audio_duration: float = 0.0
     rtf: float = 0.0
-    
+
     # Advanced metrics
     spectral_centroid: float = 0.0
     spectral_rolloff: float = 0.0
@@ -48,13 +48,13 @@ class EnhancedAudioMetrics:
     pitch_std: float = 0.0
     energy_mean: float = 0.0
     energy_std: float = 0.0
-    
+
     # Quality indicators
     silence_ratio: float = 0.0
     speaking_rate: float = 0.0
     naturalness_score: float = 0.0
     clarity_score: float = 0.0
-    
+
     # Test metadata
     voice_model: str = ""
     text_length: int = 0
@@ -71,7 +71,7 @@ class EnhancedTestCase:
     test_category: str = "general"
     description: str = ""
     priority: str = "normal"
-    
+
     # Quality thresholds
     min_mos_score: float = 3.0
     max_wer: float = 0.1
@@ -80,7 +80,7 @@ class EnhancedTestCase:
     min_prosody_score: float = 0.7
     min_naturalness_score: float = 0.8
     min_clarity_score: float = 0.8
-    
+
     # Expected features
     expected_symbols: List[str] = field(default_factory=list)
     expected_pronunciations: Dict[str, str] = field(default_factory=dict)
@@ -89,19 +89,19 @@ class EnhancedTestCase:
 
 class EnhancedAudioQualityTester:
     """Enhanced automated audio quality testing framework"""
-    
+
     def __init__(self, api_base_url: str = "http://localhost:8354"):
         self.api_base_url = api_base_url
         self.results_dir = Path("test_results/enhanced_audio_quality")
         self.results_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # Create comprehensive test suite
         self.test_cases = self._create_comprehensive_test_suite()
-        
+
     def _create_comprehensive_test_suite(self) -> List[EnhancedTestCase]:
         """Create comprehensive test suite covering all pronunciation issues"""
         test_cases = []
-        
+
         # Symbol pronunciation tests
         test_cases.extend([
             EnhancedTestCase(
@@ -136,7 +136,7 @@ class EnhancedAudioQualityTester:
                 expected_pronunciations={"&": "and"}
             )
         ])
-        
+
         # Interjection pronunciation tests
         test_cases.extend([
             EnhancedTestCase(
@@ -158,7 +158,7 @@ class EnhancedAudioQualityTester:
                 priority="normal"
             )
         ])
-        
+
         # Contraction pronunciation tests
         test_cases.extend([
             EnhancedTestCase(
@@ -180,7 +180,7 @@ class EnhancedAudioQualityTester:
                 priority="high"
             )
         ])
-        
+
         # Word pronunciation tests
         test_cases.extend([
             EnhancedTestCase(
@@ -194,7 +194,7 @@ class EnhancedAudioQualityTester:
                 min_pronunciation_accuracy=0.95
             )
         ])
-        
+
         # Performance tests
         test_cases.extend([
             EnhancedTestCase(
@@ -217,7 +217,7 @@ class EnhancedAudioQualityTester:
                 max_rtf=0.25
             )
         ])
-        
+
         # Complex mixed tests
         test_cases.extend([
             EnhancedTestCase(
@@ -232,14 +232,14 @@ class EnhancedAudioQualityTester:
                 min_pronunciation_accuracy=0.9
             )
         ])
-        
+
         return test_cases
-    
+
     async def generate_audio(self, text: str, voice: str = "af_heart") -> Tuple[bool, bytes, float, str]:
         """Generate audio for given text"""
         try:
             start_time = time.time()
-            
+
             async with aiohttp.ClientSession() as session:
                 payload = {
                     'model': 'kokoro',
@@ -247,25 +247,25 @@ class EnhancedAudioQualityTester:
                     'voice': voice,
                     'response_format': 'wav'
                 }
-                
+
                 async with session.post(
                     f"{self.api_base_url}/v1/audio/speech",
                     json=payload,
                     timeout=aiohttp.ClientTimeout(total=30)
                 ) as response:
                     generation_time = time.time() - start_time
-                    
+
                     if response.status == 200:
                         audio_data = await response.read()
                         return True, audio_data, generation_time, ""
                     else:
                         error_text = await response.text()
                         return False, b"", generation_time, f"HTTP {response.status}: {error_text}"
-                        
+
         except Exception as e:
             generation_time = time.time() - start_time
             return False, b"", generation_time, str(e)
-    
+
     def analyze_audio_properties(self, audio_data: bytes) -> Dict[str, Any]:
         """Analyze audio properties for quality metrics"""
         try:
@@ -273,7 +273,7 @@ class EnhancedAudioQualityTester:
             with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_file:
                 temp_file.write(audio_data)
                 temp_path = temp_file.name
-            
+
             # Basic audio analysis using wave module
             with wave.open(temp_path, 'rb') as wav_file:
                 frames = wav_file.getnframes()
@@ -281,10 +281,10 @@ class EnhancedAudioQualityTester:
                 duration = frames / float(sample_rate)
                 channels = wav_file.getnchannels()
                 sample_width = wav_file.getsampwidth()
-                
+
                 # Read audio data
                 audio_frames = wav_file.readframes(frames)
-                
+
             # Convert to numpy array for analysis
             if sample_width == 1:
                 audio_array = np.frombuffer(audio_frames, dtype=np.uint8)
@@ -294,26 +294,26 @@ class EnhancedAudioQualityTester:
                 audio_array = audio_array / 32768.0
             else:
                 audio_array = np.frombuffer(audio_frames, dtype=np.float32)
-            
+
             # Handle stereo audio
             if channels == 2:
                 audio_array = audio_array.reshape(-1, 2)
                 audio_array = np.mean(audio_array, axis=1)
-            
+
             # Calculate basic metrics
             energy_mean = float(np.mean(np.abs(audio_array)))
             energy_std = float(np.std(np.abs(audio_array)))
             zero_crossings = np.sum(np.diff(np.sign(audio_array)) != 0)
             zero_crossing_rate = zero_crossings / len(audio_array)
-            
+
             # Calculate silence ratio (frames below threshold)
             silence_threshold = 0.01
             silence_frames = np.sum(np.abs(audio_array) < silence_threshold)
             silence_ratio = silence_frames / len(audio_array)
-            
+
             # Clean up temporary file
             os.unlink(temp_path)
-            
+
             return {
                 "duration": duration,
                 "sample_rate": sample_rate,
@@ -324,7 +324,7 @@ class EnhancedAudioQualityTester:
                 "silence_ratio": float(silence_ratio),
                 "audio_length": len(audio_array)
             }
-            
+
         except Exception as e:
             logger.warning(f"Audio analysis failed: {e}")
             return {
@@ -337,36 +337,36 @@ class EnhancedAudioQualityTester:
                 "silence_ratio": 0.0,
                 "audio_length": 0
             }
-    
+
     def calculate_wer(self, reference: str, hypothesis: str) -> float:
         """Calculate Word Error Rate"""
         ref_words = reference.lower().split()
         hyp_words = hypothesis.lower().split()
-        
+
         if len(ref_words) == 0:
             return 0.0 if len(hyp_words) == 0 else 1.0
-        
+
         # Simple WER calculation (can be enhanced with edit distance)
         correct_words = 0
         for ref_word in ref_words:
             if ref_word in hyp_words:
                 correct_words += 1
-        
+
         return 1.0 - (correct_words / len(ref_words))
-    
+
     def predict_mos_score(self, audio_props: Dict[str, Any], text: str) -> float:
         """Predict Mean Opinion Score using heuristic analysis"""
         base_score = 4.0
-        
+
         duration = audio_props.get("duration", 0)
         energy_mean = audio_props.get("energy_mean", 0)
         silence_ratio = audio_props.get("silence_ratio", 0)
-        
+
         # Adjust based on audio properties
         if duration > 0:
             words = len(text.split())
             speaking_rate = (words * 60) / duration
-            
+
             # Optimal speaking rate adjustment
             if 120 <= speaking_rate <= 200:
                 rate_adjustment = 1.0
@@ -374,62 +374,62 @@ class EnhancedAudioQualityTester:
                 rate_adjustment = 0.9
             else:
                 rate_adjustment = 0.7
-            
+
             base_score *= rate_adjustment
-        
+
         # Energy level adjustment
         if 0.1 <= energy_mean <= 0.8:
             energy_adjustment = 1.0
         else:
             energy_adjustment = 0.8
-        
+
         base_score *= energy_adjustment
-        
+
         # Silence ratio adjustment
         if silence_ratio < 0.3:
             silence_adjustment = 1.0
         else:
             silence_adjustment = 0.9
-        
+
         base_score *= silence_adjustment
-        
+
         return min(5.0, max(1.0, base_score))
-    
+
     def analyze_pronunciation_accuracy(self, test_case: EnhancedTestCase, audio_props: Dict[str, Any]) -> float:
         """Analyze pronunciation accuracy based on expected pronunciations"""
         if not test_case.expected_pronunciations:
             return 1.0
-        
+
         # Heuristic analysis based on audio properties and expectations
         accuracy_score = 0.8  # Base score
-        
+
         # Adjust based on speaking rate
         duration = audio_props.get("duration", 0)
         if duration > 0:
             words = len(test_case.input_text.split())
             speaking_rate = (words * 60) / duration
-            
+
             expected_min, expected_max = test_case.expected_speaking_rate_range
             if expected_min <= speaking_rate <= expected_max:
                 accuracy_score += 0.1
-        
+
         # Adjust based on energy consistency
         energy_std = audio_props.get("energy_std", 0)
         if energy_std < 0.3:  # Consistent energy suggests good pronunciation
             accuracy_score += 0.1
-        
+
         return min(1.0, accuracy_score)
-    
+
     async def test_single_case(self, test_case: EnhancedTestCase) -> EnhancedAudioMetrics:
         """Test a single audio quality test case"""
         logger.info(f"Testing: {test_case.test_id} - {test_case.description}")
-        
+
         # Generate audio
         success, audio_data, processing_time, error = await self.generate_audio(
-            test_case.input_text, 
+            test_case.input_text,
             test_case.voice_model
         )
-        
+
         if not success:
             logger.error(f"Audio generation failed for {test_case.test_id}: {error}")
             return EnhancedAudioMetrics(
@@ -438,35 +438,35 @@ class EnhancedAudioQualityTester:
                 text_length=len(test_case.input_text),
                 test_category=test_case.test_category
             )
-        
+
         # Analyze audio properties
         audio_props = self.analyze_audio_properties(audio_data)
         duration = audio_props.get("duration", 0)
-        
+
         # Calculate RTF
         rtf = processing_time / duration if duration > 0 else float('inf')
-        
+
         # Calculate speaking rate
         words = len(test_case.input_text.split())
         speaking_rate = (words * 60) / duration if duration > 0 else 0
-        
+
         # Predict MOS score
         mos_prediction = self.predict_mos_score(audio_props, test_case.input_text)
-        
+
         # Analyze pronunciation accuracy
         pronunciation_accuracy = self.analyze_pronunciation_accuracy(test_case, audio_props)
-        
+
         # Calculate prosody score (heuristic)
         prosody_score = 0.8  # Base score
         if 120 <= speaking_rate <= 200:
             prosody_score += 0.1
         if audio_props.get("silence_ratio", 0) < 0.3:
             prosody_score += 0.1
-        
+
         # Calculate naturalness and clarity scores
         naturalness_score = min(1.0, mos_prediction / 5.0 + 0.2)
         clarity_score = min(1.0, 1.0 - audio_props.get("silence_ratio", 0))
-        
+
         metrics = EnhancedAudioMetrics(
             wer=0.0,  # Would need ASR for actual WER
             mos_prediction=mos_prediction,
@@ -486,7 +486,7 @@ class EnhancedAudioQualityTester:
             text_length=len(test_case.input_text),
             test_category=test_case.test_category
         )
-        
+
         logger.info(f"Completed: {test_case.test_id} - MOS: {mos_prediction:.2f}, RTF: {rtf:.3f}, Pronunciation: {pronunciation_accuracy:.2f}")
         return metrics
 

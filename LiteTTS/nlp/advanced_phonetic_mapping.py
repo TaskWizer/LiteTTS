@@ -24,7 +24,7 @@ class PhoneticMapping:
     language: str          # Language code (en, en-US, etc.)
     frequency: float       # Usage frequency (0.0-1.0)
     confidence: float      # Mapping confidence (0.0-1.0)
-    
+
 @dataclass
 class PhoneticRule:
     """Context-aware phonetic rule"""
@@ -36,26 +36,26 @@ class PhoneticRule:
 
 class AdvancedPhoneticMapper:
     """Advanced phonetic mapping system with IPA support"""
-    
+
     def __init__(self, config_path: Optional[str] = None):
         self.config = self._load_config(config_path)
-        
+
         # Core phonetic mappings
         self.ipa_mappings = self._initialize_ipa_mappings()
         self.context_rules = self._initialize_context_rules()
         self.homograph_rules = self._initialize_homograph_rules()
-        
+
         # Language-specific mappings
         self.language_mappings = self._initialize_language_mappings()
-        
+
         # Phoneme similarity mappings for error correction
         self.phoneme_similarities = self._initialize_phoneme_similarities()
-        
+
         # Stress and prosodic patterns
         self.stress_patterns = self._initialize_stress_patterns()
-        
+
         logger.info("Advanced phonetic mapping system initialized")
-    
+
     def _load_config(self, config_path: Optional[str]) -> Dict[str, Any]:
         """Load phonetic mapping configuration"""
         default_config = {
@@ -68,7 +68,7 @@ class AdvancedPhoneticMapper:
             "context_window_size": 3,
             "stress_prediction_method": "syllable_based"
         }
-        
+
         if config_path and Path(config_path).exists():
             try:
                 with open(config_path, 'r') as f:
@@ -76,13 +76,13 @@ class AdvancedPhoneticMapper:
                 default_config.update(user_config)
             except Exception as e:
                 logger.warning(f"Failed to load phonetic config: {e}")
-        
+
         return default_config
-    
+
     def _initialize_ipa_mappings(self) -> Dict[str, PhoneticMapping]:
         """Initialize comprehensive IPA phonetic mappings"""
         mappings = {}
-        
+
         # Vowel mappings (American English)
         vowel_mappings = [
             # Monophthongs
@@ -91,14 +91,14 @@ class AdvancedPhoneticMapper:
             ("i", "ɪ", "", "", "en-US", 0.85, 0.9),  # bit, sit
             ("o", "ɑ", "", "", "en-US", 0.7, 0.85),  # hot, cot
             ("u", "ʌ", "", "", "en-US", 0.75, 0.85), # but, cut
-            
+
             # Long vowels
             ("ee", "iː", "", "", "en-US", 0.9, 0.95), # see, tree
             ("oo", "uː", "", "", "en-US", 0.85, 0.9), # food, mood
             ("ar", "ɑr", "", "", "en-US", 0.9, 0.95), # car, far
             ("or", "ɔr", "", "", "en-US", 0.85, 0.9), # for, more
             ("er", "ɝ", "", "", "en-US", 0.9, 0.95),  # her, bird
-            
+
             # Diphthongs
             ("ai", "eɪ", "", "", "en-US", 0.8, 0.9),  # rain, pain
             ("ay", "eɪ", "", "", "en-US", 0.85, 0.9), # day, say
@@ -107,12 +107,12 @@ class AdvancedPhoneticMapper:
             ("ou", "aʊ", "", "", "en-US", 0.8, 0.9),  # house, mouse
             ("ow", "aʊ", "", "", "en-US", 0.75, 0.85), # cow, how (context-dependent)
         ]
-        
+
         for grapheme, phoneme, ctx_before, ctx_after, lang, freq, conf in vowel_mappings:
             mappings[grapheme] = PhoneticMapping(
                 grapheme, phoneme, ctx_before, ctx_after, lang, freq, conf
             )
-        
+
         # Consonant mappings
         consonant_mappings = [
             # Single consonants
@@ -134,7 +134,7 @@ class AdvancedPhoneticMapper:
             ("w", "w", "", "", "en-US", 0.95, 0.98),
             ("y", "j", "", "", "en-US", 0.9, 0.95),
             ("z", "z", "", "", "en-US", 0.95, 0.98),
-            
+
             # Digraphs and special combinations
             ("ch", "tʃ", "", "", "en-US", 0.95, 0.98),
             ("sh", "ʃ", "", "", "en-US", 0.95, 0.98),
@@ -146,14 +146,14 @@ class AdvancedPhoneticMapper:
             ("ck", "k", "", "", "en-US", 0.95, 0.98),
             ("qu", "kw", "", "", "en-US", 0.95, 0.98),
         ]
-        
+
         for grapheme, phoneme, ctx_before, ctx_after, lang, freq, conf in consonant_mappings:
             mappings[f"cons_{grapheme}"] = PhoneticMapping(
                 grapheme, phoneme, ctx_before, ctx_after, lang, freq, conf
             )
-        
+
         return mappings
-    
+
     def _initialize_context_rules(self) -> List[PhoneticRule]:
         """Initialize context-aware phonetic rules"""
         return [
@@ -179,7 +179,7 @@ class AdvancedPhoneticMapper:
                 priority=100,
                 conditions=[]
             ),
-            
+
             # Consonant context rules
             PhoneticRule(
                 pattern=r"c(?=[eiy])",
@@ -202,7 +202,7 @@ class AdvancedPhoneticMapper:
                 priority=85,
                 conditions=["not_germanic_origin"]
             ),
-            
+
             # Silent letter rules
             PhoneticRule(
                 pattern=r"(?<=\w)b$",
@@ -225,7 +225,7 @@ class AdvancedPhoneticMapper:
                 priority=95,
                 conditions=["word_initial"]
             ),
-            
+
             # Stress-dependent rules
             PhoneticRule(
                 pattern=r"a(?=\w*[aeiou]\w*$)",
@@ -242,7 +242,7 @@ class AdvancedPhoneticMapper:
                 conditions=["unstressed_syllable"]
             ),
         ]
-    
+
     def _initialize_homograph_rules(self) -> Dict[str, List[Tuple[str, str, str]]]:
         """Initialize homograph disambiguation rules"""
         return {
@@ -288,7 +288,7 @@ class AdvancedPhoneticMapper:
                 ("rɪˈkɔrd", "verb", "0.4")
             ]
         }
-    
+
     def _initialize_language_mappings(self) -> Dict[str, Dict[str, str]]:
         """Initialize language-specific phonetic mappings"""
         return {
@@ -311,7 +311,7 @@ class AdvancedPhoneticMapper:
                 "o": "ɔ",      # Rounded
             }
         }
-    
+
     def _initialize_phoneme_similarities(self) -> Dict[str, List[str]]:
         """Initialize phoneme similarity mappings for error correction"""
         return {
@@ -326,7 +326,7 @@ class AdvancedPhoneticMapper:
             "ɔ": ["o", "ɑ", "ʊ"],
             "ʊ": ["u", "o", "ɔ"],
             "u": ["ʊ", "uː", "o"],
-            
+
             # Consonant similarities
             "p": ["b", "f"],
             "b": ["p", "v", "m"],
@@ -353,7 +353,7 @@ class AdvancedPhoneticMapper:
             "w": ["u", "ʊ"],
             "h": ["x", "ʔ"]
         }
-    
+
     def _initialize_stress_patterns(self) -> Dict[str, List[str]]:
         """Initialize stress pattern rules"""
         return {
@@ -379,57 +379,57 @@ class AdvancedPhoneticMapper:
                 "4+_syllables": ["antepenultimate_or_penultimate_primary"]
             }
         }
-    
+
     def map_to_ipa(self, text: str, language: str = "en-US") -> str:
         """Map text to IPA phonetic representation"""
         logger.debug(f"Mapping to IPA: {text[:50]}...")
-        
+
         # Normalize text
         text = self._normalize_text(text)
-        
+
         # Apply context rules
         if self.config["enable_context_rules"]:
             text = self._apply_context_rules(text)
-        
+
         # Resolve homographs
         if self.config["enable_homograph_resolution"]:
             text = self._resolve_homographs(text)
-        
+
         # Apply phonetic mappings
         ipa_text = self._apply_phonetic_mappings(text, language)
-        
+
         # Add stress markers
         if self.config["enable_stress_prediction"]:
             ipa_text = self._add_stress_markers(ipa_text)
-        
+
         logger.debug(f"IPA result: {ipa_text[:50]}...")
         return ipa_text
-    
+
     def _normalize_text(self, text: str) -> str:
         """Normalize text for phonetic processing"""
         # Convert to lowercase
         text = text.lower()
-        
+
         # Normalize Unicode characters
         text = unicodedata.normalize('NFKD', text)
-        
+
         # Remove non-alphabetic characters (keep spaces and hyphens)
         text = re.sub(r'[^a-z\s\-]', '', text)
-        
+
         return text.strip()
-    
+
     def _apply_context_rules(self, text: str) -> str:
         """Apply context-aware phonetic rules"""
         # Sort rules by priority (highest first)
         sorted_rules = sorted(self.context_rules, key=lambda r: r.priority, reverse=True)
-        
+
         for rule in sorted_rules:
             # Check conditions
             if self._check_rule_conditions(text, rule):
                 text = re.sub(rule.pattern, rule.replacement, text)
-        
+
         return text
-    
+
     def _check_rule_conditions(self, text: str, rule: PhoneticRule) -> bool:
         """Check if rule conditions are met"""
         # Simplified condition checking
@@ -439,53 +439,53 @@ class AdvancedPhoneticMapper:
             elif condition == "word_final" and not re.search(rule.pattern + r'\b', text):
                 return False
             # Add more condition checks as needed
-        
+
         return True
-    
+
     def _resolve_homographs(self, text: str) -> str:
         """Resolve homograph pronunciations based on context"""
         words = text.split()
         resolved_words = []
-        
+
         for i, word in enumerate(words):
             if word in self.homograph_rules:
                 # Simple context-based resolution (can be enhanced with ML)
                 pronunciations = self.homograph_rules[word]
-                
+
                 # Default to most frequent pronunciation
                 best_pronunciation = max(pronunciations, key=lambda x: float(x[2]))
                 resolved_words.append(best_pronunciation[0])
             else:
                 resolved_words.append(word)
-        
+
         return ' '.join(resolved_words)
-    
+
     def _apply_phonetic_mappings(self, text: str, language: str) -> str:
         """Apply phonetic mappings to convert text to IPA"""
         # This is a simplified implementation
         # In a full system, this would use more sophisticated algorithms
-        
+
         result = text
-        
+
         # Apply language-specific mappings
         if language in self.language_mappings:
             lang_mappings = self.language_mappings[language]
             for grapheme, phoneme in lang_mappings.items():
                 result = result.replace(grapheme, phoneme)
-        
+
         # Apply general IPA mappings
         for mapping_key, mapping in self.ipa_mappings.items():
             if mapping.language == language or mapping.language.startswith(language[:2]):
                 result = result.replace(mapping.grapheme, mapping.phoneme)
-        
+
         return result
-    
+
     def _add_stress_markers(self, ipa_text: str) -> str:
         """Add stress markers to IPA text"""
         # Simplified stress prediction
         words = ipa_text.split()
         stressed_words = []
-        
+
         for word in words:
             if len(word) > 1:  # Only add stress to multi-character words
                 # Simple rule: primary stress on first syllable for most words
@@ -493,28 +493,28 @@ class AdvancedPhoneticMapper:
                 stressed_words.append(stressed_word)
             else:
                 stressed_words.append(word)
-        
+
         return ' '.join(stressed_words)
-    
+
     def get_phoneme_alternatives(self, phoneme: str) -> List[str]:
         """Get alternative phonemes for error correction"""
         return self.phoneme_similarities.get(phoneme, [])
-    
+
     def validate_ipa_string(self, ipa_string: str) -> Tuple[bool, List[str]]:
         """Validate IPA string and return errors if any"""
         errors = []
-        
+
         # Check for valid IPA characters
         valid_ipa_chars = set("abcdefghijklmnopqrstuvwxyzæɑɒɔəɛɪʊʌaeiouɜɝɞɘɵɤɯɨʉɶœøɪ̈ʏɐɶ̃ɑ̃ɔ̃ə̃ɛ̃ɪ̃ʊ̃ʌ̃pbtkgfvθðszʃʒhmnŋlrjwʔˈˌːˑ̆ʰʷʲ. ")
-        
+
         for char in ipa_string:
             if char not in valid_ipa_chars:
                 errors.append(f"Invalid IPA character: '{char}'")
-        
+
         # Check stress marker placement
         if re.search(r'ˈˈ|ˌˌ', ipa_string):
             errors.append("Consecutive stress markers found")
-        
+
         return len(errors) == 0, errors
 
 # Global instance for easy access

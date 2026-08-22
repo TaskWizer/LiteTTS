@@ -41,7 +41,7 @@ extensions = [
     'sphinx.ext.githubpages',
     # Integrates with doxygen
     "breathe",
-    # Converts markdown to rst 
+    # Converts markdown to rst
     "m2r2",
 ]
 source_suffix = ['.rst', '.md']

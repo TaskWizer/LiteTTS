@@ -56,11 +56,11 @@ class OptimizationRecommendation:
 
 class PerformanceDatabase:
     """SQLite database for performance metrics storage"""
-    
+
     def __init__(self, db_path: str):
         self.db_path = db_path
         self._init_database()
-        
+
     def _init_database(self):
         """Initialize performance database"""
         with sqlite3.connect(self.db_path) as conn:
@@ -80,15 +80,15 @@ class PerformanceDatabase:
                     error_message TEXT
                 )
             """)
-            
+
             conn.execute("""
                 CREATE INDEX IF NOT EXISTS idx_timestamp ON performance_metrics(timestamp)
             """)
-            
+
             conn.execute("""
                 CREATE INDEX IF NOT EXISTS idx_model_name ON performance_metrics(model_name)
             """)
-            
+
     def store_metrics(self, metrics: PerformanceMetrics):
         """Store performance metrics"""
         with sqlite3.connect(self.db_path) as conn:
@@ -111,8 +111,8 @@ class PerformanceDatabase:
                 metrics.error_occurred,
                 metrics.error_message
             ))
-            
-    def get_metrics(self, start_time: datetime, end_time: datetime, 
+
+    def get_metrics(self, start_time: datetime, end_time: datetime,
                    model_name: Optional[str] = None) -> List[PerformanceMetrics]:
         """Retrieve performance metrics for time range"""
         query = """
@@ -120,19 +120,19 @@ class PerformanceDatabase:
             WHERE timestamp >= ? AND timestamp <= ?
         """
         params = [start_time.isoformat(), end_time.isoformat()]
-        
+
         if model_name:
             query += " AND model_name = ?"
             params.append(model_name)
-            
+
         query += " ORDER BY timestamp"
-        
+
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute(query, params)
             rows = cursor.fetchall()
-            
+
             return [self._row_to_metrics(row) for row in rows]
-            
+
     def _row_to_metrics(self, row) -> PerformanceMetrics:
         """Convert database row to PerformanceMetrics"""
         return PerformanceMetrics(
@@ -151,20 +151,20 @@ class PerformanceDatabase:
 
 class AlertManager:
     """Manages performance alerts and notifications"""
-    
+
     def __init__(self, thresholds: AlertThresholds):
         self.thresholds = thresholds
         self.alert_callbacks: List[Callable[[str, str, Dict[str, Any]], None]] = []
         self.alert_history = deque(maxlen=1000)
-        
+
     def add_alert_callback(self, callback: Callable[[str, str, Dict[str, Any]], None]):
         """Add alert callback function"""
         self.alert_callbacks.append(callback)
-        
+
     def check_metrics(self, metrics: PerformanceMetrics):
         """Check metrics against thresholds and trigger alerts"""
         alerts = []
-        
+
         # RTF threshold
         if metrics.rtf > self.thresholds.max_rtf:
             alerts.append({
@@ -174,7 +174,7 @@ class AlertManager:
                 'value': metrics.rtf,
                 'threshold': self.thresholds.max_rtf
             })
-            
+
         # Memory threshold
         if metrics.memory_usage_mb > self.thresholds.max_memory_mb:
             alerts.append({
@@ -184,7 +184,7 @@ class AlertManager:
                 'value': metrics.memory_usage_mb,
                 'threshold': self.thresholds.max_memory_mb
             })
-            
+
         # CPU threshold
         if metrics.cpu_usage_percent > self.thresholds.max_cpu_percent:
             alerts.append({
@@ -194,7 +194,7 @@ class AlertManager:
                 'value': metrics.cpu_usage_percent,
                 'threshold': self.thresholds.max_cpu_percent
             })
-            
+
         # Queue size threshold
         if metrics.queue_size > self.thresholds.max_queue_size:
             alerts.append({
@@ -204,11 +204,11 @@ class AlertManager:
                 'value': metrics.queue_size,
                 'threshold': self.thresholds.max_queue_size
             })
-            
+
         # Process alerts
         for alert in alerts:
             self._trigger_alert(alert, metrics)
-            
+
     def _trigger_alert(self, alert: Dict[str, Any], metrics: PerformanceMetrics):
         """Trigger alert notifications"""
         alert_data = {
@@ -217,9 +217,9 @@ class AlertManager:
             'alert': alert,
             'metrics': asdict(metrics)
         }
-        
+
         self.alert_history.append(alert_data)
-        
+
         # Notify callbacks
         for callback in self.alert_callbacks:
             try:
@@ -229,27 +229,27 @@ class AlertManager:
 
 class OptimizationEngine:
     """Analyzes performance data and provides optimization recommendations"""
-    
+
     def __init__(self, db: PerformanceDatabase):
         self.db = db
-        
+
     def analyze_performance(self, hours: int = 24) -> Dict[str, Any]:
         """Analyze performance over specified time period"""
         end_time = datetime.now()
         start_time = end_time - timedelta(hours=hours)
-        
+
         metrics = self.db.get_metrics(start_time, end_time)
-        
+
         if not metrics:
             return {'error': 'No metrics available for analysis'}
-            
+
         # Calculate statistics
         rtfs = [m.rtf for m in metrics if not m.error_occurred]
         memory_usage = [m.memory_usage_mb for m in metrics if not m.error_occurred]
         processing_times = [m.processing_time for m in metrics if not m.error_occurred]
-        
+
         error_rate = sum(1 for m in metrics if m.error_occurred) / len(metrics)
-        
+
         analysis = {
             'time_period': f"{hours} hours",
             'total_requests': len(metrics),
@@ -273,13 +273,13 @@ class OptimizationEngine:
                 'p95': np.percentile(processing_times, 95) if processing_times else 0
             }
         }
-        
+
         return analysis
-        
+
     def generate_recommendations(self, analysis: Dict[str, Any]) -> List[OptimizationRecommendation]:
         """Generate optimization recommendations based on analysis"""
         recommendations = []
-        
+
         # RTF recommendations
         if analysis.get('rtf_stats', {}).get('p95', 0) > 1.0:
             recommendations.append(OptimizationRecommendation(
@@ -290,7 +290,7 @@ class OptimizationEngine:
                 expected_improvement='30-50% RTF reduction',
                 implementation_effort='medium'
             ))
-            
+
         # Memory recommendations
         if analysis.get('memory_stats', {}).get('p95', 0) > 2500:
             recommendations.append(OptimizationRecommendation(
@@ -301,7 +301,7 @@ class OptimizationEngine:
                 expected_improvement='40-60% memory reduction',
                 implementation_effort='low'
             ))
-            
+
         # Error rate recommendations
         if analysis.get('error_rate', 0) > 0.02:
             recommendations.append(OptimizationRecommendation(
@@ -312,7 +312,7 @@ class OptimizationEngine:
                 expected_improvement='Reduce error rate to <1%',
                 implementation_effort='medium'
             ))
-            
+
         # Processing time recommendations
         if analysis.get('processing_time_stats', {}).get('p95', 0) > 20:
             recommendations.append(OptimizationRecommendation(
@@ -323,38 +323,38 @@ class OptimizationEngine:
                 expected_improvement='20-40% processing time reduction',
                 implementation_effort='high'
             ))
-            
+
         return recommendations
 
 class WhisperPerformanceMonitor:
     """Main performance monitoring system for Whisper alternatives"""
-    
-    def __init__(self, db_path: str = "whisper_performance.db", 
+
+    def __init__(self, db_path: str = "whisper_performance.db",
                  thresholds: Optional[AlertThresholds] = None):
         self.db = PerformanceDatabase(db_path)
         self.thresholds = thresholds or AlertThresholds()
         self.alert_manager = AlertManager(self.thresholds)
         self.optimization_engine = OptimizationEngine(self.db)
-        
+
         # Monitoring state
         self.monitoring = False
         self.current_requests = 0
         self.request_queue_size = 0
-        
+
         # Background tasks
         self.executor = ThreadPoolExecutor(max_workers=2)
-        
+
         logger.info("WhisperPerformanceMonitor initialized")
-        
-    def record_inference(self, model_name: str, audio_duration: float, 
+
+    def record_inference(self, model_name: str, audio_duration: float,
                         processing_time: float, memory_usage_mb: float,
                         error_occurred: bool = False, error_message: Optional[str] = None):
         """Record inference performance metrics"""
         rtf = processing_time / audio_duration if audio_duration > 0 else float('inf')
-        
+
         # Get current system metrics
         cpu_usage = psutil.cpu_percent()
-        
+
         metrics = PerformanceMetrics(
             timestamp=datetime.now(),
             model_name=model_name,
@@ -368,36 +368,36 @@ class WhisperPerformanceMonitor:
             error_occurred=error_occurred,
             error_message=error_message
         )
-        
+
         # Store metrics
         self.db.store_metrics(metrics)
-        
+
         # Check for alerts
         self.alert_manager.check_metrics(metrics)
-        
+
         logger.debug(f"Recorded metrics: {model_name}, RTF={rtf:.3f}, Memory={memory_usage_mb:.1f}MB")
-        
+
     def start_request(self):
         """Mark start of a new request"""
         self.current_requests += 1
-        
+
     def end_request(self):
         """Mark end of a request"""
         self.current_requests = max(0, self.current_requests - 1)
-        
+
     def set_queue_size(self, size: int):
         """Update current queue size"""
         self.request_queue_size = size
-        
+
     def add_alert_callback(self, callback: Callable[[str, str, Dict[str, Any]], None]):
         """Add alert notification callback"""
         self.alert_manager.add_alert_callback(callback)
-        
+
     def get_performance_report(self, hours: int = 24) -> Dict[str, Any]:
         """Generate comprehensive performance report"""
         analysis = self.optimization_engine.analyze_performance(hours)
         recommendations = self.optimization_engine.generate_recommendations(analysis)
-        
+
         return {
             'analysis': analysis,
             'recommendations': [asdict(rec) for rec in recommendations],
@@ -409,32 +409,32 @@ class WhisperPerformanceMonitor:
             'thresholds': asdict(self.thresholds),
             'generated_at': datetime.now().isoformat()
         }
-        
+
     def start_continuous_monitoring(self, interval_seconds: int = 60):
         """Start continuous performance monitoring"""
         self.monitoring = True
-        
+
         def monitor_loop():
             while self.monitoring:
                 try:
                     # Generate periodic reports
                     report = self.get_performance_report(hours=1)
-                    
+
                     # Log summary
                     analysis = report['analysis']
                     if 'rtf_stats' in analysis:
                         logger.info(f"Performance summary - RTF P95: {analysis['rtf_stats']['p95']:.3f}, "
                                   f"Memory P95: {analysis['memory_stats']['p95']:.1f}MB, "
                                   f"Error rate: {analysis['error_rate']:.3f}")
-                        
+
                     time.sleep(interval_seconds)
                 except Exception as e:
                     logger.error(f"Monitoring loop error: {e}")
                     time.sleep(interval_seconds)
-                    
+
         self.executor.submit(monitor_loop)
         logger.info("Continuous monitoring started")
-        
+
     def stop_monitoring(self):
         """Stop continuous monitoring"""
         self.monitoring = False
@@ -449,21 +449,21 @@ def log_alert(alert_type: str, severity: str, alert_data: Dict[str, Any]):
 def example_usage():
     """Example usage of the performance monitoring system"""
     monitor = WhisperPerformanceMonitor()
-    
+
     # Add alert callback
     monitor.add_alert_callback(log_alert)
-    
+
     # Start continuous monitoring
     monitor.start_continuous_monitoring()
-    
+
     # Simulate some inference recordings
     monitor.record_inference("distil-small.en", 10.0, 4.5, 800.0)
     monitor.record_inference("faster-whisper-base-int8", 10.0, 3.2, 600.0)
-    
+
     # Generate report
     report = monitor.get_performance_report()
     print(json.dumps(report, indent=2))
-    
+
     # Stop monitoring
     monitor.stop_monitoring()
 

@@ -66,18 +66,18 @@ class QualityConfiguration:
 
 class LintingTestingManager:
     """Linting and testing framework manager"""
-    
+
     def __init__(self):
         self.results_dir = Path("test_results/linting_testing")
         self.results_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # Default configuration
         self.config = self._create_default_config()
-        
+
         # Results storage
         self.linting_results = {}
         self.testing_results = {}
-        
+
     def _create_default_config(self) -> QualityConfiguration:
         """Create default quality configuration"""
         return QualityConfiguration(
@@ -104,21 +104,21 @@ class LintingTestingManager:
             ],
             test_directories=["tests", "test"]
         )
-    
+
     def check_tool_availability(self, tool_name: str) -> bool:
         """Check if a linting/testing tool is available"""
         try:
-            result = subprocess.run([tool_name, "--version"], 
+            result = subprocess.run([tool_name, "--version"],
                                   capture_output=True, text=True, timeout=10)
             return result.returncode == 0
         except (subprocess.TimeoutExpired, FileNotFoundError):
             return False
-    
+
     def run_black(self, check_only: bool = True) -> LintingResult:
         """Run Black code formatter"""
         logger.info("Running Black code formatter...")
         start_time = time.time()
-        
+
         try:
             cmd = ["black"]
             if check_only:
@@ -127,18 +127,18 @@ class LintingTestingManager:
                 "--line-length", str(self.config.max_line_length),
                 "."
             ])
-            
+
             # Add exclusions
             for pattern in self.config.exclude_patterns:
                 cmd.extend(["--exclude", pattern])
-            
+
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
-            
+
             execution_time = time.time() - start_time
-            
+
             # Parse output for issues
             issues_found = result.stdout.count("would reformat") if check_only else 0
-            
+
             return LintingResult(
                 tool_name="black",
                 success=result.returncode == 0,
@@ -149,7 +149,7 @@ class LintingTestingManager:
                 output=result.stdout,
                 error_message=result.stderr if result.returncode != 0 else ""
             )
-            
+
         except subprocess.TimeoutExpired:
             return LintingResult(
                 tool_name="black",
@@ -172,12 +172,12 @@ class LintingTestingManager:
                 output="",
                 error_message=str(e)
             )
-    
+
     def run_isort(self, check_only: bool = True) -> LintingResult:
         """Run isort import sorter"""
         logger.info("Running isort import sorter...")
         start_time = time.time()
-        
+
         try:
             cmd = ["isort"]
             if check_only:
@@ -187,14 +187,14 @@ class LintingTestingManager:
                 "--line-length", str(self.config.max_line_length),
                 "."
             ])
-            
+
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
-            
+
             execution_time = time.time() - start_time
-            
+
             # Parse output for issues
             issues_found = result.stdout.count("ERROR:") + result.stdout.count("would reformat")
-            
+
             return LintingResult(
                 tool_name="isort",
                 success=result.returncode == 0,
@@ -205,7 +205,7 @@ class LintingTestingManager:
                 output=result.stdout,
                 error_message=result.stderr if result.returncode != 0 else ""
             )
-            
+
         except Exception as e:
             return LintingResult(
                 tool_name="isort",
@@ -217,12 +217,12 @@ class LintingTestingManager:
                 output="",
                 error_message=str(e)
             )
-    
+
     def run_flake8(self) -> LintingResult:
         """Run Flake8 linter"""
         logger.info("Running Flake8 linter...")
         start_time = time.time()
-        
+
         try:
             cmd = [
                 "flake8",
@@ -231,19 +231,19 @@ class LintingTestingManager:
                 "--exclude", ",".join(self.config.exclude_patterns),
                 "."
             ]
-            
+
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
-            
+
             execution_time = time.time() - start_time
-            
+
             # Parse output for issues
             lines = result.stdout.strip().split('\n') if result.stdout.strip() else []
             issues_found = len([line for line in lines if line.strip()])
-            
+
             # Count critical issues (errors) vs warnings
             critical_issues = len([line for line in lines if ':E' in line])
             warnings = issues_found - critical_issues
-            
+
             return LintingResult(
                 tool_name="flake8",
                 success=result.returncode == 0,
@@ -254,7 +254,7 @@ class LintingTestingManager:
                 output=result.stdout,
                 error_message=result.stderr if result.returncode != 0 else ""
             )
-            
+
         except Exception as e:
             return LintingResult(
                 tool_name="flake8",
@@ -266,24 +266,24 @@ class LintingTestingManager:
                 output="",
                 error_message=str(e)
             )
-    
+
     def run_pylint(self) -> LintingResult:
         """Run Pylint linter"""
         logger.info("Running Pylint linter...")
         start_time = time.time()
-        
+
         try:
             # Find Python files to lint
             python_files = []
             for pattern in ["*.py"]:
                 python_files.extend(Path(".").rglob(pattern))
-            
+
             # Filter out excluded patterns
             filtered_files = []
             for file_path in python_files:
                 if not any(pattern in str(file_path) for pattern in self.config.exclude_patterns):
                     filtered_files.append(str(file_path))
-            
+
             if not filtered_files:
                 return LintingResult(
                     tool_name="pylint",
@@ -295,26 +295,26 @@ class LintingTestingManager:
                     output="No Python files found to lint",
                     error_message=""
                 )
-            
+
             cmd = [
                 "pylint",
                 "--max-line-length", str(self.config.max_line_length),
                 "--disable", "C0114,C0115,C0116",  # Disable docstring requirements for now
                 "--output-format", "text"
             ] + filtered_files[:10]  # Limit to first 10 files for performance
-            
+
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
-            
+
             execution_time = time.time() - start_time
-            
+
             # Parse Pylint output
             lines = result.stdout.strip().split('\n') if result.stdout.strip() else []
-            
+
             # Count different types of issues
             critical_issues = len([line for line in lines if ':E' in line or ':F' in line])
             warnings = len([line for line in lines if ':W' in line or ':R' in line or ':C' in line])
             issues_found = critical_issues + warnings
-            
+
             return LintingResult(
                 tool_name="pylint",
                 success=result.returncode in [0, 1, 2, 4, 8, 16],  # Pylint exit codes
@@ -325,7 +325,7 @@ class LintingTestingManager:
                 output=result.stdout,
                 error_message=result.stderr if result.returncode not in [0, 1, 2, 4, 8, 16] else ""
             )
-            
+
         except Exception as e:
             return LintingResult(
                 tool_name="pylint",
@@ -337,12 +337,12 @@ class LintingTestingManager:
                 output="",
                 error_message=str(e)
             )
-    
+
     def run_mypy(self) -> LintingResult:
         """Run MyPy type checker"""
         logger.info("Running MyPy type checker...")
         start_time = time.time()
-        
+
         try:
             cmd = [
                 "mypy",
@@ -351,19 +351,19 @@ class LintingTestingManager:
                 "--show-error-codes",
                 "."
             ]
-            
+
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
-            
+
             execution_time = time.time() - start_time
-            
+
             # Parse MyPy output
             lines = result.stdout.strip().split('\n') if result.stdout.strip() else []
             issues_found = len([line for line in lines if 'error:' in line])
-            
+
             # MyPy mostly reports errors, treat all as critical
             critical_issues = issues_found
             warnings = 0
-            
+
             return LintingResult(
                 tool_name="mypy",
                 success=result.returncode == 0,
@@ -374,7 +374,7 @@ class LintingTestingManager:
                 output=result.stdout,
                 error_message=result.stderr if result.returncode != 0 else ""
             )
-            
+
         except Exception as e:
             return LintingResult(
                 tool_name="mypy",
@@ -386,12 +386,12 @@ class LintingTestingManager:
                 output="",
                 error_message=str(e)
             )
-    
+
     def run_bandit(self) -> LintingResult:
         """Run Bandit security linter"""
         logger.info("Running Bandit security linter...")
         start_time = time.time()
-        
+
         try:
             cmd = [
                 "bandit",
@@ -399,26 +399,26 @@ class LintingTestingManager:
                 "-f", "json",
                 "--exclude", ",".join(self.config.exclude_patterns)
             ]
-            
+
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
-            
+
             execution_time = time.time() - start_time
-            
+
             # Parse Bandit JSON output
             try:
                 if result.stdout:
                     bandit_data = json.loads(result.stdout)
                     issues_found = len(bandit_data.get("results", []))
-                    
+
                     # Count by severity
-                    critical_issues = len([r for r in bandit_data.get("results", []) 
+                    critical_issues = len([r for r in bandit_data.get("results", [])
                                          if r.get("issue_severity") in ["HIGH", "MEDIUM"]])
                     warnings = issues_found - critical_issues
                 else:
                     issues_found = critical_issues = warnings = 0
             except json.JSONDecodeError:
                 issues_found = critical_issues = warnings = 0
-            
+
             return LintingResult(
                 tool_name="bandit",
                 success=result.returncode == 0,
@@ -429,7 +429,7 @@ class LintingTestingManager:
                 output=result.stdout,
                 error_message=result.stderr if result.returncode != 0 else ""
             )
-            
+
         except Exception as e:
             return LintingResult(
                 tool_name="bandit",

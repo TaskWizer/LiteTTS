@@ -39,14 +39,14 @@ class ComprehensiveAudioQualityTestSuite:
     """
     Comprehensive audio quality testing suite that integrates all testing components
     """
-    
+
     def __init__(self, config_path: Optional[str] = None):
         self.config = self._load_config(config_path)
         self.audio_config = self.config.get("audio_quality_testing", {})
-        
+
         # Initialize core tester
         self.tester = AudioQualityTester(self.config)
-        
+
         # Test configuration - handle environment variable substitution
         api_base_url = self.audio_config.get("api_base_url", "http://localhost:8355")
         if "${API_BASE_URL:-" in api_base_url:
@@ -57,7 +57,7 @@ class ComprehensiveAudioQualityTestSuite:
 
         self.max_concurrent_tests = self.audio_config.get("max_concurrent_tests", 3)
         self.cache_enabled = self.audio_config.get("cache_enabled", True)
-        
+
         # Quality thresholds
         self.quality_thresholds = self.audio_config.get("quality_thresholds", {
             "min_mos_score": 3.0,
@@ -66,34 +66,34 @@ class ComprehensiveAudioQualityTestSuite:
             "max_rtf": 0.25,
             "min_prosody_score": 0.7
         })
-        
+
         # Test categories
         self.test_categories = self.audio_config.get("test_categories", {})
-        
+
         # Results tracking
         self.results_dir = Path(self.audio_config.get("reporting", {}).get("output_directory", "test_results/audio_quality"))
         self.results_dir.mkdir(parents=True, exist_ok=True)
-        
+
         logger.info("Comprehensive Audio Quality Test Suite initialized")
-    
+
     def _load_config(self, config_path: Optional[str]) -> Dict[str, Any]:
         """Load configuration from file or use defaults"""
         if config_path and Path(config_path).exists():
             with open(config_path, 'r') as f:
                 return json.load(f)
-        
+
         # Try default config locations
         default_configs = [
             "config/settings.json",
             "LiteTTS/config/settings.json",
             "settings.json"
         ]
-        
+
         for config_file in default_configs:
             if Path(config_file).exists():
                 with open(config_file, 'r') as f:
                     return json.load(f)
-        
+
         # Return minimal default config
         return {
             "audio_quality_testing": {
@@ -108,11 +108,11 @@ class ComprehensiveAudioQualityTestSuite:
                 }
             }
         }
-    
+
     def _create_test_cases(self) -> List[AudioTestCase]:
         """Create comprehensive test cases covering all quality aspects"""
         test_cases = []
-        
+
         # Critical pronunciation test cases (user-reported issues)
         critical_cases = [
             AudioTestCase(
@@ -154,7 +154,7 @@ class ComprehensiveAudioQualityTestSuite:
                 priority="high"
             )
         ]
-        
+
         # Performance validation cases
         performance_cases = [
             AudioTestCase(
@@ -178,7 +178,7 @@ class ComprehensiveAudioQualityTestSuite:
                 max_rtf=0.25
             )
         ]
-        
+
         # Symbol processing cases
         symbol_cases = [
             AudioTestCase(
@@ -201,7 +201,7 @@ class ComprehensiveAudioQualityTestSuite:
                 priority="normal"
             )
         ]
-        
+
         # Voice quality cases (multiple voices)
         voice_cases = []
         test_voices = ["af_heart", "af_bella", "am_adam", "bf_alice"]
@@ -216,22 +216,22 @@ class ComprehensiveAudioQualityTestSuite:
                 priority="normal",
                 min_mos_score=3.5
             ))
-        
+
         test_cases.extend(critical_cases)
         test_cases.extend(performance_cases)
         test_cases.extend(symbol_cases)
         test_cases.extend(voice_cases)
-        
+
         return test_cases
-    
+
     async def run_comprehensive_test_suite(self) -> TestSuiteResults:
         """Run the complete audio quality test suite"""
         start_time = time.time()
         logger.info("Starting comprehensive audio quality test suite")
-        
+
         # Create test cases
         test_cases = self._create_test_cases()
-        
+
         # Initialize results tracking
         results = TestSuiteResults(
             total_tests=len(test_cases),
@@ -245,7 +245,7 @@ class ComprehensiveAudioQualityTestSuite:
             regression_detected=False,
             timestamp=time.strftime("%Y-%m-%d %H:%M:%S")
         )
-        
+
         # Group tests by category
         categorized_tests = {}
         for test_case in test_cases:
@@ -253,34 +253,34 @@ class ComprehensiveAudioQualityTestSuite:
             if category not in categorized_tests:
                 categorized_tests[category] = []
             categorized_tests[category].append(test_case)
-        
+
         # Run tests by category
         for category, category_tests in categorized_tests.items():
             logger.info(f"Running {category} tests ({len(category_tests)} tests)")
-            
+
             category_results = await self._run_category_tests(category, category_tests)
             results.category_results[category] = category_results
-            
+
             # Update overall results
             results.passed_tests += category_results["passed"]
             results.failed_tests += category_results["failed"]
             results.skipped_tests += category_results["skipped"]
-        
+
         # Calculate overall metrics
         results.execution_time = time.time() - start_time
         results.overall_score = self._calculate_overall_score(results)
-        
+
         # Check for regressions
         results.regression_detected = await self._check_for_regressions(results)
-        
+
         # Generate detailed report
         await self._generate_test_report(results)
-        
+
         logger.info(f"Test suite completed in {results.execution_time:.2f}s")
         logger.info(f"Results: {results.passed_tests}/{results.total_tests} passed, Score: {results.overall_score:.2f}")
-        
+
         return results
-    
+
     async def _run_category_tests(self, category: str, test_cases: List[AudioTestCase]) -> Dict[str, Any]:
         """Run tests for a specific category"""
         category_results = {
@@ -292,22 +292,22 @@ class ComprehensiveAudioQualityTestSuite:
             "test_results": [],
             "avg_metrics": {}
         }
-        
+
         # Run tests with concurrency control
         semaphore = asyncio.Semaphore(self.max_concurrent_tests)
-        
+
         async def run_single_test(test_case: AudioTestCase):
             async with semaphore:
                 return await self._run_single_test(test_case)
-        
+
         # Execute tests
         tasks = [run_single_test(test_case) for test_case in test_cases]
         test_results = await asyncio.gather(*tasks, return_exceptions=True)
-        
+
         # Process results
         metrics_sum = {}
         metrics_count = 0
-        
+
         for i, result in enumerate(test_results):
             if isinstance(result, Exception):
                 logger.error(f"Test {test_cases[i].test_id} failed with exception: {result}")
@@ -323,9 +323,9 @@ class ComprehensiveAudioQualityTestSuite:
                     category_results["passed"] += 1
                 else:
                     category_results["failed"] += 1
-                
+
                 category_results["test_results"].append(result)
-                
+
                 # Accumulate metrics for averaging
                 if "metrics" in result:
                     metrics = result["metrics"]
@@ -333,13 +333,13 @@ class ComprehensiveAudioQualityTestSuite:
                         if isinstance(value, (int, float)):
                             metrics_sum[key] = metrics_sum.get(key, 0) + value
                     metrics_count += 1
-        
+
         # Calculate average metrics
         if metrics_count > 0:
             category_results["avg_metrics"] = {
                 key: value / metrics_count for key, value in metrics_sum.items()
             }
-        
+
         return category_results
 
     async def _run_single_test(self, test_case: AudioTestCase) -> Dict[str, Any]:

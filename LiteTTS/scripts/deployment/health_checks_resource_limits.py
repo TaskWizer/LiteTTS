@@ -57,25 +57,25 @@ class MonitoringEndpoint:
 
 class HealthCheckManager:
     """Health checks and resource limits manager"""
-    
+
     def __init__(self):
         self.results_dir = Path("test_results/health_monitoring")
         self.results_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # Health check results storage
         self.health_results = {}
         self.monitoring_active = False
         self.monitor_thread = None
-        
+
         # Resource limits
         self.resource_limits = self._create_default_resource_limits()
-        
+
         # Monitoring endpoints
         self.monitoring_endpoints = self._create_monitoring_endpoints()
-        
+
         # System information
         self.system_info = self._get_system_info()
-        
+
     def _create_default_resource_limits(self) -> ResourceLimits:
         """Create default resource limits"""
         return ResourceLimits(
@@ -87,7 +87,7 @@ class HealthCheckManager:
             request_timeout_seconds=30,  # Request timeout
             health_check_interval_seconds=30  # Health check frequency
         )
-    
+
     def _create_monitoring_endpoints(self) -> List[MonitoringEndpoint]:
         """Create monitoring endpoints configuration"""
         return [
@@ -100,7 +100,7 @@ class HealthCheckManager:
             ),
             MonitoringEndpoint(
                 endpoint_path="/health/detailed",
-                method="GET", 
+                method="GET",
                 description="Detailed health check with all components",
                 response_format="json",
                 authentication_required=False
@@ -134,7 +134,7 @@ class HealthCheckManager:
                 authentication_required=False
             )
         ]
-    
+
     def _get_system_info(self) -> Dict[str, Any]:
         """Get system information"""
         try:
@@ -149,17 +149,17 @@ class HealthCheckManager:
         except Exception as e:
             logger.warning(f"Could not get system info: {e}")
             return {}
-    
+
     def check_memory_usage(self) -> HealthCheckResult:
         """Check memory usage"""
         start_time = time.time()
-        
+
         try:
             process = psutil.Process()
             memory_info = process.memory_info()
             memory_mb = memory_info.rss / (1024 * 1024)
             memory_percent = process.memory_percent()
-            
+
             if memory_mb > self.resource_limits.max_memory_mb:
                 status = "critical"
                 message = f"Memory usage ({memory_mb:.1f}MB) exceeds limit ({self.resource_limits.max_memory_mb}MB)"
@@ -169,21 +169,21 @@ class HealthCheckManager:
             else:
                 status = "healthy"
                 message = f"Memory usage normal ({memory_mb:.1f}MB)"
-            
+
             details = {
                 "memory_mb": round(memory_mb, 2),
                 "memory_percent": round(memory_percent, 2),
                 "limit_mb": self.resource_limits.max_memory_mb,
                 "virtual_memory": memory_info.vms / (1024 * 1024)
             }
-            
+
         except Exception as e:
             status = "unknown"
             message = f"Memory check failed: {str(e)}"
             details = {"error": str(e)}
-        
+
         response_time = (time.time() - start_time) * 1000
-        
+
         return HealthCheckResult(
             check_name="memory_usage",
             status=status,
@@ -192,17 +192,17 @@ class HealthCheckManager:
             timestamp=time.time(),
             response_time_ms=round(response_time, 2)
         )
-    
+
     def check_cpu_usage(self) -> HealthCheckResult:
         """Check CPU usage"""
         start_time = time.time()
-        
+
         try:
             # Get CPU usage over a short interval
             cpu_percent = psutil.cpu_percent(interval=1.0)
             cpu_count = psutil.cpu_count()
             load_avg = os.getloadavg() if hasattr(os, 'getloadavg') else [0, 0, 0]
-            
+
             if cpu_percent > self.resource_limits.max_cpu_percent:
                 status = "critical"
                 message = f"CPU usage ({cpu_percent:.1f}%) exceeds limit ({self.resource_limits.max_cpu_percent}%)"
@@ -212,7 +212,7 @@ class HealthCheckManager:
             else:
                 status = "healthy"
                 message = f"CPU usage normal ({cpu_percent:.1f}%)"
-            
+
             details = {
                 "cpu_percent": round(cpu_percent, 2),
                 "cpu_count": cpu_count,
@@ -221,14 +221,14 @@ class HealthCheckManager:
                 "load_average_15m": round(load_avg[2], 2),
                 "limit_percent": self.resource_limits.max_cpu_percent
             }
-            
+
         except Exception as e:
             status = "unknown"
             message = f"CPU check failed: {str(e)}"
             details = {"error": str(e)}
-        
+
         response_time = (time.time() - start_time) * 1000
-        
+
         return HealthCheckResult(
             check_name="cpu_usage",
             status=status,
@@ -237,16 +237,16 @@ class HealthCheckManager:
             timestamp=time.time(),
             response_time_ms=round(response_time, 2)
         )
-    
+
     def check_disk_usage(self) -> HealthCheckResult:
         """Check disk usage"""
         start_time = time.time()
-        
+
         try:
             disk_usage = psutil.disk_usage('/')
             disk_percent = (disk_usage.used / disk_usage.total) * 100
             free_gb = disk_usage.free / (1024**3)
-            
+
             if disk_percent > self.resource_limits.max_disk_usage_percent:
                 status = "critical"
                 message = f"Disk usage ({disk_percent:.1f}%) exceeds limit ({self.resource_limits.max_disk_usage_percent}%)"
@@ -256,7 +256,7 @@ class HealthCheckManager:
             else:
                 status = "healthy"
                 message = f"Disk usage normal ({disk_percent:.1f}%)"
-            
+
             details = {
                 "disk_percent": round(disk_percent, 2),
                 "free_gb": round(free_gb, 2),
@@ -264,14 +264,14 @@ class HealthCheckManager:
                 "used_gb": round(disk_usage.used / (1024**3), 2),
                 "limit_percent": self.resource_limits.max_disk_usage_percent
             }
-            
+
         except Exception as e:
             status = "unknown"
             message = f"Disk check failed: {str(e)}"
             details = {"error": str(e)}
-        
+
         response_time = (time.time() - start_time) * 1000
-        
+
         return HealthCheckResult(
             check_name="disk_usage",
             status=status,
@@ -280,15 +280,15 @@ class HealthCheckManager:
             timestamp=time.time(),
             response_time_ms=round(response_time, 2)
         )
-    
+
     def check_file_descriptors(self) -> HealthCheckResult:
         """Check file descriptor usage"""
         start_time = time.time()
-        
+
         try:
             process = psutil.Process()
             open_files = len(process.open_files())
-            
+
             if open_files > self.resource_limits.max_open_files:
                 status = "critical"
                 message = f"Open files ({open_files}) exceeds limit ({self.resource_limits.max_open_files})"
@@ -298,20 +298,20 @@ class HealthCheckManager:
             else:
                 status = "healthy"
                 message = f"File descriptor usage normal ({open_files})"
-            
+
             details = {
                 "open_files": open_files,
                 "limit": self.resource_limits.max_open_files,
                 "usage_percent": round((open_files / self.resource_limits.max_open_files) * 100, 2)
             }
-            
+
         except Exception as e:
             status = "unknown"
             message = f"File descriptor check failed: {str(e)}"
             details = {"error": str(e)}
-        
+
         response_time = (time.time() - start_time) * 1000
-        
+
         return HealthCheckResult(
             check_name="file_descriptors",
             status=status,
@@ -320,11 +320,11 @@ class HealthCheckManager:
             timestamp=time.time(),
             response_time_ms=round(response_time, 2)
         )
-    
+
     def check_model_availability(self) -> HealthCheckResult:
         """Check if TTS models are available"""
         start_time = time.time()
-        
+
         try:
             models_dir = Path("models")
             if not models_dir.exists():
@@ -345,14 +345,14 @@ class HealthCheckManager:
                         "model_count": len(model_files),
                         "model_files": [f.name for f in model_files]
                     }
-            
+
         except Exception as e:
             status = "unknown"
             message = f"Model availability check failed: {str(e)}"
             details = {"error": str(e)}
-        
+
         response_time = (time.time() - start_time) * 1000
-        
+
         return HealthCheckResult(
             check_name="model_availability",
             status=status,
@@ -361,11 +361,11 @@ class HealthCheckManager:
             timestamp=time.time(),
             response_time_ms=round(response_time, 2)
         )
-    
+
     def check_voice_availability(self) -> HealthCheckResult:
         """Check if voices are available"""
         start_time = time.time()
-        
+
         try:
             voices_dir = Path("voices")
             if not voices_dir.exists():
@@ -386,14 +386,14 @@ class HealthCheckManager:
                         "voice_count": len(voice_files),
                         "sample_voices": [f.name for f in voice_files[:5]]  # First 5 voices
                     }
-            
+
         except Exception as e:
             status = "unknown"
             message = f"Voice availability check failed: {str(e)}"
             details = {"error": str(e)}
-        
+
         response_time = (time.time() - start_time) * 1000
-        
+
         return HealthCheckResult(
             check_name="voice_availability",
             status=status,
@@ -402,17 +402,17 @@ class HealthCheckManager:
             timestamp=time.time(),
             response_time_ms=round(response_time, 2)
         )
-    
+
     def check_api_endpoint(self) -> HealthCheckResult:
         """Check if API endpoint is responsive"""
         start_time = time.time()
-        
+
         try:
             import requests
-            
+
             # Test the health endpoint
             response = requests.get("http://localhost:8354/health", timeout=5)
-            
+
             if response.status_code == 200:
                 status = "healthy"
                 message = "API endpoint responsive"
@@ -424,7 +424,7 @@ class HealthCheckManager:
                 status = "warning"
                 message = f"API endpoint returned status {response.status_code}"
                 details = {"status_code": response.status_code}
-            
+
         except requests.exceptions.ConnectionError:
             status = "critical"
             message = "API endpoint not reachable"
@@ -433,9 +433,9 @@ class HealthCheckManager:
             status = "unknown"
             message = f"API endpoint check failed: {str(e)}"
             details = {"error": str(e)}
-        
+
         response_time = (time.time() - start_time) * 1000
-        
+
         return HealthCheckResult(
             check_name="api_endpoint",
             status=status,
@@ -444,11 +444,11 @@ class HealthCheckManager:
             timestamp=time.time(),
             response_time_ms=round(response_time, 2)
         )
-    
+
     def run_all_health_checks(self) -> Dict[str, HealthCheckResult]:
         """Run all health checks"""
         logger.info("Running comprehensive health checks...")
-        
+
         checks = {
             "memory_usage": self.check_memory_usage(),
             "cpu_usage": self.check_cpu_usage(),
@@ -458,14 +458,14 @@ class HealthCheckManager:
             "voice_availability": self.check_voice_availability(),
             "api_endpoint": self.check_api_endpoint()
         }
-        
+
         self.health_results = checks
         return checks
-    
+
     def get_overall_health_status(self, checks: Dict[str, HealthCheckResult]) -> str:
         """Get overall health status"""
         statuses = [check.status for check in checks.values()]
-        
+
         if "critical" in statuses:
             return "critical"
         elif "warning" in statuses:
