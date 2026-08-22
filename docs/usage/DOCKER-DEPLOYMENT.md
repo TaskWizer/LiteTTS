@@ -125,6 +125,199 @@ ENVIRONMENT=production
 LOG_LEVEL=INFO
 KOKORO_WORKERS=4
 MEM_LIMIT=4g
+```
+
+## Systemd Service
+
+Create `/etc/systemd/system/litetts.service`:
+
+```ini
+[Unit]
+Description=LiteTTS - Kokoro ONNX TTS API
+After=network.target
+
+[Service]
+Type=simple
+User=litetts
+Group=litetts
+WorkingDirectory=/opt/litetts
+ExecStart=/usr/bin/python3 -m uvicorn app:app --host 0.0.0.0 --port 8354
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+# Environment
+EnvironmentFile=/opt/litetts/.env
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadOnlyPaths=/opt/litetts
+WritablePaths=/opt/litetts/cache
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable and start:
+```bash
+sudo systemctl enable litetts
+sudo systemctl start litetts
+sudo journalctl -u litetts -f
+```
+
+## Nginx Reverse Proxy
+
+```nginx
+upstream litetts {
+    server 127.0.0.1:8354;
+    keepalive 32;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name tts.example.com;
+
+    ssl_certificate /etc/ssl/certs/example.com.crt;
+    ssl_certificate_key /etc/ssl/private/example.com.key;
+
+    client_max_body_size 10M;
+
+    location / {
+        proxy_pass http://litetts;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Timeouts
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 300s;
+        proxy_read_timeout 300s;
+
+        # Buffers
+        proxy_buffering on;
+        proxy_buffer_size 4k;
+        proxy_buffers 8 4k;
+    }
+
+    location /v1/audio/speech {
+        proxy_pass http://litetts;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_set_header Host $host;
+
+        # Streaming support
+        proxy_buffering off;
+        proxy_cache off;
+        chunked_transfer_encoding on;
+    }
+}
+```
+
+## Kubernetes Deployment
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: litetts
+  labels:
+    app: litetts
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: litetts
+  template:
+    metadata:
+      labels:
+        app: litetts
+    spec:
+      containers:
+      - name: litetts
+        image: ghcr.io/taskwizer/litetts:cpu-latest
+        ports:
+        - containerPort: 8354
+        env:
+        - name: PORT
+          value: "8354"
+        - name: ENVIRONMENT
+          value: "production"
+        - name: CACHE_ENABLED
+          value: "true"
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8354
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8354
+          initialDelaySeconds: 10
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: litetts-service
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8354
+  selector:
+    app: litetts
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: litetts-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+spec:
+  rules:
+  - host: tts.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: litetts-service
+            port:
+              number: 80
+```
+
+## Docker Swarm Deploy
+
+```bash
+# Initialize swarm if needed
+docker swarm init
+
+# Deploy stack
+docker stack deploy -c docker-compose.yml litetts
+
+# Check status
+docker stack ps litetts
+
+# View logs
+docker service logs litetts_litetts
+```
 CPU_LIMIT=4.0
 COMPOSE_PROFILES=production,monitoring
 ```
