@@ -31,28 +31,79 @@ Thank you for your interest in contributing to the Kokoro ONNX TTS API! This doc
 git clone https://github.com/YOUR_USERNAME/LiteTTS.git
 cd LiteTTS
 
-# Install dependencies
+# Install uv (if not installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Install dependencies with uv
 uv sync
 
+# Install development dependencies
+uv pip install -e ".[dev]"
+
+# Install pre-commit hooks (recommended)
+pre-commit install
+
 # Run tests
-python -m pytest kokoro/tests/
+pytest LiteTTS/tests/unit/ -v
 
 # Start development server
-python kokoro/start_server.py
+python -m uvicorn app:app --reload --port 8354
 ```
 
 ## 🧪 Testing
 
-- **Run all tests**: `python -m pytest kokoro/tests/`
-- **Performance tests**: `python kokoro/tests/kokoro/scripts/benchmark_tts.py`
-- **Integration tests**: `python kokoro/tests/test_api_endpoints.py`
+```bash
+# Run all unit tests with coverage
+pytest LiteTTS/tests/unit/ --cov=LiteTTS --cov-report=term-missing
+
+# Run specific test file
+pytest LiteTTS/tests/unit/test_phonemizer_preprocessor.py -v
+
+# Run tests matching a pattern
+pytest LiteTTS/tests/ -k "test_name"
+
+# Run with verbose output
+pytest LiteTTS/tests/ -vv --tb=long
+
+# Run performance benchmarks
+python LiteTTS/benchmarks/performance_benchmark.py
+```
+
+### Test Structure
+
+```
+LiteTTS/tests/
+├── unit/           # Unit tests for individual modules
+│   ├── test_*.py   # Tests for specific components
+│   └── root_tests/ # Core functionality tests
+├── test_api.py     # API endpoint tests
+├── test_performance.py  # Performance regression tests
+└── scripts/        # Test scripts and utilities
+```
 
 ## 📝 Code Style
+
+We use **ruff** for linting and formatting:
+
+```bash
+# Auto-fix linting issues
+ruff check . --fix
+
+# Check formatting
+ruff format --check .
+
+# Format code
+ruff format .
+```
+
+### Style Guidelines
 
 - Follow **PEP 8** Python style guidelines
 - Use **type hints** for function parameters and return values
 - Write **clear docstrings** for all public functions and classes
-- Keep **line length under 100 characters**
+- Keep **line length at 88 characters** (ruff default)
+- Use **absolute imports** within the package: `from LiteTTS.nlp import ...`
+- Add **tests** for any new functionality
 
 ## 🐛 Bug Reports
 
@@ -80,6 +131,19 @@ For new features:
 - **Update documentation** as needed
 - **Ensure all tests pass** before submitting
 - **Write clear commit messages**
+- **Run quality checks locally**:
+  ```bash
+  make all  # Runs lint, format check, type check, tests
+  ```
+
+### PR Checklist
+
+- [ ] Tests added/updated for new functionality
+- [ ] Code passes `ruff check . --fix`
+- [ ] Code passes `ruff format --check .`
+- [ ] Type hints added where applicable
+- [ ] Documentation updated
+- [ ] CHANGELOG.md updated if user-facing changes
 
 ## 📚 Documentation
 
@@ -87,6 +151,7 @@ For new features:
 - Add **API documentation** for new endpoints
 - Include **usage examples** where appropriate
 - Update **CHANGELOG.md** with your changes
+- Document **environment variables** in ENVIRONMENT_VARIABLES.md if added
 
 ## 🏷️ Commit Message Format
 
