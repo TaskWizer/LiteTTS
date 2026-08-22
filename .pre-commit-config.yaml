@@ -1,0 +1,40 @@
+# Pre-commit hooks configuration
+# See https://pre-commit.com for more information
+
+repos:
+  # Standard hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+        args: ['--maxkb=50000']  # 50MB max
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: debug-statements
+
+  # Ruff - fast linter and formatter (modern replacement for flake8/isort)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.8
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  # Mypy type checking (selective - only check specific files)
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        name: mypy (LiteTTS)
+        entry: mypy
+        args: [--ignore-missing-imports, --install-types, --non-interactive]
+        pass_filenames: true
+        types: [python]
+        require_serial: true
+
+ci:
+  # Autoupdate weekly
+  autoupdate_schedule: weekly

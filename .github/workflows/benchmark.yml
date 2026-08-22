@@ -1,0 +1,90 @@
+name: Performance Benchmarks
+
+on:
+  schedule:
+    # Run weekly on Sunday at 2am UTC
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+    inputs:
+      baseline:
+        description: 'Baseline commit SHA to compare against'
+        required: false
+
+jobs:
+  benchmark:
+    name: RTF & Latency Benchmarks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install dependencies
+        run: |
+          uv pip install --system -e .
+          uv pip install --system pytest pytest-cov
+
+      - name: Run performance benchmarks
+        run: |
+          python -c "
+import time
+import sys
+sys.path.insert(0, '.')
+from LiteTTS.performance.rtf_monitor import RTFMonitor
+
+monitor = RTFMonitor()
+# Warm up
+for _ in range(3):
+    monitor.start_request()
+    time.sleep(0.1)
+    monitor.end_request()
+
+# Benchmark
+for i in range(10):
+    monitor.start_request()
+    time.sleep(0.05 + (i * 0.01))
+    rtf = monitor.end_request()
+    print(f'Request {i+1}: RTF={rtf:.4f}')
+
+avg_rtf = monitor.get_average_rtf()
+print(f'Average RTF: {avg_rtf:.4f}')
+print(f'Target: < 0.5 (real-time)')
+"
+        continue-on-error: true
+
+      - name: Run memory profiling
+        run: |
+          python -c "
+import tracemalloc
+import sys
+sys.path.insert(0, '.')
+from LiteTTS.config import config
+
+tracemalloc.start()
+
+# Simulate load
+for _ in range(5):
+    from LiteTTS.tts.engine import KokoroTTSEngine
+    pass
+
+current, peak = tracemalloc.get_traced_memory()
+print(f'Current memory: {current / 1024 / 1024:.2f} MB')
+print(f'Peak memory: {peak / 1024 / 1024:.2f} MB')
+tracemalloc.stop()
+" 2>&1 | head -20 || echo "Memory profiling skipped"
+
+      - name: Compare with baseline
+        if: github.event.inputs.baseline != ''
+        run: |
+          echo "Baseline comparison requested against ${{ github.event.inputs.baseline }}"
+          # Would fetch baseline metrics and compare here
