@@ -24,7 +24,7 @@ class EnhancedContractionProcessor:
         processor = EnhancedContractionProcessorV2()
     """
 
-    def __init__(self, config: dict = None):
+    def __init__(self, config: dict | None = None):
         import warnings
 
         warnings.warn(

@@ -212,7 +212,7 @@ def get_config_hot_reload_manager(enabled: bool = True) -> ConfigHotReloadManage
 
 
 def initialize_config_hot_reload(
-    config_files: list = None, reload_callback: Callable = None, enabled: bool = True
+    config_files: list | None = None, reload_callback: Callable | None = None, enabled: bool = True
 ) -> ConfigHotReloadManager:
     """Initialize configuration hot reload system
 

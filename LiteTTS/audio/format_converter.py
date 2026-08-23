@@ -36,7 +36,7 @@ class AudioFormatConverter:
         self,
         audio_data: np.ndarray,
         sample_rate: int,
-        bit_depth: int = None,
+        bit_depth: int | None = None,
         include_header: bool = True,
     ) -> bytes:
         """Convert audio data to WAV format.
@@ -83,7 +83,7 @@ class AudioFormatConverter:
             raise
 
     def convert_to_mp3(
-        self, audio_data: np.ndarray, sample_rate: int, bitrate: int = None
+        self, audio_data: np.ndarray, sample_rate: int, bitrate: int | None = None
     ) -> bytes:
         """Convert audio data to MP3 format (requires pydub/ffmpeg)"""
         if bitrate is None:
@@ -120,7 +120,7 @@ class AudioFormatConverter:
             return self.convert_to_wav(audio_data, sample_rate)
 
     def convert_to_ogg(
-        self, audio_data: np.ndarray, sample_rate: int, quality: int = None
+        self, audio_data: np.ndarray, sample_rate: int, quality: int | None = None
     ) -> bytes:
         """Convert audio data to OGG format (requires pydub/ffmpeg)"""
         if quality is None:

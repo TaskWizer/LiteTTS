@@ -447,9 +447,9 @@ class AdvancedSymbolProcessor:
 
     def set_configuration(
         self,
-        preserve_markdown: bool = None,
-        handle_quotes_naturally: bool = None,
-        fix_html_entities: bool = None,
+        preserve_markdown: bool | None = None,
+        handle_quotes_naturally: bool | None = None,
+        fix_html_entities: bool | None = None,
     ):
         """Set configuration options"""
         if preserve_markdown is not None:

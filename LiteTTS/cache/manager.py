@@ -48,8 +48,8 @@ class EnhancedCacheManager:
     def __init__(
         self,
         cache_dir: str = "LiteTTS/cache",
-        max_memory_size: int = None,  # Will use config default
-        max_disk_size: int = None,  # Will use config default
+        max_memory_size: int | None = None,  # Will use config default
+        max_disk_size: int | None = None,  # Will use config default
         config=None,
     ):
         self.cache_dir = Path(cache_dir)
@@ -147,7 +147,7 @@ class EnhancedCacheManager:
         key: str,
         data: Any,
         ttl_seconds: int | None = None,
-        tags: list[str] = None,
+        tags: list[str] | None = None,
         persist_to_disk: bool = True,
     ) -> bool:
         """Put item in cache"""
@@ -176,8 +176,8 @@ class EnhancedCacheManager:
         key: str,
         data: Any,
         ttl_seconds: int | None = None,
-        tags: list[str] = None,
-        data_size: int = None,
+        tags: list[str] | None = None,
+        data_size: int | None = None,
     ) -> bool:
         """Add item to memory cache"""
         if tags is None:
@@ -240,8 +240,8 @@ class EnhancedCacheManager:
         key: str,
         data: Any,
         ttl_seconds: int | None = None,
-        tags: list[str] = None,
-        data_size: int = None,
+        tags: list[str] | None = None,
+        data_size: int | None = None,
     ):
         """Save item to disk cache"""
         try:
@@ -400,7 +400,7 @@ class EnhancedCacheManager:
 
             return deleted
 
-    def clear(self, tags: list[str] = None):
+    def clear(self, tags: list[str] | None = None):
         """Clear cache (optionally by tags)"""
         with self.cache_lock:
             if tags is None:

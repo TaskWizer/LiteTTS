@@ -337,7 +337,7 @@ class MemoryProfiler:
 
         return summary
 
-    def save_memory_report(self, filename: str = None) -> Path:
+    def save_memory_report(self, filename: str | None = None) -> Path:
         """Save memory profiling report
 
         Args:

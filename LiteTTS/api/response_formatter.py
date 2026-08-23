@@ -144,7 +144,7 @@ class ResponseFormatter:
         }
 
     def format_error_response(
-        self, error_code: str, message: str, details: dict[str, Any] = None, status_code: int = 500
+        self, error_code: str, message: str, details: dict[str, Any] | None = None, status_code: int = 500
     ) -> dict[str, Any]:
         """Format error response"""
         return {
@@ -207,7 +207,7 @@ class ResponseFormatter:
             raise
 
     def create_download_response(
-        self, audio_segment: AudioSegment, format: str, filename: str = None
+        self, audio_segment: AudioSegment, format: str, filename: str | None = None
     ) -> Response:
         """Create downloadable file response"""
         try:

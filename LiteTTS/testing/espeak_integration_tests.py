@@ -285,7 +285,7 @@ class EspeakIntegrationTestSuite:
             ),
         ]
 
-    def get_test_cases(self, category: str = None, priority: str = None) -> list[AudioTestCase]:
+    def get_test_cases(self, category: str | None = None, priority: str | None = None) -> list[AudioTestCase]:
         """
         Get test cases filtered by category and/or priority
         """

@@ -61,7 +61,7 @@ logger = logging.getLogger(__name__)
 _voice_manager: Optional["DynamicVoiceManager"] = None
 
 
-def get_voice_manager(voices_dir: str = None) -> Optional["DynamicVoiceManager"]:
+def get_voice_manager(voices_dir: str | None = None) -> Optional["DynamicVoiceManager"]:
     """Get or create the global voice manager instance"""
     global _voice_manager
 
@@ -125,7 +125,7 @@ def _fallback_voice_discovery(voices_dir: str) -> list[str]:
         return ["af_heart", "am_puck"]  # Minimal fallback
 
 
-def resolve_voice_name(voice_name: str, voices_dir: str = None) -> str:
+def resolve_voice_name(voice_name: str, voices_dir: str | None = None) -> str:
     """Resolve a voice name (short or full) to the full voice name"""
     try:
         voice_manager = get_voice_manager(voices_dir)
@@ -137,7 +137,7 @@ def resolve_voice_name(voice_name: str, voices_dir: str = None) -> str:
     return voice_name
 
 
-def ensure_voice_downloaded(voice_name: str, voices_dir: str = None) -> bool:
+def ensure_voice_downloaded(voice_name: str, voices_dir: str | None = None) -> bool:
     """Ensure a voice is downloaded"""
     try:
         voice_manager = get_voice_manager(voices_dir)

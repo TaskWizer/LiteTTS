@@ -50,11 +50,11 @@ class UnifiedPronunciationFix:
     def process_pronunciation_fixes(
         self,
         text: str,
-        enable_comma: bool = None,
-        enable_diphthong: bool = None,
-        enable_contraction: bool = None,
-        enable_interjection: bool = None,
-        contraction_mode: str = None,
+        enable_comma: bool | None = None,
+        enable_diphthong: bool | None = None,
+        enable_contraction: bool | None = None,
+        enable_interjection: bool | None = None,
+        contraction_mode: str | None = None,
     ) -> PronunciationFixResult:
         """
         Apply all pronunciation fixes to text

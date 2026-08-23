@@ -20,8 +20,8 @@ class AudioCache:
     def __init__(
         self,
         cache_dir: str = "LiteTTS/cache/audio",
-        max_memory_size: int = None,  # Will use config default
-        max_disk_size: int = None,  # Will use config default
+        max_memory_size: int | None = None,  # Will use config default
+        max_disk_size: int | None = None,  # Will use config default
         config=None,
     ):
 
@@ -48,7 +48,7 @@ class AudioCache:
         voice: str,
         speed: float = 1.0,
         format: str = "wav",
-        emotion: str = None,
+        emotion: str | None = None,
         emotion_strength: float = 1.0,
     ) -> AudioSegment | None:
         """Get cached audio segment"""
@@ -73,9 +73,9 @@ class AudioCache:
         voice: str,
         speed: float = 1.0,
         format: str = "wav",
-        emotion: str = None,
+        emotion: str | None = None,
         emotion_strength: float = 1.0,
-        ttl: int = None,
+        ttl: int | None = None,
     ) -> bool:
         """Cache audio segment"""
         cache_key = self._generate_audio_cache_key(
@@ -103,7 +103,7 @@ class AudioCache:
         voice: str,
         speed: float,
         format: str,
-        emotion: str = None,
+        emotion: str | None = None,
         emotion_strength: float = 1.0,
     ) -> str:
         """Generate standardized cache key for audio using CacheKeyGenerator"""
@@ -176,8 +176,8 @@ class TextCache:
     def __init__(
         self,
         cache_dir: str = "LiteTTS/cache/text",
-        max_memory_size: int = None,  # Will use config default
-        max_disk_size: int = None,  # Will use config default
+        max_memory_size: int | None = None,  # Will use config default
+        max_disk_size: int | None = None,  # Will use config default
         config=None,
     ):
 
@@ -217,7 +217,7 @@ class TextCache:
         original_text: str,
         processed_text: str,
         normalization_options: dict[str, Any],
-        ttl: int = None,
+        ttl: int | None = None,
     ) -> bool:
         """Cache processed text"""
         cache_key = self._generate_text_cache_key(original_text, normalization_options)

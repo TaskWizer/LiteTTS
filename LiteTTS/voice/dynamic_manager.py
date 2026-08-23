@@ -31,7 +31,7 @@ class VoiceEmbedding:
 class DynamicVoiceManager:
     """Dynamic voice manager with HuggingFace integration and smart caching"""
 
-    def __init__(self, voices_dir: str = None):
+    def __init__(self, voices_dir: str | None = None):
         # Use configuration if voices_dir not provided
         if voices_dir is None:
             try:

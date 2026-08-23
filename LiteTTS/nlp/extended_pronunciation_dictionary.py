@@ -250,7 +250,7 @@ class ExtendedPronunciationDictionary:
         logger.debug(f"Pronunciation processing result: {result[:100]}...")
         return result
 
-    def add_pronunciation(self, word: str, pronunciation: str, context: str = None):
+    def add_pronunciation(self, word: str, pronunciation: str, context: str | None = None):
         """Add a new pronunciation to the dictionary"""
         word_lower = word.lower()
 
@@ -338,7 +338,7 @@ class ExtendedPronunciationDictionary:
             logger.error(f"Failed to import pronunciations from {filepath}: {e}")
 
     def set_configuration(
-        self, use_context_awareness: bool = None, use_phonetic_spelling: bool = None
+        self, use_context_awareness: bool | None = None, use_phonetic_spelling: bool | None = None
     ):
         """Set configuration options"""
         if use_context_awareness is not None:

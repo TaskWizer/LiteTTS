@@ -41,7 +41,7 @@ class VoiceFileInfo:
 class VoiceDownloader:
     """Downloads and manages voice models from HuggingFace with dynamic discovery"""
 
-    def __init__(self, voices_dir: str = None, config=None):
+    def __init__(self, voices_dir: str | None = None, config=None):
         # Use configuration if voices_dir not provided
         if voices_dir is None:
             try:

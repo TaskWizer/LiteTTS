@@ -358,7 +358,7 @@ class SecurityConfig:
 class ConfigManager:
     """Central configuration manager with comprehensive environment variable support"""
 
-    def __init__(self, config_file: str = None):
+    def __init__(self, config_file: str | None = None):
         # Determine config file location with backward compatibility
         if config_file is None:
             # Check for new comprehensive settings file first (preferred)

@@ -408,8 +408,8 @@ class AdvancedAbbreviationHandler:
     def set_configuration(
         self,
         default_mode: AbbreviationMode = None,
-        use_context_analysis: bool = None,
-        preserve_technical_terms: bool = None,
+        use_context_analysis: bool | None = None,
+        preserve_technical_terms: bool | None = None,
     ):
         """Set configuration options"""
         if default_mode is not None:

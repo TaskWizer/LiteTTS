@@ -80,9 +80,9 @@ class VoiceCache:
 
     def __init__(
         self,
-        voices_dir: str = None,
+        voices_dir: str | None = None,
         max_cache_size: int = 5,
-        preload_voices: list[str] = None,
+        preload_voices: list[str] | None = None,
         enable_mock: bool = False,
     ):
         # Use configuration if voices_dir not provided

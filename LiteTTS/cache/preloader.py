@@ -332,7 +332,7 @@ class IntelligentPreloader:
         finally:
             self.is_warming = False
 
-    def _warm_batch_parallel(self, tasks: list[WarmingTask], timeout: float = None) -> int:
+    def _warm_batch_parallel(self, tasks: list[WarmingTask], timeout: float | None = None) -> int:
         """Warm batch using parallel processing for faster startup"""
         import concurrent.futures
 
@@ -383,7 +383,7 @@ class IntelligentPreloader:
 
         return successful_warmings
 
-    def _warm_batch_sequential(self, tasks: list[WarmingTask], timeout: float = None) -> int:
+    def _warm_batch_sequential(self, tasks: list[WarmingTask], timeout: float | None = None) -> int:
         """Warm batch sequentially (fallback method)"""
         successful_warmings = 0
         start_time = time.time()

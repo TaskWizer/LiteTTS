@@ -190,7 +190,7 @@ class AudioProcessor:
         )
 
     def _apply_compression(
-        self, audio_data: np.ndarray, threshold: float = None, ratio: float = None
+        self, audio_data: np.ndarray, threshold: float | None = None, ratio: float | None = None
     ) -> np.ndarray:
         """Apply simple compression to audio data"""
         # Get configurable values

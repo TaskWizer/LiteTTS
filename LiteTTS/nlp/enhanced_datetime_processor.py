@@ -710,10 +710,10 @@ class EnhancedDateTimeProcessor:
 
     def set_configuration(
         self,
-        use_ordinal_dates: bool = None,
-        use_full_month_names: bool = None,
-        use_natural_time_format: bool = None,
-        handle_relative_dates: bool = None,
+        use_ordinal_dates: bool | None = None,
+        use_full_month_names: bool | None = None,
+        use_natural_time_format: bool | None = None,
+        handle_relative_dates: bool | None = None,
     ):
         """Set configuration options"""
         if use_ordinal_dates is not None:

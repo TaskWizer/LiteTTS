@@ -266,7 +266,7 @@ class PhoneticDictionaryManager:
         return int(avg_size * len(entries))
 
     def lookup(
-        self, word: str, notation: str = None, accent_variant: str = None
+        self, word: str, notation: str | None = None, accent_variant: str | None = None
     ) -> DictionaryEntry | None:
         """
         Look up phonetic representation for a word
@@ -301,7 +301,7 @@ class PhoneticDictionaryManager:
         return result
 
     def _search_dictionaries(
-        self, word: str, notation: str = None, accent_variant: str = None
+        self, word: str, notation: str | None = None, accent_variant: str | None = None
     ) -> DictionaryEntry | None:
         """Search loaded dictionaries for a word with priority order"""
         candidates = []
@@ -393,7 +393,7 @@ class PhoneticDictionaryManager:
             self.cache_access_order.clear()
             logger.info("Phonetic dictionary cache cleared")
 
-    def save_cache(self, file_path: str = None):
+    def save_cache(self, file_path: str | None = None):
         """Save cache to disk for persistence"""
         if not self.config["cache_persistence"]:
             return
@@ -421,7 +421,7 @@ class PhoneticDictionaryManager:
         except Exception as e:
             logger.error(f"Failed to save cache: {e}")
 
-    def load_cache(self, file_path: str = None):
+    def load_cache(self, file_path: str | None = None):
         """Load cache from disk"""
         if not self.config["cache_persistence"]:
             return
@@ -472,7 +472,7 @@ class PhoneticDictionaryManager:
             self.dictionaries["custom"][word.lower()] = entry
             logger.info(f"Added custom phonetic entry: {word} -> {phonetic}")
 
-    def remove_entry(self, word: str, notation: str = None):
+    def remove_entry(self, word: str, notation: str | None = None):
         """Remove a phonetic entry"""
         with self._lock:
             word = word.lower()

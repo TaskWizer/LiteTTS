@@ -59,7 +59,7 @@ logger = logging.getLogger(__name__)
 class VoiceManager:
     """Main voice manager that handles all voice operations"""
 
-    def __init__(self, voices_dir: str = None, max_cache_size: int = None, config=None):
+    def __init__(self, voices_dir: str | None = None, max_cache_size: int | None = None, config=None):
         # Load configuration
         if config is None:
             try:

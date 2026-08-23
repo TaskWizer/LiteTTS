@@ -47,7 +47,7 @@ class PhonemizationPreprocessor:
     5. Unicode normalization issues
     """
 
-    def __init__(self, config: dict = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or {}
         self.contractions_map = self._build_contractions_map()
         self.problematic_contractions = self._build_problematic_contractions()

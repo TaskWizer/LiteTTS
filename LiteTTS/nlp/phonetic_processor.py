@@ -365,12 +365,12 @@ class PhoneticProcessor:
             word, phonetic, notation, confidence, accent_variant
         )
 
-    def remove_pronunciation(self, word: str, notation: str = None):
+    def remove_pronunciation(self, word: str, notation: str | None = None):
         """Remove a pronunciation from the dictionary"""
         self.dictionary_manager.remove_entry(word, notation)
 
     def get_pronunciation(
-        self, word: str, notation: str = None, accent_variant: str = None
+        self, word: str, notation: str | None = None, accent_variant: str | None = None
     ) -> DictionaryEntry | None:
         """Get the phonetic representation for a word"""
         return self.dictionary_manager.lookup(word, notation, accent_variant)

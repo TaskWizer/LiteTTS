@@ -629,7 +629,7 @@ class VoiceCloningRouter:
                 )
 
         @self.router.post("/v1/voices/custom/{voice_name}/save")
-        async def save_temporary_voice(voice_name: str, session_id: str = None):
+        async def save_temporary_voice(voice_name: str, session_id: str | None = None):
             """
             Save a temporary voice to permanent storage
             """
@@ -669,7 +669,7 @@ class VoiceCloningRouter:
                 )
 
         @self.router.get("/v1/voices/temporary")
-        async def list_temporary_voices(session_id: str = None):
+        async def list_temporary_voices(session_id: str | None = None):
             """
             List temporary voices
             """
@@ -690,7 +690,7 @@ class VoiceCloningRouter:
                 )
 
         @self.router.delete("/v1/voices/temporary/{voice_name}")
-        async def delete_temporary_voice(voice_name: str, session_id: str = None):
+        async def delete_temporary_voice(voice_name: str, session_id: str | None = None):
             """
             Delete a temporary voice
             """

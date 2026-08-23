@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 class ConfigManager:
     """Manages both user-facing and internal configuration"""
 
-    def __init__(self, config_path: str = None):
+    def __init__(self, config_path: str | None = None):
         # Determine config file location with preference for comprehensive settings
         if config_path is None:
             from pathlib import Path
@@ -289,7 +289,7 @@ class ConfigManager:
 _config_manager = None
 
 
-def get_config_manager(config_path: str = None) -> ConfigManager:
+def get_config_manager(config_path: str | None = None) -> ConfigManager:
     """Get the global configuration manager instance"""
     global _config_manager
     if _config_manager is None:

@@ -61,7 +61,7 @@ class PerformanceMonitor:
     Tracks RTF, latency, cache performance, and system resources
     """
 
-    def __init__(self, max_history: int = None, enable_system_monitoring: bool = None, config=None):
+    def __init__(self, max_history: int | None = None, enable_system_monitoring: bool | None = None, config=None):
         # Use config values or fallback to defaults
         if config and hasattr(config, "monitoring"):
             self.max_history = max_history or config.monitoring.max_history

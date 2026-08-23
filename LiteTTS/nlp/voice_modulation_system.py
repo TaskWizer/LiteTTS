@@ -570,10 +570,10 @@ class VoiceModulationSystem:
 
     def set_configuration(
         self,
-        enable_parenthetical_whisper: bool = None,
-        enable_emphasis_detection: bool = None,
-        enable_voice_blending: bool = None,
-        default_whisper_voice: str = None,
+        enable_parenthetical_whisper: bool | None = None,
+        enable_emphasis_detection: bool | None = None,
+        enable_voice_blending: bool | None = None,
+        default_whisper_voice: str | None = None,
     ):
         """Set configuration options"""
         if enable_parenthetical_whisper is not None:

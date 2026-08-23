@@ -301,7 +301,7 @@ class VoiceLoader:
 _voice_loader: VoiceLoader | None = None
 
 
-def get_voice_loader(voices_dir: str = None, enable_mock: bool = False) -> VoiceLoader:
+def get_voice_loader(voices_dir: str | None = None, enable_mock: bool = False) -> VoiceLoader:
     """Get or create the global voice loader instance"""
     global _voice_loader
 

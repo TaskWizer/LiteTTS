@@ -26,7 +26,7 @@ class NormalizationResult:
 class CleanTextNormalizer:
     """Clean, systematic text normalizer for TTS pronunciation fixes"""
 
-    def __init__(self, config: dict = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or {}
 
         # Load all normalization rules

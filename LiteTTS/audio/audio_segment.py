@@ -47,7 +47,7 @@ class AudioSegment:
         audio_data = np.zeros(samples, dtype=np.float32)
         return cls(audio_data=audio_data, sample_rate=sample_rate, duration=duration)
 
-    def to_bytes(self, format: str = None) -> bytes:
+    def to_bytes(self, format: str | None = None) -> bytes:
         """Convert audio data to bytes"""
         if format is None:
             format = self.format

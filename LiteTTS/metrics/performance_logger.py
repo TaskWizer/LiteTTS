@@ -102,7 +102,7 @@ class PerformanceLogger:
             )
             return request_data
 
-    def log_stage(self, request_id: str, stage_name: str, duration: float = None):
+    def log_stage(self, request_id: str, stage_name: str, duration: float | None = None):
         """Log completion of a processing stage"""
         with self.lock:
             if request_id not in self.active_requests:

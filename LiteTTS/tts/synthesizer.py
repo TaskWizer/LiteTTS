@@ -415,7 +415,7 @@ class TTSSynthesizer:
             raise
 
     def synthesize_simple(
-        self, text: str, voice: str = None, speed: float = 1.0, emotion: str = None
+        self, text: str, voice: str | None = None, speed: float = 1.0, emotion: str | None = None
     ) -> AudioSegment:
         """Simple synthesis method with minimal parameters"""
         if voice is None:
@@ -436,7 +436,7 @@ class TTSSynthesizer:
         voice: str,
         response_format: str = "mp3",
         speed: float = 1.0,
-        emotion: str = None,
+        emotion: str | None = None,
         emotion_strength: float = 1.0,
     ):
         """
@@ -637,7 +637,7 @@ class TTSSynthesizer:
         name: str,
         voice: str,
         speed: float = 1.0,
-        emotion: str = None,
+        emotion: str | None = None,
         emotion_strength: float = 1.0,
         volume_multiplier: float = 1.0,
     ) -> dict[str, Any]:

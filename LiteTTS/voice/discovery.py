@@ -34,7 +34,7 @@ class VoiceInfo:
 class VoiceDiscovery:
     """Discovers and manages individual voice files with caching"""
 
-    def __init__(self, voices_dir: str = None):
+    def __init__(self, voices_dir: str | None = None):
         # Use configuration if voices_dir not provided
         if voices_dir is None:
             try:

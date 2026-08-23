@@ -20,7 +20,7 @@ class RequestValidator:
     # Default validation limits - these should be overridden by config in production
     DEFAULT_MAX_TEXT_LENGTH = 5000  # Standard limit
 
-    def __init__(self, synthesizer: TTSSynthesizer, max_text_length: int = None):
+    def __init__(self, synthesizer: TTSSynthesizer, max_text_length: int | None = None):
         self.synthesizer = synthesizer
 
         # Use provided max_text_length or fall back to config/safe default

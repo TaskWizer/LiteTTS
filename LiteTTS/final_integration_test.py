@@ -23,7 +23,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def generate_test_audio(duration: float, filename: str = None) -> str:
+def generate_test_audio(duration: float, filename: str | None = None) -> str:
     """Generate test audio for demonstrations"""
     try:
         import soundfile as sf

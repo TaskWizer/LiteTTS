@@ -89,7 +89,7 @@ class PerformanceProfiler:
 
         logger.info("Performance profiler initialized")
 
-    def start_session(self, session_id: str = None) -> str:
+    def start_session(self, session_id: str | None = None) -> str:
         """Start a new profiling session
 
         Args:
@@ -366,7 +366,7 @@ class PerformanceProfiler:
             "memory_snapshots_count": len(self.current_session.memory_snapshots),
         }
 
-    def save_session_report(self, session: ProfilingSession, filename: str = None) -> Path:
+    def save_session_report(self, session: ProfilingSession, filename: str | None = None) -> Path:
         """Save session report to file
 
         Args:
@@ -471,7 +471,7 @@ def profile_tts_operation(operation_name: str):
 
 
 # Convenience functions
-def start_profiling_session(session_id: str = None) -> str:
+def start_profiling_session(session_id: str | None = None) -> str:
     """Start a profiling session"""
     return get_profiler().start_session(session_id)
 

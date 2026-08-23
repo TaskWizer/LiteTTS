@@ -528,11 +528,11 @@ class DynamicEmotionIntonationSystem:
 
     def set_configuration(
         self,
-        enable_question_intonation: bool = None,
-        enable_exclamation_handling: bool = None,
-        enable_emphasis_detection: bool = None,
-        enable_context_analysis: bool = None,
-        use_llm_enhancement: bool = None,
+        enable_question_intonation: bool | None = None,
+        enable_exclamation_handling: bool | None = None,
+        enable_emphasis_detection: bool | None = None,
+        enable_context_analysis: bool | None = None,
+        use_llm_enhancement: bool | None = None,
     ):
         """Set configuration options"""
         if enable_question_intonation is not None:

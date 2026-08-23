@@ -1034,7 +1034,7 @@ class KokoroTTSEngine:
         )
 
     def synthesize_batch(
-        self, requests: list[dict[str, Any]], max_workers: int = None
+        self, requests: list[dict[str, Any]], max_workers: int | None = None
     ) -> list[AudioSegment]:
         """
         Synthesize multiple TTS requests in parallel for improved throughput.
@@ -1110,7 +1110,7 @@ class KokoroTTSEngine:
         return self.synthesize(text, voice, speed, emotion, emotion_strength)
 
     def synthesize_streaming_batch(
-        self, requests: list[dict[str, Any]], chunk_callback=None, max_workers: int = None
+        self, requests: list[dict[str, Any]], chunk_callback=None, max_workers: int | None = None
     ) -> list[AudioSegment]:
         """
         Synthesize batch with streaming callback for real-time processing

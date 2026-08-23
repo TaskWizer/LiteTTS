@@ -26,7 +26,7 @@ class ContractionFix:
 class PhoneticContractionProcessor:
     """Advanced contraction processor with phonetic awareness"""
 
-    def __init__(self, config: dict = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or {}
         self.contraction_fixes = self._load_contraction_fixes()
         self.phonetic_mappings = self._load_phonetic_mappings()

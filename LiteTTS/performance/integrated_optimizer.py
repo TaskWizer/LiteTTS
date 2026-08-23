@@ -361,7 +361,7 @@ class IntegratedPerformanceOptimizer:
             "current_cache_hit_rate": cache_hit_rate,
         }
 
-    def optimize_for_request(self, text: str = None, voice: str = None, **kwargs) -> dict[str, Any]:
+    def optimize_for_request(self, text: str | None = None, voice: str | None = None, **kwargs) -> dict[str, Any]:
         """
         Apply request-level optimizations for TTS processing.
 

@@ -202,7 +202,7 @@ class CacheManagerProtocol(Protocol):
 class TTSError(Exception):
     """Base TTS error"""
 
-    def __init__(self, message: str, error_code: str = "TTS_ERROR", details: dict[str, Any] = None):
+    def __init__(self, message: str, error_code: str = "TTS_ERROR", details: dict[str, Any] | None = None):
         super().__init__(message)
         self.message = message
         self.error_code = error_code
@@ -212,7 +212,7 @@ class TTSError(Exception):
 class VoiceNotFoundError(TTSError):
     """Voice not found error"""
 
-    def __init__(self, voice_name: str, available_voices: list[str] = None):
+    def __init__(self, voice_name: str, available_voices: list[str] | None = None):
         super().__init__(
             f"Voice '{voice_name}' not found",
             "VOICE_NOT_FOUND",
