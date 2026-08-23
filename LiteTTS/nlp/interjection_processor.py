@@ -11,9 +11,28 @@ logger = logging.getLogger(__name__)
 
 
 class InterjectionProcessor:
-    """Processor to fix interjection pronunciation issues in TTS"""
+    """
+    Processor to fix interjection pronunciation issues in TTS.
+
+    .. deprecated::
+        This class is deprecated. Use :class:`InterjectionFixProcessor` instead.
+        This class will be removed in a future version.
+
+    The InterjectionFixProcessor provides the same functionality with additional
+    improvements. Update your code to use:
+
+        from LiteTTS.nlp.interjection_fix_processor import InterjectionFixProcessor
+        processor = InterjectionFixProcessor()
+    """
 
     def __init__(self):
+        import warnings
+
+        warnings.warn(
+            "InterjectionProcessor is deprecated, use InterjectionFixProcessor instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         self.interjection_fixes = self._load_interjection_fixes()
         self.hesitation_sounds = self._load_hesitation_sounds()
 

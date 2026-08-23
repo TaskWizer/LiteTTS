@@ -11,9 +11,27 @@ logger = logging.getLogger(__name__)
 
 
 class EnhancedContractionProcessor:
-    """Advanced contraction processing for natural TTS pronunciation"""
+    """
+    Advanced contraction processing for natural TTS pronunciation.
+
+    .. deprecated::
+        This class is deprecated. Use :class:`EnhancedContractionProcessorV2` instead.
+        This class will be removed in a future version.
+
+    The v2 processor provides improved contraction handling. Update your code to use:
+
+        from LiteTTS.nlp.enhanced_contraction_processor_v2 import EnhancedContractionProcessorV2
+        processor = EnhancedContractionProcessorV2()
+    """
 
     def __init__(self, config: dict = None):
+        import warnings
+
+        warnings.warn(
+            "EnhancedContractionProcessor is deprecated, use EnhancedContractionProcessorV2 instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         self.config = config or {}
         self.natural_contractions = self._load_natural_contractions()
         self.problematic_contractions = self._load_problematic_contractions()
