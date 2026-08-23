@@ -58,11 +58,46 @@ if not PHASE6_AVAILABLE:
 
 
 class ProcessingMode(Enum):
-    """Text processing modes"""
+    """
+    Text processing complexity levels.
 
+    Choose the appropriate mode based on your text complexity needs:
+
+    SIMPLE: Minimal processing for straightforward text
+        - Basic cleanup only (trim whitespace)
+        - Fastest performance
+        - Use for: simple commands, short phrases
+
+    BASIC: Essential TTS normalization
+        - Text cleanup
+        - Number handling
+        - Use for: basic speech synthesis
+
+    STANDARD: Standard TTS processing
+        - Homograph resolution
+        - Phonetic processing
+        - Contraction handling
+        - Use for: most general-purpose TTS
+
+    ENHANCED: Full-featured processing (DEFAULT)
+        - All standard features plus:
+        - Currency, datetime, symbols
+        - Proper names, ticker symbols
+        - Interjection fixes
+        - Use for: complex text with special content
+
+    PREMIUM: Maximum features
+        - All enhanced features plus:
+        - Phase 6 processing
+        - Voice modulation
+        - Dynamic emotion
+        - Use for: highest quality output
+    """
+
+    SIMPLE = "simple"  # Minimal processing
     BASIC = "basic"  # Basic normalization only
     STANDARD = "standard"  # Standard TTS processing
-    ENHANCED = "enhanced"  # Enhanced with advanced processors
+    ENHANCED = "enhanced"  # Enhanced with advanced processors (default)
     PREMIUM = "premium"  # Full pipeline with all enhancements
 
 
@@ -305,7 +340,9 @@ class UnifiedTextProcessor:
 
         try:
             # Route to appropriate processing pipeline
-            if options.mode == ProcessingMode.BASIC:
+            if options.mode == ProcessingMode.SIMPLE:
+                text = self._process_simple(text, options, result)
+            elif options.mode == ProcessingMode.BASIC:
                 text = self._process_basic(text, options, result)
             elif options.mode == ProcessingMode.STANDARD:
                 text = self._process_standard(text, options, result)
@@ -332,6 +369,24 @@ class UnifiedTextProcessor:
                 logger.warning("Returning original text due to processing error")
 
             return result
+
+    def _process_simple(
+        self, text: str, options: ProcessingOptions, result: ProcessingResult
+    ) -> str:
+        """
+        Simple processing pipeline - minimal processing for best performance.
+
+        This is the fastest mode with least processing overhead.
+        Use for simple commands or short phrases where naturalness is less critical.
+        """
+        stage_start = time.perf_counter()
+
+        # Only trim whitespace - fastest possible processing
+        text = text.strip()
+
+        result.stages_completed.append("simple_trim")
+        result.stage_timings["simple"] = time.perf_counter() - stage_start
+        return text
 
     def _process_basic(
         self, text: str, options: ProcessingOptions, result: ProcessingResult
