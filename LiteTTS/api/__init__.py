@@ -6,8 +6,8 @@ from .router import TTSAPIRouter
 from .validators import RequestValidator
 
 __all__ = [
-    'TTSAPIRouter',
-    'RequestValidator',
     'ErrorHandler',
-    'ResponseFormatter'
+    'RequestValidator',
+    'ResponseFormatter',
+    'TTSAPIRouter'
 ]

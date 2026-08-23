@@ -138,8 +138,7 @@ class HardwareOptimizer:
         test_file = Path("temp_benchmark_file.tmp")
         try:
             with open(test_file, 'w') as f:
-                for i in range(1000):
-                    f.write(f"benchmark line {i}\n")
+                f.writelines(f"benchmark line {i}\n" for i in range(1000))
             with open(test_file, 'r') as f:
                 content = f.read()
             test_file.unlink()

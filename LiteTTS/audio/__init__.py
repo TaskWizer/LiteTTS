@@ -12,12 +12,12 @@ from .watermarking import (
 )
 
 __all__ = [
-    'AudioSegment',
     'AudioFormatConverter',
-    'AudioStreamer',
     'AudioProcessor',
+    'AudioSegment',
+    'AudioStreamer',
     'AudioWatermarker',
-    'get_audio_watermarker',
+    'WatermarkDetectionResult',
     'WatermarkResult',
-    'WatermarkDetectionResult'
+    'get_audio_watermarker'
 ]

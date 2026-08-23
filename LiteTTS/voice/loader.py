@@ -187,7 +187,7 @@ class VoiceLoader:
                 embedding_data=None,
                 metadata=None,
                 loader_used="torch",
-                error_message=f"PyTorch loading error: {str(e)}"
+                error_message=f"PyTorch loading error: {e!s}"
             )
 
     def _load_with_numpy(self, voice_name: str) -> VoiceLoadResult:
@@ -238,7 +238,7 @@ class VoiceLoader:
                 embedding_data=None,
                 metadata=None,
                 loader_used="numpy",
-                error_message=f"NumPy loading error: {str(e)}"
+                error_message=f"NumPy loading error: {e!s}"
             )
 
     def _load_mock_data(self, voice_name: str) -> VoiceLoadResult:
@@ -275,7 +275,7 @@ class VoiceLoader:
                 embedding_data=None,
                 metadata=None,
                 loader_used="mock",
-                error_message=f"Mock data generation error: {str(e)}"
+                error_message=f"Mock data generation error: {e!s}"
             )
 
     def get_load_statistics(self) -> dict[str, Any]:

@@ -165,7 +165,7 @@ class AudioProcessor:
             validation_result['is_valid'] = len(validation_result['errors']) == 0
 
         except Exception as e:
-            validation_result['errors'].append(f"Validation exception: {str(e)}")
+            validation_result['errors'].append(f"Validation exception: {e!s}")
 
         return validation_result
 

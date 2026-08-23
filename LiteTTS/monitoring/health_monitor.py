@@ -121,7 +121,7 @@ class HealthMonitor:
                 component_statuses.append(HealthStatus(
                     name=name,
                     status='unhealthy',
-                    message=f'Health check failed: {str(e)}',
+                    message=f'Health check failed: {e!s}',
                     last_check=datetime.now(),
                     response_time_ms=(time.time() - component_start) * 1000 if 'component_start' in locals() else None
                 ))
@@ -301,7 +301,7 @@ def check_model_health():
     except Exception as e:
         return {
             'status': 'unhealthy',
-            'message': f'Model check failed: {str(e)}'
+            'message': f'Model check failed: {e!s}'
         }
 
 def check_disk_space():
@@ -332,7 +332,7 @@ def check_disk_space():
     except Exception as e:
         return {
             'status': 'unhealthy',
-            'message': f'Disk check failed: {str(e)}'
+            'message': f'Disk check failed: {e!s}'
         }
 
 # Register default health checkers

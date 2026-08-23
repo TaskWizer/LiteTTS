@@ -171,7 +171,7 @@ class ErrorHandler:
 
     def _log_error(self, error: Exception):
         """Log error with appropriate level"""
-        error_msg = f"Error: {type(error).__name__}: {str(error)}"
+        error_msg = f"Error: {type(error).__name__}: {error!s}"
 
         if isinstance(error, (VoiceNotFoundError, TTSError)):
             logger.warning(error_msg)
@@ -225,7 +225,7 @@ class APIExceptionHandler:
 
     async def handle_generic_exception(self, request, exc: Exception):
         """Handle generic exceptions"""
-        logger.error(f"Unhandled exception: {type(exc).__name__}: {str(exc)}")
+        logger.error(f"Unhandled exception: {type(exc).__name__}: {exc!s}")
         logger.debug(traceback.format_exc())
 
         return self.error_handler.handle_generic_error(exc)

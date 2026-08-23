@@ -24,17 +24,17 @@ from .websocket_manager import (
 )
 
 __all__ = [
+    "FASTAPI_AVAILABLE",
+    "ClientInfo",
+    "MessageType",
+    "PerformanceMetrics",
+    "PerformanceStreamer",
+    "SystemStatus",
+    "WebSocketEndpoints",
     "WebSocketManager",
     "WebSocketMessage",
-    "MessageType",
-    "ClientInfo",
-    "websocket_manager",
-    "get_websocket_manager",
-    "FASTAPI_AVAILABLE",
-    "PerformanceStreamer",
-    "PerformanceMetrics",
-    "SystemStatus",
     "create_performance_streamer",
-    "WebSocketEndpoints",
-    "setup_websocket_endpoints"
+    "get_websocket_manager",
+    "setup_websocket_endpoints",
+    "websocket_manager"
 ]

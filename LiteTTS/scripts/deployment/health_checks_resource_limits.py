@@ -177,7 +177,7 @@ class HealthCheckManager:
 
         except Exception as e:
             status = "unknown"
-            message = f"Memory check failed: {str(e)}"
+            message = f"Memory check failed: {e!s}"
             details = {"error": str(e)}
 
         response_time = (time.time() - start_time) * 1000
@@ -222,7 +222,7 @@ class HealthCheckManager:
 
         except Exception as e:
             status = "unknown"
-            message = f"CPU check failed: {str(e)}"
+            message = f"CPU check failed: {e!s}"
             details = {"error": str(e)}
 
         response_time = (time.time() - start_time) * 1000
@@ -265,7 +265,7 @@ class HealthCheckManager:
 
         except Exception as e:
             status = "unknown"
-            message = f"Disk check failed: {str(e)}"
+            message = f"Disk check failed: {e!s}"
             details = {"error": str(e)}
 
         response_time = (time.time() - start_time) * 1000
@@ -305,7 +305,7 @@ class HealthCheckManager:
 
         except Exception as e:
             status = "unknown"
-            message = f"File descriptor check failed: {str(e)}"
+            message = f"File descriptor check failed: {e!s}"
             details = {"error": str(e)}
 
         response_time = (time.time() - start_time) * 1000
@@ -346,7 +346,7 @@ class HealthCheckManager:
 
         except Exception as e:
             status = "unknown"
-            message = f"Model availability check failed: {str(e)}"
+            message = f"Model availability check failed: {e!s}"
             details = {"error": str(e)}
 
         response_time = (time.time() - start_time) * 1000
@@ -387,7 +387,7 @@ class HealthCheckManager:
 
         except Exception as e:
             status = "unknown"
-            message = f"Voice availability check failed: {str(e)}"
+            message = f"Voice availability check failed: {e!s}"
             details = {"error": str(e)}
 
         response_time = (time.time() - start_time) * 1000
@@ -429,7 +429,7 @@ class HealthCheckManager:
             details = {"error": "Connection refused"}
         except Exception as e:
             status = "unknown"
-            message = f"API endpoint check failed: {str(e)}"
+            message = f"API endpoint check failed: {e!s}"
             details = {"error": str(e)}
 
         response_time = (time.time() - start_time) * 1000

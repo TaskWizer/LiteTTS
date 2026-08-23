@@ -166,7 +166,7 @@ class EspeakIntegrationEnhancer:
                 return False, f"eSpeak version check failed: {result.stderr}", {}
 
         except Exception as e:
-            return False, f"Error checking eSpeak: {str(e)}", {}
+            return False, f"Error checking eSpeak: {e!s}", {}
 
     def install_espeak_if_missing(self) -> bool:
         """Check eSpeak availability and provide installation guidance"""

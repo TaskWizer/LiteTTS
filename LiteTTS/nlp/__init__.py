@@ -22,22 +22,22 @@ from .spell_processor import SpellProcessor
 from .text_normalizer import TextNormalizer
 
 __all__ = [
-    'NLPProcessor',
-    'TextNormalizer',
-    'HomographResolver',
-    'PhoneticProcessor',
-    'SpellProcessor',
-    'ProsodyAnalyzer',
+    'AudienceType',
+    'BreathType',
+    'ContentType',
+    'ContextAdapter',
+    'DisfluencyType',
+    'EmotionCategory',
     'EmotionDetector',
     'EmotionProfile',
-    'EmotionCategory',
-    'ContextAdapter',
-    'SpeechContext',
-    'SpeechRegister',
-    'ContentType',
-    'AudienceType',
+    'HomographResolver',
+    'NLPProcessor',
     'NaturalnessEnhancer',
     'NaturalnessProfile',
-    'DisfluencyType',
-    'BreathType'
+    'PhoneticProcessor',
+    'ProsodyAnalyzer',
+    'SpeechContext',
+    'SpeechRegister',
+    'SpellProcessor',
+    'TextNormalizer'
 ]

@@ -8,7 +8,7 @@ import logging
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Union
+from typing import Any
 
 # Import our enhanced processors
 from .advanced_currency_processor import AdvancedCurrencyProcessor, FinancialContext
@@ -711,7 +711,7 @@ class UnifiedTextProcessor:
             'enhanced_contractions': self.phase6_processor is not None,
         }
 
-    def create_processing_options(self, mode: Union[str, ProcessingMode], **kwargs) -> ProcessingOptions:
+    def create_processing_options(self, mode: str | ProcessingMode, **kwargs) -> ProcessingOptions:
         """Create processing options with sensible defaults"""
         if isinstance(mode, str):
             mode = ProcessingMode(mode)

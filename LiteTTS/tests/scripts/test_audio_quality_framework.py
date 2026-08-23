@@ -28,7 +28,9 @@ def test_framework_imports():
         )
         print("✅ AudioQualityTester imported successfully")
 
-        from LiteTTS.testing.espeak_integration_tests import EspeakIntegrationTestSuite  # noqa: F401
+        from LiteTTS.testing.espeak_integration_tests import (
+            EspeakIntegrationTestSuite,  # noqa: F401
+        )
         print("✅ EspeakIntegrationTestSuite imported successfully")
 
         from LiteTTS.testing.asr_integrations.base_asr_client import BaseASRClient  # noqa: F401

@@ -103,7 +103,7 @@ class AudioQualityTestRunner:
             logger.info(f"  {status_icon} {category.title()}: {passed}/{total} ({pass_rate:.1f}%)")
 
             # Show average metrics if available
-            if "avg_metrics" in category_result and category_result["avg_metrics"]:
+            if category_result.get("avg_metrics"):
                 metrics = category_result["avg_metrics"]
                 logger.info(f"    📈 Avg Metrics: RTF={metrics.get('rtf', 0):.3f}, "
                           f"WER={metrics.get('wer', 0):.3f}, "

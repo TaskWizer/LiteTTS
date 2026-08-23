@@ -6,8 +6,8 @@ from .engine import KokoroTTSEngine
 from .synthesizer import TTSSynthesizer
 
 __all__ = [
-    'KokoroTTSEngine',
-    'EmotionController',
     'ChunkProcessor',
+    'EmotionController',
+    'KokoroTTSEngine',
     'TTSSynthesizer'
 ]

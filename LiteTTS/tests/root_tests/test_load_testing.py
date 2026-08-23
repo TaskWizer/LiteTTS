@@ -48,7 +48,7 @@ class TestBasicLoadHandling:
                 "audio_size": len(response.content) if response.status_code == 200 else 0
             })
         except Exception as e:
-            self.errors.append(f"Request {request_id}: {str(e)}")
+            self.errors.append(f"Request {request_id}: {e!s}")
 
     def test_light_load_5_concurrent(self):
         """Test light load with 5 concurrent requests"""

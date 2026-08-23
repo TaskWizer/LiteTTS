@@ -52,4 +52,4 @@ if __name__ == '__main__':
     gguf_writer.write_kv_data_to_file()
     gguf_writer.write_tensors_to_file()
     gguf_writer.close()
-    print("{} converted to {}".format(sys.argv[1], outfile))
+    print(f"{sys.argv[1]} converted to {outfile}")

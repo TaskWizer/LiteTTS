@@ -238,8 +238,7 @@ class DirectoryReorganizer:
         notes_file = Path("IMPORT_UPDATE_NOTES.md")
         with open(notes_file, 'w') as f:
             f.write("# Import Reference Updates Needed\n\n")
-            for note in update_notes:
-                f.write(f"{note}\n")
+            f.writelines(f"{note}\n" for note in update_notes)
 
         logger.info("Created import update notes")
 

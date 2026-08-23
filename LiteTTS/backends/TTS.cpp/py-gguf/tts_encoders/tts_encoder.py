@@ -7,7 +7,7 @@ from pathlib import Path
 import gguf
 import numpy as np
 import torch
-import torch.nn as nn
+from torch import nn
 
 logging.basicConfig(level=logging.INFO)
 

@@ -231,7 +231,7 @@ class TestDownloadFileProgress:
                 def write(self, data):
                     self._write_count += 1
                     if self._write_count > 1:
-                        raise IOError("Write error after partial download")
+                        raise OSError("Write error after partial download")
                     return self._file.write(data)
 
                 def __enter__(self):

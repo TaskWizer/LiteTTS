@@ -1,7 +1,7 @@
 # auto-generated file
 import numpy as np
 
-import ggml.ffi as ffi
+from ggml import ffi
 
 class lib:
   @property

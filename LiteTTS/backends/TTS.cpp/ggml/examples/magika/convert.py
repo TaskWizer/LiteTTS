@@ -22,7 +22,7 @@ def convert(model_name):
     gguf_writer.write_kv_data_to_file()
     gguf_writer.write_tensors_to_file()
     gguf_writer.close()
-    print("Model converted and saved to '{}'".format(gguf_model_name))
+    print(f"Model converted and saved to '{gguf_model_name}'")
 
 
 if __name__ == '__main__':

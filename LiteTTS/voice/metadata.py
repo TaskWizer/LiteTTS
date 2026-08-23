@@ -160,7 +160,7 @@ class VoiceMetadataManager:
                 if 'stats' in data:
                     for voice_name, stats_data in data['stats'].items():
                         # Convert datetime string back to datetime object
-                        if 'last_used' in stats_data and stats_data['last_used']:
+                        if stats_data.get('last_used'):
                             stats_data['last_used'] = datetime.fromisoformat(stats_data['last_used'])
                         self.voice_stats[voice_name] = VoiceStats(**stats_data)
 

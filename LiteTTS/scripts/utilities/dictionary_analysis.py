@@ -97,7 +97,7 @@ class DictionaryAnalyzer:
                         else:
                             problematic_entries.append(f"Line {line_num}: Invalid format")
                     except Exception as e:
-                        problematic_entries.append(f"Line {line_num}: {str(e)}")
+                        problematic_entries.append(f"Line {line_num}: {e!s}")
 
         except Exception as e:
             logger.error(f"Error reading CMU dictionary: {e}")
@@ -149,7 +149,7 @@ class DictionaryAnalyzer:
                 else:
                     problematic_entries.append(f"Invalid entry format for '{word}'")
             except Exception as e:
-                problematic_entries.append(f"Error processing '{word}': {str(e)}")
+                problematic_entries.append(f"Error processing '{word}': {e!s}")
 
         # Calculate statistics
         file_size_mb = ipa_path.stat().st_size / (1024 * 1024)
@@ -197,7 +197,7 @@ class DictionaryAnalyzer:
                 else:
                     problematic_entries.append(f"Invalid entry format for '{word}'")
             except Exception as e:
-                problematic_entries.append(f"Error processing '{word}': {str(e)}")
+                problematic_entries.append(f"Error processing '{word}': {e!s}")
 
         # Calculate statistics
         file_size_mb = custom_path.stat().st_size / (1024 * 1024)

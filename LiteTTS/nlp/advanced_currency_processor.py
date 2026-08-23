@@ -7,7 +7,6 @@ Implements robust currency amount processing with natural language output
 import logging
 import re
 from dataclasses import dataclass
-from typing import Union
 
 logger = logging.getLogger(__name__)
 
@@ -106,7 +105,7 @@ class AdvancedCurrencyProcessor:
             }
         }
 
-    def _load_financial_suffixes(self) -> dict[str, dict[str, Union[int, str]]]:
+    def _load_financial_suffixes(self) -> dict[str, dict[str, int | str]]:
         """Load financial suffix mappings (M, B, K, etc.)"""
         return {
             'K': {'multiplier': 1_000, 'name': 'thousand'},

@@ -97,7 +97,7 @@ def verify_installation():
 
     try:
         # Test imports
-        import onnxruntime  # noqa: F401
+        import onnxruntime
 
         logger.info("✅ Core dependencies imported successfully")
 

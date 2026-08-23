@@ -120,7 +120,7 @@ class DockerProductionAuditor:
                 category="file_errors",
                 severity="high",
                 issue="Dockerfile read error",
-                description=f"Error reading Dockerfile: {str(e)}",
+                description=f"Error reading Dockerfile: {e!s}",
                 recommendation="Fix Dockerfile syntax and permissions",
                 file_path=str(dockerfile_path)
             ))
@@ -409,7 +409,7 @@ class DockerProductionAuditor:
                 category="file_errors",
                 severity="high",
                 issue="Docker Compose read error",
-                description=f"Error reading docker-compose file: {str(e)}",
+                description=f"Error reading docker-compose file: {e!s}",
                 recommendation="Fix docker-compose syntax",
                 file_path=str(compose_path)
             ))
@@ -510,7 +510,7 @@ class DockerProductionAuditor:
                 category="file_errors",
                 severity="low",
                 issue=".dockerignore read error",
-                description=f"Error reading .dockerignore: {str(e)}",
+                description=f"Error reading .dockerignore: {e!s}",
                 recommendation="Fix .dockerignore file permissions",
                 file_path=str(dockerignore_path)
             ))

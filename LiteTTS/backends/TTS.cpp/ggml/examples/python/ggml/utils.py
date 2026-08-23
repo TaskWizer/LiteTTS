@@ -53,7 +53,7 @@ def copy(from_tensor: TensorLike, to_tensor: TensorLike, allow_requantize: bool 
 
         __set_floats(to_tensor, __get_floats(from_tensor))
 
-def numpy(tensor: ffi.CData, allow_copy: Union[bool, np.ndarray] = False, allow_requantize=False) -> np.ndarray:
+def numpy(tensor: ffi.CData, allow_copy: bool | np.ndarray = False, allow_requantize=False) -> np.ndarray:
     """
       Convert a ggml tensor to a numpy array.
       If the tensor isn't quantized, the returned numpy array will be a view over its data.

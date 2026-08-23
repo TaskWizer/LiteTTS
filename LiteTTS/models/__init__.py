@@ -43,20 +43,20 @@ ModelLoadError = _models_module.ModelLoadError
 AudioGenerationError = _models_module.AudioGenerationError
 
 __all__ = [
-    'ModelManager',
-    'ModelInfo',
+    'AudioGenerationError',
+    'AudioSegment',
     'DownloadProgress',
+    'ModelInfo',
+    'ModelLoadError',
+    'ModelManager',
+    'TTSConfiguration',
+    'TTSError',
     'TTSRequest',
     'TTSResponse',
-    'TTSConfiguration',
-    'AudioSegment',
     'VoiceEmbedding',
-    'validate_tts_request',
-    'generate_cache_key',
-    'TTSError',
     'VoiceNotFoundError',
-    'ModelLoadError',
-    'AudioGenerationError'
+    'generate_cache_key',
+    'validate_tts_request'
 ]
 
 __version__ = '1.0.0'

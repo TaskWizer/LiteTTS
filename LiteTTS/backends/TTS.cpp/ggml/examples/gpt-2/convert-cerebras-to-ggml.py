@@ -180,4 +180,4 @@ for name in list_vars.keys():
 fout.close()
 
 print("Done. Output file: " + fname_out)
-print("")
+print()

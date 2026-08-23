@@ -695,7 +695,7 @@ class VoiceCloningRouter:
                     logger.error(f"Direct synthesis failed: {synthesis_error}")
                     raise HTTPException(
                         status_code=500,
-                        detail=f"Voice synthesis failed: {str(synthesis_error)}"
+                        detail=f"Voice synthesis failed: {synthesis_error!s}"
                     )
 
             except HTTPException:

@@ -479,7 +479,7 @@ class CPUAffinityOptimizer:
             recommendations.append("Limited thread count may impact performance on complex models")
 
         # Performance comparison recommendations
-        if "onnx_core_utilization" in optimized and optimized["onnx_core_utilization"]:
+        if optimized.get("onnx_core_utilization"):
             avg_onnx_util = sum(optimized["onnx_core_utilization"]) / len(optimized["onnx_core_utilization"])
             if avg_onnx_util < 50:
                 recommendations.append("ONNX cores are underutilized, consider increasing workload or reducing core count")

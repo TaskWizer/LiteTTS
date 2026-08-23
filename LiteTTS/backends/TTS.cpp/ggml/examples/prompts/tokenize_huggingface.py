@@ -42,7 +42,7 @@ repo2language = {"databricks/dolly-v2-3b"           : "english",
 delimeter = ": "
 test_sentences = []
 with open("test-cases.txt", "r") as f:
-    lines = [l.rstrip() for l in f.readlines()]
+    lines = [l.rstrip() for l in f]
     for l in lines:
         if delimeter in l:
             language = l[:l.index(delimeter)]

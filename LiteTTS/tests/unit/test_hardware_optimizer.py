@@ -350,7 +350,7 @@ class TestHardwareOptimizerEdgeCases:
             platform_system="Linux", architecture="x86_64"
         )
 
-        with patch('LiteTTS.hardware_optimizer.open', side_effect=IOError("Disk error")):
+        with patch('LiteTTS.hardware_optimizer.open', side_effect=OSError("Disk error")):
             benchmarks = optimizer.run_benchmarks()
             # Should still return benchmarks with partial results
             assert 'cpu_performance' in benchmarks

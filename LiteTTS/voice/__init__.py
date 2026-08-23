@@ -38,7 +38,7 @@ except ImportError:
     _has_manager = False
 
 try:
-    from .dynamic_manager import DynamicVoiceManager  # noqa: F401
+    from .dynamic_manager import DynamicVoiceManager
     _has_dynamic_manager = True
 except ImportError:
     _has_dynamic_manager = False
@@ -136,7 +136,7 @@ def ensure_voice_downloaded(voice_name: str, voices_dir: str = None) -> bool:
 
     return False
 
-__all__ = ['VoiceDownloader', 'VoiceDiscovery', 'get_available_voices', 'resolve_voice_name', 'ensure_voice_downloaded']
+__all__ = ['VoiceDiscovery', 'VoiceDownloader', 'ensure_voice_downloaded', 'get_available_voices', 'resolve_voice_name']
 
 if _has_validator:
     __all__.append('VoiceValidator')
@@ -149,4 +149,4 @@ if _has_manager:
 if _has_dynamic_manager:
     __all__.append('DynamicVoiceManager')
 if _has_blender:
-    __all__.extend(['VoiceBlender', 'BlendConfig'])
+    __all__.extend(['BlendConfig', 'VoiceBlender'])

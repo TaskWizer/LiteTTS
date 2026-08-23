@@ -269,7 +269,7 @@ class ComprehensivePronunciationTestSuite:
                 test_case=test_case,
                 actual_output="",
                 passed=False,
-                error_message=f"Exception: {str(e)}"
+                error_message=f"Exception: {e!s}"
             )
 
     def run_category_tests(self, category: str) -> list[PronunciationTestResult]:

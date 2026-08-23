@@ -22,10 +22,10 @@ __all__ = ['cache_manager']
 
 if _ENHANCED_AVAILABLE:
     __all__.extend([
-        'EnhancedCacheManager',
         'AudioCache',
-        'TextCache',
         'CacheWarmer',
+        'CacheWarmingConfig',
+        'EnhancedCacheManager',
         'IntelligentPreloader',
-        'CacheWarmingConfig'
+        'TextCache'
     ])

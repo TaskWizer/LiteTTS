@@ -3,9 +3,9 @@ from pathlib import Path
 
 import gguf
 import torch
-import torch.nn as nn
 from huggingface_hub import hf_hub_download
 from kokoro import KModel, KPipeline
+from torch import nn
 
 from .tensor_util import get_regularized_weight
 from .tts_encoder import TTSEncoder

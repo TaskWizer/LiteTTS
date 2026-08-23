@@ -164,7 +164,7 @@ class CloudflareDNSManager:
                 return False, f"HTTP {response.status_code}: {response.text}"
 
         except Exception as e:
-            return False, f"Token validation error: {str(e)}"
+            return False, f"Token validation error: {e!s}"
 
     def get_zones(self, api_token: str) -> tuple[bool, list[CloudflareZone]]:
         """Get Cloudflare zones"""
@@ -347,7 +347,7 @@ class CloudflareDNSManager:
                     results["errors"].append(f"HTTPS rewrites configuration failed: {rewrites_response.status_code}")
 
         except Exception as e:
-            results["errors"].append(f"SSL configuration error: {str(e)}")
+            results["errors"].append(f"SSL configuration error: {e!s}")
             logger.error(f"SSL configuration error: {e}")
 
         return results
@@ -416,7 +416,7 @@ class CloudflareDNSManager:
                 results["errors"].append(f"Development mode configuration failed: {dev_response.status_code}")
 
         except Exception as e:
-            results["errors"].append(f"Security configuration error: {str(e)}")
+            results["errors"].append(f"Security configuration error: {e!s}")
             logger.error(f"Security configuration error: {e}")
 
         return results
@@ -586,7 +586,7 @@ echo "DNS verification completed!"
         except Exception as e:
             return {
                 "success": False,
-                "error": f"Configuration loading failed: {str(e)}",
+                "error": f"Configuration loading failed: {e!s}",
                 "setup_timestamp": time.time()
             }
 

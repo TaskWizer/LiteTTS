@@ -148,8 +148,7 @@ for name, shape in list_vars:
     # header
     str = name.encode('utf-8')
     fout.write(struct.pack("iii", n_dims, len(str), ftype_cur))
-    for i in range(n_dims):
-        fout.write(struct.pack("i", dshape[n_dims - 1 - i]))
+    fout.writelines(struct.pack("i", dshape[n_dims - 1 - i]) for i in range(n_dims))
     fout.write(str);
 
     # data
@@ -158,4 +157,4 @@ for name, shape in list_vars:
 fout.close()
 
 print("Done. Output file: " + fname_out)
-print("")
+print()

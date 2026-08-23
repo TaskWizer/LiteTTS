@@ -84,8 +84,7 @@ class MemoryOptimizer:
 
         # Peak memory tracking
         current_memory_mb = process_memory.rss / (1024 * 1024)
-        if current_memory_mb > self.peak_memory:
-            self.peak_memory = current_memory_mb
+        self.peak_memory = max(self.peak_memory, current_memory_mb)
 
         # Memory growth calculation
         memory_growth = 0

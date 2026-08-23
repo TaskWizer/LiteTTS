@@ -97,7 +97,7 @@ class VoiceValidator:
                 self._perform_additional_checks(model_data, result)
 
         except Exception as e:
-            result.errors.append(f"Failed to load model: {str(e)}")
+            result.errors.append(f"Failed to load model: {e!s}")
             result.metadata['loaded_successfully'] = False
 
         # Set overall validity
@@ -344,6 +344,6 @@ class VoiceValidator:
             compatibility['compatible'] = len(compatibility['issues']) == 0
 
         except Exception as e:
-            compatibility['issues'].append(f"Compatibility check failed: {str(e)}")
+            compatibility['issues'].append(f"Compatibility check failed: {e!s}")
 
         return compatibility

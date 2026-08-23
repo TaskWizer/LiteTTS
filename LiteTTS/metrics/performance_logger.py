@@ -11,7 +11,7 @@ import threading
 import time
 from collections import defaultdict, deque
 from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 import psutil
@@ -170,7 +170,7 @@ class PerformanceLogger:
             # Create metrics object
             metrics = PerformanceMetrics(
                 request_id=request_id,
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
                 text_length=request_data['text_length'],
                 token_count=request_data.get('token_count'),
                 voice_name=request_data.get('voice_name', ''),
@@ -238,7 +238,7 @@ class PerformanceLogger:
 
     def get_recent_stats(self, minutes: int = 60) -> dict[str, Any]:
         """Get statistics for recent requests"""
-        cutoff_time = datetime.now(timezone.utc).timestamp() - (minutes * 60)
+        cutoff_time = datetime.now(UTC).timestamp() - (minutes * 60)
 
         recent_metrics = [
             m for m in self.metrics_history

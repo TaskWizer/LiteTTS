@@ -1490,7 +1490,7 @@ class TestPhonemizationPreprocessorEdgeCases2:
         original_open = open
         def fake_open(*args, **kwargs):
             if 'contractions.json' in str(args[0] if args else ''):
-                raise IOError("Simulated file error")
+                raise OSError("Simulated file error")
             return original_open(*args, **kwargs)
 
         with patch.object(Path, 'exists', lambda self: True), \
@@ -1526,7 +1526,7 @@ class TestPhonemizationPreprocessorEdgeCases2:
         original_open = open
         def fake_open(*args, **kwargs):
             if 'numbers.json' in str(args[0] if args else ''):
-                raise IOError("Simulated file error")
+                raise OSError("Simulated file error")
             return original_open(*args, **kwargs)
 
         with patch.object(Path, 'exists', lambda self: True), \
@@ -1562,7 +1562,7 @@ class TestPhonemizationPreprocessorEdgeCases2:
         original_open = open
         def fake_open(*args, **kwargs):
             if 'symbols.json' in str(args[0] if args else ''):
-                raise IOError("Simulated file error")
+                raise OSError("Simulated file error")
             return original_open(*args, **kwargs)
 
         with patch.object(Path, 'exists', lambda self: True), \

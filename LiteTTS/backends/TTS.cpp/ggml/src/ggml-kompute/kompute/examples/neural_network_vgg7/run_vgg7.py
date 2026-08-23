@@ -56,7 +56,7 @@ for i in range(7):
     #  but what about memory usage?
     # *Most* of these tensors live entirely on-device except when debugging.
     # Can that be handled? (Also good question: Does it even need to be handled?)
-    tensor_out = kpm.tensor(numpy.zeros((tensor_out_h * tensor_out_w * tensor_out_cg * sh_common.VSZ)))
+    tensor_out = kpm.tensor(numpy.zeros(tensor_out_h * tensor_out_w * tensor_out_cg * sh_common.VSZ))
     weight = kpm.tensor(sh_common.load_weights_padded("kipper", (i * 2) + 0, tensor_out_c, tensor_in_c, 3))
     bias = kpm.tensor(sh_common.load_biases_padded("kipper", (i * 2) + 1, tensor_out_c))
     # Compute.

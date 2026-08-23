@@ -347,7 +347,7 @@ class Phase6TextProcessor:
                 original_text=original_text,
                 processing_time=time.perf_counter() - start_time,
                 total_changes=0,
-                warnings=[f"Processing failed: {str(e)}"]
+                warnings=[f"Processing failed: {e!s}"]
             )
 
     def _process_numbers(self, text: str) -> tuple[str, int]:

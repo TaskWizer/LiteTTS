@@ -19,11 +19,18 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 try:
     from LiteTTS.nlp.advanced_abbreviation_handler import AdvancedAbbreviationHandler  # noqa: F401
     from LiteTTS.nlp.advanced_symbol_processor import AdvancedSymbolProcessor  # noqa: F401
-    from LiteTTS.nlp.enhanced_contraction_processor import EnhancedContractionProcessor  # noqa: F401
+    from LiteTTS.nlp.enhanced_contraction_processor import (
+        EnhancedContractionProcessor,  # noqa: F401
+    )
     from LiteTTS.nlp.enhanced_datetime_processor import EnhancedDateTimeProcessor  # noqa: F401
-    from LiteTTS.nlp.enhanced_nlp_processor import EnhancedNLPProcessor, EnhancedProcessingOptions  # noqa: F401
-    from LiteTTS.nlp.extended_pronunciation_dictionary import ExtendedPronunciationDictionary  # noqa: F401
-    from LiteTTS.nlp.processor import NLPProcessor  # noqa: F401
+    from LiteTTS.nlp.enhanced_nlp_processor import (  # noqa: F401
+        EnhancedNLPProcessor,
+        EnhancedProcessingOptions,
+    )
+    from LiteTTS.nlp.extended_pronunciation_dictionary import (
+        ExtendedPronunciationDictionary,  # noqa: F401
+    )
+    from LiteTTS.nlp.processor import NLPProcessor
     COMPONENTS_AVAILABLE = True
 except ImportError as e:
     print(f"Warning: Could not import components: {e}")

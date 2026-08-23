@@ -186,7 +186,7 @@ class TLSCertificateManager:
             return True, str(ca_cert_path)
 
         except Exception as e:
-            return False, f"CA generation error: {str(e)}"
+            return False, f"CA generation error: {e!s}"
 
     def generate_server_certificate(self, config: TLSConfiguration,
                                   common_name: str = "localhost") -> tuple[bool, TLSCertificate]:
@@ -425,7 +425,7 @@ subjectAltName = @alt_names
                     verification_results["issues"].append(f"Incorrect permissions: cert={cert_perms}, key={key_perms}")
 
         except Exception as e:
-            verification_results["issues"].append(f"Verification error: {str(e)}")
+            verification_results["issues"].append(f"Verification error: {e!s}")
 
         return verification_results
 

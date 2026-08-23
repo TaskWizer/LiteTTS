@@ -4,10 +4,10 @@ from time import time
 import gguf
 import numpy as np
 import torch
-import torch.nn as nn
 import torchvision.datasets as dsets
-import torchvision.transforms as transforms
+from torch import nn
 from torch.autograd import Variable
+from torchvision import transforms
 
 input_size  = 784  # img_size = (28,28) ---> 28*28=784 in total
 hidden_size = 500  # number of nodes at hidden layer
@@ -19,7 +19,7 @@ lr          = 1e-3 # size of step
 
 class Net(nn.Module):
     def __init__(self, input_size, hidden_size, num_classes):
-        super(Net, self).__init__()
+        super().__init__()
         self.fc1 = nn.Linear(input_size, hidden_size)
         self.relu = nn.ReLU()
         self.fc2 = nn.Linear(hidden_size, num_classes)

@@ -44,9 +44,9 @@ from .whisper_config_loader import (
 
 __all__ = [
     "ConfigManager",
+    "WhisperConfigLoader",
+    "WhisperSettings",
     "config",
     "get_whisper_config",
-    "get_whisper_settings",
-    "WhisperConfigLoader",
-    "WhisperSettings"
+    "get_whisper_settings"
 ]

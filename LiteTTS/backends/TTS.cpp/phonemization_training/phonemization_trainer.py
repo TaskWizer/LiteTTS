@@ -887,8 +887,7 @@ class RuleSet:
                                 for ph, c in epossible_data:
                                     if isinstance(c, list):
                                         c = c[1]
-                                    if c > emax_counter:
-                                        emax_counter = c
+                                    emax_counter = max(emax_counter, c)
                                 emax_length = 0
                                 best_fit = None
                                 for ph, c in epossible_data:
@@ -917,8 +916,7 @@ class RuleSet:
                             continue
                         if isinstance(counter, list):
                             counter = counter[1]
-                        if counter > max_counter:
-                            max_counter = counter
+                        max_counter = max(max_counter, counter)
                     if max_counter <= 3 and after != "$":
                         continue # probably not definitive
                     max_length = 0
