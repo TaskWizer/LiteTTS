@@ -440,7 +440,7 @@ def main():
         if response.status_code != 200:
             print("❌ Server not accessible - please start the server first")
             return
-    except:
+    except:  # noqa: E722
         print("❌ Server not accessible - please start the server first")
         print("💡 Run: python LiteTTS/start_server.py")
         return

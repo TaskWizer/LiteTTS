@@ -77,7 +77,7 @@ class PhonemizationTrainer:
                                     ).replace("ç", "c")
                                 ):
                                     yield part.lower(), actual_phoneme
-                            except:
+                            except:  # noqa: E722
                                 yield word.lower(), actual_phoneme
             elif word_type == "abbr":
                 for word, translated_word in words_list.items():
@@ -102,7 +102,7 @@ class PhonemizationTrainer:
                                 for part in word.split(" ")
                             ]
                         )
-                    except:
+                    except:  # noqa: E722
                         yield word.lower(), actual_phoneme
                         continue
                     if actual_phoneme != attempted_phoneme:
@@ -287,7 +287,7 @@ class PhonemizationTrainer:
             # make sure that we download the word's corpus
             for _ in words.words():
                 break
-        except:
+        except:  # noqa: E722
             nltk.download("words")
         if not self.tokenizer.trained:
             self.logger.info("Training the tokenizer on known words.")

@@ -394,7 +394,7 @@ def demo_filesystem_monitoring():
 
         try:
             shutil.rmtree(temp_dir)
-        except:
+        except:  # noqa: E722
             pass
 
 

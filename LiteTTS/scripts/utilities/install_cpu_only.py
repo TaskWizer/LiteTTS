@@ -47,7 +47,7 @@ def check_gpu_packages():
             )
             if result.returncode == 0:
                 installed_gpu_packages.append(package)
-        except:
+        except:  # noqa: E722
             pass
 
     if installed_gpu_packages:

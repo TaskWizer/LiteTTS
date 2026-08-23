@@ -198,7 +198,7 @@ def test_api_with_new_behavior():
                 try:
                     error_data = response.json()
                     print(f"   Error: {error_data}")
-                except:
+                except:  # noqa: E722
                     print(f"   Response: {response.text}")
 
         except requests.exceptions.ConnectionError:

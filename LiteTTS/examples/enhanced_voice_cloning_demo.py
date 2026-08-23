@@ -128,7 +128,7 @@ def demo_basic_voice_cloning():
         for _, filename in test_files:
             try:
                 os.unlink(filename)
-            except:
+            except:  # noqa: E722
                 pass
 
         logger.info("✅ Basic voice cloning demo completed")
@@ -258,7 +258,7 @@ def demo_whisper_integration():
 
                 with sf.SoundFile(filename) as f:
                     audio_duration = len(f) / f.samplerate
-            except:
+            except:  # noqa: E722
                 audio_duration = duration
 
             # Simulate processing time based on quality

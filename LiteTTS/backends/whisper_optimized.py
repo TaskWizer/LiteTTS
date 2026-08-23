@@ -95,7 +95,7 @@ class PerformanceMonitor:
                 self.memory_samples.append(current_memory)
                 self.peak_memory = max(self.peak_memory, current_memory)
                 time.sleep(0.1)  # Sample every 100ms
-            except:
+            except:  # noqa: E722
                 break
 
 
@@ -358,13 +358,13 @@ class OptimizedWhisperProcessor:
 
             with sf.SoundFile(audio_path) as f:
                 return len(f) / f.samplerate
-        except:
+        except:  # noqa: E722
             try:
                 import librosa
 
                 y, sr = librosa.load(audio_path, sr=None)
                 return len(y) / sr
-            except:
+            except:  # noqa: E722
                 logger.warning(f"Could not determine audio duration for {audio_path}")
                 return 1.0  # Default fallback
 

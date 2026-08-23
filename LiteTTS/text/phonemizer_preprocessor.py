@@ -1172,7 +1172,7 @@ class PhonemizationPreprocessor:
                             hundreds = n_int // 100
                             rest = number_to_words(str(n_int % 100))
                             return f"{number_to_words(str(hundreds))} hundred {rest}".strip()
-                    except:
+                    except:  # noqa: E722
                         return n
 
                 def word_or_hyphenate(s, upper=False):

@@ -250,7 +250,7 @@ class WhisperAlternativesAnalyzer:
                         if ":" in line:
                             key, value = line.split(":", 1)
                             cpu_info[key.strip()] = value.strip()
-        except:
+        except:  # noqa: E722
             pass
 
         # Detect SIMD support
@@ -266,7 +266,7 @@ class WhisperAlternativesAnalyzer:
                 simd_support.append("sse4.1")
             if "neon" in flags:
                 simd_support.append("neon")
-        except:
+        except:  # noqa: E722
             # Fallback detection
             if platform.machine().lower() in ["aarch64", "arm64"]:
                 simd_support.append("neon")

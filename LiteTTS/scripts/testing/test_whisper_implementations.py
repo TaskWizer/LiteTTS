@@ -70,7 +70,7 @@ class PerformanceMonitor:
                 self.memory_samples.append(memory_mb)
                 self.peak_memory = max(self.peak_memory, memory_mb)
                 time.sleep(0.1)
-            except:
+            except:  # noqa: E722
                 break
 
 

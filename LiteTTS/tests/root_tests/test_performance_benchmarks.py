@@ -118,7 +118,7 @@ class TestPerformanceBenchmarks:
         for _ in range(10):
             try:
                 requests.post(endpoint, json=payload, timeout=10)
-            except:
+            except:  # noqa: E722
                 pass  # Ignore errors for this test
 
         final_memory = process.memory_info().rss / 1024 / 1024  # MB

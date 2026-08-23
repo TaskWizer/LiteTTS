@@ -195,7 +195,7 @@ def monitor_system_resources():
                     {"cpu": cpu_percent, "memory": memory_mb, "timestamp": time.time()}
                 )
                 time.sleep(0.1)
-            except:
+            except:  # noqa: E722
                 break
 
     # Start monitoring
@@ -314,7 +314,7 @@ def test_server_status():
     try:
         response = requests.get("http://localhost:8354/health", timeout=5)
         return response.status_code == 200
-    except:
+    except:  # noqa: E722
         return False
 
 

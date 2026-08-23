@@ -281,7 +281,7 @@ def test_server_status():
 
         response = requests.get("http://localhost:8354/health", timeout=5)
         return response.status_code == 200
-    except:
+    except:  # noqa: E722
         return False
 
 

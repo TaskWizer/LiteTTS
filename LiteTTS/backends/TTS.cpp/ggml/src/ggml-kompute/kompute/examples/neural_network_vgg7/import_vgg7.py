@@ -14,7 +14,7 @@ if len(sys.argv) != 2:
 
 try:
     os.mkdir("model-kipper")
-except:
+except:  # noqa: E722
     pass
 
 data_list = json.load(open(sys.argv[1], "rb"))

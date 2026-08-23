@@ -671,7 +671,7 @@ class ComprehensiveTestSuite:
         try:
             response = requests.get(f"{self.base_url}/v1/voices", timeout=5)
             return response.status_code == 200
-        except:
+        except:  # noqa: E722
             return False
 
     def save_results(self, output_file: str = "docs/comprehensive_test_results.json"):

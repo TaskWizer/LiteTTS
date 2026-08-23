@@ -102,7 +102,7 @@ class CPUAffinityOptimizer:
             if hasattr(psutil, "cpu_affinity"):
                 # Try to detect NUMA topology
                 numa_nodes = [0]  # Default single NUMA node
-        except:
+        except:  # noqa: E722
             numa_nodes = [0]
 
         # Cache information

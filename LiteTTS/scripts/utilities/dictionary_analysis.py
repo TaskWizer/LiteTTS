@@ -415,7 +415,7 @@ class DictionaryAnalyzer:
                     if isinstance(data, dict)
                 }
                 all_dictionaries["ipa"] = ipa_entries
-            except:
+            except:  # noqa: E722
                 all_dictionaries["ipa"] = {}
 
         # Load custom entries
@@ -430,7 +430,7 @@ class DictionaryAnalyzer:
                     if isinstance(data, dict)
                 }
                 all_dictionaries["custom"] = custom_entries
-            except:
+            except:  # noqa: E722
                 all_dictionaries["custom"] = {}
 
         # Analyze coverage by category

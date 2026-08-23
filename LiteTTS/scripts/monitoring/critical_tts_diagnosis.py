@@ -348,7 +348,7 @@ def main():
         if response.status_code != 200:
             print("❌ TTS server health check failed")
             return
-    except:
+    except:  # noqa: E722
         print("❌ Cannot connect to TTS server - please start with:")
         print("   uv run uvicorn app:app --host 0.0.0.0 --port 8354")
         return

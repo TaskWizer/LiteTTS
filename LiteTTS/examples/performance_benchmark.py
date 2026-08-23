@@ -192,7 +192,7 @@ class PerformanceBenchmark:
                     # Cleanup
                     try:
                         os.unlink(audio_file)
-                    except:
+                    except:  # noqa: E722
                         pass
 
         except Exception as e:
@@ -277,7 +277,7 @@ class PerformanceBenchmark:
                         # Cleanup
                         try:
                             os.unlink(audio_file)
-                        except:
+                        except:  # noqa: E722
                             pass
                 else:
                     logger.warning(f"  Skipping {duration}s (exceeds max duration)")

@@ -129,7 +129,7 @@ class SystemMonitor:
                                         self.temperature_readings.append(entry.current)
                                         break
                                 break
-                except:
+                except:  # noqa: E722
                     pass  # Temperature monitoring not available
 
                 time.sleep(0.5)  # Monitor every 500ms

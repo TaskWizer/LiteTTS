@@ -21,7 +21,7 @@ def test_health_endpoint():
             try:
                 data = response.json()
                 print(f"   📊 Response: {json.dumps(data, indent=2)}")
-            except:
+            except:  # noqa: E722
                 print(f"   📊 Response: {response.text}")
         else:
             print(f"   ❌ Health endpoint returned {response.status_code}")
@@ -146,7 +146,7 @@ def test_tts_endpoint():
                 try:
                     error_data = response.json()
                     print(f"      📋 Error: {error_data.get('detail', 'Unknown error')}")
-                except:
+                except:  # noqa: E722
                     print(f"      📋 Error: {response.text[:200]}")
 
         except requests.exceptions.Timeout:
@@ -216,7 +216,7 @@ def test_error_handling():
                 try:
                     error_data = response.json()
                     print(f"      📋 Error message: {error_data.get('detail', 'No detail')}")
-                except:
+                except:  # noqa: E722
                     pass
             else:
                 print(
@@ -232,7 +232,7 @@ def test_server_status():
     try:
         response = requests.get("http://localhost:8080/health", timeout=5)
         return response.status_code == 200
-    except:
+    except:  # noqa: E722
         return False
 
 

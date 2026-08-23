@@ -41,7 +41,7 @@ def test_openwebui_typical_request():
             try:
                 error_data = response.json()
                 print(f"   Error: {error_data}")
-            except:
+            except:  # noqa: E722
                 print(f"   Response: {response.text}")
             return False
 
@@ -163,7 +163,7 @@ def test_openwebui_error_handling():
                         success_count += 1
                     else:
                         print(f"❌ {case['name']}: No error message in response")
-                except:
+                except:  # noqa: E722
                     print(f"❌ {case['name']}: Invalid JSON response")
             else:
                 print(

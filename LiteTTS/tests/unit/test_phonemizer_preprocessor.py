@@ -2296,7 +2296,7 @@ class TestPhonemizationPreprocessorGlobalConfig:
             else:
                 try:
                     del pp_module.int
-                except:
+                except:  # noqa: E722
                     pass
 
     def test_decimal_exception_handler(self):
