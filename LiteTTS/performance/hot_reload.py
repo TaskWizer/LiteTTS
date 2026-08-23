@@ -14,6 +14,7 @@ from typing import Any
 try:
     from watchdog.events import FileSystemEventHandler
     from watchdog.observers import Observer
+
     WATCHDOG_AVAILABLE = True
 except ImportError:
     WATCHDOG_AVAILABLE = False
@@ -22,13 +23,14 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+
 class ModelReloadHandler:
     """File system event handler for model hot reloading"""
 
     def __init__(self, reload_callback: Callable[[str], None]):
         if WATCHDOG_AVAILABLE:
             # Initialize as FileSystemEventHandler if watchdog is available
-            super().__init__() if hasattr(FileSystemEventHandler, '__init__') else None
+            super().__init__() if hasattr(FileSystemEventHandler, "__init__") else None
         self.reload_callback = reload_callback
         self.last_reload = {}
         self.reload_delay = 2.0  # Seconds to wait before reloading
@@ -40,12 +42,14 @@ class ModelReloadHandler:
         file_path = Path(event.src_path)
 
         # Only reload for model files
-        if file_path.suffix in ['.onnx', '.bin']:
+        if file_path.suffix in [".onnx", ".bin"]:
             current_time = time.time()
 
             # Debounce rapid file changes
-            if (file_path in self.last_reload and
-                current_time - self.last_reload[file_path] < self.reload_delay):
+            if (
+                file_path in self.last_reload
+                and current_time - self.last_reload[file_path] < self.reload_delay
+            ):
                 return
 
             self.last_reload[file_path] = current_time
@@ -61,6 +65,7 @@ class ModelReloadHandler:
             self.reload_callback(file_path)
         except Exception as e:
             logger.error(f"❌ Hot reload failed for {file_path}: {e}")
+
 
 class HotReloadManager:
     """Manages hot reloading of models and voices"""
@@ -186,8 +191,9 @@ class HotReloadManager:
             "enabled": self.enabled,
             "active_watchers": len(self.observers),
             "registered_paths": list(self.reload_callbacks.keys()),
-            "observer_status": [obs.is_alive() for obs in self.observers]
+            "observer_status": [obs.is_alive() for obs in self.observers],
         }
+
 
 class PerformanceMonitor:
     """Monitor performance metrics for optimization"""
@@ -202,7 +208,7 @@ class PerformanceMonitor:
             "cache_hits": 0,
             "cache_misses": 0,
             "model_loads": 0,
-            "voice_loads": 0
+            "voice_loads": 0,
         }
         self.start_time = time.time()
         self.lock = threading.Lock()
@@ -247,19 +253,20 @@ class PerformanceMonitor:
         with self.lock:
             uptime = time.time() - self.start_time
             cache_total = self.metrics["cache_hits"] + self.metrics["cache_misses"]
-            cache_hit_rate = (
-                self.metrics["cache_hits"] / cache_total if cache_total > 0 else 0.0
-            )
+            cache_hit_rate = self.metrics["cache_hits"] / cache_total if cache_total > 0 else 0.0
 
             return {
                 **self.metrics,
                 "uptime_seconds": uptime,
-                "requests_per_second": self.metrics["requests_total"] / uptime if uptime > 0 else 0.0,
+                "requests_per_second": self.metrics["requests_total"] / uptime
+                if uptime > 0
+                else 0.0,
                 "success_rate": (
                     self.metrics["requests_successful"] / self.metrics["requests_total"]
-                    if self.metrics["requests_total"] > 0 else 0.0
+                    if self.metrics["requests_total"] > 0
+                    else 0.0
                 ),
-                "cache_hit_rate": cache_hit_rate
+                "cache_hit_rate": cache_hit_rate,
             }
 
     def reset_metrics(self):
@@ -270,9 +277,11 @@ class PerformanceMonitor:
                     self.metrics[key] = 0 if isinstance(self.metrics[key], int) else 0.0
             self.start_time = time.time()
 
+
 # Global instances
 hot_reload_manager = None
 performance_monitor = PerformanceMonitor()
+
 
 def get_hot_reload_manager(config=None):
     """Get or create hot reload manager"""
@@ -280,6 +289,7 @@ def get_hot_reload_manager(config=None):
     if hot_reload_manager is None:
         hot_reload_manager = HotReloadManager(config)
     return hot_reload_manager
+
 
 def get_performance_monitor():
     """Get performance monitor"""

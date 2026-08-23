@@ -39,6 +39,7 @@ def test_contraction_fixes():
         print(f"Components: {', '.join(result.components_used)}")
         print()
 
+
 def test_symbol_fixes():
     """Test symbol and punctuation fixes"""
     print("🔣 Testing Symbol and Punctuation Fixes")
@@ -63,6 +64,7 @@ def test_symbol_fixes():
         print(f"Output: {result.processed_text}")
         print()
 
+
 def test_pronunciation_fixes():
     """Test word-specific pronunciation fixes"""
     print("📖 Testing Pronunciation Dictionary Fixes")
@@ -85,6 +87,7 @@ def test_pronunciation_fixes():
         print(f"Output: {result.processed_text}")
         print()
 
+
 def test_date_time_fixes():
     """Test date and time processing fixes"""
     print("📅 Testing Date and Time Fixes")
@@ -105,6 +108,7 @@ def test_date_time_fixes():
         print(f"Input:  {text}")
         print(f"Output: {result.processed_text}")
         print()
+
 
 def test_abbreviation_fixes():
     """Test abbreviation handling fixes"""
@@ -129,6 +133,7 @@ def test_abbreviation_fixes():
         print(f"Output: {result.processed_text}")
         print()
 
+
 def test_voice_modulation():
     """Test voice modulation system"""
     print("🎤 Testing Voice Modulation")
@@ -139,7 +144,7 @@ def test_voice_modulation():
     test_cases = [
         "This is normal text (imagine this in a whisper) and back to normal.",
         "This is *important* and this is **very important**.",
-        "She said \"Hello there\" with a smile.",
+        'She said "Hello there" with a smile.',
         "[whisper]This should be very quiet[/whisper] and [loud]this should be loud[/loud].",
         "The meeting (scheduled for tomorrow) will be crucial.",
     ]
@@ -152,6 +157,7 @@ def test_voice_modulation():
         for segment in result.modulation_segments:
             print(f"  - '{segment.text}' -> {segment.modulation.tone}")
         print()
+
 
 def test_emotion_intonation():
     """Test emotion and intonation system"""
@@ -179,6 +185,7 @@ def test_emotion_intonation():
         for marker in result.intonation_markers:
             print(f"  - {marker.intonation_type.value} at '{marker.text_segment}'")
         print()
+
 
 def test_comprehensive_processing():
     """Test comprehensive processing with all features"""
@@ -211,6 +218,7 @@ def test_comprehensive_processing():
 
     print(f"\nMetadata: {result.metadata}")
 
+
 def test_performance():
     """Test performance of the enhanced system"""
     print("⚡ Testing Performance")
@@ -229,7 +237,7 @@ def test_performance():
         It's really incredible how much progress we've made! Don't you agree?
         The nuclear power plant's safety protocols are extremely important.
         Dr. Johnson won't be available until 2024-02-15 at 09:00 AM.
-        The CEO said "We'll achieve our goals ASAP" during the meeting."""
+        The CEO said "We'll achieve our goals ASAP" during the meeting.""",
     ]
 
     for i, text in enumerate(test_texts, 1):
@@ -242,6 +250,7 @@ def test_performance():
     print(f"Total processed: {stats['total_processed']}")
     print(f"Average time: {stats['average_time']:.4f}s")
     print(f"Error rate: {stats['error_rate']:.2%}")
+
 
 def test_issue_analysis():
     """Test text issue analysis"""
@@ -271,6 +280,7 @@ def test_issue_analysis():
                     print(f"  {key}: {value}")
         else:
             print(f"  {details}")
+
 
 def main():
     """Run all tests"""
@@ -314,7 +324,9 @@ def main():
     except Exception as e:
         print(f"❌ Test failed with error: {e}")
         import traceback
+
         traceback.print_exc()
+
 
 if __name__ == "__main__":
     main()

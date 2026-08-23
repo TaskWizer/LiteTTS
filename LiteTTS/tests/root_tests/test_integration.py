@@ -27,7 +27,7 @@ def test_question_mark_fix():
             "espeak_enhanced_processing": {
                 "enabled": True,
                 "fix_question_mark_pronunciation": True,
-                "punctuation_mode": "some"
+                "punctuation_mode": "some",
             }
         }
     }
@@ -44,10 +44,7 @@ def test_question_mark_fix():
     ]
 
     # Create processing options
-    options = ProcessingOptions(
-        mode=ProcessingMode.ENHANCED,
-        use_espeak_enhanced_symbols=True
-    )
+    options = ProcessingOptions(mode=ProcessingMode.ENHANCED, use_espeak_enhanced_symbols=True)
 
     print("📝 Testing text processing with eSpeak enhancements:")
 
@@ -58,7 +55,9 @@ def test_question_mark_fix():
             result = processor.process_text(test_text, options)
 
             print(f"   ✅ Output: '{result.processed_text}'")
-            print(f"   🔧 Changes: {', '.join(result.changes_made) if result.changes_made else 'None'}")
+            print(
+                f"   🔧 Changes: {', '.join(result.changes_made) if result.changes_made else 'None'}"
+            )
             print(f"   📊 Stages: {', '.join(result.stages_completed)}")
             print(f"   ⏱️  Time: {result.processing_time:.3f}s")
 
@@ -72,6 +71,7 @@ def test_question_mark_fix():
             print(f"   ❌ Error: {e}")
 
     return True
+
 
 def main():
     """Main test function"""
@@ -90,10 +90,12 @@ def main():
     except Exception as e:
         print(f"\n❌ Test failed with error: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
     return True
+
 
 if __name__ == "__main__":
     success = main()
@@ -151,8 +153,8 @@ class TestOpenWebUIIntegration:
             json={
                 "model": "tts-1",  # OpenWebUI uses this model name
                 "input": "Hello from OpenWebUI integration test",
-                "voice": "af_heart"
-            }
+                "voice": "af_heart",
+            },
         )
 
         # Should handle OpenWebUI format
@@ -165,18 +167,11 @@ class TestOpenWebUIIntegration:
 
     def test_openwebui_compatibility_routes(self):
         """Test OpenWebUI compatibility routes for malformed URLs"""
-        compatibility_endpoints = [
-            "/v1/audio/stream/audio/speech",
-            "/v1/audio/speech/audio/speech"
-        ]
+        compatibility_endpoints = ["/v1/audio/stream/audio/speech", "/v1/audio/speech/audio/speech"]
 
         for endpoint in compatibility_endpoints:
             response = self.client.post(
-                endpoint,
-                json={
-                    "input": "Testing compatibility route",
-                    "voice": "af_heart"
-                }
+                endpoint, json={"input": "Testing compatibility route", "voice": "af_heart"}
             )
 
             # Should handle gracefully
@@ -184,21 +179,11 @@ class TestOpenWebUIIntegration:
 
     def test_openwebui_voice_parameter_variations(self):
         """Test various voice parameter formats that OpenWebUI might send"""
-        voice_variations = [
-            "af_heart",
-            "heart",
-            "alloy",
-            "nova",
-            "echo"
-        ]
+        voice_variations = ["af_heart", "heart", "alloy", "nova", "echo"]
 
         for voice in voice_variations:
             response = self.client.post(
-                "/v1/audio/speech",
-                json={
-                    "input": f"Testing voice {voice}",
-                    "voice": voice
-                }
+                "/v1/audio/speech", json={"input": f"Testing voice {voice}", "voice": voice}
             )
 
             # Should either work or fail gracefully
@@ -221,8 +206,8 @@ class TestExternalAPICompatibility:
                 "input": "Testing OpenAI API compatibility",
                 "voice": "alloy",
                 "response_format": "mp3",
-                "speed": 1.0
-            }
+                "speed": 1.0,
+            },
         )
 
         assert response.status_code in [200, 400]
@@ -236,14 +221,14 @@ class TestExternalAPICompatibility:
         content_types = [
             "application/json",
             "application/json; charset=utf-8",
-            "application/json;charset=UTF-8"
+            "application/json;charset=UTF-8",
         ]
 
         for content_type in content_types:
             response = self.client.post(
                 "/v1/audio/speech",
                 json={"input": "Content type test", "voice": "af_heart"},
-                headers={"Content-Type": content_type}
+                headers={"Content-Type": content_type},
             )
 
             assert response.status_code in [200, 400]
@@ -255,14 +240,14 @@ class TestExternalAPICompatibility:
             "Mozilla/5.0 (compatible; OpenWebUI)",
             "curl/7.68.0",
             "python-requests/2.28.0",
-            "PostmanRuntime/7.29.0"
+            "PostmanRuntime/7.29.0",
         ]
 
         for user_agent in user_agents:
             response = self.client.post(
                 "/v1/audio/speech",
                 json={"input": "User agent test", "voice": "af_heart"},
-                headers={"User-Agent": user_agent}
+                headers={"User-Agent": user_agent},
             )
 
             assert response.status_code in [200, 400]
@@ -281,7 +266,7 @@ class TestRealWorldScenarios:
             "Hello! How can I help you today?",
             "I can help you with various tasks.",
             "Is there anything specific you'd like to know?",
-            "Thank you for using our service!"
+            "Thank you for using our service!",
         ]
 
         results = []
@@ -290,20 +275,18 @@ class TestRealWorldScenarios:
             start_time = time.time()
             response = self.client.post(
                 "/v1/audio/speech",
-                json={
-                    "input": message,
-                    "voice": "af_heart",
-                    "response_format": "mp3"
-                }
+                json={"input": message, "voice": "af_heart", "response_format": "mp3"},
             )
             duration = time.time() - start_time
 
-            results.append({
-                "message_id": i,
-                "success": response.status_code == 200,
-                "duration": duration,
-                "audio_size": len(response.content) if response.status_code == 200 else 0
-            })
+            results.append(
+                {
+                    "message_id": i,
+                    "success": response.status_code == 200,
+                    "duration": duration,
+                    "audio_size": len(response.content) if response.status_code == 200 else 0,
+                }
+            )
 
             # Brief pause between messages (realistic scenario)
             time.sleep(0.1)
@@ -317,8 +300,12 @@ class TestRealWorldScenarios:
 
         # Performance should be reasonable for chatbot use
         if successful_messages:
-            avg_duration = sum(r["duration"] for r in successful_messages) / len(successful_messages)
-            assert avg_duration < 5.0, f"Average response time {avg_duration:.2f}s too slow for chatbot"
+            avg_duration = sum(r["duration"] for r in successful_messages) / len(
+                successful_messages
+            )
+            assert avg_duration < 5.0, (
+                f"Average response time {avg_duration:.2f}s too slow for chatbot"
+            )
 
     def test_multilingual_content_scenario(self):
         """Test multilingual content handling"""
@@ -334,18 +321,16 @@ class TestRealWorldScenarios:
 
         for text in multilingual_texts:
             response = self.client.post(
-                "/v1/audio/speech",
-                json={
-                    "input": text,
-                    "voice": "af_heart"
-                }
+                "/v1/audio/speech", json={"input": text, "voice": "af_heart"}
             )
 
-            results.append({
-                "text": text,
-                "success": response.status_code == 200,
-                "audio_size": len(response.content) if response.status_code == 200 else 0
-            })
+            results.append(
+                {
+                    "text": text,
+                    "success": response.status_code == 200,
+                    "audio_size": len(response.content) if response.status_code == 200 else 0,
+                }
+            )
 
         # Should handle at least English successfully
         english_result = results[0]
@@ -375,14 +360,16 @@ class TestRealWorldScenarios:
                 json={
                     "input": text,
                     "voice": "af_heart",
-                    "speed": 0.9  # Slightly slower for educational content
-                }
+                    "speed": 0.9,  # Slightly slower for educational content
+                },
             )
 
-            results.append({
-                "text": text[:30] + "..." if len(text) > 30 else text,
-                "success": response.status_code == 200
-            })
+            results.append(
+                {
+                    "text": text[:30] + "..." if len(text) > 30 else text,
+                    "success": response.status_code == 200,
+                }
+            )
 
         # Should handle educational content well
         successful_count = sum(1 for r in results if r["success"])
@@ -404,7 +391,7 @@ class TestPerformanceIntegration:
             "Welcome to our service",
             "Thank you for your patience",
             "Please try again later",
-            "Have a great day!"
+            "Have a great day!",
         ]
 
         # First round - cache misses
@@ -412,8 +399,7 @@ class TestPerformanceIntegration:
         for phrase in common_phrases:
             start_time = time.time()
             response = self.client.post(
-                "/v1/audio/speech",
-                json={"input": phrase, "voice": "af_heart"}
+                "/v1/audio/speech", json={"input": phrase, "voice": "af_heart"}
             )
             duration = time.time() - start_time
 
@@ -425,8 +411,7 @@ class TestPerformanceIntegration:
         for phrase in common_phrases:
             start_time = time.time()
             response = self.client.post(
-                "/v1/audio/speech",
-                json={"input": phrase, "voice": "af_heart"}
+                "/v1/audio/speech", json={"input": phrase, "voice": "af_heart"}
             )
             duration = time.time() - start_time
 
@@ -452,19 +437,13 @@ class TestPerformanceIntegration:
             for i in range(3):  # 3 requests per voice
                 start_time = time.time()
                 response = self.client.post(
-                    "/v1/audio/speech",
-                    json={
-                        "input": f"{text} {i}",
-                        "voice": voice
-                    }
+                    "/v1/audio/speech", json={"input": f"{text} {i}", "voice": voice}
                 )
                 duration = time.time() - start_time
 
-                results.append({
-                    "voice": voice,
-                    "success": response.status_code == 200,
-                    "duration": duration
-                })
+                results.append(
+                    {"voice": voice, "success": response.status_code == 200, "duration": duration}
+                )
 
         # Analyze per-voice performance
         for voice in voices:
@@ -472,7 +451,9 @@ class TestPerformanceIntegration:
 
             if voice_results:
                 avg_duration = sum(r["duration"] for r in voice_results) / len(voice_results)
-                assert avg_duration < 10.0, f"Voice {voice} average duration {avg_duration:.2f}s too slow"
+                assert avg_duration < 10.0, (
+                    f"Voice {voice} average duration {avg_duration:.2f}s too slow"
+                )
 
 
 if __name__ == "__main__":

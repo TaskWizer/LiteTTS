@@ -29,47 +29,34 @@ class TestRunner:
         self.test_suites = {
             "unit": {
                 "description": "Unit tests for individual components",
-                "paths": [
-                    "tests/test_performance.py",
-                    "LiteTTS/tests/test_*.py"
-                ],
+                "paths": ["tests/test_performance.py", "LiteTTS/tests/test_*.py"],
                 "timeout": 300,  # 5 minutes
-                "critical": True
+                "critical": True,
             },
             "error_handling": {
                 "description": "Error handling and edge case tests",
-                "paths": [
-                    "tests/test_error_handling.py",
-                    "tests/test_edge_cases.py"
-                ],
+                "paths": ["tests/test_error_handling.py", "tests/test_edge_cases.py"],
                 "timeout": 600,  # 10 minutes
-                "critical": True
+                "critical": True,
             },
             "integration": {
                 "description": "Integration tests with external services",
-                "paths": [
-                    "tests/test_integration.py",
-                    "tests/test_comprehensive.py"
-                ],
+                "paths": ["tests/test_integration.py", "tests/test_comprehensive.py"],
                 "timeout": 900,  # 15 minutes
-                "critical": False
+                "critical": False,
             },
             "load": {
                 "description": "Load and performance tests",
-                "paths": [
-                    "tests/test_load_testing.py"
-                ],
+                "paths": ["tests/test_load_testing.py"],
                 "timeout": 1200,  # 20 minutes
-                "critical": False
+                "critical": False,
             },
             "validation": {
                 "description": "System validation and health checks",
-                "paths": [
-                    "LiteTTS/tests/comprehensive_validation.py"
-                ],
+                "paths": ["LiteTTS/tests/comprehensive_validation.py"],
                 "timeout": 180,  # 3 minutes
-                "critical": True
-            }
+                "critical": True,
+            },
         }
 
     def check_dependencies(self) -> bool:
@@ -82,12 +69,14 @@ class TestRunner:
                 return False
 
             # Check if pytest is available
-            result = subprocess.run(["uv", "run", "python", "-m", "pytest", "--version"],
-                                  capture_output=True, text=True)
+            result = subprocess.run(
+                ["uv", "run", "python", "-m", "pytest", "--version"], capture_output=True, text=True
+            )
             if result.returncode != 0:
                 print("❌ pytest is not available. Installing dev dependencies...")
-                install_result = subprocess.run(["uv", "sync", "--extra", "dev"],
-                                               capture_output=True, text=True)
+                install_result = subprocess.run(
+                    ["uv", "sync", "--extra", "dev"], capture_output=True, text=True
+                )
                 if install_result.returncode != 0:
                     print(f"❌ Failed to install dev dependencies: {install_result.stderr}")
                     return False
@@ -137,7 +126,7 @@ class TestRunner:
                 "duration": 0,
                 "tests_run": 0,
                 "failures": 0,
-                "errors": 0
+                "errors": 0,
             }
 
         print(f"📁 Found {len(test_files)} test files")
@@ -156,11 +145,13 @@ class TestRunner:
 
         # Add coverage if requested
         if self.coverage:
-            cmd.extend([
-                "--cov=kokoro",
-                "--cov-report=term-missing",
-                f"--cov-report=html:docs/coverage_{suite_name}"
-            ])
+            cmd.extend(
+                [
+                    "--cov=kokoro",
+                    "--cov-report=term-missing",
+                    f"--cov-report=html:docs/coverage_{suite_name}",
+                ]
+            )
 
         # Add timeout
         cmd.extend(["--timeout", str(suite_config["timeout"])])
@@ -177,7 +168,7 @@ class TestRunner:
                 cmd,
                 capture_output=True,
                 text=True,
-                timeout=suite_config["timeout"] + 60  # Extra buffer
+                timeout=suite_config["timeout"] + 60,  # Extra buffer
             )
 
             duration = time.time() - start_time
@@ -187,9 +178,13 @@ class TestRunner:
 
             # Print summary
             if test_result["status"] == "passed":
-                print(f"✅ {suite_name}: {test_result['tests_run']} tests passed in {duration:.1f}s")
+                print(
+                    f"✅ {suite_name}: {test_result['tests_run']} tests passed in {duration:.1f}s"
+                )
             elif test_result["status"] == "failed":
-                print(f"❌ {suite_name}: {test_result['failures']} failures, {test_result['errors']} errors")
+                print(
+                    f"❌ {suite_name}: {test_result['failures']} failures, {test_result['errors']} errors"
+                )
             else:
                 print(f"⚠️  {suite_name}: {test_result['status']}")
 
@@ -203,7 +198,7 @@ class TestRunner:
                 "duration": duration,
                 "tests_run": 0,
                 "failures": 0,
-                "errors": 1
+                "errors": 1,
             }
         except Exception as e:
             duration = time.time() - start_time
@@ -214,17 +209,18 @@ class TestRunner:
                 "duration": duration,
                 "tests_run": 0,
                 "failures": 0,
-                "errors": 1
+                "errors": 1,
             }
 
-    def _parse_test_result(self, result: subprocess.CompletedProcess,
-                          json_report: str, duration: float) -> dict:
+    def _parse_test_result(
+        self, result: subprocess.CompletedProcess, json_report: str, duration: float
+    ) -> dict:
         """Parse test result from subprocess and JSON report"""
 
         # Try to parse JSON report first
         try:
             if Path(json_report).exists():
-                with open(json_report, 'r') as f:
+                with open(json_report, "r") as f:
                     json_data = json.load(f)
 
                 return {
@@ -233,7 +229,7 @@ class TestRunner:
                     "tests_run": json_data.get("summary", {}).get("total", 0),
                     "failures": json_data.get("summary", {}).get("failed", 0),
                     "errors": json_data.get("summary", {}).get("error", 0),
-                    "json_report": json_report
+                    "json_report": json_report,
                 }
         except Exception:
             pass
@@ -246,7 +242,7 @@ class TestRunner:
             "failures": 1 if result.returncode != 0 else 0,
             "errors": 0,
             "stdout": result.stdout,
-            "stderr": result.stderr
+            "stderr": result.stderr,
         }
 
     def run_all_tests(self, suites: list[str] | None = None) -> dict:
@@ -288,10 +284,14 @@ class TestRunner:
         total_suites = len(self.results)
 
         # Determine overall status
-        critical_suites = [name for name, config in self.test_suites.items()
-                          if config.get("critical", False) and name in self.results]
-        critical_failures = [name for name in critical_suites
-                           if self.results[name].get("status") != "passed"]
+        critical_suites = [
+            name
+            for name, config in self.test_suites.items()
+            if config.get("critical", False) and name in self.results
+        ]
+        critical_failures = [
+            name for name in critical_suites if self.results[name].get("status") != "passed"
+        ]
 
         if critical_failures:
             overall_status = "failed"
@@ -306,16 +306,16 @@ class TestRunner:
             "suites": {
                 "total": total_suites,
                 "passed": passed_suites,
-                "failed": total_suites - passed_suites
+                "failed": total_suites - passed_suites,
             },
             "tests": {
                 "total": total_tests,
                 "passed": total_tests - total_failures - total_errors,
                 "failed": total_failures,
-                "errors": total_errors
+                "errors": total_errors,
             },
             "critical_failures": critical_failures,
-            "results": self.results
+            "results": self.results,
         }
 
         # Print summary
@@ -325,14 +325,16 @@ class TestRunner:
         print(f"🎯 Overall Status: {overall_status.upper()}")
         print(f"⏱️  Total Duration: {total_duration:.1f}s")
         print(f"📦 Test Suites: {passed_suites}/{total_suites} passed")
-        print(f"🧪 Individual Tests: {total_tests - total_failures - total_errors}/{total_tests} passed")
+        print(
+            f"🧪 Individual Tests: {total_tests - total_failures - total_errors}/{total_tests} passed"
+        )
 
         if critical_failures:
             print(f"🚨 Critical Failures: {', '.join(critical_failures)}")
 
         # Save summary to file
         summary_file = "docs/test_summary.json"
-        with open(summary_file, 'w') as f:
+        with open(summary_file, "w") as f:
             json.dump(summary, f, indent=2)
 
         print(f"📄 Detailed results saved to: {summary_file}")
@@ -358,32 +360,16 @@ Examples:
   python run_tests.py unit integration  # Run specific suites
   python run_tests.py --verbose         # Verbose output
   python run_tests.py --coverage        # Include coverage report
-        """
+        """,
     )
 
-    parser.add_argument(
-        "suites",
-        nargs="*",
-        help="Test suites to run (default: all)"
-    )
+    parser.add_argument("suites", nargs="*", help="Test suites to run (default: all)")
 
-    parser.add_argument(
-        "--verbose", "-v",
-        action="store_true",
-        help="Verbose output"
-    )
+    parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
 
-    parser.add_argument(
-        "--coverage", "-c",
-        action="store_true",
-        help="Generate coverage report"
-    )
+    parser.add_argument("--coverage", "-c", action="store_true", help="Generate coverage report")
 
-    parser.add_argument(
-        "--list-suites",
-        action="store_true",
-        help="List available test suites"
-    )
+    parser.add_argument("--list-suites", action="store_true", help="List available test suites")
 
     args = parser.parse_args()
 

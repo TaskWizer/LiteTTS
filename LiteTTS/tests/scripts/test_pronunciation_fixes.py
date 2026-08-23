@@ -21,11 +21,11 @@ def test_pronunciation_fixes():
 
     # Load configuration (prefer centralized config)
     config = {}
-    config_files = ['config/settings.json', 'config.json']
+    config_files = ["config/settings.json", "config.json"]
 
     for config_file in config_files:
         try:
-            with open(config_file, 'r', encoding='utf-8') as f:
+            with open(config_file, "r", encoding="utf-8") as f:
                 config = json.load(f)
             print(f"✅ Loaded config from {config_file}")
             break
@@ -52,18 +52,18 @@ def test_pronunciation_fixes():
         "hedonism": {
             "expected_ipa": "ˈhɛdənɪzəm",
             "expected_description": "HED-uh-niz-uhm (not HEE-duh-niz-uhm)",
-            "test_sentence": "The philosophy of hedonism emphasizes pleasure."
+            "test_sentence": "The philosophy of hedonism emphasizes pleasure.",
         },
         "prices": {
             "expected_ipa": "ˈpraɪsəz",
             "expected_description": "PRAI-sez (not PRAI-siz)",
-            "test_sentence": "The prices on our website are competitive."
+            "test_sentence": "The prices on our website are competitive.",
         },
         "website": {
             "expected_ipa": "ˈwɛbˌsaɪt",
             "expected_description": "WEB-site",
-            "test_sentence": "Visit our website for more information."
-        }
+            "test_sentence": "Visit our website for more information.",
+        },
     }
 
     all_passed = True
@@ -75,7 +75,9 @@ def test_pronunciation_fixes():
         # Test 1: Dictionary lookup
         entry = phonetic_processor.dictionary_manager.lookup(word)
         if entry:
-            print(f"   ✅ Dictionary lookup: {entry.phonetic} (from {entry.notation}, confidence: {entry.confidence})")
+            print(
+                f"   ✅ Dictionary lookup: {entry.phonetic} (from {entry.notation}, confidence: {entry.confidence})"
+            )
 
             # Check if it's using custom dictionary
             if entry.notation == "custom":
@@ -112,7 +114,7 @@ def test_pronunciation_fixes():
     comprehensive_tests = [
         "The concept of hedonism is often discussed when analyzing prices on philosophy websites.",
         "Our website displays current prices for books about hedonism and ethics.",
-        "Hedonism, prices, and website design are three different topics entirely."
+        "Hedonism, prices, and website design are three different topics entirely.",
     ]
 
     for i, sentence in enumerate(comprehensive_tests, 1):
@@ -136,8 +138,8 @@ def test_pronunciation_fixes():
         result = nlp_processor.process_text(test_text)
     avg_time = (time.time() - start_time) / 10
 
-    print(f"   📊 Average processing time: {avg_time*1000:.2f}ms per sentence")
-    print(f"   📊 Processing rate: {1/avg_time:.1f} sentences/second")
+    print(f"   📊 Average processing time: {avg_time * 1000:.2f}ms per sentence")
+    print(f"   📊 Processing rate: {1 / avg_time:.1f} sentences/second")
 
     if avg_time < 0.1:  # Less than 100ms per sentence
         print("   ✅ Performance within acceptable limits")
@@ -152,6 +154,7 @@ def test_pronunciation_fixes():
     print(f"   Lookup count: {stats.get('lookup_count', 0):,}")
 
     return all_passed
+
 
 def main():
     """Main test function"""
@@ -173,6 +176,7 @@ def main():
         print("Please review the test output above for specific issues.")
         return 1
 
+
 if __name__ == "__main__":
     sys.exit(main())
 #!/usr/bin/env python3
@@ -193,8 +197,9 @@ import logging
 from LiteTTS.nlp.unified_pronunciation_fix import unified_pronunciation_fix
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
+
 
 def test_comma_handling():
     """Test comma handling fixes"""
@@ -222,13 +227,14 @@ def test_comma_handling():
             enable_comma=True,
             enable_diphthong=False,
             enable_contraction=False,
-            enable_interjection=False
+            enable_interjection=False,
         )
 
         if result.processed_text != result.original_text:
             print(f"✅ FIXED: '{result.original_text}' → '{result.processed_text}'")
         else:
             print(f"⚪ OK: '{test_text}' (no changes needed)")
+
 
 def test_diphthong_pronunciation():
     """Test diphthong pronunciation fixes"""
@@ -262,13 +268,14 @@ def test_diphthong_pronunciation():
             enable_comma=False,
             enable_diphthong=True,
             enable_contraction=False,
-            enable_interjection=False
+            enable_interjection=False,
         )
 
         if result.processed_text != result.original_text:
             print(f"✅ FIXED: '{result.original_text}' → '{result.processed_text}'")
         else:
             print(f"⚪ OK: '{test_text}' (no changes needed)")
+
 
 def test_contraction_processing():
     """Test contraction processing fixes"""
@@ -303,13 +310,14 @@ def test_contraction_processing():
             enable_diphthong=False,
             enable_contraction=True,
             enable_interjection=False,
-            contraction_mode="expand"
+            contraction_mode="expand",
         )
 
         if result.processed_text != result.original_text:
             print(f"✅ FIXED: '{result.original_text}' → '{result.processed_text}'")
         else:
             print(f"⚪ OK: '{test_text}' (no changes needed)")
+
 
 def test_interjection_handling():
     """Test interjection handling fixes"""
@@ -350,13 +358,14 @@ def test_interjection_handling():
             enable_comma=False,
             enable_diphthong=False,
             enable_contraction=False,
-            enable_interjection=True
+            enable_interjection=True,
         )
 
         if result.processed_text != result.original_text:
             print(f"✅ FIXED: '{result.original_text}' → '{result.processed_text}'")
         else:
             print(f"⚪ OK: '{test_text}' (no changes needed)")
+
 
 def test_combined_fixes():
     """Test all fixes working together"""
@@ -385,6 +394,7 @@ def test_combined_fixes():
             print(f"⚠️  Issues:   {len(result.issues_found)} categories found")
         print(f"⏱️  Time:     {result.processing_time:.3f}s")
 
+
 def test_analysis_features():
     """Test analysis features"""
     print("\n📊 Testing Analysis Features")
@@ -404,13 +414,16 @@ def test_analysis_features():
 
     print("\n🔍 Issues found:")
     for category, category_issues in issues.items():
-        if isinstance(category_issues, dict) and 'error' not in category_issues:
-            issue_count = sum(len(v) if isinstance(v, list) else 1 for v in category_issues.values())
+        if isinstance(category_issues, dict) and "error" not in category_issues:
+            issue_count = sum(
+                len(v) if isinstance(v, list) else 1 for v in category_issues.values()
+            )
             if issue_count > 0:
                 print(f"   {category}: {issue_count} issues")
                 for issue_type, issue_list in category_issues.items():
                     if issue_list:
                         print(f"     - {issue_type}: {issue_list}")
+
 
 def main():
     """Run all pronunciation fix tests"""
@@ -431,10 +444,12 @@ def main():
     except Exception as e:
         print(f"\n❌ Test failed with error: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 
     return 0
+
 
 if __name__ == "__main__":
     exit_code = main()

@@ -33,45 +33,24 @@ def test_contraction_preprocessing():
                 "I'm ready",
                 "you're right",
                 "we're going",
-                "they're coming"
-            ]
+                "they're coming",
+            ],
         },
         {
             "category": "Negative Contractions",
-            "inputs": [
-                "don't worry",
-                "won't work",
-                "can't do it",
-                "shouldn't go",
-                "wouldn't say"
-            ]
+            "inputs": ["don't worry", "won't work", "can't do it", "shouldn't go", "wouldn't say"],
         },
         {
             "category": "Have Contractions",
-            "inputs": [
-                "I've been there",
-                "you've seen it",
-                "we've finished",
-                "they've arrived"
-            ]
+            "inputs": ["I've been there", "you've seen it", "we've finished", "they've arrived"],
         },
         {
             "category": "Will Contractions",
-            "inputs": [
-                "I'll go",
-                "you'll see",
-                "he'll come",
-                "we'll try"
-            ]
+            "inputs": ["I'll go", "you'll see", "he'll come", "we'll try"],
         },
         {
             "category": "Would Contractions",
-            "inputs": [
-                "I'd like that",
-                "you'd better",
-                "he'd prefer",
-                "we'd rather"
-            ]
+            "inputs": ["I'd like that", "you'd better", "he'd prefer", "we'd rather"],
         },
         {
             "category": "HTML Entity + Contractions",
@@ -79,17 +58,17 @@ def test_contraction_preprocessing():
                 "He&#x27;s here",
                 "She&#x27;s coming",
                 "It&#x27;s working",
-                "They&#x27;re ready"
-            ]
+                "They&#x27;re ready",
+            ],
         },
         {
             "category": "Mixed Context",
             "inputs": [
                 "He's here, she's there, and they're coming",
                 "I don't think you're right about what he's saying",
-                "We'll see if they've finished what we're doing"
-            ]
-        }
+                "We'll see if they've finished what we're doing",
+            ],
+        },
     ]
 
     all_results = []
@@ -127,17 +106,20 @@ def test_contraction_preprocessing():
             print()
 
             # Store for analysis
-            all_results.append({
-                "category": category,
-                "input": input_text,
-                "output": result.processed_text,
-                "html_changes": html_changes,
-                "contraction_changes": contraction_changes,
-                "confidence": result.confidence_score,
-                "warnings": result.warnings
-            })
+            all_results.append(
+                {
+                    "category": category,
+                    "input": input_text,
+                    "output": result.processed_text,
+                    "html_changes": html_changes,
+                    "contraction_changes": contraction_changes,
+                    "confidence": result.confidence_score,
+                    "warnings": result.warnings,
+                }
+            )
 
     return all_results
+
 
 def analyze_contraction_behavior(results):
     """Analyze the contraction preprocessing behavior"""
@@ -150,14 +132,20 @@ def analyze_contraction_behavior(results):
     total_tests = len(results)
     html_entity_tests = len([r for r in results if "&#x27;" in r["input"]])
     expanded_tests = len([r for r in results if r["contraction_changes"]])
-    preserved_tests = len([r for r in results if not r["contraction_changes"] and ("'" in r["input"] or "&#x27;" in r["input"])])
+    preserved_tests = len(
+        [
+            r
+            for r in results
+            if not r["contraction_changes"] and ("'" in r["input"] or "&#x27;" in r["input"])
+        ]
+    )
 
     print("📈 Statistics:")
     print(f"   Total tests: {total_tests}")
     print(f"   HTML entity tests: {html_entity_tests}")
     print(f"   Tests with contractions expanded: {expanded_tests}")
     print(f"   Tests with contractions preserved: {preserved_tests}")
-    print(f"   Expansion rate: {expanded_tests/total_tests*100:.1f}%")
+    print(f"   Expansion rate: {expanded_tests / total_tests * 100:.1f}%")
 
     # Analyze by category
     print("\n📋 By Category:")
@@ -182,18 +170,31 @@ def analyze_contraction_behavior(results):
     # HTML entity handling
     html_results = [r for r in results if "&#x27;" in r["input"]]
     if html_results:
-        html_decoded = len([r for r in html_results if "Decoded HTML entity" in str(r["html_changes"])])
-        print(f"   HTML entities decoded: {html_decoded}/{len(html_results)} ({html_decoded/len(html_results)*100:.1f}%)")
+        html_decoded = len(
+            [r for r in html_results if "Decoded HTML entity" in str(r["html_changes"])]
+        )
+        print(
+            f"   HTML entities decoded: {html_decoded}/{len(html_results)} ({html_decoded / len(html_results) * 100:.1f}%)"
+        )
 
     # Common contractions
     common_contractions = ["he's", "she's", "it's", "I'm", "you're", "don't", "won't"]
     for contraction in common_contractions:
         contraction_results = [r for r in results if contraction.lower() in r["input"].lower()]
         if contraction_results:
-            expanded = len([r for r in contraction_results if any(contraction.lower() in change.lower() for change in r["contraction_changes"])])
+            expanded = len(
+                [
+                    r
+                    for r in contraction_results
+                    if any(
+                        contraction.lower() in change.lower() for change in r["contraction_changes"]
+                    )
+                ]
+            )
             print(f"   '{contraction}' expanded: {expanded}/{len(contraction_results)} times")
 
     return categories
+
 
 def test_api_behavior(test_cases):
     """Test how the API handles contractions in actual TTS generation"""
@@ -204,29 +205,16 @@ def test_api_behavior(test_cases):
     base_url = "http://localhost:8354"
 
     # Test a few key cases
-    api_test_cases = [
-        "he's happy",
-        "He&#x27;s here",
-        "don't worry",
-        "I'm ready"
-    ]
+    api_test_cases = ["he's happy", "He&#x27;s here", "don't worry", "I'm ready"]
 
     for test_text in api_test_cases:
         print(f"\nTesting: '{test_text}'")
 
-        payload = {
-            "input": test_text,
-            "voice": "af_heart",
-            "response_format": "mp3"
-        }
+        payload = {"input": test_text, "voice": "af_heart", "response_format": "mp3"}
 
         try:
             start_time = time.time()
-            response = requests.post(
-                f"{base_url}/v1/audio/speech",
-                json=payload,
-                timeout=15
-            )
+            response = requests.post(f"{base_url}/v1/audio/speech", json=payload, timeout=15)
             end_time = time.time()
 
             if response.status_code == 200:
@@ -246,6 +234,7 @@ def test_api_behavior(test_cases):
             break
         except Exception as e:
             print(f"❌ Exception: {e}")
+
 
 def recommend_improvements(analysis_results):
     """Provide recommendations based on analysis"""
@@ -286,6 +275,7 @@ def recommend_improvements(analysis_results):
     print("   4. Test with both expanded and preserved contractions")
     print("   5. Validate no regression in HTML entity handling")
 
+
 def main():
     """Run comprehensive contraction audit"""
 
@@ -312,6 +302,7 @@ def main():
     print("and implement the recommended improvements.")
 
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

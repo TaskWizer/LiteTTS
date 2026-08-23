@@ -36,13 +36,18 @@ class ParlerTTSEncoder(DACEncoder):
     gguf_encoder.write()
     ```
     """
-    def __init__(self, model_path: Path | str = "./parler-tts.gguf", repo_id: Path | str = DEFAULT_PARLER_REPO_MINI_ID,
-                 text_encoding_prompt: str = DEFAULT_CONDITIONAL_PROMPT):
+
+    def __init__(
+        self,
+        model_path: Path | str = "./parler-tts.gguf",
+        repo_id: Path | str = DEFAULT_PARLER_REPO_MINI_ID,
+        text_encoding_prompt: str = DEFAULT_CONDITIONAL_PROMPT,
+    ):
         """
         :param Path or str model_path: the path to save the GGUF file.
         :param Path or str repo_id: the hugging face repo or local path from which to load the pytorch Parler-TTS model.
         """
-        super().__init__(model_path = model_path, architecture = PARLER_TTS_ARCHITECTURE)
+        super().__init__(model_path=model_path, architecture=PARLER_TTS_ARCHITECTURE)
         self.text_encoding_prompt = text_encoding_prompt
         self.repo_id = repo_id
         self._tokenizer = None
@@ -97,11 +102,15 @@ class ParlerTTSEncoder(DACEncoder):
         inputs_tensor, model_input_name, model_kwargs = self.model._prepare_model_inputs(
             None, self.model.generation_config.bos_token_id, model_kwargs
         )
-        self.model._prepare_special_tokens(self.model.generation_config, False, device=inputs_tensor.device)
+        self.model._prepare_special_tokens(
+            self.model.generation_config, False, device=inputs_tensor.device
+        )
         model_kwargs["use_cache"] = self.model.generation_config.use_cache
 
         model_kwargs["attention_mask"] = self.model._prepare_attention_mask_for_generation(
-            inputs_tensor, self.model.generation_config._pad_token_tensor, self.model.generation_config._eos_token_tensor
+            inputs_tensor,
+            self.model.generation_config._pad_token_tensor,
+            self.model.generation_config._eos_token_tensor,
         )
         # encoder_outputs are created and added to `model_kwargs`
         model_kwargs = self.model._prepare_text_encoder_kwargs_for_generation(
@@ -135,12 +144,16 @@ class ParlerTTSEncoder(DACEncoder):
         """
         Implementation of TTSEncoder's Abstract method see TTSEncoder for more information
         """
-        total_params, shared_params, expert_params, expert_count = self.gguf_writer.get_total_parameter_count()
+        total_params, shared_params, expert_params, expert_count = (
+            self.gguf_writer.get_total_parameter_count()
+        )
         self.metadata = gguf.Metadata.load(None, None, self.repo_id, total_params)
 
         # Generate parameter weight class (useful for leader boards) if not yet determined
         if self.metadata.size_label is None and total_params > 0:
-            self.metadata.size_label = gguf.size_label(total_params, shared_params, expert_params, expert_count)
+            self.metadata.size_label = gguf.size_label(
+                total_params, shared_params, expert_params, expert_count
+            )
 
         self.set_type()
         self.set_gguf_parameters()
@@ -154,8 +167,9 @@ class ParlerTTSEncoder(DACEncoder):
         """
         self.gguf_writer.add_pad_token_id(self.model.config.pad_token_id)
         self.gguf_writer.add_decoder_start_token_id(self.model.config.decoder_start_token_id)
-        self.set_dac_config(self.model.decoder.config.bos_token_id, self.model.decoder.config.eos_token_id);
-
+        self.set_dac_config(
+            self.model.decoder.config.bos_token_id, self.model.decoder.config.eos_token_id
+        )
         # ---- Parler TTS Decoder configuration ----
 
         # hparams and audio_hparams represent the independent model configuration for the Parler-TTS Decoder and
@@ -166,13 +180,23 @@ class ParlerTTSEncoder(DACEncoder):
         # decoder context in the GGUF file.
         self.gguf_writer.arch = f"{PARLER_TTS_ARCHITECTURE}.decoder"
         self.gguf_writer.add_uint32(f"{self.gguf_writer.arch}.hidden_size", hparams["hidden_size"])
-        self.gguf_writer.add_uint32(f"{self.gguf_writer.arch}.output_heads", hparams["num_codebooks"])
+        self.gguf_writer.add_uint32(
+            f"{self.gguf_writer.arch}.output_heads", hparams["num_codebooks"]
+        )
         self.gguf_writer.add_context_length(hparams["max_position_embeddings"])
         self.gguf_writer.add_head_count(hparams["num_attention_heads"])
-        self.gguf_writer.add_uint32(f"{self.gguf_writer.arch}.max_generation", self.model.generation_config.max_length)
-        self.gguf_writer.add_uint32(f"{self.gguf_writer.arch}.out_vocab_size", hparams["vocab_size"])
-        self.gguf_writer.add_uint32(f"{self.gguf_writer.arch}.audio_vocab_size", audio_hparams["codebook_size"])
-        self.gguf_writer.add_uint32(f"{self.gguf_writer.arch}.num_hidden_layers", hparams["num_hidden_layers"])
+        self.gguf_writer.add_uint32(
+            f"{self.gguf_writer.arch}.max_generation", self.model.generation_config.max_length
+        )
+        self.gguf_writer.add_uint32(
+            f"{self.gguf_writer.arch}.out_vocab_size", hparams["vocab_size"]
+        )
+        self.gguf_writer.add_uint32(
+            f"{self.gguf_writer.arch}.audio_vocab_size", audio_hparams["codebook_size"]
+        )
+        self.gguf_writer.add_uint32(
+            f"{self.gguf_writer.arch}.num_hidden_layers", hparams["num_hidden_layers"]
+        )
         # reset the architecture
         self.gguf_writer.arch = PARLER_TTS_ARCHITECTURE
 
@@ -189,12 +213,19 @@ class ParlerTTSEncoder(DACEncoder):
         The purpose of this function is to add the vocab and configuration for the Parler TTS unigram tokenizer
         to the GGUF file writer.
         """
-        assert hasattr(self.tokenizer, "_tokenizer") \
-               and hasattr(self.tokenizer._tokenizer, "model") \
-               and isinstance(self.tokenizer._tokenizer.model, Unigram), f"Found non-unigram tokenizer. Currently tokenizer of type {tokenizer.__class__} is not supported."
+        assert (
+            hasattr(self.tokenizer, "_tokenizer")
+            and hasattr(self.tokenizer._tokenizer, "model")
+            and isinstance(self.tokenizer._tokenizer.model, Unigram)
+        ), (
+            f"Found non-unigram tokenizer. Currently tokenizer of type {tokenizer.__class__} is not supported."
+        )
         vocab = {v: k for k, v in self.tokenizer.vocab.items()}
-        ordered_vocab = [vocab[i].replace('▁', " ") for i in range(max(vocab.keys()) + 1)]
-        scores_by_token = {token: score for (token, score) in json.loads(self.tokenizer._tokenizer.to_str())['model']['vocab']}
+        ordered_vocab = [vocab[i].replace("▁", " ") for i in range(max(vocab.keys()) + 1)]
+        scores_by_token = {
+            token: score
+            for (token, score) in json.loads(self.tokenizer._tokenizer.to_str())["model"]["vocab"]
+        }
         scores = [scores_by_token[vocab[i]] for i in range(max(vocab.keys()) + 1)]
         self.gguf_writer.add_token_list(ordered_vocab)
         self.gguf_writer.add_token_scores(scores)

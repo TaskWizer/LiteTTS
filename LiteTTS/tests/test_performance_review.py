@@ -16,6 +16,7 @@ import requests
 # Skip - requires running server
 pytestmark = pytest.mark.skip(reason="Requires running TTS server")
 
+
 def benchmark_single_requests():
     """Benchmark single TTS requests"""
     print("🚀 Benchmarking Single Requests")
@@ -23,9 +24,17 @@ def benchmark_single_requests():
 
     test_cases = [
         {"text": "Hello world", "voice": "af_heart", "format": "mp3"},
-        {"text": "This is a longer sentence to test performance.", "voice": "am_puck", "format": "wav"},
+        {
+            "text": "This is a longer sentence to test performance.",
+            "voice": "am_puck",
+            "format": "wav",
+        },
         {"text": "Short", "voice": "af_bella", "format": "mp3"},
-        {"text": "The quick brown fox jumps over the lazy dog.", "voice": "af_heart", "format": "mp3"},
+        {
+            "text": "The quick brown fox jumps over the lazy dog.",
+            "voice": "af_heart",
+            "format": "mp3",
+        },
     ]
 
     times = []
@@ -42,9 +51,9 @@ def benchmark_single_requests():
                     "model": "kokoro",
                     "input": test_case["text"],
                     "voice": test_case["voice"],
-                    "response_format": test_case["format"]
+                    "response_format": test_case["format"],
                 },
-                timeout=30
+                timeout=30,
             )
             end_time = time.time()
 
@@ -94,6 +103,7 @@ def benchmark_single_requests():
             print(f"      Average RTF: {statistics.mean(rtf_values):.2f}")
             print(f"      Median RTF: {statistics.median(rtf_values):.2f}")
 
+
 def benchmark_concurrent_requests():
     """Benchmark concurrent TTS requests"""
     print("\n🔀 Benchmarking Concurrent Requests")
@@ -109,9 +119,9 @@ def benchmark_concurrent_requests():
                     "model": "kokoro",
                     "input": f"Concurrent test request number {request_id}",
                     "voice": "af_heart",
-                    "response_format": "mp3"
+                    "response_format": "mp3",
                 },
-                timeout=30
+                timeout=30,
             )
             end_time = time.time()
 
@@ -120,7 +130,7 @@ def benchmark_concurrent_requests():
                 "success": response.status_code == 200,
                 "time": end_time - start_time,
                 "size": len(response.content) if response.status_code == 200 else 0,
-                "status": response.status_code
+                "status": response.status_code,
             }
         except Exception as e:
             return {
@@ -128,7 +138,7 @@ def benchmark_concurrent_requests():
                 "success": False,
                 "time": 0,
                 "size": 0,
-                "error": str(e)
+                "error": str(e),
             }
 
     # Test with different concurrency levels
@@ -157,7 +167,8 @@ def benchmark_concurrent_requests():
             times = [r["time"] for r in successful_requests]
             print(f"      Avg request time: {statistics.mean(times):.3f}s")
             print(f"      Max request time: {max(times):.3f}s")
-            print(f"      Throughput: {len(successful_requests)/total_time:.2f} req/s")
+            print(f"      Throughput: {len(successful_requests) / total_time:.2f} req/s")
+
 
 def monitor_system_resources():
     """Monitor system resource usage during TTS generation"""
@@ -180,11 +191,9 @@ def monitor_system_resources():
             try:
                 cpu_percent = process.cpu_percent()
                 memory_mb = process.memory_info().rss / 1024 / 1024
-                resource_data.append({
-                    "cpu": cpu_percent,
-                    "memory": memory_mb,
-                    "timestamp": time.time()
-                })
+                resource_data.append(
+                    {"cpu": cpu_percent, "memory": memory_mb, "timestamp": time.time()}
+                )
                 time.sleep(0.1)
             except:
                 break
@@ -202,18 +211,18 @@ def monitor_system_resources():
                 "http://localhost:8354/v1/audio/speech",
                 json={
                     "model": "kokoro",
-                    "input": f"Resource monitoring test {i+1}. This is a longer text to generate more load.",
+                    "input": f"Resource monitoring test {i + 1}. This is a longer text to generate more load.",
                     "voice": "af_heart",
-                    "response_format": "mp3"
+                    "response_format": "mp3",
                 },
-                timeout=15
+                timeout=15,
             )
             if response.status_code == 200:
-                print(f"      ✅ Request {i+1} completed")
+                print(f"      ✅ Request {i + 1} completed")
             else:
-                print(f"      ❌ Request {i+1} failed: {response.status_code}")
+                print(f"      ❌ Request {i + 1} failed: {response.status_code}")
         except Exception as e:
-            print(f"      ❌ Request {i+1} error: {e}")
+            print(f"      ❌ Request {i + 1} error: {e}")
 
         time.sleep(0.5)  # Small delay between requests
 
@@ -227,7 +236,9 @@ def monitor_system_resources():
 
         print("\n   📊 Resource usage during test:")
         print(f"      CPU - Avg: {statistics.mean(cpu_values):.1f}%, Max: {max(cpu_values):.1f}%")
-        print(f"      Memory - Avg: {statistics.mean(memory_values):.1f} MB, Max: {max(memory_values):.1f} MB")
+        print(
+            f"      Memory - Avg: {statistics.mean(memory_values):.1f} MB, Max: {max(memory_values):.1f} MB"
+        )
         print(f"      Memory increase: {max(memory_values) - initial_memory:.1f} MB")
 
         # Performance assessment
@@ -237,6 +248,7 @@ def monitor_system_resources():
             print("      ⚠️ Memory usage is moderate")
         else:
             print("      ❌ Memory usage is high")
+
 
 def test_cache_performance():
     """Test cache hit vs miss performance"""
@@ -254,9 +266,9 @@ def test_cache_performance():
             "model": "kokoro",
             "input": unique_text,
             "voice": "af_heart",
-            "response_format": "mp3"
+            "response_format": "mp3",
         },
-        timeout=15
+        timeout=15,
     )
     cache_miss_time = time.time() - start_time
 
@@ -276,9 +288,9 @@ def test_cache_performance():
             "model": "kokoro",
             "input": unique_text,
             "voice": "af_heart",
-            "response_format": "mp3"
+            "response_format": "mp3",
         },
-        timeout=15
+        timeout=15,
     )
     cache_hit_time = time.time() - start_time
 
@@ -296,6 +308,7 @@ def test_cache_performance():
     else:
         print(f"      ❌ Cache hit test failed: {response.status_code}")
 
+
 def test_server_status():
     """Check if server is running"""
     try:
@@ -303,6 +316,7 @@ def test_server_status():
         return response.status_code == 200
     except:
         return False
+
 
 if __name__ == "__main__":
     print("🚀 Starting Performance Review")

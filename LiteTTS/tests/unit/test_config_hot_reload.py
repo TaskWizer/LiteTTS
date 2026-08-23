@@ -13,6 +13,7 @@ class TestConfigReloadHandler:
         """Test handler initializes correctly"""
         callback = Mock()
         from LiteTTS.performance.config_hot_reload import ConfigReloadHandler
+
         handler = ConfigReloadHandler(callback)
         assert handler.reload_callback is callback
         assert handler.reload_delay == 1.0
@@ -21,6 +22,7 @@ class TestConfigReloadHandler:
         """Test handler with custom delay"""
         callback = Mock()
         from LiteTTS.performance.config_hot_reload import ConfigReloadHandler
+
         handler = ConfigReloadHandler(callback)
         handler.reload_delay = 2.0
         assert handler.reload_delay == 2.0

@@ -21,12 +21,14 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class DNSRecord:
     """DNS record configuration"""
+
     name: str
     record_type: str
     content: str
@@ -35,18 +37,22 @@ class DNSRecord:
     priority: int | None = None
     comment: str = ""
 
+
 @dataclass
 class CloudflareZone:
     """Cloudflare zone configuration"""
+
     zone_name: str
     zone_id: str
     nameservers: list[str]
     status: str
     plan: str
 
+
 @dataclass
 class CloudflareConfiguration:
     """Cloudflare integration configuration"""
+
     api_token: str
     zone_name: str
     subdomain: str
@@ -60,6 +66,7 @@ class CloudflareConfiguration:
     cache_level: str  # aggressive, basic, simplified
     development_mode: bool
     dns_records: list[DNSRecord]
+
 
 class CloudflareDNSManager:
     """Cloudflare DNS integration manager"""
@@ -88,7 +95,7 @@ class CloudflareDNSManager:
                 content=local_ip,
                 ttl=300,  # 5 minutes for development
                 proxied=True,
-                comment="Kokoro TTS API endpoint"
+                comment="Kokoro TTS API endpoint",
             ),
             DNSRecord(
                 name="api",
@@ -96,7 +103,7 @@ class CloudflareDNSManager:
                 content="tts",
                 ttl=300,
                 proxied=True,
-                comment="API alias for TTS service"
+                comment="API alias for TTS service",
             ),
             DNSRecord(
                 name="www",
@@ -104,8 +111,8 @@ class CloudflareDNSManager:
                 content="tts",
                 ttl=300,
                 proxied=True,
-                comment="WWW redirect to TTS service"
-            )
+                comment="WWW redirect to TTS service",
+            ),
         ]
 
         return CloudflareConfiguration(
@@ -121,7 +128,7 @@ class CloudflareDNSManager:
             security_level="medium",
             cache_level="basic",
             development_mode=False,
-            dns_records=dns_records
+            dns_records=dns_records,
         )
 
     def _get_local_ip(self) -> str:
@@ -142,15 +149,10 @@ class CloudflareDNSManager:
             return False, "API token is required"
 
         try:
-            headers = {
-                "Authorization": f"Bearer {api_token}",
-                "Content-Type": "application/json"
-            }
+            headers = {"Authorization": f"Bearer {api_token}", "Content-Type": "application/json"}
 
             response = requests.get(
-                f"{self.api_base}/user/tokens/verify",
-                headers=headers,
-                timeout=10
+                f"{self.api_base}/user/tokens/verify", headers=headers, timeout=10
             )
 
             if response.status_code == 200:
@@ -171,16 +173,9 @@ class CloudflareDNSManager:
         logger.info("Retrieving Cloudflare zones...")
 
         try:
-            headers = {
-                "Authorization": f"Bearer {api_token}",
-                "Content-Type": "application/json"
-            }
+            headers = {"Authorization": f"Bearer {api_token}", "Content-Type": "application/json"}
 
-            response = requests.get(
-                f"{self.api_base}/zones",
-                headers=headers,
-                timeout=10
-            )
+            response = requests.get(f"{self.api_base}/zones", headers=headers, timeout=10)
 
             if response.status_code == 200:
                 data = response.json()
@@ -192,7 +187,7 @@ class CloudflareDNSManager:
                             zone_id=zone_data["id"],
                             nameservers=zone_data.get("name_servers", []),
                             status=zone_data.get("status", "unknown"),
-                            plan=zone_data.get("plan", {}).get("name", "unknown")
+                            plan=zone_data.get("plan", {}).get("name", "unknown"),
                         )
                         zones.append(zone)
 
@@ -214,12 +209,12 @@ class CloudflareDNSManager:
         results = {
             "successful_records": [],
             "failed_records": [],
-            "total_records": len(config.dns_records)
+            "total_records": len(config.dns_records),
         }
 
         headers = {
             "Authorization": f"Bearer {config.api_token}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         for record in config.dns_records:
@@ -235,7 +230,7 @@ class CloudflareDNSManager:
                     "name": full_name,
                     "content": record.content,
                     "ttl": record.ttl,
-                    "proxied": record.proxied
+                    "proxied": record.proxied,
                 }
 
                 if record.priority is not None:
@@ -248,40 +243,39 @@ class CloudflareDNSManager:
                     f"{self.api_base}/zones/{zone_id}/dns_records",
                     headers=headers,
                     json=record_data,
-                    timeout=10
+                    timeout=10,
                 )
 
                 if response.status_code == 200:
                     data = response.json()
                     if data.get("success"):
-                        results["successful_records"].append({
-                            "name": full_name,
-                            "type": record.record_type,
-                            "content": record.content,
-                            "record_id": data["result"]["id"]
-                        })
+                        results["successful_records"].append(
+                            {
+                                "name": full_name,
+                                "type": record.record_type,
+                                "content": record.content,
+                                "record_id": data["result"]["id"],
+                            }
+                        )
                         logger.info(f"Created DNS record: {full_name} -> {record.content}")
                     else:
-                        results["failed_records"].append({
-                            "name": full_name,
-                            "error": data.get("errors", [])
-                        })
+                        results["failed_records"].append(
+                            {"name": full_name, "error": data.get("errors", [])}
+                        )
                 else:
-                    results["failed_records"].append({
-                        "name": full_name,
-                        "error": f"HTTP {response.status_code}"
-                    })
+                    results["failed_records"].append(
+                        {"name": full_name, "error": f"HTTP {response.status_code}"}
+                    )
 
             except Exception as e:
-                results["failed_records"].append({
-                    "name": record.name,
-                    "error": str(e)
-                })
+                results["failed_records"].append({"name": record.name, "error": str(e)})
                 logger.error(f"Failed to create DNS record {record.name}: {e}")
 
         return results
 
-    def configure_ssl_settings(self, config: CloudflareConfiguration, zone_id: str) -> dict[str, Any]:
+    def configure_ssl_settings(
+        self, config: CloudflareConfiguration, zone_id: str
+    ) -> dict[str, Any]:
         """Configure SSL settings in Cloudflare"""
         logger.info("Configuring SSL settings...")
 
@@ -290,12 +284,12 @@ class CloudflareDNSManager:
             "always_https": False,
             "hsts": False,
             "automatic_https_rewrites": False,
-            "errors": []
+            "errors": [],
         }
 
         headers = {
             "Authorization": f"Bearer {config.api_token}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         try:
@@ -304,7 +298,7 @@ class CloudflareDNSManager:
                 f"{self.api_base}/zones/{zone_id}/settings/ssl",
                 headers=headers,
                 json={"value": config.ssl_mode},
-                timeout=10
+                timeout=10,
             )
 
             if ssl_response.status_code == 200:
@@ -312,7 +306,9 @@ class CloudflareDNSManager:
                 results["ssl_mode"] = data.get("success", False)
                 logger.info(f"SSL mode set to: {config.ssl_mode}")
             else:
-                results["errors"].append(f"SSL mode configuration failed: {ssl_response.status_code}")
+                results["errors"].append(
+                    f"SSL mode configuration failed: {ssl_response.status_code}"
+                )
 
             # Configure Always HTTPS
             if config.enable_always_https:
@@ -320,7 +316,7 @@ class CloudflareDNSManager:
                     f"{self.api_base}/zones/{zone_id}/settings/always_use_https",
                     headers=headers,
                     json={"value": "on"},
-                    timeout=10
+                    timeout=10,
                 )
 
                 if https_response.status_code == 200:
@@ -328,7 +324,9 @@ class CloudflareDNSManager:
                     results["always_https"] = data.get("success", False)
                     logger.info("Always HTTPS enabled")
                 else:
-                    results["errors"].append(f"Always HTTPS configuration failed: {https_response.status_code}")
+                    results["errors"].append(
+                        f"Always HTTPS configuration failed: {https_response.status_code}"
+                    )
 
             # Configure Automatic HTTPS Rewrites
             if config.enable_automatic_https_rewrites:
@@ -336,7 +334,7 @@ class CloudflareDNSManager:
                     f"{self.api_base}/zones/{zone_id}/settings/automatic_https_rewrites",
                     headers=headers,
                     json={"value": "on"},
-                    timeout=10
+                    timeout=10,
                 )
 
                 if rewrites_response.status_code == 200:
@@ -344,7 +342,9 @@ class CloudflareDNSManager:
                     results["automatic_https_rewrites"] = data.get("success", False)
                     logger.info("Automatic HTTPS rewrites enabled")
                 else:
-                    results["errors"].append(f"HTTPS rewrites configuration failed: {rewrites_response.status_code}")
+                    results["errors"].append(
+                        f"HTTPS rewrites configuration failed: {rewrites_response.status_code}"
+                    )
 
         except Exception as e:
             results["errors"].append(f"SSL configuration error: {e!s}")
@@ -352,7 +352,9 @@ class CloudflareDNSManager:
 
         return results
 
-    def configure_security_settings(self, config: CloudflareConfiguration, zone_id: str) -> dict[str, Any]:
+    def configure_security_settings(
+        self, config: CloudflareConfiguration, zone_id: str
+    ) -> dict[str, Any]:
         """Configure security settings in Cloudflare"""
         logger.info("Configuring security settings...")
 
@@ -360,12 +362,12 @@ class CloudflareDNSManager:
             "security_level": False,
             "cache_level": False,
             "development_mode": False,
-            "errors": []
+            "errors": [],
         }
 
         headers = {
             "Authorization": f"Bearer {config.api_token}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         try:
@@ -374,7 +376,7 @@ class CloudflareDNSManager:
                 f"{self.api_base}/zones/{zone_id}/settings/security_level",
                 headers=headers,
                 json={"value": config.security_level},
-                timeout=10
+                timeout=10,
             )
 
             if security_response.status_code == 200:
@@ -382,14 +384,16 @@ class CloudflareDNSManager:
                 results["security_level"] = data.get("success", False)
                 logger.info(f"Security level set to: {config.security_level}")
             else:
-                results["errors"].append(f"Security level configuration failed: {security_response.status_code}")
+                results["errors"].append(
+                    f"Security level configuration failed: {security_response.status_code}"
+                )
 
             # Configure cache level
             cache_response = requests.patch(
                 f"{self.api_base}/zones/{zone_id}/settings/cache_level",
                 headers=headers,
                 json={"value": config.cache_level},
-                timeout=10
+                timeout=10,
             )
 
             if cache_response.status_code == 200:
@@ -397,7 +401,9 @@ class CloudflareDNSManager:
                 results["cache_level"] = data.get("success", False)
                 logger.info(f"Cache level set to: {config.cache_level}")
             else:
-                results["errors"].append(f"Cache level configuration failed: {cache_response.status_code}")
+                results["errors"].append(
+                    f"Cache level configuration failed: {cache_response.status_code}"
+                )
 
             # Configure development mode
             dev_mode_value = "on" if config.development_mode else "off"
@@ -405,7 +411,7 @@ class CloudflareDNSManager:
                 f"{self.api_base}/zones/{zone_id}/settings/development_mode",
                 headers=headers,
                 json={"value": dev_mode_value},
-                timeout=10
+                timeout=10,
             )
 
             if dev_response.status_code == 200:
@@ -413,7 +419,9 @@ class CloudflareDNSManager:
                 results["development_mode"] = data.get("success", False)
                 logger.info(f"Development mode: {dev_mode_value}")
             else:
-                results["errors"].append(f"Development mode configuration failed: {dev_response.status_code}")
+                results["errors"].append(
+                    f"Development mode configuration failed: {dev_response.status_code}"
+                )
 
         except Exception as e:
             results["errors"].append(f"Security configuration error: {e!s}")
@@ -471,7 +479,7 @@ class CloudflareDNSManager:
 
         # Save template
         template_file = self.results_dir / "cloudflare_config_template.json"
-        with open(template_file, 'w') as f:
+        with open(template_file, "w") as f:
             f.write(config_template)
 
         logger.info(f"Configuration template saved: {template_file}")
@@ -546,7 +554,7 @@ echo "DNS verification completed!"
 
         # Save verification script
         script_file = self.results_dir / "verify_dns.sh"
-        with open(script_file, 'w') as f:
+        with open(script_file, "w") as f:
             f.write(verification_script)
         os.chmod(script_file, 0o755)
 
@@ -570,15 +578,15 @@ echo "DNS verification completed!"
                     "Update the generated configuration template with your Cloudflare API token",
                     "Set your domain name in the configuration",
                     "Update DNS record IP addresses",
-                    "Run the setup again with the configuration file"
-                ]
+                    "Run the setup again with the configuration file",
+                ],
             }
 
             return setup_results
 
         # Load configuration
         try:
-            with open(config_file, 'r') as f:
+            with open(config_file, "r") as f:
                 config_data = json.load(f)
 
             config = CloudflareConfiguration(**config_data)
@@ -587,7 +595,7 @@ echo "DNS verification completed!"
             return {
                 "success": False,
                 "error": f"Configuration loading failed: {e!s}",
-                "setup_timestamp": time.time()
+                "setup_timestamp": time.time(),
             }
 
         # Validate API token
@@ -596,7 +604,7 @@ echo "DNS verification completed!"
             return {
                 "success": False,
                 "error": f"API token validation failed: {token_message}",
-                "setup_timestamp": time.time()
+                "setup_timestamp": time.time(),
             }
 
         # Get zones
@@ -605,7 +613,7 @@ echo "DNS verification completed!"
             return {
                 "success": False,
                 "error": "Failed to retrieve Cloudflare zones",
-                "setup_timestamp": time.time()
+                "setup_timestamp": time.time(),
             }
 
         # Find target zone
@@ -620,7 +628,7 @@ echo "DNS verification completed!"
                 "success": False,
                 "error": f"Zone '{config.zone_name}' not found in Cloudflare account",
                 "available_zones": [zone.zone_name for zone in zones],
-                "setup_timestamp": time.time()
+                "setup_timestamp": time.time(),
             }
 
         # Create DNS records
@@ -646,35 +654,42 @@ echo "DNS verification completed!"
             "security_results": security_results,
             "generated_files": {
                 "verification_script": "verify_dns.sh",
-                "config_template": "cloudflare_config_template.json"
+                "config_template": "cloudflare_config_template.json",
             },
-            "setup_summary": self._generate_cloudflare_summary(dns_results, ssl_results, security_results),
-            "next_steps": self._generate_cloudflare_next_steps(config, target_zone)
+            "setup_summary": self._generate_cloudflare_summary(
+                dns_results, ssl_results, security_results
+            ),
+            "next_steps": self._generate_cloudflare_next_steps(config, target_zone),
         }
 
         # Save complete configuration
         results_file = self.results_dir / f"cloudflare_setup_results_{int(time.time())}.json"
-        with open(results_file, 'w') as f:
+        with open(results_file, "w") as f:
             json.dump(setup_results, f, indent=2, default=str)
 
         logger.info(f"Cloudflare setup completed. Results saved to: {results_file}")
         return setup_results
 
-    def _generate_cloudflare_summary(self, dns_results: dict[str, Any],
-                                   ssl_results: dict[str, Any],
-                                   security_results: dict[str, Any]) -> dict[str, Any]:
+    def _generate_cloudflare_summary(
+        self,
+        dns_results: dict[str, Any],
+        ssl_results: dict[str, Any],
+        security_results: dict[str, Any],
+    ) -> dict[str, Any]:
         """Generate Cloudflare setup summary"""
 
         total_dns_records = dns_results["total_records"]
         successful_dns = len(dns_results["successful_records"])
         failed_dns = len(dns_results["failed_records"])
 
-        ssl_features_enabled = sum(1 for key, value in ssl_results.items()
-                                 if key != "errors" and value is True)
+        ssl_features_enabled = sum(
+            1 for key, value in ssl_results.items() if key != "errors" and value is True
+        )
         ssl_total_features = len([key for key in ssl_results if key != "errors"])
 
-        security_features_enabled = sum(1 for key, value in security_results.items()
-                                      if key != "errors" and value is True)
+        security_features_enabled = sum(
+            1 for key, value in security_results.items() if key != "errors" and value is True
+        )
         security_total_features = len([key for key in security_results if key != "errors"])
 
         summary = {
@@ -682,30 +697,40 @@ echo "DNS verification completed!"
                 "total": total_dns_records,
                 "successful": successful_dns,
                 "failed": failed_dns,
-                "success_rate": (successful_dns / total_dns_records * 100) if total_dns_records > 0 else 0
+                "success_rate": (successful_dns / total_dns_records * 100)
+                if total_dns_records > 0
+                else 0,
             },
             "ssl_configuration": {
                 "features_enabled": ssl_features_enabled,
                 "total_features": ssl_total_features,
-                "success_rate": (ssl_features_enabled / ssl_total_features * 100) if ssl_total_features > 0 else 0,
-                "errors": len(ssl_results.get("errors", []))
+                "success_rate": (ssl_features_enabled / ssl_total_features * 100)
+                if ssl_total_features > 0
+                else 0,
+                "errors": len(ssl_results.get("errors", [])),
             },
             "security_configuration": {
                 "features_enabled": security_features_enabled,
                 "total_features": security_total_features,
-                "success_rate": (security_features_enabled / security_total_features * 100) if security_total_features > 0 else 0,
-                "errors": len(security_results.get("errors", []))
+                "success_rate": (security_features_enabled / security_total_features * 100)
+                if security_total_features > 0
+                else 0,
+                "errors": len(security_results.get("errors", [])),
             },
             "overall_success_rate": (
-                (successful_dns + ssl_features_enabled + security_features_enabled) /
-                (total_dns_records + ssl_total_features + security_total_features) * 100
-            ) if (total_dns_records + ssl_total_features + security_total_features) > 0 else 0
+                (successful_dns + ssl_features_enabled + security_features_enabled)
+                / (total_dns_records + ssl_total_features + security_total_features)
+                * 100
+            )
+            if (total_dns_records + ssl_total_features + security_total_features) > 0
+            else 0,
         }
 
         return summary
 
-    def _generate_cloudflare_next_steps(self, config: CloudflareConfiguration,
-                                      zone: CloudflareZone) -> list[str]:
+    def _generate_cloudflare_next_steps(
+        self, config: CloudflareConfiguration, zone: CloudflareZone
+    ) -> list[str]:
         """Generate next steps for Cloudflare deployment"""
         next_steps = [
             "Run the DNS verification script to test configuration",
@@ -717,7 +742,7 @@ echo "DNS verification completed!"
             "Update monitoring systems with new endpoints",
             "Test API functionality through Cloudflare proxy",
             "Configure rate limiting rules if needed",
-            "Set up Cloudflare analytics and monitoring"
+            "Set up Cloudflare analytics and monitoring",
         ]
 
         # Add specific recommendations
@@ -731,6 +756,7 @@ echo "DNS verification completed!"
             next_steps.append("Consider upgrading Cloudflare plan for additional features")
 
         return next_steps
+
 
 def main():
     """Main function to run Cloudflare DNS integration"""
@@ -746,9 +772,9 @@ def main():
             print(f"Using configuration file: {config_file}")
             results = manager.run_comprehensive_cloudflare_setup(config_file)
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("CLOUDFLARE DNS INTEGRATION SUMMARY")
-        print("="*80)
+        print("=" * 80)
 
         if not results["success"]:
             print(f"❌ Setup failed: {results.get('error', 'Unknown error')}")
@@ -769,12 +795,16 @@ def main():
 
         print("\nSSL Configuration:")
         ssl = summary["ssl_configuration"]
-        print(f"  Features Enabled: {ssl['features_enabled']}/{ssl['total_features']} ({ssl['success_rate']:.1f}%)")
+        print(
+            f"  Features Enabled: {ssl['features_enabled']}/{ssl['total_features']} ({ssl['success_rate']:.1f}%)"
+        )
         print(f"  Errors: {ssl['errors']}")
 
         print("\nSecurity Configuration:")
         security = summary["security_configuration"]
-        print(f"  Features Enabled: {security['features_enabled']}/{security['total_features']} ({security['success_rate']:.1f}%)")
+        print(
+            f"  Features Enabled: {security['features_enabled']}/{security['total_features']} ({security['success_rate']:.1f}%)"
+        )
         print(f"  Errors: {security['errors']}")
 
         print("\nGenerated Files:")
@@ -788,12 +818,14 @@ def main():
         if len(results["next_steps"]) > 5:
             print(f"  ... and {len(results['next_steps']) - 5} more steps")
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
 
     except Exception as e:
         logger.error(f"Cloudflare setup failed: {e}")
         import traceback
+
         logger.error(f"Full traceback: {traceback.format_exc()}")
+
 
 if __name__ == "__main__":
     main()

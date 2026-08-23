@@ -16,9 +16,11 @@ from ..models import AudioSegment, VoiceEmbedding
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class CacheEntry:
     """Enhanced cache entry with metadata"""
+
     key: str
     data: Any
     created_at: datetime
@@ -39,24 +41,30 @@ class CacheEntry:
         self.last_accessed = datetime.now()
         self.access_count += 1
 
+
 class EnhancedCacheManager:
     """Multi-level cache manager with LRU eviction and persistence"""
 
-    def __init__(self, cache_dir: str = "LiteTTS/cache",
-                 max_memory_size: int = None,  # Will use config default
-                 max_disk_size: int = None,    # Will use config default
-                 config=None):
+    def __init__(
+        self,
+        cache_dir: str = "LiteTTS/cache",
+        max_memory_size: int = None,  # Will use config default
+        max_disk_size: int = None,  # Will use config default
+        config=None,
+    ):
         self.cache_dir = Path(cache_dir)
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
         # Use config values or fallback to defaults
-        if config and hasattr(config, 'cache'):
-            self.max_memory_size = max_memory_size or (config.cache.memory_cache_size_mb * 1024 * 1024)
+        if config and hasattr(config, "cache"):
+            self.max_memory_size = max_memory_size or (
+                config.cache.memory_cache_size_mb * 1024 * 1024
+            )
             self.max_disk_size = max_disk_size or (config.cache.disk_cache_size_mb * 1024 * 1024)
         else:
             # Fallback defaults
             self.max_memory_size = max_memory_size or (100 * 1024 * 1024)  # 100MB
-            self.max_disk_size = max_disk_size or (1024 * 1024 * 1024)     # 1GB
+            self.max_disk_size = max_disk_size or (1024 * 1024 * 1024)  # 1GB
 
         # Memory cache
         self.memory_cache: dict[str, CacheEntry] = {}
@@ -71,12 +79,12 @@ class EnhancedCacheManager:
 
         # Cache statistics
         self.stats = {
-            'memory_hits': 0,
-            'disk_hits': 0,
-            'misses': 0,
-            'evictions': 0,
-            'disk_writes': 0,
-            'disk_reads': 0
+            "memory_hits": 0,
+            "disk_hits": 0,
+            "misses": 0,
+            "evictions": 0,
+            "disk_writes": 0,
+            "disk_reads": 0,
         }
 
         # Initialize cache
@@ -97,7 +105,7 @@ class EnhancedCacheManager:
                     return None
 
                 entry.touch()
-                self.stats['memory_hits'] += 1
+                self.stats["memory_hits"] += 1
                 logger.debug(f"Memory cache hit: {key}")
                 return entry.data
 
@@ -106,9 +114,11 @@ class EnhancedCacheManager:
                 disk_entry_info = self.disk_cache_index[key]
 
                 # Check if disk entry is expired
-                if disk_entry_info.get('ttl_seconds'):
-                    created_at = datetime.fromisoformat(disk_entry_info['created_at'])
-                    if datetime.now() > created_at + timedelta(seconds=disk_entry_info['ttl_seconds']):
+                if disk_entry_info.get("ttl_seconds"):
+                    created_at = datetime.fromisoformat(disk_entry_info["created_at"])
+                    if datetime.now() > created_at + timedelta(
+                        seconds=disk_entry_info["ttl_seconds"]
+                    ):
                         self._remove_from_disk(key)
                         return None
 
@@ -116,21 +126,30 @@ class EnhancedCacheManager:
                 data = self._load_from_disk(key)
                 if data is not None:
                     # Add to memory cache
-                    self._add_to_memory(key, data,
-                                      ttl_seconds=disk_entry_info.get('ttl_seconds'),
-                                      tags=disk_entry_info.get('tags', []))
+                    self._add_to_memory(
+                        key,
+                        data,
+                        ttl_seconds=disk_entry_info.get("ttl_seconds"),
+                        tags=disk_entry_info.get("tags", []),
+                    )
 
-                    self.stats['disk_hits'] += 1
+                    self.stats["disk_hits"] += 1
                     logger.debug(f"Disk cache hit: {key}")
                     return data
 
             # Cache miss
-            self.stats['misses'] += 1
+            self.stats["misses"] += 1
             logger.debug(f"Cache miss: {key}")
             return None
 
-    def put(self, key: str, data: Any, ttl_seconds: int | None = None,
-            tags: list[str] = None, persist_to_disk: bool = True) -> bool:
+    def put(
+        self,
+        key: str,
+        data: Any,
+        ttl_seconds: int | None = None,
+        tags: list[str] = None,
+        persist_to_disk: bool = True,
+    ) -> bool:
         """Put item in cache"""
         with self.cache_lock:
             if tags is None:
@@ -152,8 +171,14 @@ class EnhancedCacheManager:
 
             return success
 
-    def _add_to_memory(self, key: str, data: Any, ttl_seconds: int | None = None,
-                      tags: list[str] = None, data_size: int = None) -> bool:
+    def _add_to_memory(
+        self,
+        key: str,
+        data: Any,
+        ttl_seconds: int | None = None,
+        tags: list[str] = None,
+        data_size: int = None,
+    ) -> bool:
         """Add item to memory cache"""
         if tags is None:
             tags = []
@@ -165,8 +190,7 @@ class EnhancedCacheManager:
                 data_size = 1024  # Default size estimate
 
         # Check if we need to evict items
-        while (self.memory_size + data_size > self.max_memory_size and
-               len(self.memory_cache) > 0):
+        while self.memory_size + data_size > self.max_memory_size and len(self.memory_cache) > 0:
             self._evict_lru_memory()
 
         # Create cache entry
@@ -178,7 +202,7 @@ class EnhancedCacheManager:
             access_count=1,
             size_bytes=data_size,
             ttl_seconds=ttl_seconds,
-            tags=tags
+            tags=tags,
         )
 
         # Remove existing entry if present
@@ -205,19 +229,26 @@ class EnhancedCacheManager:
             return
 
         # Find LRU entry
-        lru_key = min(self.memory_cache.keys(),
-                     key=lambda k: self.memory_cache[k].last_accessed)
+        lru_key = min(self.memory_cache.keys(), key=lambda k: self.memory_cache[k].last_accessed)
 
         self._remove_from_memory(lru_key)
-        self.stats['evictions'] += 1
+        self.stats["evictions"] += 1
         logger.debug(f"Evicted from memory cache: {lru_key}")
 
-    def _save_to_disk(self, key: str, data: Any, ttl_seconds: int | None = None,
-                     tags: list[str] = None, data_size: int = None):
+    def _save_to_disk(
+        self,
+        key: str,
+        data: Any,
+        ttl_seconds: int | None = None,
+        tags: list[str] = None,
+        data_size: int = None,
+    ):
         """Save item to disk cache"""
         try:
             # Check disk space
-            while self.disk_size + data_size > self.max_disk_size and len(self.disk_cache_index) > 0:
+            while (
+                self.disk_size + data_size > self.max_disk_size and len(self.disk_cache_index) > 0
+            ):
                 self._evict_lru_disk()
 
             # Create file path
@@ -225,20 +256,20 @@ class EnhancedCacheManager:
             cache_file = self.cache_dir / f"{safe_key}.cache"
 
             # Save data
-            with open(cache_file, 'wb') as f:
+            with open(cache_file, "wb") as f:
                 pickle.dump(data, f)
 
             # Update index
             self.disk_cache_index[key] = {
-                'file_path': str(cache_file),
-                'created_at': datetime.now().isoformat(),
-                'size_bytes': data_size or cache_file.stat().st_size,
-                'ttl_seconds': ttl_seconds,
-                'tags': tags or []
+                "file_path": str(cache_file),
+                "created_at": datetime.now().isoformat(),
+                "size_bytes": data_size or cache_file.stat().st_size,
+                "ttl_seconds": ttl_seconds,
+                "tags": tags or [],
             }
 
-            self.disk_size += self.disk_cache_index[key]['size_bytes']
-            self.stats['disk_writes'] += 1
+            self.disk_size += self.disk_cache_index[key]["size_bytes"]
+            self.stats["disk_writes"] += 1
 
             # Save index
             self._save_disk_index()
@@ -254,17 +285,17 @@ class EnhancedCacheManager:
             if key not in self.disk_cache_index:
                 return None
 
-            file_path = self.disk_cache_index[key]['file_path']
+            file_path = self.disk_cache_index[key]["file_path"]
 
             if not Path(file_path).exists():
                 # Clean up stale index entry
                 self._remove_from_disk(key)
                 return None
 
-            with open(file_path, 'rb') as f:
+            with open(file_path, "rb") as f:
                 data = pickle.load(f)
 
-            self.stats['disk_reads'] += 1
+            self.stats["disk_reads"] += 1
             logger.debug(f"Loaded from disk cache: {key}")
             return data
 
@@ -279,12 +310,12 @@ class EnhancedCacheManager:
         try:
             if key in self.disk_cache_index:
                 entry_info = self.disk_cache_index.pop(key)
-                file_path = Path(entry_info['file_path'])
+                file_path = Path(entry_info["file_path"])
 
                 if file_path.exists():
                     file_path.unlink()
 
-                self.disk_size -= entry_info['size_bytes']
+                self.disk_size -= entry_info["size_bytes"]
                 self._save_disk_index()
 
                 logger.debug(f"Removed from disk cache: {key}")
@@ -298,11 +329,12 @@ class EnhancedCacheManager:
             return
 
         # Find LRU entry (based on creation time since we don't track access for disk)
-        lru_key = min(self.disk_cache_index.keys(),
-                     key=lambda k: self.disk_cache_index[k]['created_at'])
+        lru_key = min(
+            self.disk_cache_index.keys(), key=lambda k: self.disk_cache_index[k]["created_at"]
+        )
 
         self._remove_from_disk(lru_key)
-        self.stats['evictions'] += 1
+        self.stats["evictions"] += 1
         logger.debug(f"Evicted from disk cache: {lru_key}")
 
     def _load_disk_index(self):
@@ -312,7 +344,8 @@ class EnhancedCacheManager:
         try:
             if index_file.exists():
                 import json
-                with open(index_file, 'r') as f:
+
+                with open(index_file, "r") as f:
                     self.disk_cache_index = json.load(f)
                 logger.debug(f"Loaded disk cache index: {len(self.disk_cache_index)} entries")
         except Exception as e:
@@ -325,16 +358,15 @@ class EnhancedCacheManager:
 
         try:
             import json
-            with open(index_file, 'w') as f:
+
+            with open(index_file, "w") as f:
                 json.dump(self.disk_cache_index, f, indent=2)
         except Exception as e:
             logger.error(f"Failed to save disk cache index: {e}")
 
     def _calculate_disk_size(self):
         """Calculate total disk cache size"""
-        self.disk_size = sum(
-            entry['size_bytes'] for entry in self.disk_cache_index.values()
-        )
+        self.disk_size = sum(entry["size_bytes"] for entry in self.disk_cache_index.values())
 
     def _calculate_size(self, data: Any) -> int:
         """Calculate approximate size of data"""
@@ -392,7 +424,7 @@ class EnhancedCacheManager:
 
                 # Check disk cache
                 for key, entry_info in self.disk_cache_index.items():
-                    if any(tag in entry_info.get('tags', []) for tag in tags):
+                    if any(tag in entry_info.get("tags", []) for tag in tags):
                         keys_to_remove.append(key)
 
                 # Remove tagged entries
@@ -404,35 +436,41 @@ class EnhancedCacheManager:
     def get_stats(self) -> dict[str, Any]:
         """Get cache statistics"""
         with self.cache_lock:
-            total_requests = self.stats['memory_hits'] + self.stats['disk_hits'] + self.stats['misses']
-            hit_rate = (self.stats['memory_hits'] + self.stats['disk_hits']) / total_requests if total_requests > 0 else 0
+            total_requests = (
+                self.stats["memory_hits"] + self.stats["disk_hits"] + self.stats["misses"]
+            )
+            hit_rate = (
+                (self.stats["memory_hits"] + self.stats["disk_hits"]) / total_requests
+                if total_requests > 0
+                else 0
+            )
 
             return {
-                'memory_cache': {
-                    'entries': len(self.memory_cache),
-                    'size_bytes': self.memory_size,
-                    'size_mb': self.memory_size / (1024 * 1024),
-                    'max_size_mb': self.max_memory_size / (1024 * 1024),
-                    'utilization': self.memory_size / self.max_memory_size
+                "memory_cache": {
+                    "entries": len(self.memory_cache),
+                    "size_bytes": self.memory_size,
+                    "size_mb": self.memory_size / (1024 * 1024),
+                    "max_size_mb": self.max_memory_size / (1024 * 1024),
+                    "utilization": self.memory_size / self.max_memory_size,
                 },
-                'disk_cache': {
-                    'entries': len(self.disk_cache_index),
-                    'size_bytes': self.disk_size,
-                    'size_mb': self.disk_size / (1024 * 1024),
-                    'max_size_mb': self.max_disk_size / (1024 * 1024),
-                    'utilization': self.disk_size / self.max_disk_size
+                "disk_cache": {
+                    "entries": len(self.disk_cache_index),
+                    "size_bytes": self.disk_size,
+                    "size_mb": self.disk_size / (1024 * 1024),
+                    "max_size_mb": self.max_disk_size / (1024 * 1024),
+                    "utilization": self.disk_size / self.max_disk_size,
                 },
-                'performance': {
-                    'memory_hits': self.stats['memory_hits'],
-                    'disk_hits': self.stats['disk_hits'],
-                    'misses': self.stats['misses'],
-                    'hit_rate': hit_rate,
-                    'evictions': self.stats['evictions']
+                "performance": {
+                    "memory_hits": self.stats["memory_hits"],
+                    "disk_hits": self.stats["disk_hits"],
+                    "misses": self.stats["misses"],
+                    "hit_rate": hit_rate,
+                    "evictions": self.stats["evictions"],
                 },
-                'io_stats': {
-                    'disk_writes': self.stats['disk_writes'],
-                    'disk_reads': self.stats['disk_reads']
-                }
+                "io_stats": {
+                    "disk_writes": self.stats["disk_writes"],
+                    "disk_reads": self.stats["disk_reads"],
+                },
             }
 
     def cleanup_expired(self) -> int:
@@ -441,10 +479,7 @@ class EnhancedCacheManager:
             expired_count = 0
 
             # Clean memory cache
-            expired_keys = [
-                key for key, entry in self.memory_cache.items()
-                if entry.is_expired()
-            ]
+            expired_keys = [key for key, entry in self.memory_cache.items() if entry.is_expired()]
 
             for key in expired_keys:
                 self._remove_from_memory(key)
@@ -455,9 +490,9 @@ class EnhancedCacheManager:
             expired_disk_keys = []
 
             for key, entry_info in self.disk_cache_index.items():
-                if entry_info.get('ttl_seconds'):
-                    created_at = datetime.fromisoformat(entry_info['created_at'])
-                    if now > created_at + timedelta(seconds=entry_info['ttl_seconds']):
+                if entry_info.get("ttl_seconds"):
+                    created_at = datetime.fromisoformat(entry_info["created_at"])
+                    if now > created_at + timedelta(seconds=entry_info["ttl_seconds"]):
                         expired_disk_keys.append(key)
 
             for key in expired_disk_keys:
@@ -480,7 +515,7 @@ class EnhancedCacheManager:
             # Validate disk cache integrity
             invalid_keys = []
             for key, entry_info in self.disk_cache_index.items():
-                file_path = Path(entry_info['file_path'])
+                file_path = Path(entry_info["file_path"])
                 if not file_path.exists():
                     invalid_keys.append(key)
 

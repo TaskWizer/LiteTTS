@@ -117,19 +117,19 @@ async def create_voice_extended(
     audio_files: List[UploadFile],  # Multiple files up to 120s each
     voice_name: str,
     enable_segmentation: bool = True,
-    quality_threshold: float = 0.7
+    quality_threshold: float = 0.7,
 ):
     # Process with enhanced cloning system
     config = EnhancedVoiceCloneConfig(
         max_audio_duration=120.0,
         max_segment_duration=30.0,
         segment_overlap=2.0,
-        max_reference_clips=5
+        max_reference_clips=5,
     )
-    
+
     cloner = EnhancedVoiceCloner(config=config)
     result = await cloner.create_voice_profile(audio_files, voice_name)
-    
+
     return result
 ```
 
@@ -137,21 +137,16 @@ async def create_voice_extended(
 ```python
 from faster_whisper import WhisperModel
 
+
 class OptimizedWhisperProcessor:
     def __init__(self):
         self.model = WhisperModel(
-            "distil-small.en",
-            device="cpu",
-            compute_type="int8",
-            cpu_threads=4
+            "distil-small.en", device="cpu", compute_type="int8", cpu_threads=4
         )
-        
+
     def transcribe(self, audio_path: str) -> str:
         segments, info = self.model.transcribe(
-            audio_path,
-            beam_size=5,
-            language="en",
-            condition_on_previous_text=False
+            audio_path, beam_size=5, language="en", condition_on_previous_text=False
         )
         return " ".join([segment.text for segment in segments])
 ```

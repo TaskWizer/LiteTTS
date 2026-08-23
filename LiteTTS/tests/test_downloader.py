@@ -10,6 +10,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 try:
     from LiteTTS.downloader import ensure_model_files, get_available_voices
+
     print("✅ Downloader import successful!")
 
     print("📋 Available voices:", get_available_voices())
@@ -23,4 +24,5 @@ try:
 except Exception as e:
     print(f"❌ Error: {e}")
     import traceback
+
     traceback.print_exc()

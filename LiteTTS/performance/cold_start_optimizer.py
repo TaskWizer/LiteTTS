@@ -18,12 +18,14 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class ColdStartOptimizationConfig:
     """Cold start optimization configuration"""
+
     enable_aggressive_preloading: bool = True
     enable_model_caching: bool = True
     enable_background_warmup: bool = True
@@ -31,6 +33,7 @@ class ColdStartOptimizationConfig:
     preload_voices: list[str] = None
     cache_size_mb: int = 64
     warmup_delay_seconds: float = 1.0
+
 
 class ColdStartOptimizer:
     """
@@ -41,18 +44,10 @@ class ColdStartOptimizer:
         self.config = config or ColdStartOptimizationConfig()
 
         if self.config.warmup_texts is None:
-            self.config.warmup_texts = [
-                "Hello world.",
-                "Test sentence.",
-                "Quick warmup text."
-            ]
+            self.config.warmup_texts = ["Hello world.", "Test sentence.", "Quick warmup text."]
 
         if self.config.preload_voices is None:
-            self.config.preload_voices = [
-                "af_heart",
-                "af_bella",
-                "am_adam"
-            ]
+            self.config.preload_voices = ["af_heart", "af_bella", "am_adam"]
 
         self.warmup_completed = False
         self.preload_completed = False
@@ -67,22 +62,18 @@ class ColdStartOptimizer:
             "ORT_ENABLE_MEMORY_ARENA": "1",
             "ORT_ARENA_EXTEND_STRATEGY": "kSameAsRequested",
             "ORT_MEMORY_LIMIT_MB": str(self.config.cache_size_mb),
-
             # Threading optimizations for faster startup
             "ORT_INTER_OP_NUM_THREADS": "2",
             "ORT_INTRA_OP_NUM_THREADS": "4",
-
             # Disable unnecessary features for faster startup
             "ORT_DISABLE_ALL_OPTIMIZATIONS": "0",
             "ORT_ENABLE_CPU_FP16_OPS": "1",
-
             # Memory optimizations
             "MALLOC_ARENA_MAX": "2",
             "MALLOC_MMAP_THRESHOLD_": "131072",
-
             # Python optimizations
             "PYTHONOPTIMIZE": "1",
-            "PYTHONDONTWRITEBYTECODE": "1"
+            "PYTHONDONTWRITEBYTECODE": "1",
         }
 
         # Apply environment variables
@@ -188,15 +179,13 @@ class ColdStartOptimizer:
             "use_memory_mapping": True,
             "enable_lazy_loading": False,  # Disable for cold start optimization
             "precompile_models": True,
-
             # Memory optimizations
             "use_shared_memory": True,
             "enable_memory_pooling": True,
             "optimize_memory_layout": True,
-
             # Threading optimizations
             "parallel_model_loading": True,
-            "async_initialization": True
+            "async_initialization": True,
         }
 
         # Apply optimizations (simulated)
@@ -217,16 +206,14 @@ class ColdStartOptimizer:
             "precompile_graphs": True,
             "optimize_memory_allocation": True,
             "enable_operator_fusion": True,
-
             # Execution optimizations
             "use_optimized_kernels": True,
             "enable_graph_optimization": True,
             "reduce_memory_fragmentation": True,
-
             # Cold start specific
             "skip_unnecessary_validations": True,
             "cache_intermediate_results": True,
-            "preload_execution_providers": True
+            "preload_execution_providers": True,
         }
 
         # Apply optimizations (simulated)
@@ -248,25 +235,29 @@ class ColdStartOptimizer:
         improvements = {
             "environment_optimization": 50,  # 50ms improvement
             "model_preloading": 100,  # 100ms improvement
-            "pipeline_optimization": 80,   # 80ms improvement
-            "background_warmup": 70,       # 70ms improvement
-            "memory_optimization": 40      # 40ms improvement
+            "pipeline_optimization": 80,  # 80ms improvement
+            "background_warmup": 70,  # 70ms improvement
+            "memory_optimization": 40,  # 40ms improvement
         }
 
         total_improvement = sum(improvements.values())
         optimized_cold_start = max(200, baseline_cold_start - total_improvement)  # Minimum 200ms
 
-        improvement_percent = ((baseline_cold_start - optimized_cold_start) / baseline_cold_start) * 100
+        improvement_percent = (
+            (baseline_cold_start - optimized_cold_start) / baseline_cold_start
+        ) * 100
 
         results = {
             "baseline_ms": baseline_cold_start,
             "optimized_ms": optimized_cold_start,
             "improvement_ms": total_improvement,
             "improvement_percent": improvement_percent,
-            "target_met": optimized_cold_start < 400
+            "target_met": optimized_cold_start < 400,
         }
 
-        logger.info(f"📈 Cold start improvement: {baseline_cold_start:.1f}ms → {optimized_cold_start:.1f}ms ({improvement_percent:.1f}% better)")
+        logger.info(
+            f"📈 Cold start improvement: {baseline_cold_start:.1f}ms → {optimized_cold_start:.1f}ms ({improvement_percent:.1f}% better)"
+        )
 
         return results
 
@@ -301,7 +292,7 @@ class ColdStartOptimizer:
             "preload_completed": self.preload_completed,
             "warmup_completed": self.warmup_completed,
             "improvement_results": improvement_results,
-            "target_achieved": improvement_results["target_met"]
+            "target_achieved": improvement_results["target_met"],
         }
 
         logger.info("✅ Comprehensive cold start optimization completed")
@@ -314,17 +305,20 @@ class ColdStartOptimizer:
         return {
             "preload_completed": self.preload_completed,
             "warmup_completed": self.warmup_completed,
-            "background_task_active": self.background_task is not None and self.background_task.is_alive(),
+            "background_task_active": self.background_task is not None
+            and self.background_task.is_alive(),
             "config": {
                 "aggressive_preloading": self.config.enable_aggressive_preloading,
                 "model_caching": self.config.enable_model_caching,
                 "background_warmup": self.config.enable_background_warmup,
-                "cache_size_mb": self.config.cache_size_mb
-            }
+                "cache_size_mb": self.config.cache_size_mb,
+            },
         }
+
 
 # Global cold start optimizer instance
 _global_cold_start_optimizer: ColdStartOptimizer | None = None
+
 
 def get_cold_start_optimizer() -> ColdStartOptimizer:
     """Get or create global cold start optimizer instance"""
@@ -333,10 +327,12 @@ def get_cold_start_optimizer() -> ColdStartOptimizer:
         _global_cold_start_optimizer = ColdStartOptimizer()
     return _global_cold_start_optimizer
 
+
 def optimize_cold_start(config: ColdStartOptimizationConfig | None = None) -> dict[str, Any]:
     """Convenience function to run cold start optimization"""
     optimizer = ColdStartOptimizer(config)
     return optimizer.run_comprehensive_cold_start_optimization()
+
 
 def main():
     """Main function for testing"""
@@ -352,8 +348,11 @@ def main():
     print(f"Warmup Completed: {results['warmup_completed']}")
     print(f"Target Achieved: {results['target_achieved']}")
 
-    improvement = results['improvement_results']
-    print(f"\nImprovement: {improvement['baseline_ms']:.1f}ms → {improvement['optimized_ms']:.1f}ms ({improvement['improvement_percent']:.1f}% better)")
+    improvement = results["improvement_results"]
+    print(
+        f"\nImprovement: {improvement['baseline_ms']:.1f}ms → {improvement['optimized_ms']:.1f}ms ({improvement['improvement_percent']:.1f}% better)"
+    )
+
 
 if __name__ == "__main__":
     main()

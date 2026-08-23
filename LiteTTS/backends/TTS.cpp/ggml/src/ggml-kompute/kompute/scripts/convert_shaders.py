@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-    Script to handle conversion of compute shaders to spirv and to headers
+Script to handle conversion of compute shaders to spirv and to headers
 """
+
 import logging
 import os
 import subprocess
@@ -12,11 +13,11 @@ import click
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())
 
-is_windows = sys.platform.startswith('win')
+is_windows = sys.platform.startswith("win")
 
-CWD=os.path.dirname(os.path.abspath(__file__))
-XXD_LINUX_CMD="xxd"
-XXD_WINDOWS_CMD=os.path.abspath(os.path.join(CWD, "..\\external\\bin\\", "xxd.exe"))
+CWD = os.path.dirname(os.path.abspath(__file__))
+XXD_LINUX_CMD = "xxd"
+XXD_WINDOWS_CMD = os.path.abspath(os.path.join(CWD, "..\\external\\bin\\", "xxd.exe"))
 
 SHADER_GENERATED_NOTICE = """/*
     THIS FILE HAS BEEN AUTOMATICALLY GENERATED - DO NOT EDIT
@@ -38,6 +39,7 @@ SHADER_GENERATED_NOTICE = """/*
     limitations under the License.
 */
 """
+
 
 @click.command()
 @click.option(
@@ -134,7 +136,7 @@ def run_cli(
             header_file = file_name.replace(".comp.spv", ".hpp")
             header_file_define = "SHADEROP_" + header_file.replace(".", "_").upper()
             logger.debug(f"Converting to hpp: {file_name}")
-            with open(os.path.join(header_path, header_file), "w+", newline='\n') as fstream:
+            with open(os.path.join(header_path, header_file), "w+", newline="\n") as fstream:
                 fstream.write(f"{SHADER_GENERATED_NOTICE}\n")
                 fstream.write(f"#ifndef {header_file_define}\n")
                 fstream.write(f"#define {header_file_define}\n\n")

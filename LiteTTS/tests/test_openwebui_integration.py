@@ -13,11 +13,12 @@ import requests
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
+
 class OpenWebUIIntegrationTester:
     """Comprehensive OpenWebUI integration testing class"""
 
     def __init__(self, base_url: str = "http://localhost:8354"):
-        self.base_url = base_url.rstrip('/')
+        self.base_url = base_url.rstrip("/")
         self.session = requests.Session()
         self.test_results = []
 
@@ -30,14 +31,12 @@ class OpenWebUIIntegrationTester:
                 "input": "Testing standard OpenAI compatible speech endpoint",
                 "voice": "af_heart",
                 "response_format": "mp3",
-                "speed": 1.0
+                "speed": 1.0,
             }
 
             start_time = time.time()
             response = self.session.post(
-                f"{self.base_url}/v1/audio/speech",
-                json=payload,
-                timeout=30
+                f"{self.base_url}/v1/audio/speech", json=payload, timeout=30
             )
             request_time = time.time() - start_time
 
@@ -73,15 +72,12 @@ class OpenWebUIIntegrationTester:
                 "input": "Testing streaming audio endpoint for real-time generation",
                 "voice": "af_heart",
                 "response_format": "mp3",
-                "speed": 1.0
+                "speed": 1.0,
             }
 
             start_time = time.time()
             response = self.session.post(
-                f"{self.base_url}/v1/audio/stream",
-                json=payload,
-                timeout=30,
-                stream=True
+                f"{self.base_url}/v1/audio/stream", json=payload, timeout=30, stream=True
             )
 
             success = response.status_code == 200
@@ -99,7 +95,9 @@ class OpenWebUIIntegrationTester:
                 request_time = time.time() - start_time
                 audio_size = len(audio_data)
 
-                print(f"   ✅ Streaming endpoint: {audio_size} bytes in {chunk_count} chunks over {request_time:.2f}s")
+                print(
+                    f"   ✅ Streaming endpoint: {audio_size} bytes in {chunk_count} chunks over {request_time:.2f}s"
+                )
 
                 # Save test file
                 test_file = Path("test_streaming.mp3")
@@ -127,7 +125,7 @@ class OpenWebUIIntegrationTester:
                 "input": "Testing OpenWebUI compatibility route for malformed URL handling",
                 "voice": "af_heart",
                 "response_format": "mp3",
-                "speed": 1.0
+                "speed": 1.0,
             }
 
             start_time = time.time()
@@ -135,7 +133,7 @@ class OpenWebUIIntegrationTester:
                 f"{self.base_url}/v1/audio/stream/audio/speech",
                 json=payload,
                 timeout=30,
-                stream=True
+                stream=True,
             )
 
             success = response.status_code == 200
@@ -153,7 +151,9 @@ class OpenWebUIIntegrationTester:
                 request_time = time.time() - start_time
                 audio_size = len(audio_data)
 
-                print(f"   ✅ Compatibility route: {audio_size} bytes in {chunk_count} chunks over {request_time:.2f}s")
+                print(
+                    f"   ✅ Compatibility route: {audio_size} bytes in {chunk_count} chunks over {request_time:.2f}s"
+                )
                 print("   🎯 This route handles OpenWebUI's malformed URL construction")
 
                 # Save test file
@@ -182,12 +182,12 @@ class OpenWebUIIntegrationTester:
 
             if success:
                 data = response.json()
-                voices = data.get('data', [])
+                voices = data.get("data", [])
                 print(f"   ✅ Found {len(voices)} voices available")
 
                 # Show sample voices
                 for i, voice in enumerate(voices[:3]):
-                    print(f"      {i+1}. {voice['id']} ({voice['name']})")
+                    print(f"      {i + 1}. {voice['id']} ({voice['name']})")
 
                 if len(voices) > 3:
                     print(f"      ... and {len(voices) - 3} more")
@@ -217,13 +217,11 @@ class OpenWebUIIntegrationTester:
                     "input": f"Testing voice {voice}",
                     "voice": voice,
                     "response_format": "mp3",
-                    "speed": 1.0
+                    "speed": 1.0,
                 }
 
                 response = self.session.post(
-                    f"{self.base_url}/v1/audio/speech",
-                    json=payload,
-                    timeout=30
+                    f"{self.base_url}/v1/audio/speech", json=payload, timeout=30
                 )
 
                 success = response.status_code == 200
@@ -322,13 +320,19 @@ class OpenWebUIIntegrationTester:
         else:
             print(f"❌ {total - passed} tests failed")
 
+
 def main():
     """Main function"""
     import argparse
 
-    parser = argparse.ArgumentParser(description="Test OpenWebUI integration with Kokoro ONNX TTS API")
-    parser.add_argument("--url", default="http://localhost:8001",
-                       help="Base URL for API (default: http://localhost:8001)")
+    parser = argparse.ArgumentParser(
+        description="Test OpenWebUI integration with Kokoro ONNX TTS API"
+    )
+    parser.add_argument(
+        "--url",
+        default="http://localhost:8001",
+        help="Base URL for API (default: http://localhost:8001)",
+    )
 
     args = parser.parse_args()
 
@@ -336,6 +340,7 @@ def main():
     success = tester.run_comprehensive_test()
 
     return 0 if success else 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

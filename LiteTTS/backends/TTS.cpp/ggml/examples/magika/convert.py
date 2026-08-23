@@ -17,7 +17,6 @@ def convert(model_name):
                 weight_data = weight.numpy()
                 gguf_writer.add_tensor(weight.name, weight_data.T)
 
-
     gguf_writer.write_header_to_file()
     gguf_writer.write_kv_data_to_file()
     gguf_writer.write_tensors_to_file()
@@ -25,7 +24,7 @@ def convert(model_name):
     print(f"Model converted and saved to '{gguf_model_name}'")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     if len(sys.argv) > 1:
         model_file = sys.argv[1]
     else:

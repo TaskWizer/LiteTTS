@@ -18,6 +18,7 @@ from .validators import RequestValidator
 
 logger = logging.getLogger(__name__)
 
+
 class TTSAPIRouter:
     """Main API router for TTS endpoints"""
 
@@ -42,10 +43,7 @@ class TTSAPIRouter:
         """Setup API routes"""
 
         @self.router.post("/v1/audio/speech")
-        async def create_speech(
-            request: TTSRequest,
-            background_tasks: BackgroundTasks
-        ):
+        async def create_speech(request: TTSRequest, background_tasks: BackgroundTasks):
             """Create speech from text"""
             start_time = time.time()
 
@@ -53,17 +51,16 @@ class TTSAPIRouter:
                 # Validate request
                 validation_errors = self.validator.validate_request(request)
                 if validation_errors:
-                    raise HTTPException(
-                        status_code=400,
-                        detail={"errors": validation_errors}
-                    )
+                    raise HTTPException(status_code=400, detail={"errors": validation_errors})
 
                 # Check cache first
                 cached_audio = self.audio_cache.get_cached_audio(
-                    request.input, request.voice, request.speed,
+                    request.input,
+                    request.voice,
+                    request.speed,
                     request.response_format,
-                    getattr(request, 'emotion', None),
-                    getattr(request, 'emotion_strength', 1.0)
+                    getattr(request, "emotion", None),
+                    getattr(request, "emotion_strength", 1.0),
                 )
 
                 if cached_audio:
@@ -71,12 +68,15 @@ class TTSAPIRouter:
                     processing_time = time.time() - start_time
 
                     return await self.response_formatter.format_audio_response(
-                        cached_audio, request.response_format, processing_time,
-                        request.stream, cache_hit=True
+                        cached_audio,
+                        request.response_format,
+                        processing_time,
+                        request.stream,
+                        cache_hit=True,
                     )
 
                 # Check if streaming is requested for low-latency playback
-                if getattr(request, 'stream', False):
+                if getattr(request, "stream", False):
                     # Use streaming synthesis for low-latency
                     return await self._handle_streaming_synthesis(
                         request, start_time, background_tasks
@@ -89,16 +89,22 @@ class TTSAPIRouter:
                 # Cache the result
                 background_tasks.add_task(
                     self.audio_cache.cache_audio,
-                    audio_segment, request.input, request.voice,
-                    request.speed, request.response_format,
-                    getattr(request, 'emotion', None),
-                    getattr(request, 'emotion_strength', 1.0)
+                    audio_segment,
+                    request.input,
+                    request.voice,
+                    request.speed,
+                    request.response_format,
+                    getattr(request, "emotion", None),
+                    getattr(request, "emotion_strength", 1.0),
                 )
 
                 # Return response
                 return await self.response_formatter.format_audio_response(
-                    audio_segment, request.response_format, processing_time,
-                    request.stream, cache_hit=False
+                    audio_segment,
+                    request.response_format,
+                    processing_time,
+                    request.stream,
+                    cache_hit=False,
                 )
 
             except HTTPException:
@@ -113,14 +119,13 @@ class TTSAPIRouter:
             from fastapi.responses import StreamingResponse
 
             # Check if synthesizer supports streaming
-            if not hasattr(self.synthesizer, 'synthesize_streaming'):
+            if not hasattr(self.synthesizer, "synthesize_streaming"):
                 # Fall back to standard synthesis if streaming not available
                 logger.warning("Streaming not supported, falling back to standard synthesis")
                 audio_segment = self.synthesizer.synthesize(request)
                 processing_time = time.time() - start_time
                 return await self.response_formatter.format_audio_response(
-                    audio_segment, request.response_format, processing_time,
-                    request.stream
+                    audio_segment, request.response_format, processing_time, request.stream
                 )
 
             async def stream_audio_generator():
@@ -135,8 +140,8 @@ class TTSAPIRouter:
                         request.voice,
                         request.response_format,
                         request.speed,
-                        getattr(request, 'emotion', None),
-                        getattr(request, 'emotion_strength', 1.0)
+                        getattr(request, "emotion", None),
+                        getattr(request, "emotion_strength", 1.0),
                     ):
                         chunks_sent += 1
                         total_duration += chunk_result.duration
@@ -146,13 +151,17 @@ class TTSAPIRouter:
                             first_chunk = False
                             # MP3 streaming needs ID3 header stripped for raw PCM, or proper container
                             # For now, yield the raw audio data
-                            logger.info(f"Streaming first chunk: {len(chunk_result.audio_data)} bytes, "
-                                       f"duration: {chunk_result.duration:.2f}s")
+                            logger.info(
+                                f"Streaming first chunk: {len(chunk_result.audio_data)} bytes, "
+                                f"duration: {chunk_result.duration:.2f}s"
+                            )
 
                         yield chunk_result.audio_data
 
-                    logger.info(f"Streaming complete: {chunks_sent} chunks, "
-                               f"total duration: {total_duration:.2f}s")
+                    logger.info(
+                        f"Streaming complete: {chunks_sent} chunks, "
+                        f"total duration: {total_duration:.2f}s"
+                    )
 
                 except Exception as e:
                     logger.error(f"Streaming synthesis error: {e}")
@@ -173,8 +182,12 @@ class TTSAPIRouter:
             # Cache the complete audio in background for future non-streaming requests
             background_tasks.add_task(
                 self._cache_streaming_result,
-                request.input, request.voice, request.speed, request.response_format,
-                getattr(request, 'emotion', None), getattr(request, 'emotion_strength', 1.0)
+                request.input,
+                request.voice,
+                request.speed,
+                request.response_format,
+                getattr(request, "emotion", None),
+                getattr(request, "emotion_strength", 1.0),
             )
 
             return StreamingResponse(
@@ -184,21 +197,24 @@ class TTSAPIRouter:
                     "X-Processing-Time": f"{processing_time:.3f}",
                     "X-Streaming": "true",
                     "Transfer-Encoding": "chunked",
-                }
+                },
             )
 
-        async def _cache_streaming_result(self, text, voice, speed, response_format, emotion, emotion_strength):
+        async def _cache_streaming_result(
+            self, text, voice, speed, response_format, emotion, emotion_strength
+        ):
             """Cache the complete streaming result for future non-streaming requests"""
             try:
                 # Re-synthesize the complete audio for caching
                 from LiteTTS.models import TTSRequest
+
                 cache_request = TTSRequest(
                     input=text,
                     voice=voice,
                     response_format=response_format,
                     speed=speed,
                     emotion=emotion,
-                    emotion_strength=emotion_strength
+                    emotion_strength=emotion_strength,
                 )
                 audio_segment = self.synthesizer.synthesize(cache_request)
                 self.audio_cache.cache_audio(
@@ -218,16 +234,16 @@ class TTSAPIRouter:
                     info = self.synthesizer.get_voice_info(voice_name)
                     if info:
                         voice_info[voice_name] = {
-                            'name': voice_name,
-                            'ready': info.get('ready', False),
-                            'cached': info.get('cached', False),
-                            'metadata': info.get('metadata', {})
+                            "name": voice_name,
+                            "ready": info.get("ready", False),
+                            "cached": info.get("cached", False),
+                            "metadata": info.get("metadata", {}),
                         }
 
                 return {
-                    'voices': voice_info,
-                    'total_voices': len(voices),
-                    'emotions': self.synthesizer.get_supported_emotions()
+                    "voices": voice_info,
+                    "total_voices": len(voices),
+                    "emotions": self.synthesizer.get_supported_emotions(),
                 }
 
             except Exception as e:
@@ -239,10 +255,7 @@ class TTSAPIRouter:
             """Get detailed information about a specific voice"""
             try:
                 if voice_name not in self.synthesizer.get_available_voices():
-                    raise HTTPException(
-                        status_code=404,
-                        detail=f"Voice '{voice_name}' not found"
-                    )
+                    raise HTTPException(status_code=404, detail=f"Voice '{voice_name}' not found")
 
                 voice_info = self.synthesizer.get_voice_info(voice_name)
                 return voice_info
@@ -265,10 +278,7 @@ class TTSAPIRouter:
                     if info:
                         emotion_info[emotion] = info
 
-                return {
-                    'emotions': emotion_info,
-                    'total_emotions': len(emotions)
-                }
+                return {"emotions": emotion_info, "total_emotions": len(emotions)}
 
             except Exception as e:
                 logger.error(f"Failed to list emotions: {e}")
@@ -282,25 +292,21 @@ class TTSAPIRouter:
 
                 # Determine overall health
                 is_healthy = (
-                    system_status['engine']['model_loaded'] and
-                    system_status['voices']['system_health']['default_voices_ready'] and
-                    len(system_status['voices']['voices']['ready']) > 0
+                    system_status["engine"]["model_loaded"]
+                    and system_status["voices"]["system_health"]["default_voices_ready"]
+                    and len(system_status["voices"]["voices"]["ready"]) > 0
                 )
 
                 return {
-                    'status': 'healthy' if is_healthy else 'degraded',
-                    'timestamp': time.time(),
-                    'system': system_status,
-                    'version': '1.0.0'
+                    "status": "healthy" if is_healthy else "degraded",
+                    "timestamp": time.time(),
+                    "system": system_status,
+                    "version": "1.0.0",
                 }
 
             except Exception as e:
                 logger.error(f"Health check failed: {e}")
-                return {
-                    'status': 'unhealthy',
-                    'timestamp': time.time(),
-                    'error': str(e)
-                }
+                return {"status": "unhealthy", "timestamp": time.time(), "error": str(e)}
 
         @self.router.get("/stats")
         async def get_statistics():
@@ -308,14 +314,14 @@ class TTSAPIRouter:
             try:
                 synthesis_stats = self.synthesizer.get_synthesis_stats()
                 cache_stats = {
-                    'audio_cache': self.audio_cache.get_cache_stats(),
-                    'text_cache': self.text_cache.get_cache_stats()
+                    "audio_cache": self.audio_cache.get_cache_stats(),
+                    "text_cache": self.text_cache.get_cache_stats(),
                 }
 
                 return {
-                    'synthesis': synthesis_stats,
-                    'cache': cache_stats,
-                    'timestamp': time.time()
+                    "synthesis": synthesis_stats,
+                    "cache": cache_stats,
+                    "timestamp": time.time(),
                 }
 
             except Exception as e:
@@ -330,11 +336,7 @@ class TTSAPIRouter:
 
                 successful = sum(1 for success in results.values() if success)
 
-                return {
-                    'preloaded': results,
-                    'successful': successful,
-                    'total': len(voice_names)
-                }
+                return {"preloaded": results, "successful": successful, "total": len(voice_names)}
 
             except Exception as e:
                 logger.error(f"Failed to preload voices: {e}")
@@ -342,9 +344,7 @@ class TTSAPIRouter:
 
         @self.router.post("/cache/clear")
         async def clear_cache(
-            voice: str | None = None,
-            format: str | None = None,
-            emotion: str | None = None
+            voice: str | None = None, format: str | None = None, emotion: str | None = None
         ):
             """Clear cache with optional filters"""
             try:
@@ -359,13 +359,9 @@ class TTSAPIRouter:
                     self.text_cache.cache_manager.clear()
 
                 return {
-                    'status': 'success',
-                    'message': 'Cache cleared',
-                    'filters': {
-                        'voice': voice,
-                        'format': format,
-                        'emotion': emotion
-                    }
+                    "status": "success",
+                    "message": "Cache cleared",
+                    "filters": {"voice": voice, "format": format, "emotion": emotion},
                 }
 
             except Exception as e:
@@ -385,12 +381,9 @@ class TTSAPIRouter:
                 text_stats = self.text_cache.get_cache_stats()
 
                 return {
-                    'status': 'success',
-                    'message': 'Cache optimized',
-                    'stats': {
-                        'audio_cache': audio_stats,
-                        'text_cache': text_stats
-                    }
+                    "status": "success",
+                    "message": "Cache optimized",
+                    "stats": {"audio_cache": audio_stats, "text_cache": text_stats},
                 }
 
             except Exception as e:
@@ -405,13 +398,10 @@ class TTSAPIRouter:
                 suggested_emotion = self.synthesizer.suggest_emotion_for_text(text)
 
                 return {
-                    'text': text[:100] + "..." if len(text) > 100 else text,
-                    'suggestions': {
-                        'voice': suggested_voice,
-                        'emotion': suggested_emotion
-                    },
-                    'available_voices': self.synthesizer.get_available_voices(),
-                    'available_emotions': self.synthesizer.get_supported_emotions()
+                    "text": text[:100] + "..." if len(text) > 100 else text,
+                    "suggestions": {"voice": suggested_voice, "emotion": suggested_emotion},
+                    "available_voices": self.synthesizer.get_available_voices(),
+                    "available_emotions": self.synthesizer.get_supported_emotions(),
                 }
 
             except Exception as e:
@@ -427,10 +417,10 @@ class TTSAPIRouter:
                 )
 
                 return {
-                    'text_length': len(request.input),
-                    'voice': request.voice,
-                    'estimated_time_seconds': estimated_time,
-                    'estimated_audio_duration': len(request.input) / 150 * 60 / 5  # Rough estimate
+                    "text_length": len(request.input),
+                    "voice": request.voice,
+                    "estimated_time_seconds": estimated_time,
+                    "estimated_audio_duration": len(request.input) / 150 * 60 / 5,  # Rough estimate
                 }
 
             except Exception as e:

@@ -10,8 +10,9 @@ import time
 import requests
 
 # Setup logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 class PronunciationValidator:
     """Validates pronunciation fixes and configuration compliance"""
@@ -31,7 +32,7 @@ class PronunciationValidator:
             ("TSLA", "should NOT be T-S-L-A", "ticker_disabled"),
             ("API", "should NOT be A-P-I", "proper_name_disabled"),
             ("MSFT", "should NOT be M-S-F-T", "ticker_disabled"),
-            ("CEO", "should NOT be C-E-O", "proper_name_disabled")
+            ("CEO", "should NOT be C-E-O", "proper_name_disabled"),
         ]
 
         for word, expectation, test_type in test_words:
@@ -43,15 +44,15 @@ class PronunciationValidator:
                         "model": "kokoro",
                         "input": word,
                         "voice": "af_heart",
-                        "response_format": "mp3"
+                        "response_format": "mp3",
                     },
-                    timeout=30
+                    timeout=30,
                 )
 
                 if response.status_code == 200:
                     # Save audio file for manual verification
                     filename = f"validation_{word.lower()}.mp3"
-                    with open(filename, 'wb') as f:
+                    with open(filename, "wb") as f:
                         f.write(response.content)
 
                     results[f"{test_type}_{word}"] = True
@@ -78,7 +79,7 @@ class PronunciationValidator:
             ("pronunciation", "should be natural, not pro-NUN-see-AY-shun"),
             ("hello", "should be natural"),
             ("world", "should be natural"),
-            ("testing", "should be natural")
+            ("testing", "should be natural"),
         ]
 
         for word, expectation in test_words:
@@ -90,15 +91,15 @@ class PronunciationValidator:
                         "model": "kokoro",
                         "input": word,
                         "voice": "af_heart",
-                        "response_format": "mp3"
+                        "response_format": "mp3",
                     },
-                    timeout=30
+                    timeout=30,
                 )
 
                 if response.status_code == 200:
                     # Save audio file for manual verification
                     filename = f"natural_{word}.mp3"
-                    with open(filename, 'wb') as f:
+                    with open(filename, "wb") as f:
                         f.write(response.content)
 
                     results[f"natural_{word}"] = True
@@ -124,7 +125,7 @@ class PronunciationValidator:
             "Hello, how are you today?",
             "The API is working correctly now.",
             "TSLA stock price is rising.",
-            "This is a pronunciation test."
+            "This is a pronunciation test.",
         ]
 
         for i, sentence in enumerate(test_sentences):
@@ -136,25 +137,25 @@ class PronunciationValidator:
                         "model": "kokoro",
                         "input": sentence,
                         "voice": "af_heart",
-                        "response_format": "mp3"
+                        "response_format": "mp3",
                     },
-                    timeout=30
+                    timeout=30,
                 )
 
                 if response.status_code == 200:
-                    filename = f"openwebui_test_{i+1}.mp3"
-                    with open(filename, 'wb') as f:
+                    filename = f"openwebui_test_{i + 1}.mp3"
+                    with open(filename, "wb") as f:
                         f.write(response.content)
 
-                    results[f"openwebui_test_{i+1}"] = True
-                    logger.info(f"✅ Sentence {i+1}: Generated audio saved as {filename}")
+                    results[f"openwebui_test_{i + 1}"] = True
+                    logger.info(f"✅ Sentence {i + 1}: Generated audio saved as {filename}")
                 else:
-                    results[f"openwebui_test_{i+1}"] = False
-                    logger.error(f"❌ Sentence {i+1}: API error {response.status_code}")
+                    results[f"openwebui_test_{i + 1}"] = False
+                    logger.error(f"❌ Sentence {i + 1}: API error {response.status_code}")
 
             except Exception as e:
-                results[f"openwebui_test_{i+1}"] = False
-                logger.error(f"❌ Sentence {i+1}: Exception {e}")
+                results[f"openwebui_test_{i + 1}"] = False
+                logger.error(f"❌ Sentence {i + 1}: Exception {e}")
 
         return results
 
@@ -176,9 +177,9 @@ class PronunciationValidator:
                     "model": "kokoro",
                     "input": test_text,
                     "voice": "af_heart",
-                    "response_format": "mp3"
+                    "response_format": "mp3",
                 },
-                timeout=30
+                timeout=30,
             )
             end_time = time.time()
 
@@ -213,20 +214,28 @@ class PronunciationValidator:
         # Calculate success rates
         total_config_tests = len(config_results)
         passed_config_tests = sum(config_results.values())
-        config_success_rate = (passed_config_tests / total_config_tests * 100) if total_config_tests > 0 else 0
+        config_success_rate = (
+            (passed_config_tests / total_config_tests * 100) if total_config_tests > 0 else 0
+        )
 
         total_natural_tests = len(natural_results)
         passed_natural_tests = sum(natural_results.values())
-        natural_success_rate = (passed_natural_tests / total_natural_tests * 100) if total_natural_tests > 0 else 0
+        natural_success_rate = (
+            (passed_natural_tests / total_natural_tests * 100) if total_natural_tests > 0 else 0
+        )
 
         total_openwebui_tests = len(openwebui_results)
         passed_openwebui_tests = sum(openwebui_results.values())
-        openwebui_success_rate = (passed_openwebui_tests / total_openwebui_tests * 100) if total_openwebui_tests > 0 else 0
+        openwebui_success_rate = (
+            (passed_openwebui_tests / total_openwebui_tests * 100)
+            if total_openwebui_tests > 0
+            else 0
+        )
 
         # Generate report
         report = f"""
 # Kokoro TTS Pronunciation Fixes Validation Report
-Generated: {time.strftime('%Y-%m-%d %H:%M:%S')}
+Generated: {time.strftime("%Y-%m-%d %H:%M:%S")}
 
 ## Executive Summary
 - Configuration Compliance: {config_success_rate:.1f}% ({passed_config_tests}/{total_config_tests} tests passed)
@@ -234,9 +243,9 @@ Generated: {time.strftime('%Y-%m-%d %H:%M:%S')}
 - OpenWebUI Compatibility: {openwebui_success_rate:.1f}% ({passed_openwebui_tests}/{total_openwebui_tests} tests passed)
 
 ## Performance Metrics
-- Response Time: {performance_metrics.get('response_time_seconds', 'N/A')} seconds
-- Real-Time Factor (RTF): {performance_metrics.get('rtf', 'N/A')}
-- Audio Size: {performance_metrics.get('audio_size_bytes', 'N/A')} bytes
+- Response Time: {performance_metrics.get("response_time_seconds", "N/A")} seconds
+- Real-Time Factor (RTF): {performance_metrics.get("rtf", "N/A")}
+- Audio Size: {performance_metrics.get("audio_size_bytes", "N/A")} bytes
 
 ## Detailed Results
 
@@ -280,6 +289,7 @@ All test audio files have been saved in the current directory for manual verific
 
         return report
 
+
 def main():
     """Main validation function"""
     print("🚀 Starting Kokoro TTS Pronunciation Fixes Validation")
@@ -312,6 +322,7 @@ def main():
     except Exception as e:
         print(f"❌ Validation failed: {e}")
         logger.error(f"Validation exception: {e}")
+
 
 if __name__ == "__main__":
     main()

@@ -10,6 +10,7 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+
 class DeprecationWarningManager:
     """Manages suppression of known deprecation warnings"""
 
@@ -22,57 +23,38 @@ class DeprecationWarningManager:
         try:
             # Suppress the specific pkg_resources deprecation warning message
             warnings.filterwarnings(
-                "ignore",
-                category=UserWarning,
-                message=".*pkg_resources is deprecated as an API.*"
+                "ignore", category=UserWarning, message=".*pkg_resources is deprecated as an API.*"
             )
 
             # Also suppress as DeprecationWarning in case it changes
             warnings.filterwarnings(
-                "ignore",
-                category=DeprecationWarning,
-                message=".*pkg_resources.*"
+                "ignore", category=DeprecationWarning, message=".*pkg_resources.*"
             )
 
             # Suppress warnings from specific modules that use pkg_resources
-            warnings.filterwarnings(
-                "ignore",
-                category=UserWarning,
-                module=".*perth.*"
-            )
+            warnings.filterwarnings("ignore", category=UserWarning, module=".*perth.*")
 
-            warnings.filterwarnings(
-                "ignore",
-                category=UserWarning,
-                module=".*resemble.*"
-            )
+            warnings.filterwarnings("ignore", category=UserWarning, module=".*resemble.*")
 
             # Also suppress DeprecationWarning from these modules
-            warnings.filterwarnings(
-                "ignore",
-                category=DeprecationWarning,
-                module=".*perth.*"
-            )
+            warnings.filterwarnings("ignore", category=DeprecationWarning, module=".*perth.*")
 
-            warnings.filterwarnings(
-                "ignore",
-                category=DeprecationWarning,
-                module=".*resemble.*"
-            )
+            warnings.filterwarnings("ignore", category=DeprecationWarning, module=".*resemble.*")
 
             # Suppress the specific resource_filename import warning
             warnings.filterwarnings(
-                "ignore",
-                message=".*from pkg_resources import resource_filename.*"
+                "ignore", message=".*from pkg_resources import resource_filename.*"
             )
 
             # Log that we've suppressed these warnings
-            self.suppressed_warnings.append({
-                "type": "pkg_resources_deprecation",
-                "reason": "Third-party library (resemble-perth) uses deprecated pkg_resources",
-                "action": "Suppressed until library updates to importlib.metadata",
-                "note": "Warning comes from perth/perth_net/__init__.py:1"
-            })
+            self.suppressed_warnings.append(
+                {
+                    "type": "pkg_resources_deprecation",
+                    "reason": "Third-party library (resemble-perth) uses deprecated pkg_resources",
+                    "action": "Suppressed until library updates to importlib.metadata",
+                    "note": "Warning comes from perth/perth_net/__init__.py:1",
+                }
+            )
 
             logger.debug("Suppressed pkg_resources deprecation warnings from third-party libraries")
 
@@ -84,23 +66,21 @@ class DeprecationWarningManager:
         try:
             # Suppress setuptools deprecation warnings
             warnings.filterwarnings(
-                "ignore",
-                category=DeprecationWarning,
-                message=".*setuptools.*deprecated.*"
+                "ignore", category=DeprecationWarning, message=".*setuptools.*deprecated.*"
             )
 
             # Suppress distutils deprecation warnings (Python 3.12+)
             warnings.filterwarnings(
-                "ignore",
-                category=DeprecationWarning,
-                message=".*distutils.*deprecated.*"
+                "ignore", category=DeprecationWarning, message=".*distutils.*deprecated.*"
             )
 
-            self.suppressed_warnings.append({
-                "type": "setuptools_deprecation",
-                "reason": "Legacy setuptools usage in dependencies",
-                "action": "Suppressed until all dependencies migrate to modern packaging"
-            })
+            self.suppressed_warnings.append(
+                {
+                    "type": "setuptools_deprecation",
+                    "reason": "Legacy setuptools usage in dependencies",
+                    "action": "Suppressed until all dependencies migrate to modern packaging",
+                }
+            )
 
             logger.debug("Suppressed setuptools deprecation warnings")
 
@@ -111,24 +91,18 @@ class DeprecationWarningManager:
         """Suppress PyTorch-related warnings that are not actionable"""
         try:
             # Suppress torch warnings about deprecated features
-            warnings.filterwarnings(
-                "ignore",
-                category=UserWarning,
-                module="torch.*"
-            )
+            warnings.filterwarnings("ignore", category=UserWarning, module="torch.*")
 
             # Suppress ONNX Runtime warnings
-            warnings.filterwarnings(
-                "ignore",
-                category=UserWarning,
-                message=".*onnxruntime.*"
-            )
+            warnings.filterwarnings("ignore", category=UserWarning, message=".*onnxruntime.*")
 
-            self.suppressed_warnings.append({
-                "type": "torch_warnings",
-                "reason": "Non-actionable warnings from PyTorch/ONNX Runtime",
-                "action": "Suppressed to reduce noise in logs"
-            })
+            self.suppressed_warnings.append(
+                {
+                    "type": "torch_warnings",
+                    "reason": "Non-actionable warnings from PyTorch/ONNX Runtime",
+                    "action": "Suppressed to reduce noise in logs",
+                }
+            )
 
             logger.debug("Suppressed PyTorch/ONNX Runtime warnings")
 
@@ -147,6 +121,7 @@ class DeprecationWarningManager:
 
     def setup_custom_warning_handler(self):
         """Setup custom warning handler to log important warnings while suppressing noise"""
+
         def custom_warning_handler(message, category, filename, lineno, file=None, line=None):
             # Convert warning to string
             warning_str = str(message)
@@ -158,9 +133,16 @@ class DeprecationWarningManager:
             # Only log the first occurrence of each warning type
             if self.warning_counts[warning_key] == 1:
                 # Check if this is a warning we care about
-                if any(keyword in warning_str.lower() for keyword in [
-                    "performance", "memory", "cpu", "optimization", "deprecated api"
-                ]):
+                if any(
+                    keyword in warning_str.lower()
+                    for keyword in [
+                        "performance",
+                        "memory",
+                        "cpu",
+                        "optimization",
+                        "deprecated api",
+                    ]
+                ):
                     logger.warning(f"{category.__name__}: {message} ({filename}:{lineno})")
                 elif category == DeprecationWarning and "pkg_resources" not in warning_str:
                     # Log non-pkg_resources deprecation warnings
@@ -177,11 +159,13 @@ class DeprecationWarningManager:
         return {
             "suppressed_warning_types": len(self.suppressed_warnings),
             "suppressions": self.suppressed_warnings,
-            "warning_counts": self.warning_counts
+            "warning_counts": self.warning_counts,
         }
+
 
 # Global warning manager instance
 _warning_manager = None
+
 
 def get_warning_manager() -> DeprecationWarningManager:
     """Get or create global warning manager instance"""
@@ -190,11 +174,13 @@ def get_warning_manager() -> DeprecationWarningManager:
         _warning_manager = DeprecationWarningManager()
     return _warning_manager
 
+
 def suppress_known_warnings():
     """Convenience function to suppress all known warnings"""
     manager = get_warning_manager()
     manager.apply_all_suppressions()
     manager.setup_custom_warning_handler()
+
 
 def initialize_warning_suppression():
     """Initialize warning suppression at application startup"""
@@ -206,6 +192,7 @@ def initialize_warning_suppression():
 
     except Exception as e:
         logger.error(f"Failed to initialize warning suppression: {e}")
+
 
 # Auto-initialize when module is imported
 if __name__ != "__main__":

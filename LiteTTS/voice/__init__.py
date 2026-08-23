@@ -15,36 +15,42 @@ from .downloader import VoiceDownloader
 # Optional imports that may require additional dependencies
 try:
     from .validator import VoiceValidator  # noqa: F401
+
     _has_validator = True
 except ImportError:
     _has_validator = False
 
 try:
     from .metadata import VoiceMetadataManager  # noqa: F401
+
     _has_metadata = True
 except ImportError:
     _has_metadata = False
 
 try:
     from .cache import VoiceCache  # noqa: F401
+
     _has_cache = True
 except ImportError:
     _has_cache = False
 
 try:
     from .manager import VoiceManager  # noqa: F401
+
     _has_manager = True
 except ImportError:
     _has_manager = False
 
 try:
     from .dynamic_manager import DynamicVoiceManager
+
     _has_dynamic_manager = True
 except ImportError:
     _has_dynamic_manager = False
 
 try:
     from .blender import BlendConfig, VoiceBlender  # noqa: F401
+
     _has_blender = True
 except ImportError:
     _has_blender = False
@@ -52,9 +58,10 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 # Global voice manager instance
-_voice_manager: Optional['DynamicVoiceManager'] = None
+_voice_manager: Optional["DynamicVoiceManager"] = None
 
-def get_voice_manager(voices_dir: str = None) -> Optional['DynamicVoiceManager']:
+
+def get_voice_manager(voices_dir: str = None) -> Optional["DynamicVoiceManager"]:
     """Get or create the global voice manager instance"""
     global _voice_manager
 
@@ -67,6 +74,7 @@ def get_voice_manager(voices_dir: str = None) -> Optional['DynamicVoiceManager']
         if voices_dir is None:
             try:
                 from ..config import config
+
                 voices_dir = config.paths.voices_dir
             except ImportError:
                 voices_dir = "LiteTTS/voices"  # Fallback
@@ -74,6 +82,7 @@ def get_voice_manager(voices_dir: str = None) -> Optional['DynamicVoiceManager']
         _voice_manager = DynamicVoiceManager(voices_dir)
 
     return _voice_manager
+
 
 def get_available_voices(voices_dir: str = "LiteTTS/voices") -> list[str]:
     """Get list of all available voices (both full and short names)"""
@@ -86,6 +95,7 @@ def get_available_voices(voices_dir: str = "LiteTTS/voices") -> list[str]:
 
     # Fallback to local discovery
     return _fallback_voice_discovery(voices_dir)
+
 
 def _fallback_voice_discovery(voices_dir: str) -> list[str]:
     """Fallback voice discovery for local files only"""
@@ -100,8 +110,8 @@ def _fallback_voice_discovery(voices_dir: str) -> list[str]:
         # Add common short name mappings
         short_mappings = {}
         for voice in voices:
-            if '_' in voice:
-                parts = voice.split('_', 1)
+            if "_" in voice:
+                parts = voice.split("_", 1)
                 if len(parts) == 2:
                     prefix, short_name = parts
                     if short_name not in short_mappings:
@@ -114,6 +124,7 @@ def _fallback_voice_discovery(voices_dir: str) -> list[str]:
         logger.error(f"Fallback voice discovery failed: {e}")
         return ["af_heart", "am_puck"]  # Minimal fallback
 
+
 def resolve_voice_name(voice_name: str, voices_dir: str = None) -> str:
     """Resolve a voice name (short or full) to the full voice name"""
     try:
@@ -124,6 +135,7 @@ def resolve_voice_name(voice_name: str, voices_dir: str = None) -> str:
         logger.error(f"Failed to resolve voice name '{voice_name}': {e}")
 
     return voice_name
+
 
 def ensure_voice_downloaded(voice_name: str, voices_dir: str = None) -> bool:
     """Ensure a voice is downloaded"""
@@ -136,17 +148,24 @@ def ensure_voice_downloaded(voice_name: str, voices_dir: str = None) -> bool:
 
     return False
 
-__all__ = ['VoiceDiscovery', 'VoiceDownloader', 'ensure_voice_downloaded', 'get_available_voices', 'resolve_voice_name']
+
+__all__ = [
+    "VoiceDiscovery",
+    "VoiceDownloader",
+    "ensure_voice_downloaded",
+    "get_available_voices",
+    "resolve_voice_name",
+]
 
 if _has_validator:
-    __all__.append('VoiceValidator')
+    __all__.append("VoiceValidator")
 if _has_metadata:
-    __all__.append('VoiceMetadataManager')
+    __all__.append("VoiceMetadataManager")
 if _has_cache:
-    __all__.append('VoiceCache')
+    __all__.append("VoiceCache")
 if _has_manager:
-    __all__.append('VoiceManager')
+    __all__.append("VoiceManager")
 if _has_dynamic_manager:
-    __all__.append('DynamicVoiceManager')
+    __all__.append("DynamicVoiceManager")
 if _has_blender:
-    __all__.extend(['BlendConfig', 'VoiceBlender'])
+    __all__.extend(["BlendConfig", "VoiceBlender"])

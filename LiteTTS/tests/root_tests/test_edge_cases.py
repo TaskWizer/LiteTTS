@@ -4,7 +4,6 @@ Edge Case Tests for Kokoro ONNX TTS API
 Tests boundary conditions, unusual inputs, and corner cases
 """
 
-
 # Import the app for testing
 import sys
 import time
@@ -31,8 +30,7 @@ class TestTextBoundaryConditions:
 
         for char in single_chars:
             response = self.client.post(
-                self.base_endpoint,
-                json={"input": char, "voice": "af_heart"}
+                self.base_endpoint, json={"input": char, "voice": "af_heart"}
             )
             # Should handle gracefully
             assert response.status_code in [200, 400]
@@ -40,18 +38,17 @@ class TestTextBoundaryConditions:
     def test_whitespace_only_input(self):
         """Test whitespace-only inputs"""
         whitespace_inputs = [
-            " ",           # Single space
-            "   ",         # Multiple spaces
-            "\t",          # Tab
-            "\n",          # Newline
-            "\r\n",        # CRLF
-            " \t\n ",      # Mixed whitespace
+            " ",  # Single space
+            "   ",  # Multiple spaces
+            "\t",  # Tab
+            "\n",  # Newline
+            "\r\n",  # CRLF
+            " \t\n ",  # Mixed whitespace
         ]
 
         for text in whitespace_inputs:
             response = self.client.post(
-                self.base_endpoint,
-                json={"input": text, "voice": "af_heart"}
+                self.base_endpoint, json={"input": text, "voice": "af_heart"}
             )
             # Should either reject or handle gracefully
             assert response.status_code in [200, 400]
@@ -72,8 +69,7 @@ class TestTextBoundaryConditions:
 
         for text in punctuation_inputs:
             response = self.client.post(
-                self.base_endpoint,
-                json={"input": text, "voice": "af_heart"}
+                self.base_endpoint, json={"input": text, "voice": "af_heart"}
             )
             assert response.status_code in [200, 400]
 
@@ -94,8 +90,7 @@ class TestTextBoundaryConditions:
 
         for text in number_inputs:
             response = self.client.post(
-                self.base_endpoint,
-                json={"input": text, "voice": "af_heart"}
+                self.base_endpoint, json={"input": text, "voice": "af_heart"}
             )
             assert response.status_code in [200, 400]
 
@@ -111,8 +106,7 @@ class TestTextBoundaryConditions:
 
         for text in mixed_inputs:
             response = self.client.post(
-                self.base_endpoint,
-                json={"input": text, "voice": "af_heart"}
+                self.base_endpoint, json={"input": text, "voice": "af_heart"}
             )
             assert response.status_code in [200, 400]
 
@@ -127,21 +121,17 @@ class TestParameterBoundaryConditions:
     def test_speed_boundary_values(self):
         """Test speed parameter boundary values"""
         boundary_speeds = [
-            0.1,    # Very slow
-            0.25,   # Minimum typical
-            1.0,    # Normal
-            2.0,    # Fast
-            4.0,    # Very fast
+            0.1,  # Very slow
+            0.25,  # Minimum typical
+            1.0,  # Normal
+            2.0,  # Fast
+            4.0,  # Very fast
         ]
 
         for speed in boundary_speeds:
             response = self.client.post(
                 self.base_endpoint,
-                json={
-                    "input": "Test speed",
-                    "voice": "af_heart",
-                    "speed": speed
-                }
+                json={"input": "Test speed", "voice": "af_heart", "speed": speed},
             )
             # Should either succeed or fail gracefully
             assert response.status_code in [200, 400]
@@ -162,11 +152,7 @@ class TestParameterBoundaryConditions:
         for fmt in format_variations:
             response = self.client.post(
                 self.base_endpoint,
-                json={
-                    "input": "Test format",
-                    "voice": "af_heart",
-                    "response_format": fmt
-                }
+                json={"input": "Test format", "voice": "af_heart", "response_format": fmt},
             )
             assert response.status_code in [200, 400]
 
@@ -183,11 +169,7 @@ class TestParameterBoundaryConditions:
 
         for voice in voice_variations:
             response = self.client.post(
-                self.base_endpoint,
-                json={
-                    "input": "Test voice",
-                    "voice": voice
-                }
+                self.base_endpoint, json={"input": "Test voice", "voice": voice}
             )
             assert response.status_code in [200, 400]
 
@@ -212,8 +194,7 @@ class TestSpecialTextPatterns:
 
         for pattern in repeated_patterns:
             response = self.client.post(
-                self.base_endpoint,
-                json={"input": pattern, "voice": "af_heart"}
+                self.base_endpoint, json={"input": pattern, "voice": "af_heart"}
             )
             assert response.status_code in [200, 400]
 
@@ -229,8 +210,7 @@ class TestSpecialTextPatterns:
 
         for pattern in alternating_patterns:
             response = self.client.post(
-                self.base_endpoint,
-                json={"input": pattern, "voice": "af_heart"}
+                self.base_endpoint, json={"input": pattern, "voice": "af_heart"}
             )
             assert response.status_code in [200, 400]
 
@@ -248,8 +228,7 @@ class TestSpecialTextPatterns:
 
         for expr in math_expressions:
             response = self.client.post(
-                self.base_endpoint,
-                json={"input": expr, "voice": "af_heart"}
+                self.base_endpoint, json={"input": expr, "voice": "af_heart"}
             )
             assert response.status_code in [200, 400]
 
@@ -266,8 +245,7 @@ class TestSpecialTextPatterns:
 
         for code in code_snippets:
             response = self.client.post(
-                self.base_endpoint,
-                json={"input": code, "voice": "af_heart"}
+                self.base_endpoint, json={"input": code, "voice": "af_heart"}
             )
             assert response.status_code in [200, 400]
 
@@ -284,8 +262,7 @@ class TestSpecialTextPatterns:
 
         for web_input in web_inputs:
             response = self.client.post(
-                self.base_endpoint,
-                json={"input": web_input, "voice": "af_heart"}
+                self.base_endpoint, json={"input": web_input, "voice": "af_heart"}
             )
             assert response.status_code in [200, 400]
 
@@ -305,8 +282,7 @@ class TestTimingAndPerformance:
         for i in range(5):
             start_time = time.time()
             response = self.client.post(
-                self.base_endpoint,
-                json={"input": text, "voice": "af_heart"}
+                self.base_endpoint, json={"input": text, "voice": "af_heart"}
             )
             end_time = time.time()
 
@@ -330,8 +306,7 @@ class TestTimingAndPerformance:
             text = "A" * length
             start_time = time.time()
             response = self.client.post(
-                self.base_endpoint,
-                json={"input": text, "voice": "af_heart"}
+                self.base_endpoint, json={"input": text, "voice": "af_heart"}
             )
             end_time = time.time()
 
@@ -363,8 +338,7 @@ class TestDataTypeEdgeCases:
 
         for num_str in numeric_strings:
             response = self.client.post(
-                self.base_endpoint,
-                json={"input": num_str, "voice": "af_heart"}
+                self.base_endpoint, json={"input": num_str, "voice": "af_heart"}
             )
             assert response.status_code in [200, 400]
 
@@ -385,8 +359,7 @@ class TestDataTypeEdgeCases:
 
         for bool_str in boolean_strings:
             response = self.client.post(
-                self.base_endpoint,
-                json={"input": bool_str, "voice": "af_heart"}
+                self.base_endpoint, json={"input": bool_str, "voice": "af_heart"}
             )
             assert response.status_code in [200, 400]
 
@@ -394,16 +367,15 @@ class TestDataTypeEdgeCases:
         """Test JSON-like strings as text"""
         json_strings = [
             '{"key": "value"}',
-            '[1, 2, 3]',
+            "[1, 2, 3]",
             '{"nested": {"key": "value"}}',
-            '[]',
-            '{}',
+            "[]",
+            "{}",
         ]
 
         for json_str in json_strings:
             response = self.client.post(
-                self.base_endpoint,
-                json={"input": json_str, "voice": "af_heart"}
+                self.base_endpoint, json={"input": json_str, "voice": "af_heart"}
             )
             assert response.status_code in [200, 400]
 

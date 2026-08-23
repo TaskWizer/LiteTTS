@@ -7,17 +7,18 @@ def test_logistic_regression():
 
     @ps.python2shader
     def compute_shader(
-            index   = ("input", "GlobalInvocationId", ps.ivec3),
-            x_i     = ("buffer", 0, ps.Array(ps.f32)),
-            x_j     = ("buffer", 1, ps.Array(ps.f32)),
-            y       = ("buffer", 2, ps.Array(ps.f32)),
-            w_in    = ("buffer", 3, ps.Array(ps.f32)),
-            w_out_i = ("buffer", 4, ps.Array(ps.f32)),
-            w_out_j = ("buffer", 5, ps.Array(ps.f32)),
-            b_in    = ("buffer", 6, ps.Array(ps.f32)),
-            b_out   = ("buffer", 7, ps.Array(ps.f32)),
-            l_out   = ("buffer", 8, ps.Array(ps.f32)),
-            M       = ("buffer", 9, ps.Array(ps.f32))):
+        index=("input", "GlobalInvocationId", ps.ivec3),
+        x_i=("buffer", 0, ps.Array(ps.f32)),
+        x_j=("buffer", 1, ps.Array(ps.f32)),
+        y=("buffer", 2, ps.Array(ps.f32)),
+        w_in=("buffer", 3, ps.Array(ps.f32)),
+        w_out_i=("buffer", 4, ps.Array(ps.f32)),
+        w_out_j=("buffer", 5, ps.Array(ps.f32)),
+        b_in=("buffer", 6, ps.Array(ps.f32)),
+        b_out=("buffer", 7, ps.Array(ps.f32)),
+        l_out=("buffer", 8, ps.Array(ps.f32)),
+        M=("buffer", 9, ps.Array(ps.f32)),
+    ):
 
         i = index.x
 
@@ -44,7 +45,6 @@ def test_logistic_regression():
         b_out[i] = d_b
         l_out[i] = loss
 
-
     mgr = kp.Manager(0)
 
     # First we create input and ouput tensors for shader
@@ -62,11 +62,21 @@ def test_logistic_regression():
 
     tensor_l_out = mgr.tensor(np.array([0.0, 0.0, 0.0, 0.0, 0.0]))
 
-    tensor_m = mgr.tensor(np.array([ tensor_y.size() ]))
+    tensor_m = mgr.tensor(np.array([tensor_y.size()]))
 
     # We store them in an array for easier interaction
-    params = [tensor_x_i, tensor_x_j, tensor_y, tensor_w_in, tensor_w_out_i,
-        tensor_w_out_j, tensor_b_in, tensor_b_out, tensor_l_out, tensor_m]
+    params = [
+        tensor_x_i,
+        tensor_x_j,
+        tensor_y,
+        tensor_w_in,
+        tensor_w_out_i,
+        tensor_w_out_j,
+        tensor_b_in,
+        tensor_b_out,
+        tensor_l_out,
+        tensor_m,
+    ]
 
     mgr.sequence().eval(kp.OpTensorSyncDevice(params))
 
@@ -87,7 +97,6 @@ def test_logistic_regression():
 
     # Perform machine learning training and inference across all input X and Y
     for i_iter in range(ITERATIONS):
-
         # Execute an iteration of the algorithm
         sq.eval()
 

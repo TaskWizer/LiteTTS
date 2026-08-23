@@ -22,7 +22,7 @@ class TestBatchRequest:
             voice="af_heart",
             params={},
             timestamp=1234567890.0,
-            text_length=11
+            text_length=11,
         )
         assert request.request_id == "req1"
         assert request.text == "Hello world"
@@ -46,7 +46,7 @@ class TestBatchConfig:
             short_text_batch_size=20,
             medium_text_batch_size=10,
             long_text_batch_size=5,
-            enable_auto_tuning=False
+            enable_auto_tuning=False,
         )
         assert config.short_text_batch_size == 20
         assert config.enable_auto_tuning is False

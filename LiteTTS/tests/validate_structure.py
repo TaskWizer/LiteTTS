@@ -10,6 +10,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
+
 def validate_structure():
     """Validate the project structure"""
     print("🔍 Validating Kokoro ONNX TTS API project structure...")
@@ -22,7 +23,7 @@ def validate_structure():
         "LiteTTS/logging_config.py",
         "LiteTTS/startup.py",
         ".env.example",
-        "docs/PROJECT_STRUCTURE.md"
+        "docs/PROJECT_STRUCTURE.md",
     ]
 
     # Check directories
@@ -37,7 +38,7 @@ def validate_structure():
         "LiteTTS/voices",
         "docs",
         "LiteTTS/scripts",
-        "LiteTTS/tests"
+        "LiteTTS/tests",
     ]
 
     missing_files = []
@@ -94,6 +95,7 @@ def validate_structure():
     print("\n✅ Project structure validation completed successfully!")
     print("✅ Core configuration system is ready!")
     return True
+
 
 if __name__ == "__main__":
     success = validate_structure()

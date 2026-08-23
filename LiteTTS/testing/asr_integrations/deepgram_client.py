@@ -44,22 +44,22 @@ class DeepgramASRClient(BaseASRClient):
                 "language": self.language,
                 "punctuate": self.punctuate,
                 "smart_format": self.smart_format,
-                "diarize": self.diarize
+                "diarize": self.diarize,
             }
 
-            headers = {
-                "Authorization": f"Token {self.api_key}",
-                "Content-Type": "audio/wav"
-            }
+            headers = {"Authorization": f"Token {self.api_key}", "Content-Type": "audio/wav"}
 
             # Make API request
-            async with aiohttp.ClientSession() as session, session.post(
-                self.base_url,
-                params=params,
-                headers=headers,
-                data=audio_data,
-                timeout=aiohttp.ClientTimeout(total=self.timeout)
-            ) as response:
+            async with (
+                aiohttp.ClientSession() as session,
+                session.post(
+                    self.base_url,
+                    params=params,
+                    headers=headers,
+                    data=audio_data,
+                    timeout=aiohttp.ClientTimeout(total=self.timeout),
+                ) as response,
+            ):
                 if response.status == 200:
                     result = await response.json()
                     return self._extract_transcription(result)
@@ -107,14 +107,16 @@ class DeepgramASRClient(BaseASRClient):
         Get Deepgram service information
         """
         info = super().get_service_info()
-        info.update({
-            "service_name": "Deepgram",
-            "model": self.model,
-            "tier": self.tier,
-            "features": {
-                "punctuate": self.punctuate,
-                "smart_format": self.smart_format,
-                "diarize": self.diarize
+        info.update(
+            {
+                "service_name": "Deepgram",
+                "model": self.model,
+                "tier": self.tier,
+                "features": {
+                    "punctuate": self.punctuate,
+                    "smart_format": self.smart_format,
+                    "diarize": self.diarize,
+                },
             }
-        })
+        )
         return info

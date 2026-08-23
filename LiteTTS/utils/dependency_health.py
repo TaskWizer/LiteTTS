@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 class DependencyStatus(Enum):
     """Dependency status enumeration"""
+
     HEALTHY = "healthy"
     MISSING = "missing"
     OUTDATED = "outdated"
@@ -30,6 +31,7 @@ class DependencyStatus(Enum):
 @dataclass
 class DependencyInfo:
     """Information about a dependency"""
+
     name: str
     required: bool
     min_version: str | None = None
@@ -42,6 +44,7 @@ class DependencyInfo:
 @dataclass
 class HealthCheckResult:
     """Result of a dependency health check"""
+
     dependency: str
     status: DependencyStatus
     version: str | None = None
@@ -53,7 +56,7 @@ class HealthCheckResult:
 class DependencyHealth:
     """
     Dependency health monitoring and recovery system.
-    
+
     Provides functionality to validate dependencies at startup,
     monitor them at runtime, and attempt automatic recovery.
     """
@@ -70,68 +73,67 @@ class DependencyHealth:
                 required=True,
                 min_version="1.9.0",
                 description="PyTorch for neural network inference",
-                recovery_command="uv add torch"
+                recovery_command="uv add torch",
             ),
             "onnxruntime": DependencyInfo(
                 name="onnxruntime",
                 required=True,
                 min_version="1.10.0",
                 description="ONNX Runtime for model inference",
-                recovery_command="uv add onnxruntime"
+                recovery_command="uv add onnxruntime",
             ),
             "fastapi": DependencyInfo(
                 name="fastapi",
                 required=True,
                 min_version="0.68.0",
                 description="FastAPI web framework",
-                recovery_command="uv add fastapi"
+                recovery_command="uv add fastapi",
             ),
             "uvicorn": DependencyInfo(
                 name="uvicorn",
                 required=True,
                 min_version="0.15.0",
                 description="ASGI server for FastAPI",
-                recovery_command="uv add uvicorn"
+                recovery_command="uv add uvicorn",
             ),
             "numpy": DependencyInfo(
                 name="numpy",
                 required=True,
                 description="Numerical computing library",
-                recovery_command="uv add numpy"
+                recovery_command="uv add numpy",
             ),
             "soundfile": DependencyInfo(
                 name="soundfile",
                 required=True,
                 description="Audio file I/O library",
-                recovery_command="uv add soundfile"
+                recovery_command="uv add soundfile",
             ),
-
             # Optional dependencies
             "faster_whisper": DependencyInfo(
                 name="faster-whisper",
                 required=False,
                 import_name="faster_whisper",
                 description="Whisper STT for audio quality validation",
-                recovery_command="uv add faster-whisper"
+                recovery_command="uv add faster-whisper",
             ),
             "pydub": DependencyInfo(
                 name="pydub",
                 required=False,
                 description="Audio processing library",
-                recovery_command="uv add pydub"
+                recovery_command="uv add pydub",
             ),
             "websockets": DependencyInfo(
                 name="websockets",
                 required=False,
                 description="WebSocket support for real-time communication",
-                recovery_command="uv add websockets"
+                recovery_command="uv add websockets",
             ),
             "watchdog": DependencyInfo(
                 name="watchdog",
                 required=False,
                 description="File system monitoring for hot reload",
-                recovery_command="uv add watchdog"
-            )
+                recovery_command="uv add watchdog",
+            ),
         }
 
         self.health_status = {}
@@ -143,10 +145,10 @@ class DependencyHealth:
     def check_dependency_health(self, dep_name: str) -> HealthCheckResult:
         """
         Check the health of a specific dependency.
-        
+
         Args:
             dep_name: Name of the dependency to check
-            
+
         Returns:
             HealthCheckResult with status and details
         """
@@ -154,7 +156,7 @@ class DependencyHealth:
             return HealthCheckResult(
                 dependency=dep_name,
                 status=DependencyStatus.FAILED,
-                error_message=f"Unknown dependency: {dep_name}"
+                error_message=f"Unknown dependency: {dep_name}",
             )
 
         dep_info = self.dependencies[dep_name]
@@ -166,7 +168,7 @@ class DependencyHealth:
 
             # Get version if available
             version = None
-            for attr in ['__version__', 'version', 'VERSION']:
+            for attr in ["__version__", "version", "VERSION"]:
                 if hasattr(module, attr):
                     version = getattr(module, attr)
                     break
@@ -175,12 +177,13 @@ class DependencyHealth:
             if dep_info.min_version and version:
                 try:
                     from packaging import version as pkg_version
+
                     if pkg_version.parse(str(version)) < pkg_version.parse(dep_info.min_version):
                         return HealthCheckResult(
                             dependency=dep_name,
                             status=DependencyStatus.OUTDATED,
                             version=str(version),
-                            error_message=f"Version {version} < required {dep_info.min_version}"
+                            error_message=f"Version {version} < required {dep_info.min_version}",
                         )
                 except ImportError:
                     # packaging not available, skip version check
@@ -195,32 +198,28 @@ class DependencyHealth:
                         dependency=dep_name,
                         status=DependencyStatus.CORRUPTED,
                         version=str(version) if version else None,
-                        error_message=f"Health check failed: {e}"
+                        error_message=f"Health check failed: {e}",
                     )
 
             return HealthCheckResult(
                 dependency=dep_name,
                 status=DependencyStatus.HEALTHY,
-                version=str(version) if version else None
+                version=str(version) if version else None,
             )
 
         except ImportError as e:
             return HealthCheckResult(
-                dependency=dep_name,
-                status=DependencyStatus.MISSING,
-                error_message=str(e)
+                dependency=dep_name, status=DependencyStatus.MISSING, error_message=str(e)
             )
         except Exception as e:
             return HealthCheckResult(
-                dependency=dep_name,
-                status=DependencyStatus.CORRUPTED,
-                error_message=str(e)
+                dependency=dep_name, status=DependencyStatus.CORRUPTED, error_message=str(e)
             )
 
     def validate_startup_dependencies(self) -> dict[str, HealthCheckResult]:
         """
         Validate all dependencies at startup.
-        
+
         Returns:
             Dictionary mapping dependency names to health check results
         """
@@ -253,10 +252,10 @@ class DependencyHealth:
     def attempt_recovery(self, dep_name: str) -> HealthCheckResult:
         """
         Attempt to recover a failed dependency.
-        
+
         Args:
             dep_name: Name of the dependency to recover
-            
+
         Returns:
             HealthCheckResult after recovery attempt
         """
@@ -264,7 +263,7 @@ class DependencyHealth:
             return HealthCheckResult(
                 dependency=dep_name,
                 status=DependencyStatus.FAILED,
-                error_message=f"Unknown dependency: {dep_name}"
+                error_message=f"Unknown dependency: {dep_name}",
             )
 
         dep_info = self.dependencies[dep_name]
@@ -274,7 +273,7 @@ class DependencyHealth:
                 dependency=dep_name,
                 status=DependencyStatus.FAILED,
                 error_message="No recovery command available",
-                recovery_attempted=False
+                recovery_attempted=False,
             )
 
         self.logger.info(f"Attempting recovery for {dep_name}...")
@@ -285,7 +284,7 @@ class DependencyHealth:
                 dep_info.recovery_command.split(),
                 capture_output=True,
                 text=True,
-                timeout=300  # 5 minute timeout
+                timeout=300,  # 5 minute timeout
             )
 
             if result.returncode == 0:
@@ -294,12 +293,14 @@ class DependencyHealth:
                 # Re-check health after recovery
                 health_result = self.check_dependency_health(dep_name)
                 health_result.recovery_attempted = True
-                health_result.recovery_successful = (health_result.status == DependencyStatus.HEALTHY)
+                health_result.recovery_successful = health_result.status == DependencyStatus.HEALTHY
 
                 if health_result.recovery_successful:
                     self.logger.info(f"✅ Recovery successful for {dep_name}")
                 else:
-                    self.logger.warning(f"⚠️ Recovery attempted but dependency still unhealthy: {dep_name}")
+                    self.logger.warning(
+                        f"⚠️ Recovery attempted but dependency still unhealthy: {dep_name}"
+                    )
 
                 return health_result
             else:
@@ -309,7 +310,7 @@ class DependencyHealth:
                     status=DependencyStatus.FAILED,
                     error_message=f"Recovery command failed: {result.stderr}",
                     recovery_attempted=True,
-                    recovery_successful=False
+                    recovery_successful=False,
                 )
 
         except subprocess.TimeoutExpired:
@@ -319,7 +320,7 @@ class DependencyHealth:
                 status=DependencyStatus.FAILED,
                 error_message="Recovery command timed out",
                 recovery_attempted=True,
-                recovery_successful=False
+                recovery_successful=False,
             )
         except Exception as e:
             self.logger.error(f"Recovery attempt failed for {dep_name}: {e}")
@@ -328,16 +329,16 @@ class DependencyHealth:
                 status=DependencyStatus.FAILED,
                 error_message=f"Recovery attempt failed: {e}",
                 recovery_attempted=True,
-                recovery_successful=False
+                recovery_successful=False,
             )
 
     def validate_and_recover(self, auto_recover: bool = True) -> dict[str, HealthCheckResult]:
         """
         Validate dependencies and attempt recovery for failed ones.
-        
+
         Args:
             auto_recover: Whether to automatically attempt recovery
-            
+
         Returns:
             Dictionary mapping dependency names to final health check results
         """
@@ -349,7 +350,8 @@ class DependencyHealth:
 
         # Attempt recovery for failed dependencies
         recovery_needed = [
-            name for name, result in results.items()
+            name
+            for name, result in results.items()
             if result.status in [DependencyStatus.MISSING, DependencyStatus.CORRUPTED]
             and not self.dependencies[name].required  # Only recover optional deps automatically
         ]
@@ -364,7 +366,7 @@ class DependencyHealth:
     def get_health_summary(self) -> dict[str, Any]:
         """
         Get a summary of dependency health status.
-        
+
         Returns:
             Dictionary containing health summary
         """
@@ -379,7 +381,7 @@ class DependencyHealth:
             "corrupted": 0,
             "failed": 0,
             "critical_missing": 0,
-            "optional_missing": 0
+            "optional_missing": 0,
         }
 
         for dep_name, result in self.health_status.items():

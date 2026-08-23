@@ -27,7 +27,7 @@ class TestPhonemizationPreprocessor:
         text = "Hello world"
         result = processor.preprocess_text(text)
         assert result is not None
-        assert hasattr(result, 'processed_text')
+        assert hasattr(result, "processed_text")
         assert isinstance(result.processed_text, str)
 
     def test_preprocess_temperature_celsius(self, processor):
@@ -189,12 +189,7 @@ class TestPhonemizationPreprocessorEdgeCases:
 
     def test_initialization_with_config(self):
         """Test PhonemizationPreprocessor with config dict"""
-        config = {
-            'text_processing': {
-                'expand_contractions': True,
-                'natural_speech': False
-            }
-        }
+        config = {"text_processing": {"expand_contractions": True, "natural_speech": False}}
         processor = PhonemizationPreprocessor(config=config)
         assert processor is not None
         assert processor.expand_all is True
@@ -202,12 +197,7 @@ class TestPhonemizationPreprocessorEdgeCases:
 
     def test_initialization_with_performance_config(self):
         """Test PhonemizationPreprocessor with full performance config"""
-        config = {
-            'text_processing': {
-                'expand_contractions': True,
-                'natural_speech': True
-            }
-        }
+        config = {"text_processing": {"expand_contractions": True, "natural_speech": True}}
         processor = PhonemizationPreprocessor(config=config)
         # expand_problematic_only, filter_emojis, etc are loaded from config.performance
         assert processor is not None
@@ -231,12 +221,13 @@ class TestPreprocessingResult:
     def test_preprocessing_result_creation(self):
         """Test creating a preprocessing result"""
         from LiteTTS.text.phonemizer_preprocessor import PreprocessingResult
+
         result = PreprocessingResult(
             processed_text="hello",
             original_text="hello",
             changes_made=["test"],
             confidence_score=0.9,
-            warnings=[]
+            warnings=[],
         )
         assert result.processed_text == "hello"
         assert result.original_text == "hello"
@@ -496,10 +487,10 @@ class TestPhonemizationPreprocessorMethods:
     def test_decode_html_entities_additional(self, processor):
         """Test _decode_html_entities with numeric entities that trigger additional HTML entities handling (lines 1141-1143)"""
         # &#65; is decimal 65 = 'A' which html.unescape will decode
-        text = 'Hello &#65; world &amp; test'
+        text = "Hello &#65; world &amp; test"
         result, changes = processor._decode_html_entities(text)
-        assert 'A' in result  # numeric entity decoded
-        assert any('additional' in c.lower() for c in changes)  # additional changes detected
+        assert "A" in result  # numeric entity decoded
+        assert any("additional" in c.lower() for c in changes)  # additional changes detected
 
     def test_filter_emojis(self, processor):
         """Test emoji filtering"""
@@ -612,12 +603,12 @@ class TestPhonemizationPreprocessorMethods:
     def test_number_words_map_built(self, processor):
         """Test number words map is built"""
         assert isinstance(processor.number_words_map, dict)
-        assert '0' in processor.number_words_map
+        assert "0" in processor.number_words_map
 
     def test_symbol_words_map_built(self, processor):
         """Test symbol words map is built"""
         assert isinstance(processor.symbol_words_map, dict)
-        assert '&' in processor.symbol_words_map
+        assert "&" in processor.symbol_words_map
 
     def test_problematic_patterns_built(self, processor):
         """Test problematic patterns list is built"""
@@ -626,8 +617,8 @@ class TestPhonemizationPreprocessorMethods:
 
     def test_regex_patterns_compiled(self, processor):
         """Test regex patterns are compiled"""
-        assert hasattr(processor, 'control_char_pattern')
-        assert hasattr(processor, 'whitespace_pattern')
+        assert hasattr(processor, "control_char_pattern")
+        assert hasattr(processor, "whitespace_pattern")
 
     def test_preprocess_preserves_word_count(self, processor):
         """Test word count preservation"""
@@ -871,7 +862,7 @@ class TestPhonemizationPreprocessorEdgeCases2:
         text = "Hello world"
         result = processor.preprocess_text(text, preserve_word_count=False)
         assert result is not None
-        assert hasattr(result, 'processed_text')
+        assert hasattr(result, "processed_text")
 
     def test_preprocess_text_aggressive_no_preserve(self):
         """Test aggressive preprocessing without word count preservation"""
@@ -887,10 +878,10 @@ class TestPhonemizationPreprocessorEdgeCases2:
 
         text = "Hello world."
         result = processor.preprocess_text(text)
-        assert hasattr(result, 'original_text')
-        assert hasattr(result, 'changes_made')
-        assert hasattr(result, 'confidence_score')
-        assert hasattr(result, 'warnings')
+        assert hasattr(result, "original_text")
+        assert hasattr(result, "changes_made")
+        assert hasattr(result, "confidence_score")
+        assert hasattr(result, "warnings")
 
     def test_preprocess_text_with_config(self):
         """Test preprocessing with explicit config"""
@@ -922,7 +913,7 @@ class TestPhonemizationPreprocessorEdgeCases2:
 
         text = "Code: {foo: bar;} with $pecial@chars and 12345678901234"
         result = processor.preprocess_text(text)
-        assert hasattr(result, 'warnings')
+        assert hasattr(result, "warnings")
 
     def test_number_to_words_small(self):
         """Test number to words conversion for small numbers"""
@@ -1025,7 +1016,7 @@ class TestPhonemizationPreprocessorEdgeCases2:
 
         text = "Hello + World"
         result, changes = processor._convert_symbols_conservative(text)
-        assert '+' in result
+        assert "+" in result
 
     def test_clean_whitespace_sentence_spacing(self):
         """Test whitespace cleaning ensures sentence spacing"""
@@ -1367,14 +1358,14 @@ class TestPhonemizationPreprocessorEdgeCases2:
                 pass  # skip ordinals like '1st', '2nd'
         processor.number_words_map = integer_map
         # Remove tens entries to force fallback to tens_word path at line 1269
-        processor.number_words_map.pop('70', None)
-        processor.number_words_map.pop('80', None)
-        processor.number_words_map.pop('90', None)
+        processor.number_words_map.pop("70", None)
+        processor.number_words_map.pop("80", None)
+        processor.number_words_map.pop("90", None)
         try:
             # 70 should hit line 1269: ones=0, return tens_word (default '70' since removed)
             result = processor._number_to_words(70)
             # When tens entry is missing, it returns the default (the numeric string '70')
-            assert result == '70'
+            assert result == "70"
         finally:
             processor.number_words_map = original_map
 
@@ -1421,7 +1412,8 @@ class TestPhonemizationPreprocessorEdgeCases2:
         # Pass a config object that will cause an exception when accessed
         # This triggers the outer exception handler at lines 100-111
         import sys
-        sys.path.insert(0, '.')
+
+        sys.path.insert(0, ".")
         import LiteTTS.text.phonemizer_preprocessor as pp_module
 
         # Create a config that will raise an exception when accessed
@@ -1444,14 +1436,15 @@ class TestPhonemizationPreprocessorEdgeCases2:
     def test_config_performance_exception_fallback(self):
         """Test config.performance exception fallback (lines 93-97)"""
         import sys
-        sys.path.insert(0, '.')
+
+        sys.path.insert(0, ".")
         import LiteTTS.text.phonemizer_preprocessor as pp_module
 
         # Need to make config.performance raise an exception
         # This is tricky because we need to patch LiteTTS.config after import
-        with patch('LiteTTS.config.config') as mock_config:
+        with patch("LiteTTS.config.config") as mock_config:
             # Make performance attribute access raise
-            type(mock_config).performance = property(lambda self: 1/0)
+            type(mock_config).performance = property(lambda self: 1 / 0)
             try:
                 proc = pp_module.PhonemizationPreprocessor()
                 # Should use fallback values
@@ -1464,17 +1457,19 @@ class TestPhonemizationPreprocessorEdgeCases2:
         """Test that contractions map uses fallback when external config fails (lines 144-148)"""
         import sys
         from pathlib import Path
-        sys.path.insert(0, '.')
+
+        sys.path.insert(0, ".")
         import LiteTTS.text.phonemizer_preprocessor as pp_module
 
         # Patch Path to simulate file not existing
         original_exists = Path.exists
+
         def fake_exists(self):
-            if 'contractions.json' in str(self):
+            if "contractions.json" in str(self):
                 return False
             return original_exists(self)
 
-        with patch.object(Path, 'exists', fake_exists):
+        with patch.object(Path, "exists", fake_exists):
             proc = pp_module.PhonemizationPreprocessor()
             # Should have the fallback contractions
             assert isinstance(proc.contractions_map, dict)
@@ -1484,17 +1479,18 @@ class TestPhonemizationPreprocessorEdgeCases2:
         """Test contractions map exception handling (lines 144-145)"""
         import sys
         from pathlib import Path
-        sys.path.insert(0, '.')
+
+        sys.path.insert(0, ".")
         import LiteTTS.text.phonemizer_preprocessor as pp_module
 
         original_open = open
+
         def fake_open(*args, **kwargs):
-            if 'contractions.json' in str(args[0] if args else ''):
+            if "contractions.json" in str(args[0] if args else ""):
                 raise OSError("Simulated file error")
             return original_open(*args, **kwargs)
 
-        with patch.object(Path, 'exists', lambda self: True), \
-             patch('builtins.open', fake_open):
+        with patch.object(Path, "exists", lambda self: True), patch("builtins.open", fake_open):
             proc = pp_module.PhonemizationPreprocessor()
             assert isinstance(proc.contractions_map, dict)
 
@@ -1502,35 +1498,38 @@ class TestPhonemizationPreprocessorEdgeCases2:
         """Test that numbers map uses fallback when external config fails (lines 217-221)"""
         import sys
         from pathlib import Path
-        sys.path.insert(0, '.')
+
+        sys.path.insert(0, ".")
         import LiteTTS.text.phonemizer_preprocessor as pp_module
 
         original_exists = Path.exists
+
         def fake_exists(self):
-            if 'numbers.json' in str(self):
+            if "numbers.json" in str(self):
                 return False
             return original_exists(self)
 
-        with patch.object(Path, 'exists', fake_exists):
+        with patch.object(Path, "exists", fake_exists):
             proc = pp_module.PhonemizationPreprocessor()
             assert isinstance(proc.number_words_map, dict)
-            assert '0' in proc.number_words_map  # Fallback number
+            assert "0" in proc.number_words_map  # Fallback number
 
     def test_numbers_map_exception(self):
         """Test numbers map exception handling (lines 217-218)"""
         import sys
         from pathlib import Path
-        sys.path.insert(0, '.')
+
+        sys.path.insert(0, ".")
         import LiteTTS.text.phonemizer_preprocessor as pp_module
 
         original_open = open
+
         def fake_open(*args, **kwargs):
-            if 'numbers.json' in str(args[0] if args else ''):
+            if "numbers.json" in str(args[0] if args else ""):
                 raise OSError("Simulated file error")
             return original_open(*args, **kwargs)
 
-        with patch.object(Path, 'exists', lambda self: True), \
-             patch('builtins.open', fake_open):
+        with patch.object(Path, "exists", lambda self: True), patch("builtins.open", fake_open):
             proc = pp_module.PhonemizationPreprocessor()
             assert isinstance(proc.number_words_map, dict)
 
@@ -1538,54 +1537,57 @@ class TestPhonemizationPreprocessorEdgeCases2:
         """Test that symbols map uses fallback when external config fails (lines 248-252)"""
         import sys
         from pathlib import Path
-        sys.path.insert(0, '.')
+
+        sys.path.insert(0, ".")
         import LiteTTS.text.phonemizer_preprocessor as pp_module
 
         original_exists = Path.exists
+
         def fake_exists(self):
-            if 'symbols.json' in str(self):
+            if "symbols.json" in str(self):
                 return False
             return original_exists(self)
 
-        with patch.object(Path, 'exists', fake_exists):
+        with patch.object(Path, "exists", fake_exists):
             proc = pp_module.PhonemizationPreprocessor()
             assert isinstance(proc.symbol_words_map, dict)
-            assert '&' in proc.symbol_words_map  # Fallback symbol
+            assert "&" in proc.symbol_words_map  # Fallback symbol
 
     def test_symbols_map_exception(self):
         """Test symbols map exception handling (lines 248-249)"""
         import sys
         from pathlib import Path
-        sys.path.insert(0, '.')
+
+        sys.path.insert(0, ".")
         import LiteTTS.text.phonemizer_preprocessor as pp_module
 
         original_open = open
+
         def fake_open(*args, **kwargs):
-            if 'symbols.json' in str(args[0] if args else ''):
+            if "symbols.json" in str(args[0] if args else ""):
                 raise OSError("Simulated file error")
             return original_open(*args, **kwargs)
 
-        with patch.object(Path, 'exists', lambda self: True), \
-             patch('builtins.open', fake_open):
+        with patch.object(Path, "exists", lambda self: True), patch("builtins.open", fake_open):
             proc = pp_module.PhonemizationPreprocessor()
             assert isinstance(proc.symbol_words_map, dict)
 
     def test_convert_symbols_to_words_curly_quotes(self, processor):
         """Test _convert_symbols_to_words with curly quotes (lines 1299-1305)"""
         # Use explicit Unicode code points for curly quotes
-        left_double = '“'  # "
-        right_double = '”'  # "
-        text = f'{left_double}hello{right_double}'
+        left_double = "“"  # "
+        right_double = "”"  # "
+        text = f"{left_double}hello{right_double}"
         result, changes = processor._convert_symbols_to_words(text)
         # The quotes should be detected and processed
         assert isinstance(result, str)
 
     def test_unicode_quotes(self, processor):
         """Test unicode quote handling"""
-        text = '“Hello”'
+        text = "“Hello”"
         result, changes = processor._handle_quote_characters(text)
-        assert '“' not in result
-        assert '”' not in result
+        assert "“" not in result
+        assert "”" not in result
 
     def test_international_scripts(self, processor):
         """Test various international scripts"""
@@ -1653,8 +1655,8 @@ class TestPhonemizationPreprocessorEdgeCases2:
         processor = PhonemizationPreprocessor()
         text = "Hello world! I'm fine."
         result = processor.preprocess_text(text)
-        assert hasattr(result, 'processed_text')
-        assert hasattr(result, 'original_text')
+        assert hasattr(result, "processed_text")
+        assert hasattr(result, "original_text")
         assert result.processed_text is not None
 
     def test_html_entity_decoding(self):
@@ -1704,7 +1706,7 @@ class TestPhonemizationPreprocessorEdgeCases2:
         processor = PhonemizationPreprocessor()
         text = "Hello 👋 world"
         result, changes = processor._filter_emojis(text)
-        assert '👋' not in result
+        assert "👋" not in result
 
     def test_handle_quote_characters(self):
         """Test quote character handling"""
@@ -1993,12 +1995,14 @@ class TestPhonemizationPreprocessorGlobalConfig:
     def test_get_global_config_returns_dict(self):
         """Test _get_global_config returns a dictionary"""
         from LiteTTS.text.phonemizer_preprocessor import _get_global_config
+
         config = _get_global_config()
         assert isinstance(config, dict)
 
     def test_get_global_config_handles_missing_file(self):
         """Test _get_global_config handles missing config file gracefully"""
         from LiteTTS.text.phonemizer_preprocessor import _get_global_config
+
         # Function should return empty dict if config.json doesn't exist
         config = _get_global_config()
         assert isinstance(config, dict)
@@ -2006,35 +2010,41 @@ class TestPhonemizationPreprocessorGlobalConfig:
     def test_create_global_preprocessor(self):
         """Test _create_global_preprocessor creates instance"""
         from LiteTTS.text.phonemizer_preprocessor import _create_global_preprocessor
+
         instance = _create_global_preprocessor()
         assert isinstance(instance, PhonemizationPreprocessor)
 
     def test_global_preprocessor_instance_exists(self):
         """Test module-level phonemizer_preprocessor instance exists"""
         from LiteTTS.text.phonemizer_preprocessor import phonemizer_preprocessor
+
         assert isinstance(phonemizer_preprocessor, PhonemizationPreprocessor)
 
     def test_global_preprocessor_has_expand_all(self):
         """Test global preprocessor has expand_all attribute"""
         from LiteTTS.text.phonemizer_preprocessor import phonemizer_preprocessor
-        assert hasattr(phonemizer_preprocessor, 'expand_all')
+
+        assert hasattr(phonemizer_preprocessor, "expand_all")
 
     def test_global_preprocessor_can_preprocess(self):
         """Test global preprocessor can preprocess text"""
         from LiteTTS.text.phonemizer_preprocessor import phonemizer_preprocessor
+
         result = phonemizer_preprocessor.preprocess_text("Hello world")
         assert result is not None
-        assert hasattr(result, 'processed_text')
+        assert hasattr(result, "processed_text")
 
     def test_get_global_config_with_mocked_file(self):
         """Test _get_global_config with mocked file that exists but has error"""
         import LiteTTS.text.phonemizer_preprocessor as pp_module
+
         original = pp_module._get_global_config
 
         # Temporarily replace with a version that raises
         def mock_get_config():
             import json
             from pathlib import Path
+
             config_path = Path("config.json")
             if config_path.exists():
                 with open(config_path) as f:
@@ -2060,18 +2070,15 @@ class TestPhonemizationPreprocessorGlobalConfig:
 
         # Create a valid config structure
         valid_config = {
-            'text_processing': {
-                'expand_contractions': True,
-                'preserve_natural_unicode': False
-            }
+            "text_processing": {"expand_contractions": True, "preserve_natural_unicode": False}
         }
 
         # Mock Path.exists to return True and open to return valid JSON
         m = mock_open(read_data=json.dumps(valid_config))
-        with patch.object(Path, 'exists', return_value=True), patch('builtins.open', m):
+        with patch.object(Path, "exists", return_value=True), patch("builtins.open", m):
             config = pp_module._get_global_config()
             assert config == valid_config
-            assert 'text_processing' in config
+            assert "text_processing" in config
 
     def test_get_global_config_exception_handler(self):
         """Test _get_global_config exception handler (lines 1438-1439)"""
@@ -2081,8 +2088,8 @@ class TestPhonemizationPreprocessorGlobalConfig:
         import LiteTTS.text.phonemizer_preprocessor as pp_module
 
         # Mock Path.exists to return True but open to raise an exception
-        with patch.object(Path, 'exists', return_value=True):
-            with patch('builtins.open', side_effect=Exception("File read error")):
+        with patch.object(Path, "exists", return_value=True):
+            with patch("builtins.open", side_effect=Exception("File read error")):
                 config = pp_module._get_global_config()
                 # Should return empty dict when exception occurs
                 assert config == {}
@@ -2090,16 +2097,19 @@ class TestPhonemizationPreprocessorGlobalConfig:
     def test_decimal_conversion_exception_handler(self):
         """Test decimal conversion exception handler (line 578)"""
         from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+
         proc = PhonemizationPreprocessor()
         # The conservative converter uses integer_part = int(parts[0])
         # We need to patch int() to fail only for the decimal conversion
         # But since it's in a local function, we can patch the module-level int
         original_int = int
+
         def failing_int(s, _original=original_int):
-            if s == '3':  # Only fail for 3.14's integer part
+            if s == "3":  # Only fail for 3.14's integer part
                 raise ValueError("Conversion error")
             return _original(s)
-        with patch('builtins.int', side_effect=failing_int):
+
+        with patch("builtins.int", side_effect=failing_int):
             text = "The value is 3.14 degrees"
             result, changes = proc._convert_numbers_conservative(text)
             # Should handle exception gracefully
@@ -2108,9 +2118,10 @@ class TestPhonemizationPreprocessorGlobalConfig:
     def test_number_to_words_exception_handler(self):
         """Test number_to_words exception handler for comma numbers (lines 1171-1173)"""
         from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+
         proc = PhonemizationPreprocessor()
         # Mock int() to raise OverflowError for large numbers
-        with patch('builtins.int', side_effect=OverflowError("Too large")):
+        with patch("builtins.int", side_effect=OverflowError("Too large")):
             text = "The number is 1,000,000"
             result = proc.preprocess_text(text)
             # Should handle gracefully
@@ -2118,8 +2129,9 @@ class TestPhonemizationPreprocessorGlobalConfig:
     def test_html_unescape_exception_handler(self):
         """Test HTML unescape exception handler (lines 1145-1146)"""
         from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+
         proc = PhonemizationPreprocessor()
-        with patch('html.unescape', side_effect=Exception("Decode error")):
+        with patch("html.unescape", side_effect=Exception("Decode error")):
             text = "Test &amp; more"
             result, changes = proc._decode_html_entities(text)
             # Should continue with manual replacements only
@@ -2128,14 +2140,17 @@ class TestPhonemizationPreprocessorGlobalConfig:
     def test_decimal_value_error_handler(self):
         """Test decimal ValueError/IndexError handler (lines 1191-1192)"""
         from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+
         proc = PhonemizationPreprocessor()
         # Patch the _convert_numbers_to_words method to raise ValueError
         original_method = proc._convert_numbers_to_words
+
         def patching_method(text, aggressive=False):
             # Call the original but catch the exception internally
             # Actually, we need to raise before the try block to test the handler
             # So let's just patch int globally in a way that works
             raise ValueError("simulated error")
+
         # Try patching the method directly
         proc._convert_numbers_to_words = patching_method
         text = "Value: 5.5"
@@ -2161,12 +2176,15 @@ class TestPhonemizationPreprocessorGlobalConfig:
             @property
             def expand_problematic_contractions_only(self):
                 raise AttributeError("test")
+
             @property
             def filter_emojis(self):
                 raise AttributeError("test")
+
             @property
             def emoji_replacement(self):
                 raise AttributeError("test")
+
             @property
             def preserve_word_count(self):
                 raise AttributeError("test")
@@ -2177,6 +2195,7 @@ class TestPhonemizationPreprocessorGlobalConfig:
 
         try:
             from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+
             # Creating a new preprocessor should trigger the exception handler at lines 93-97
             proc = PhonemizationPreprocessor()
             # Verify defaults were set by the exception handler
@@ -2190,11 +2209,14 @@ class TestPhonemizationPreprocessorGlobalConfig:
     def test_aggressive_digit_conversion(self):
         """Test aggressive digit conversion fallback (lines 1204-1205, 1210)"""
         from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+
         proc = PhonemizationPreprocessor()
         # Use a map WITHOUT digit '7' so the aggressive block catches it
         original_map = proc.number_words_map.copy()
         # Remove digits 0-9 from map so aggressive fallback kicks in
-        proc.number_words_map = {k: v for k, v in original_map.items() if not k.isdigit() or int(k) > 9}
+        proc.number_words_map = {
+            k: v for k, v in original_map.items() if not k.isdigit() or int(k) > 9
+        }
         try:
             text = "I have 7 apples"
             result, changes = proc._convert_numbers_to_words(text, aggressive=True)
@@ -2206,6 +2228,7 @@ class TestPhonemizationPreprocessorGlobalConfig:
     def test_expand_contractions_conservative_with_entries(self):
         """Test _expand_contractions_conservative with entries (lines 521-529)"""
         from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+
         proc = PhonemizationPreprocessor()
         # Add a problematic contraction to the instance attribute that WILL match
         proc.problematic_contractions = {"can't": "cannot"}
@@ -2218,6 +2241,7 @@ class TestPhonemizationPreprocessorGlobalConfig:
     def test_decimal_only_conversion(self):
         """Test decimal with no integer part (.5) triggers line 821"""
         from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+
         proc = PhonemizationPreprocessor()
         # The temperature conversion has a nested number_to_words that handles .5 case
         # This requires text like "-.5C" to trigger the nested function
@@ -2228,6 +2252,7 @@ class TestPhonemizationPreprocessorGlobalConfig:
     def test_temperature_negative_decimal(self):
         """Test temperature with negative decimal like -.5C triggers nested function lines"""
         from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+
         proc = PhonemizationPreprocessor()
         # Temperature -.5C should trigger the nested number_to_words function
         text = "It's -.5C outside"
@@ -2237,24 +2262,26 @@ class TestPhonemizationPreprocessorGlobalConfig:
     def test_temperature_positive_decimal(self):
         """Test temperature with positive decimal like .5C triggers nested function lines"""
         from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+
         proc = PhonemizationPreprocessor()
         # Temperature .5C should trigger the nested number_to_words function
         text = "It's .5C outside"
         result = proc.preprocess_text(text)
         assert isinstance(result.processed_text, str)
 
-
     def test_comma_number_exception_handler(self):
         """Test comma-separated number exception handler (lines 1164-1166)"""
         from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+
         proc = PhonemizationPreprocessor()
 
         # Patch int in the phonemizer_preprocessor module's namespace
         import LiteTTS.text.phonemizer_preprocessor as pp_module
-        original_int = pp_module.int if hasattr(pp_module, 'int') else int
+
+        original_int = pp_module.int if hasattr(pp_module, "int") else int
 
         def failing_int(s):
-            if ',' in str(s):
+            if "," in str(s):
                 raise ValueError("Simulated int failure for comma numbers")
             return original_int(s) if callable(original_int) else int(s)
 
@@ -2275,12 +2302,15 @@ class TestPhonemizationPreprocessorGlobalConfig:
     def test_decimal_exception_handler(self):
         """Test decimal number exception handler (lines 1174-1176)"""
         from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+
         proc = PhonemizationPreprocessor()
 
         # Mock _safe_int to raise ValueError for decimal integer parts
         original_safe_int = proc._safe_int
+
         def failing_safe_int(value):
             raise ValueError("Simulated decimal failure")
+
         proc._safe_int = failing_safe_int
 
         try:
@@ -2292,14 +2322,17 @@ class TestPhonemizationPreprocessorGlobalConfig:
     def test_comma_exception_handler(self):
         """Test comma number exception handler (lines 1174-1176)"""
         from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+
         proc = PhonemizationPreprocessor()
 
         # Mock _safe_int to raise ValueError for comma numbers
         original_safe_int = proc._safe_int
+
         def failing_safe_int(value):
-            if ',' in str(value):
+            if "," in str(value):
                 raise ValueError("Simulated comma failure")
             return original_safe_int(value)
+
         proc._safe_int = failing_safe_int
 
         try:
@@ -2311,6 +2344,7 @@ class TestPhonemizationPreprocessorGlobalConfig:
     def test_number_to_words_nested_zero(self):
         """Test nested _number_to_words with 0 (line 831)"""
         from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+
         proc = PhonemizationPreprocessor()
         # Call _convert_numbers_conservative which has nested _number_to_words
         # that handles 0 specially at line 831
@@ -2321,6 +2355,7 @@ class TestPhonemizationPreprocessorGlobalConfig:
     def test_number_to_words_nested_fallback(self):
         """Test nested _number_to_words fallback for large numbers (line 856)"""
         from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+
         proc = PhonemizationPreprocessor()
         # Call _convert_numbers_conservative which has nested _number_to_words
         # with fallback at line 856 for numbers >= 100
@@ -2328,11 +2363,10 @@ class TestPhonemizationPreprocessorGlobalConfig:
         result, changes = proc._convert_numbers_conservative(text)
         assert isinstance(result, str)
 
-
-
     def test_convert_symbols_conservative_with_entries(self):
         """Test _convert_symbols_conservative with entries (lines 616-622)"""
         from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+
         proc = PhonemizationPreprocessor()
         # Add a problematic symbol to the instance attribute
         proc.problematic_symbols = {"@": " at "}
@@ -2342,26 +2376,22 @@ class TestPhonemizationPreprocessorGlobalConfig:
         assert isinstance(result, str)
         assert isinstance(changes, list)
 
-
-
-
     def test_comma_number_exception_handler(self):
         """Test comma number exception handler (lines 1171-1173)"""
         from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+
         proc = PhonemizationPreprocessor()
         # Verify the handler exists - actual exception requires int() to fail
         text = "1,000,000"
         try:
-            int(text.replace(',', ''))
+            int(text.replace(",", ""))
         except ValueError:
             pass  # Expected
-
-
-
 
     def test_decimal_no_integer_part(self):
         """Test decimal with no integer part (.5) triggers line 828"""
         from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+
         proc = PhonemizationPreprocessor()
         # .5 has no integer part before decimal
         text = "The value is .5"
@@ -2371,12 +2401,7 @@ class TestPhonemizationPreprocessorGlobalConfig:
     def test_number_to_words_zero(self):
         """Test _number_to_words with 0"""
         from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+
         proc = PhonemizationPreprocessor()
         result = proc._number_to_words(0)
-        assert result == 'zero'  # 0 is handled specially at line 1216
-
-
-
-
-
-
+        assert result == "zero"  # 0 is handled specially at line 1216

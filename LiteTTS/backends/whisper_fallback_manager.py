@@ -21,6 +21,7 @@ except ImportError:
     # Handle direct execution
     import sys
     from pathlib import Path
+
     sys.path.insert(0, str(Path(__file__).parent.parent))
     from backends.whisper_optimized import (
         OptimizedWhisperProcessor,
@@ -33,23 +34,28 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+
 class FallbackTrigger(Enum):
     """Reasons for triggering fallback"""
+
     RTF_EXCEEDED = "rtf_exceeded"
     MEMORY_EXCEEDED = "memory_exceeded"
     ERROR_OCCURRED = "error_occurred"
     TIMEOUT = "timeout"
     MODEL_UNAVAILABLE = "model_unavailable"
 
+
 @dataclass
 class FallbackAttempt:
     """Record of a fallback attempt"""
+
     trigger: FallbackTrigger
     original_config: dict[str, Any]
     fallback_config: dict[str, Any]
     success: bool
     processing_time: float
     error_message: str | None = None
+
 
 class WhisperFallbackManager:
     """
@@ -72,14 +78,16 @@ class WhisperFallbackManager:
 
         logger.info("WhisperFallbackManager initialized")
 
-    def transcribe_with_fallback(self, audio_path: str, audio_duration: float | None = None) -> TranscriptionResult:
+    def transcribe_with_fallback(
+        self, audio_path: str, audio_duration: float | None = None
+    ) -> TranscriptionResult:
         """
         Transcribe audio with comprehensive fallback support
-        
+
         Args:
             audio_path: Path to audio file
             audio_duration: Duration of audio in seconds
-            
+
         Returns:
             TranscriptionResult with fallback information
         """
@@ -97,13 +105,12 @@ class WhisperFallbackManager:
         # Try fallback chain
         for i, fallback_config in enumerate(self.fallback_chain):
             try:
-                logger.info(f"Attempting fallback {i+1}/{len(self.fallback_chain)}: {fallback_config}")
+                logger.info(
+                    f"Attempting fallback {i + 1}/{len(self.fallback_chain)}: {fallback_config}"
+                )
 
                 fallback_result = self._try_fallback_processor(
-                    audio_path,
-                    audio_duration,
-                    fallback_config,
-                    trigger
+                    audio_path, audio_duration, fallback_config, trigger
                 )
 
                 if fallback_result.success and self._meets_performance_criteria(fallback_result):
@@ -113,7 +120,7 @@ class WhisperFallbackManager:
                         self._get_primary_config(),
                         fallback_config,
                         True,
-                        fallback_result.processing_time
+                        fallback_result.processing_time,
                     )
 
                     # Update model name to indicate fallback was used
@@ -123,14 +130,9 @@ class WhisperFallbackManager:
                     return fallback_result
 
             except Exception as e:
-                logger.warning(f"Fallback {i+1} failed: {e}")
+                logger.warning(f"Fallback {i + 1} failed: {e}")
                 self._record_fallback_attempt(
-                    trigger,
-                    self._get_primary_config(),
-                    fallback_config,
-                    False,
-                    0,
-                    str(e)
+                    trigger, self._get_primary_config(), fallback_config, False, 0, str(e)
                 )
                 continue
 
@@ -145,14 +147,16 @@ class WhisperFallbackManager:
             return TranscriptionResult(
                 text="",
                 processing_time=0,
-                rtf=float('inf'),
+                rtf=float("inf"),
                 memory_usage_mb=0,
                 model_used="all-fallbacks-failed",
                 success=False,
-                error_message="All transcription attempts failed"
+                error_message="All transcription attempts failed",
             )
 
-    def _try_primary_processor(self, audio_path: str, audio_duration: float | None) -> TranscriptionResult:
+    def _try_primary_processor(
+        self, audio_path: str, audio_duration: float | None
+    ) -> TranscriptionResult:
         """Try the primary Whisper processor"""
         if self.primary_processor is None:
             primary_config = WhisperConfig(
@@ -161,14 +165,19 @@ class WhisperFallbackManager:
                 compute_type=self.settings.quantization,
                 cpu_threads=self.settings.cpu_threads,
                 device=self.settings.device,
-                enable_fallback=False  # We handle fallback here
+                enable_fallback=False,  # We handle fallback here
             )
             self.primary_processor = OptimizedWhisperProcessor(primary_config)
 
         return self.primary_processor.transcribe(audio_path, audio_duration)
 
-    def _try_fallback_processor(self, audio_path: str, audio_duration: float | None,
-                               fallback_config: dict[str, Any], trigger: FallbackTrigger) -> TranscriptionResult:
+    def _try_fallback_processor(
+        self,
+        audio_path: str,
+        audio_duration: float | None,
+        fallback_config: dict[str, Any],
+        trigger: FallbackTrigger,
+    ) -> TranscriptionResult:
         """Try a specific fallback processor configuration"""
 
         # Create processor key for caching
@@ -179,21 +188,20 @@ class WhisperFallbackManager:
             implementation_map = {
                 "faster-whisper": WhisperImplementation.FASTER_WHISPER,
                 "openai-whisper": WhisperImplementation.OPENAI_WHISPER,
-                "distil-whisper": WhisperImplementation.DISTIL_WHISPER
+                "distil-whisper": WhisperImplementation.DISTIL_WHISPER,
             }
 
             implementation = implementation_map.get(
-                fallback_config['implementation'],
-                WhisperImplementation.FASTER_WHISPER
+                fallback_config["implementation"], WhisperImplementation.FASTER_WHISPER
             )
 
             config = WhisperConfig(
                 implementation=implementation,
-                model_name=fallback_config['model'],
-                compute_type=fallback_config.get('compute_type', 'int8'),
+                model_name=fallback_config["model"],
+                compute_type=fallback_config.get("compute_type", "int8"),
                 cpu_threads=self.settings.cpu_threads,
                 device=self.settings.device,
-                enable_fallback=False
+                enable_fallback=False,
             )
 
             self.fallback_processors[processor_key] = OptimizedWhisperProcessor(config)
@@ -213,7 +221,9 @@ class WhisperFallbackManager:
 
         # Check memory threshold
         if result.memory_usage_mb > self.settings.memory_threshold_mb:
-            logger.debug(f"Memory {result.memory_usage_mb:.1f}MB exceeds threshold {self.settings.memory_threshold_mb}MB")
+            logger.debug(
+                f"Memory {result.memory_usage_mb:.1f}MB exceeds threshold {self.settings.memory_threshold_mb}MB"
+            )
             return False
 
         return True
@@ -243,12 +253,18 @@ class WhisperFallbackManager:
         return {
             "implementation": "faster-whisper",
             "model": self.settings.default_model,
-            "compute_type": self.settings.quantization
+            "compute_type": self.settings.quantization,
         }
 
-    def _record_fallback_attempt(self, trigger: FallbackTrigger, original_config: dict[str, Any],
-                                fallback_config: dict[str, Any], success: bool,
-                                processing_time: float, error_message: str | None = None):
+    def _record_fallback_attempt(
+        self,
+        trigger: FallbackTrigger,
+        original_config: dict[str, Any],
+        fallback_config: dict[str, Any],
+        success: bool,
+        processing_time: float,
+        error_message: str | None = None,
+    ):
         """Record fallback attempt for analysis"""
         attempt = FallbackAttempt(
             trigger=trigger,
@@ -256,7 +272,7 @@ class WhisperFallbackManager:
             fallback_config=fallback_config,
             success=success,
             processing_time=processing_time,
-            error_message=error_message
+            error_message=error_message,
         )
 
         self.fallback_attempts.append(attempt)
@@ -298,11 +314,13 @@ class WhisperFallbackManager:
             "common_triggers": common_triggers,
             "model_success_rates": {
                 model: {
-                    "success_rate": stats["successes"] / stats["attempts"] if stats["attempts"] > 0 else 0.0,
-                    "attempts": stats["attempts"]
+                    "success_rate": stats["successes"] / stats["attempts"]
+                    if stats["attempts"] > 0
+                    else 0.0,
+                    "attempts": stats["attempts"],
                 }
                 for model, stats in self.success_rates.items()
-            }
+            },
         }
 
     def optimize_fallback_chain(self):
@@ -319,17 +337,15 @@ class WhisperFallbackManager:
                 config_key = f"{attempt.fallback_config['implementation']}_{attempt.fallback_config['model']}"
 
                 if config_key not in model_performance:
-                    model_performance[config_key] = {
-                        "times": [],
-                        "successes": 0,
-                        "attempts": 0
-                    }
+                    model_performance[config_key] = {"times": [], "successes": 0, "attempts": 0}
 
                 model_performance[config_key]["times"].append(attempt.processing_time)
                 model_performance[config_key]["successes"] += 1
 
             # Count all attempts
-            config_key = f"{attempt.fallback_config['implementation']}_{attempt.fallback_config['model']}"
+            config_key = (
+                f"{attempt.fallback_config['implementation']}_{attempt.fallback_config['model']}"
+            )
             if config_key in model_performance:
                 model_performance[config_key]["attempts"] += 1
 
@@ -338,10 +354,14 @@ class WhisperFallbackManager:
         for config_key, perf in model_performance.items():
             if perf["attempts"] > 0:
                 success_rate = perf["successes"] / perf["attempts"]
-                avg_time = sum(perf["times"]) / len(perf["times"]) if perf["times"] else float('inf')
+                avg_time = (
+                    sum(perf["times"]) / len(perf["times"]) if perf["times"] else float("inf")
+                )
 
                 # Score combines success rate and speed (lower time is better)
-                score = success_rate * (1.0 / (avg_time + 0.1))  # Add small constant to avoid division by zero
+                score = success_rate * (
+                    1.0 / (avg_time + 0.1)
+                )  # Add small constant to avoid division by zero
 
                 optimized_order.append((config_key, score, success_rate, avg_time))
 
@@ -350,7 +370,9 @@ class WhisperFallbackManager:
 
         logger.info("Fallback optimization analysis:")
         for config_key, score, success_rate, avg_time in optimized_order[:5]:
-            logger.info(f"  {config_key}: score={score:.3f}, success_rate={success_rate:.3f}, avg_time={avg_time:.2f}s")
+            logger.info(
+                f"  {config_key}: score={score:.3f}, success_rate={success_rate:.3f}, avg_time={avg_time:.2f}s"
+            )
 
     def clear_cache(self):
         """Clear processor cache to free memory"""
@@ -363,8 +385,10 @@ class WhisperFallbackManager:
         self.fallback_processors.clear()
         logger.info("Fallback manager cache cleared")
 
+
 # Global fallback manager instance
 _fallback_manager = None
+
 
 def get_fallback_manager(config_file: str | None = None) -> WhisperFallbackManager:
     """Get the global fallback manager instance"""
@@ -375,20 +399,24 @@ def get_fallback_manager(config_file: str | None = None) -> WhisperFallbackManag
 
     return _fallback_manager
 
+
 # Convenience function for easy transcription with fallback
-def transcribe_with_fallback(audio_path: str, audio_duration: float | None = None) -> TranscriptionResult:
+def transcribe_with_fallback(
+    audio_path: str, audio_duration: float | None = None
+) -> TranscriptionResult:
     """
     Transcribe audio with automatic fallback support
-    
+
     Args:
         audio_path: Path to audio file
         audio_duration: Duration of audio in seconds
-        
+
     Returns:
         TranscriptionResult with fallback information
     """
     manager = get_fallback_manager()
     return manager.transcribe_with_fallback(audio_path, audio_duration)
+
 
 # Example usage
 if __name__ == "__main__":

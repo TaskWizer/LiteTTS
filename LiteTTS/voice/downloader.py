@@ -15,23 +15,28 @@ import requests
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class DownloadProgress:
     """Download progress information"""
+
     filename: str
     downloaded_bytes: int
     total_bytes: int
     percentage: float
     speed_mbps: float = 0.0
 
+
 @dataclass
 class VoiceFileInfo:
     """Information about a voice file from HuggingFace"""
+
     name: str
     path: str
     size: int
     sha: str
     download_url: str
+
 
 class VoiceDownloader:
     """Downloads and manages voice models from HuggingFace with dynamic discovery"""
@@ -41,6 +46,7 @@ class VoiceDownloader:
         if voices_dir is None:
             try:
                 from ..config import config as default_config
+
                 voices_dir = default_config.paths.voices_dir
             except ImportError:
                 voices_dir = "LiteTTS/voices"  # Fallback
@@ -60,7 +66,9 @@ class VoiceDownloader:
         else:
             # Fallback defaults
             self.hf_repo = "onnx-community/Kokoro-82M-v1.0-ONNX"
-            self.hf_base_url = "https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main"
+            self.hf_base_url = (
+                "https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main"
+            )
             self.voices_path = "voices"
             self.auto_discovery = True
             self.cache_discovery = True
@@ -86,14 +94,13 @@ class VoiceDownloader:
             return
 
         try:
-            with open(self.discovery_cache_file, 'r') as f:
+            with open(self.discovery_cache_file, "r") as f:
                 cache_data = json.load(f)
 
             # Check cache version and structure
-            if 'voices' in cache_data and 'timestamp' in cache_data:
+            if "voices" in cache_data and "timestamp" in cache_data:
                 self.discovered_voices = {
-                    name: VoiceFileInfo(**info)
-                    for name, info in cache_data['voices'].items()
+                    name: VoiceFileInfo(**info) for name, info in cache_data["voices"].items()
                 }
                 logger.info(f"Loaded discovery cache with {len(self.discovered_voices)} voices")
 
@@ -105,20 +112,20 @@ class VoiceDownloader:
         """Save discovery cache to JSON file"""
         try:
             cache_data = {
-                'timestamp': time.time(),
-                'voices': {
+                "timestamp": time.time(),
+                "voices": {
                     name: {
-                        'name': info.name,
-                        'path': info.path,
-                        'size': info.size,
-                        'sha': info.sha,
-                        'download_url': info.download_url
+                        "name": info.name,
+                        "path": info.path,
+                        "size": info.size,
+                        "sha": info.sha,
+                        "download_url": info.download_url,
                     }
                     for name, info in self.discovered_voices.items()
-                }
+                },
             }
 
-            with open(self.discovery_cache_file, 'w') as f:
+            with open(self.discovery_cache_file, "w") as f:
                 json.dump(cache_data, f, indent=2)
 
             logger.debug(f"Saved discovery cache with {len(self.discovered_voices)} voices")
@@ -132,13 +139,13 @@ class VoiceDownloader:
             return True
 
         try:
-            with open(self.discovery_cache_file, 'r') as f:
+            with open(self.discovery_cache_file, "r") as f:
                 cache_data = json.load(f)
 
-            if 'timestamp' not in cache_data:
+            if "timestamp" not in cache_data:
                 return True
 
-            cache_age_hours = (time.time() - cache_data['timestamp']) / 3600
+            cache_age_hours = (time.time() - cache_data["timestamp"]) / 3600
             return cache_age_hours > self.cache_expiry_hours
 
         except Exception:
@@ -150,7 +157,9 @@ class VoiceDownloader:
 
         try:
             # Get repository tree from HuggingFace API
-            tree_url = f"https://huggingface.co/api/models/{self.hf_repo}/tree/main/{self.voices_path}"
+            tree_url = (
+                f"https://huggingface.co/api/models/{self.hf_repo}/tree/main/{self.voices_path}"
+            )
             response = requests.get(tree_url, timeout=30)
             response.raise_for_status()
 
@@ -159,37 +168,40 @@ class VoiceDownloader:
 
             # Find ALL .bin files automatically (no hardcoded lists)
             for item in repo_data:
-                if (item.get('type') == 'file' and
-                    item.get('path', '').endswith('.bin')):
+                if item.get("type") == "file" and item.get("path", "").endswith(".bin"):
                     voice_files.append(item)
 
             # Process discovered voice files
             self.discovered_voices = {}
             for file_info in voice_files:
-                voice_name = Path(file_info['path']).stem
+                voice_name = Path(file_info["path"]).stem
 
                 # Create VoiceFileInfo object
                 # For LFS files, use the actual file hash from lfs.oid instead of git oid
-                lfs_info = file_info.get('lfs', {})
-                actual_hash = lfs_info.get('oid', file_info.get('oid', ''))
-                actual_size = lfs_info.get('size', file_info.get('size', 0))
+                lfs_info = file_info.get("lfs", {})
+                actual_hash = lfs_info.get("oid", file_info.get("oid", ""))
+                actual_size = lfs_info.get("size", file_info.get("size", 0))
 
                 voice_info = VoiceFileInfo(
                     name=voice_name,
-                    path=file_info['path'],
+                    path=file_info["path"],
                     size=actual_size,
                     sha=actual_hash,
-                    download_url=f"{self.hf_base_url}/{file_info['path']}"
+                    download_url=f"{self.hf_base_url}/{file_info['path']}",
                 )
 
                 self.discovered_voices[voice_name] = voice_info
 
-            logger.info(f"🎭 Auto-discovered {len(self.discovered_voices)} voice files from HuggingFace")
+            logger.info(
+                f"🎭 Auto-discovered {len(self.discovered_voices)} voice files from HuggingFace"
+            )
 
             # Log discovered voices for transparency
             voice_names = sorted(self.discovered_voices.keys())
-            logger.info(f"📋 Available voices: {', '.join(voice_names[:10])}" +
-                       (f" and {len(voice_names) - 10} more..." if len(voice_names) > 10 else ""))
+            logger.info(
+                f"📋 Available voices: {', '.join(voice_names[:10])}"
+                + (f" and {len(voice_names) - 10} more..." if len(voice_names) > 10 else "")
+            )
 
             # Save to cache if caching is enabled
             if self.cache_discovery:
@@ -205,11 +217,14 @@ class VoiceDownloader:
         """Get list of all available voice names from HuggingFace"""
         return sorted(list(self.discovered_voices.keys()))
 
-    def download_voice(self, voice_name: str,
-                      progress_callback: Callable[[DownloadProgress], None] | None = None) -> bool:
+    def download_voice(
+        self, voice_name: str, progress_callback: Callable[[DownloadProgress], None] | None = None
+    ) -> bool:
         """Download a specific voice model (.bin file directly)"""
         if voice_name not in self.discovered_voices:
-            logger.error(f"Unknown voice: {voice_name}. Available voices: {list(self.discovered_voices.keys())}")
+            logger.error(
+                f"Unknown voice: {voice_name}. Available voices: {list(self.discovered_voices.keys())}"
+            )
             return False
 
         voice_info = self.discovered_voices[voice_name]
@@ -218,10 +233,14 @@ class VoiceDownloader:
         # Check if .bin file already exists and is valid
         if bin_path.exists():
             if self._validate_file_integrity(bin_path, voice_info):
-                logger.info(f"Voice {voice_name} (.bin) already exists and is valid, skipping download")
+                logger.info(
+                    f"Voice {voice_name} (.bin) already exists and is valid, skipping download"
+                )
                 return True
             else:
-                logger.warning(f"Voice {voice_name} (.bin) exists but validation failed, re-downloading")
+                logger.warning(
+                    f"Voice {voice_name} (.bin) exists but validation failed, re-downloading"
+                )
 
         # Download the .bin file directly
         url = voice_info.download_url
@@ -232,11 +251,11 @@ class VoiceDownloader:
             response = requests.get(url, stream=True, timeout=60)
             response.raise_for_status()
 
-            total_size = int(response.headers.get('content-length', voice_info.size))
+            total_size = int(response.headers.get("content-length", voice_info.size))
             downloaded_size = 0
             start_time = time.time()
 
-            with open(bin_path, 'wb') as f:
+            with open(bin_path, "wb") as f:
                 for chunk in response.iter_content(chunk_size=8192):
                     if chunk:
                         f.write(chunk)
@@ -244,14 +263,16 @@ class VoiceDownloader:
 
                         if progress_callback and total_size > 0:
                             elapsed_time = time.time() - start_time
-                            speed_mbps = (downloaded_size / (1024 * 1024)) / max(elapsed_time, 0.001)
+                            speed_mbps = (downloaded_size / (1024 * 1024)) / max(
+                                elapsed_time, 0.001
+                            )
 
                             progress = DownloadProgress(
                                 filename=voice_name,
                                 downloaded_bytes=downloaded_size,
                                 total_bytes=total_size,
                                 percentage=(downloaded_size / total_size) * 100,
-                                speed_mbps=speed_mbps
+                                speed_mbps=speed_mbps,
                             )
                             progress_callback(progress)
 
@@ -270,8 +291,9 @@ class VoiceDownloader:
                 bin_path.unlink()  # Remove partial download
             return False
 
-    def download_all_voices(self,
-                           progress_callback: Callable[[DownloadProgress], None] | None = None) -> dict[str, bool]:
+    def download_all_voices(
+        self, progress_callback: Callable[[DownloadProgress], None] | None = None
+    ) -> dict[str, bool]:
         """Download all available voices"""
         results = {}
 
@@ -284,13 +306,12 @@ class VoiceDownloader:
         logger.info(f"Completed downloading {successful}/{total} voices successfully")
         return results
 
-    def download_default_voices(self,
-                               progress_callback: Callable[[DownloadProgress], None] | None = None) -> dict[str, bool]:
+    def download_default_voices(
+        self, progress_callback: Callable[[DownloadProgress], None] | None = None
+    ) -> dict[str, bool]:
         """Download default voices (backward compatibility) - now downloads ALL voices"""
         logger.info("📥 Downloading ALL available voices (simplified voice management)")
         return self.download_all_voices(progress_callback)
-
-
 
     def is_voice_downloaded(self, voice_name: str) -> bool:
         """Check if a voice is already downloaded"""
@@ -330,14 +351,18 @@ class VoiceDownloader:
             # Check file size
             actual_size = file_path.stat().st_size
             if voice_info.size > 0 and actual_size != voice_info.size:
-                logger.warning(f"File size mismatch for {voice_info.name}: expected {voice_info.size}, got {actual_size}")
+                logger.warning(
+                    f"File size mismatch for {voice_info.name}: expected {voice_info.size}, got {actual_size}"
+                )
                 return False
 
             # Check SHA hash if available
             if voice_info.sha and voice_info.sha != "":
                 actual_hash = self._calculate_file_hash(file_path)
                 if actual_hash != voice_info.sha:
-                    logger.warning(f"Hash mismatch for {voice_info.name}: expected {voice_info.sha}, got {actual_hash}")
+                    logger.warning(
+                        f"Hash mismatch for {voice_info.name}: expected {voice_info.sha}, got {actual_hash}"
+                    )
                     return False
 
             return True
@@ -372,13 +397,13 @@ class VoiceDownloader:
             local_path = self.voices_dir / f"{voice_name}.bin"
 
             info[voice_name] = {
-                'downloaded': self.is_voice_downloaded(voice_name),
-                'local_path': str(local_path),
-                'file_exists': local_path.exists(),
-                'file_size': local_path.stat().st_size if local_path.exists() else 0,
-                'expected_size': voice_info.size,
-                'remote_url': voice_info.download_url,
-                'sha': voice_info.sha
+                "downloaded": self.is_voice_downloaded(voice_name),
+                "local_path": str(local_path),
+                "file_exists": local_path.exists(),
+                "file_size": local_path.stat().st_size if local_path.exists() else 0,
+                "expected_size": voice_info.size,
+                "remote_url": voice_info.download_url,
+                "sha": voice_info.sha,
             }
 
         return info
@@ -413,10 +438,10 @@ class VoiceDownloader:
     def get_discovery_stats(self) -> dict:
         """Get statistics about voice discovery"""
         return {
-            'total_discovered': len(self.discovered_voices),
-            'total_downloaded': len(self.get_downloaded_voices()),
-            'total_missing': len(self.get_missing_voices()),
-            'cache_file_exists': self.discovery_cache_file.exists(),
-            'cache_expired': self._is_cache_expired(),
-            'repository': self.hf_repo
+            "total_discovered": len(self.discovered_voices),
+            "total_downloaded": len(self.get_downloaded_voices()),
+            "total_missing": len(self.get_missing_voices()),
+            "cache_file_exists": self.discovery_cache_file.exists(),
+            "cache_expired": self._is_cache_expired(),
+            "repository": self.hf_repo,
         }

@@ -20,9 +20,7 @@ class TestSynthesisPerformanceConfig:
     def test_creation_custom(self):
         """Test creating config with custom values"""
         config = SynthesisPerformanceConfig(
-            target_rtf=0.3,
-            enable_fast_path=False,
-            fast_path_text_length=100
+            target_rtf=0.3, enable_fast_path=False, fast_path_text_length=100
         )
         assert config.target_rtf == 0.3
         assert config.enable_fast_path is False
@@ -47,8 +45,8 @@ class TestSynthesisOptimizer:
         """Test performance stats is initialized"""
         optimizer = SynthesisOptimizer()
         assert optimizer.performance_stats is not None
-        assert 'total_requests' in optimizer.performance_stats
-        assert 'cache_hits' in optimizer.performance_stats
+        assert "total_requests" in optimizer.performance_stats
+        assert "cache_hits" in optimizer.performance_stats
 
     def test_caches_initialized(self):
         """Test caches are initialized"""

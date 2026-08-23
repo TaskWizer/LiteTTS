@@ -16,6 +16,7 @@ from typing import Any
 try:
     from watchdog.events import FileSystemEventHandler
     from watchdog.observers import Observer
+
     WATCHDOG_AVAILABLE = True
 except ImportError:
     WATCHDOG_AVAILABLE = False
@@ -23,6 +24,7 @@ except ImportError:
     FileSystemEventHandler = None
 
 logger = logging.getLogger(__name__)
+
 
 class ConfigReloadHandler(FileSystemEventHandler):
     """File system event handler for configuration hot reloading"""
@@ -40,12 +42,14 @@ class ConfigReloadHandler(FileSystemEventHandler):
         file_path = Path(event.src_path)
 
         # Only reload for configuration files
-        if file_path.suffix in ['.json'] and file_path.name in ['config.json', 'override.json']:
+        if file_path.suffix in [".json"] and file_path.name in ["config.json", "override.json"]:
             current_time = time.time()
 
             # Debounce rapid file changes
-            if (file_path in self.last_reload and
-                current_time - self.last_reload[file_path] < self.reload_delay):
+            if (
+                file_path in self.last_reload
+                and current_time - self.last_reload[file_path] < self.reload_delay
+            ):
                 return
 
             self.last_reload[file_path] = current_time
@@ -69,7 +73,7 @@ class ConfigReloadHandler(FileSystemEventHandler):
     def _validate_json(self, file_path: str) -> bool:
         """Validate that the file contains valid JSON"""
         try:
-            with open(file_path, 'r') as f:
+            with open(file_path, "r") as f:
                 json.load(f)
             return True
         except json.JSONDecodeError as e:
@@ -78,6 +82,7 @@ class ConfigReloadHandler(FileSystemEventHandler):
         except Exception as e:
             logger.error(f"❌ File validation failed for {file_path}: {e}")
             return False
+
 
 class ConfigHotReloadManager:
     """Manages hot reloading of configuration files"""
@@ -179,7 +184,7 @@ class ConfigHotReloadManager:
             "active_watchers": len(self.observers),
             "watched_directories": len(self.watched_files),
             "registered_files": len(self.reload_callbacks),
-            "config_files": list(Path(f).name for f in self.reload_callbacks.keys())
+            "config_files": list(Path(f).name for f in self.reload_callbacks.keys()),
         }
 
     def stop(self):
@@ -193,8 +198,10 @@ class ConfigHotReloadManager:
         self.watched_files.clear()
         logger.info("🔄 Configuration hot reload manager stopped")
 
+
 # Global instance
 _config_hot_reload_manager = None
+
 
 def get_config_hot_reload_manager(enabled: bool = True) -> ConfigHotReloadManager:
     """Get or create global configuration hot reload manager instance"""
@@ -203,14 +210,17 @@ def get_config_hot_reload_manager(enabled: bool = True) -> ConfigHotReloadManage
         _config_hot_reload_manager = ConfigHotReloadManager(enabled)
     return _config_hot_reload_manager
 
-def initialize_config_hot_reload(config_files: list = None, reload_callback: Callable = None, enabled: bool = True) -> ConfigHotReloadManager:
+
+def initialize_config_hot_reload(
+    config_files: list = None, reload_callback: Callable = None, enabled: bool = True
+) -> ConfigHotReloadManager:
     """Initialize configuration hot reload system
-    
+
     Args:
         config_files: List of configuration files to watch (default: ['config.json', 'override.json'])
         reload_callback: Callback function to call when config changes
         enabled: Whether to enable hot reload
-    
+
     Returns:
         ConfigHotReloadManager instance
     """
@@ -221,10 +231,11 @@ def initialize_config_hot_reload(config_files: list = None, reload_callback: Cal
 
     # Default configuration files
     if config_files is None:
-        config_files = ['config.json', 'override.json']
+        config_files = ["config.json", "override.json"]
 
     # Default reload callback
     if reload_callback is None:
+
         def default_reload_callback(file_path: str):
             logger.info(f"🔄 Configuration file changed: {Path(file_path).name}")
             # Import here to avoid circular imports
@@ -234,13 +245,14 @@ def initialize_config_hot_reload(config_files: list = None, reload_callback: Cal
                 import sys
 
                 # Check if LiteTTS.config is already imported
-                if 'LiteTTS.config' in sys.modules:
-                    config_module = sys.modules['LiteTTS.config']
+                if "LiteTTS.config" in sys.modules:
+                    config_module = sys.modules["LiteTTS.config"]
                     importlib.reload(config_module)
                     logger.info("✅ Configuration module reloaded successfully")
                 else:
                     # Import and reload
                     import LiteTTS.config
+
                     importlib.reload(LiteTTS.config)
                     logger.info("✅ Configuration imported and reloaded successfully")
 
@@ -260,16 +272,16 @@ def initialize_config_hot_reload(config_files: list = None, reload_callback: Cal
 
     return manager
 
+
 # Example usage and testing
 if __name__ == "__main__":
+
     def test_callback(file_path: str):
         print(f"🔄 Test callback: {file_path} changed")
 
     # Initialize with test callback
     manager = initialize_config_hot_reload(
-        config_files=['config.json', 'override.json'],
-        reload_callback=test_callback,
-        enabled=True
+        config_files=["config.json", "override.json"], reload_callback=test_callback, enabled=True
     )
 
     # Show status
@@ -280,13 +292,14 @@ if __name__ == "__main__":
     print(f"  Active Watchers: {status['active_watchers']}")
     print(f"  Watched Files: {status['config_files']}")
 
-    if status['enabled']:
+    if status["enabled"]:
         print("\n✅ Configuration hot reload is active!")
         print("💡 Try editing config.json or override.json to see hot reload in action")
 
         # Keep running for testing
         try:
             import time
+
             while True:
                 time.sleep(1)
         except KeyboardInterrupt:

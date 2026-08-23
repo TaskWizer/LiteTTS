@@ -16,9 +16,11 @@ import psutil
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class CPUThresholds:
     """CPU utilization thresholds for dynamic allocation"""
+
     cpu_target: float = 75.0  # Target maximum CPU utilization (%)
     hysteresis_factor: float = 0.6  # Scale-down threshold = cpu_target * hysteresis_factor
     monitoring_interval: float = 1.0  # Monitoring interval in seconds
@@ -29,9 +31,11 @@ class CPUThresholds:
     min_threshold: float | None = None  # Deprecated: use cpu_target instead
     max_threshold: float | None = None  # Deprecated: use cpu_target instead
 
+
 @dataclass
 class CPUAllocation:
     """Current CPU core allocation state"""
+
     total_cores: int
     allocated_cores: int
     utilization_percent: float
@@ -39,6 +43,7 @@ class CPUAllocation:
     inter_op_threads: int
     intra_op_threads: int
     allocation_reason: str
+
 
 class CPUUtilizationMonitor:
     """Real-time CPU utilization monitoring with dynamic core allocation"""
@@ -53,7 +58,7 @@ class CPUUtilizationMonitor:
             timestamp=time.time(),
             inter_op_threads=1,
             intra_op_threads=1,
-            allocation_reason="initial"
+            allocation_reason="initial",
         )
 
         # Monitoring state
@@ -153,12 +158,14 @@ class CPUUtilizationMonitor:
                 timestamp=current_time,
                 inter_op_threads=inter_op,
                 intra_op_threads=intra_op,
-                allocation_reason=reason
+                allocation_reason=reason,
             )
             self._last_allocation_change = current_time
 
-        logger.info(f"CPU allocation changed: {old_allocation.allocated_cores} → {optimal_cores} cores "
-                   f"(utilization: {utilization:.1f}%, reason: {reason})")
+        logger.info(
+            f"CPU allocation changed: {old_allocation.allocated_cores} → {optimal_cores} cores "
+            f"(utilization: {utilization:.1f}%, reason: {reason})"
+        )
 
         # Notify callbacks
         for callback in self._allocation_callbacks:
@@ -233,21 +240,26 @@ class CPUUtilizationMonitor:
                     "intra_op_threads": self.current_allocation.intra_op_threads,
                     "utilization_percent": self.current_allocation.utilization_percent,
                     "allocation_reason": self.current_allocation.allocation_reason,
-                    "timestamp": self.current_allocation.timestamp
+                    "timestamp": self.current_allocation.timestamp,
                 },
                 "thresholds": {
                     "cpu_target": self.thresholds.cpu_target,
                     "scale_up_threshold": self.thresholds.cpu_target,
-                    "scale_down_threshold": self.thresholds.cpu_target * self.thresholds.hysteresis_factor,
+                    "scale_down_threshold": self.thresholds.cpu_target
+                    * self.thresholds.hysteresis_factor,
                     "hysteresis_factor": self.thresholds.hysteresis_factor,
-                    "monitoring_interval": self.thresholds.monitoring_interval
+                    "monitoring_interval": self.thresholds.monitoring_interval,
                 },
                 "utilization_history": list(self._utilization_history),
-                "average_utilization": self.get_average_utilization() if self._utilization_history else 0.0
+                "average_utilization": self.get_average_utilization()
+                if self._utilization_history
+                else 0.0,
             }
+
 
 # Global monitor instance
 _cpu_monitor: CPUUtilizationMonitor | None = None
+
 
 def get_cpu_monitor(thresholds: CPUThresholds | None = None) -> CPUUtilizationMonitor:
     """Get or create global CPU monitor instance"""
@@ -255,6 +267,7 @@ def get_cpu_monitor(thresholds: CPUThresholds | None = None) -> CPUUtilizationMo
     if _cpu_monitor is None:
         _cpu_monitor = CPUUtilizationMonitor(thresholds)
     return _cpu_monitor
+
 
 def initialize_cpu_monitoring(config: dict | None = None) -> CPUUtilizationMonitor:
     """Initialize CPU monitoring with configuration (supports both new and legacy formats)"""
@@ -271,9 +284,11 @@ def initialize_cpu_monitoring(config: dict | None = None) -> CPUUtilizationMonit
             legacy_max = config.get("max_threshold", 80.0)
             thresholds.cpu_target = legacy_max
             thresholds.hysteresis_factor = 0.6  # Default hysteresis
-            logger.warning(f"Legacy CPU threshold configuration detected. "
-                          f"Auto-migrated to cpu_target={legacy_max}%. "
-                          f"Consider updating config to use 'cpu_target' instead of 'min_threshold'/'max_threshold'.")
+            logger.warning(
+                f"Legacy CPU threshold configuration detected. "
+                f"Auto-migrated to cpu_target={legacy_max}%. "
+                f"Consider updating config to use 'cpu_target' instead of 'min_threshold'/'max_threshold'."
+            )
 
         # Common settings
         thresholds.monitoring_interval = config.get("monitoring_interval", 1.0)

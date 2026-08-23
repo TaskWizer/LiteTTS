@@ -21,7 +21,7 @@ class CodeQualityAnalyzer:
     def analyze_file(self, file_path: Path) -> dict[str, Any]:
         """Analyze a single Python file"""
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
 
             # Parse AST
@@ -29,19 +29,19 @@ class CodeQualityAnalyzer:
 
             # Analyze various aspects
             file_issues = {
-                'unused_imports': self._find_unused_imports(content, tree),
-                'long_functions': self._find_long_functions(tree),
-                'missing_docstrings': self._find_missing_docstrings(tree),
-                'complex_functions': self._find_complex_functions(tree),
-                'duplicate_code': self._find_potential_duplicates(content),
-                'naming_issues': self._find_naming_issues(tree),
-                'magic_numbers': self._find_magic_numbers(tree),
+                "unused_imports": self._find_unused_imports(content, tree),
+                "long_functions": self._find_long_functions(tree),
+                "missing_docstrings": self._find_missing_docstrings(tree),
+                "complex_functions": self._find_complex_functions(tree),
+                "duplicate_code": self._find_potential_duplicates(content),
+                "naming_issues": self._find_naming_issues(tree),
+                "magic_numbers": self._find_magic_numbers(tree),
             }
 
             return file_issues
 
         except Exception as e:
-            return {'error': str(e)}
+            return {"error": str(e)}
 
     def _find_unused_imports(self, content: str, tree: ast.AST) -> list[str]:
         """Find potentially unused imports"""
@@ -71,14 +71,12 @@ class CodeQualityAnalyzer:
         for node in ast.walk(tree):
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 # Count lines in function
-                if hasattr(node, 'end_lineno') and hasattr(node, 'lineno'):
+                if hasattr(node, "end_lineno") and hasattr(node, "lineno"):
                     length = node.end_lineno - node.lineno
                     if length > 50:  # Threshold for long functions
-                        long_functions.append({
-                            'name': node.name,
-                            'lines': length,
-                            'line_number': node.lineno
-                        })
+                        long_functions.append(
+                            {"name": node.name, "lines": length, "line_number": node.lineno}
+                        )
 
         return long_functions
 
@@ -90,18 +88,16 @@ class CodeQualityAnalyzer:
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
                 # Check if first statement is a docstring
                 has_docstring = (
-                    node.body and
-                    isinstance(node.body[0], ast.Expr) and
-                    isinstance(node.body[0].value, ast.Constant) and
-                    isinstance(node.body[0].value.value, str)
+                    node.body
+                    and isinstance(node.body[0], ast.Expr)
+                    and isinstance(node.body[0].value, ast.Constant)
+                    and isinstance(node.body[0].value.value, str)
                 )
 
-                if not has_docstring and not node.name.startswith('_'):
-                    missing.append({
-                        'type': type(node).__name__,
-                        'name': node.name,
-                        'line_number': node.lineno
-                    })
+                if not has_docstring and not node.name.startswith("_"):
+                    missing.append(
+                        {"type": type(node).__name__, "name": node.name, "line_number": node.lineno}
+                    )
 
         return missing
 
@@ -113,11 +109,9 @@ class CodeQualityAnalyzer:
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 complexity = self._calculate_complexity(node)
                 if complexity > 10:  # Threshold for complex functions
-                    complex_functions.append({
-                        'name': node.name,
-                        'complexity': complexity,
-                        'line_number': node.lineno
-                    })
+                    complex_functions.append(
+                        {"name": node.name, "complexity": complexity, "line_number": node.lineno}
+                    )
 
         return complex_functions
 
@@ -126,21 +120,25 @@ class CodeQualityAnalyzer:
         complexity = 1  # Base complexity
 
         for child in ast.walk(node):
-            if isinstance(child, (ast.If, ast.While, ast.For, ast.AsyncFor)) or isinstance(child, ast.ExceptHandler) or isinstance(child, (ast.And, ast.Or)):
+            if (
+                isinstance(child, (ast.If, ast.While, ast.For, ast.AsyncFor))
+                or isinstance(child, ast.ExceptHandler)
+                or isinstance(child, (ast.And, ast.Or))
+            ):
                 complexity += 1
 
         return complexity
 
     def _find_potential_duplicates(self, content: str) -> list[str]:
         """Find potential code duplicates (simple heuristic)"""
-        lines = content.split('\n')
+        lines = content.split("\n")
         duplicates = []
 
         # Look for repeated lines (excluding empty lines and comments)
         line_counts = defaultdict(list)
         for i, line in enumerate(lines):
             stripped = line.strip()
-            if stripped and not stripped.startswith('#') and len(stripped) > 20:
+            if stripped and not stripped.startswith("#") and len(stripped) > 20:
                 line_counts[stripped].append(i + 1)
 
         for line, occurrences in line_counts.items():
@@ -155,10 +153,10 @@ class CodeQualityAnalyzer:
 
         for node in ast.walk(tree):
             if isinstance(node, ast.FunctionDef):
-                if not re.match(r'^[a-z_][a-z0-9_]*$', node.name):
+                if not re.match(r"^[a-z_][a-z0-9_]*$", node.name):
                     issues.append(f"Function '{node.name}' doesn't follow snake_case")
             elif isinstance(node, ast.ClassDef):
-                if not re.match(r'^[A-Z][a-zA-Z0-9]*$', node.name):
+                if not re.match(r"^[A-Z][a-zA-Z0-9]*$", node.name):
                     issues.append(f"Class '{node.name}' doesn't follow PascalCase")
 
         return issues
@@ -171,10 +169,9 @@ class CodeQualityAnalyzer:
             if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
                 # Skip common acceptable numbers
                 if node.value not in [0, 1, -1, 2, 10, 100, 1000]:
-                    magic_numbers.append({
-                        'value': node.value,
-                        'line_number': getattr(node, 'lineno', 'unknown')
-                    })
+                    magic_numbers.append(
+                        {"value": node.value, "line_number": getattr(node, "lineno", "unknown")}
+                    )
 
         return magic_numbers
 
@@ -187,8 +184,7 @@ class CodeQualityAnalyzer:
 
         # Filter out __pycache__ and other irrelevant files
         python_files = [
-            f for f in python_files
-            if '__pycache__' not in str(f) and 'venv' not in str(f)
+            f for f in python_files if "__pycache__" not in str(f) and "venv" not in str(f)
         ]
 
         total_issues = defaultdict(int)
@@ -207,10 +203,11 @@ class CodeQualityAnalyzer:
                     total_issues[issue_type] += len(issues)
 
         return {
-            'total_files': len(python_files),
-            'total_issues': dict(total_issues),
-            'file_results': file_results
+            "total_files": len(python_files),
+            "total_issues": dict(total_issues),
+            "file_results": file_results,
         }
+
 
 def check_project_structure():
     """Check project structure and organization"""
@@ -218,16 +215,16 @@ def check_project_structure():
     print("-" * 40)
 
     expected_structure = {
-        'app.py': 'Main application file',
-        'LiteTTS/': 'Main package directory',
-        'LiteTTS/__init__.py': 'Package initialization',
-        'LiteTTS/config.py': 'Configuration management',
-        'LiteTTS/models.py': 'Data models',
-        'tests/': 'Test directory',
-        'docs/': 'Documentation directory',
-        'REQUIREMENTS.txt': 'Dependencies',
-        'pyproject.toml': 'Project configuration',
-        'README.md': 'Project documentation'
+        "app.py": "Main application file",
+        "LiteTTS/": "Main package directory",
+        "LiteTTS/__init__.py": "Package initialization",
+        "LiteTTS/config.py": "Configuration management",
+        "LiteTTS/models.py": "Data models",
+        "tests/": "Test directory",
+        "docs/": "Documentation directory",
+        "REQUIREMENTS.txt": "Dependencies",
+        "pyproject.toml": "Project configuration",
+        "README.md": "Project documentation",
     }
 
     missing_files = []
@@ -250,18 +247,19 @@ def check_project_structure():
 
     return len(missing_files) == 0
 
+
 def check_documentation_quality():
     """Check documentation quality"""
     print("\n📚 Checking Documentation Quality")
     print("-" * 40)
 
-    doc_files = list(Path('.').rglob("*.md"))
+    doc_files = list(Path(".").rglob("*.md"))
 
     doc_quality = {
-        'total_docs': len(doc_files),
-        'readme_exists': Path('README.md').exists(),
-        'docs_dir_exists': Path('docs').exists(),
-        'api_docs_exist': any('api' in str(f).lower() for f in doc_files)
+        "total_docs": len(doc_files),
+        "readme_exists": Path("README.md").exists(),
+        "docs_dir_exists": Path("docs").exists(),
+        "api_docs_exist": any("api" in str(f).lower() for f in doc_files),
     }
 
     print(f"   📊 Total documentation files: {doc_quality['total_docs']}")
@@ -270,6 +268,7 @@ def check_documentation_quality():
     print(f"   🔌 API documentation exists: {'✅' if doc_quality['api_docs_exist'] else '❌'}")
 
     return doc_quality
+
 
 def main():
     """Main analysis function"""
@@ -283,7 +282,7 @@ def main():
     print("\n📊 Analysis Results:")
     print(f"   Total files analyzed: {results['total_files']}")
 
-    for issue_type, count in results['total_issues'].items():
+    for issue_type, count in results["total_issues"].items():
         if count > 0:
             print(f"   {issue_type}: {count}")
 
@@ -296,13 +295,15 @@ def main():
     print("\n" + "=" * 50)
     print("📋 Quality Summary:")
     print(f"   Project structure: {'✅ Good' if structure_ok else '⚠️ Issues found'}")
-    print(f"   Documentation: {'✅ Good' if doc_quality['readme_exists'] else '⚠️ Needs improvement'}")
+    print(
+        f"   Documentation: {'✅ Good' if doc_quality['readme_exists'] else '⚠️ Needs improvement'}"
+    )
 
     # Overall assessment
     total_critical_issues = (
-        results['total_issues'].get('missing_docstrings', 0) +
-        results['total_issues'].get('complex_functions', 0) +
-        results['total_issues'].get('long_functions', 0)
+        results["total_issues"].get("missing_docstrings", 0)
+        + results["total_issues"].get("complex_functions", 0)
+        + results["total_issues"].get("long_functions", 0)
     )
 
     if total_critical_issues < 10:
@@ -318,6 +319,7 @@ def main():
     print("   - Consider extracting magic numbers to constants")
     print("   - Review and remove unused imports")
     print("   - Ensure consistent naming conventions")
+
 
 if __name__ == "__main__":
     main()

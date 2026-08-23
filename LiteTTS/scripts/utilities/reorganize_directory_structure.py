@@ -9,8 +9,9 @@ import shutil
 from pathlib import Path
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 class DirectoryReorganizer:
     """Handles systematic directory structure reorganization"""
@@ -25,45 +26,45 @@ class DirectoryReorganizer:
             {
                 "source": "tests",
                 "destination": "LiteTTS/tests/root_tests",
-                "description": "Merge root tests with LiteTTS tests"
+                "description": "Merge root tests with LiteTTS tests",
             },
             # Move JSON configs to LiteTTS/config
             {
                 "source": "LiteTTS/tokenizer.json",
                 "destination": "LiteTTS/config/tokenizer.json",
-                "description": "Move tokenizer config"
+                "description": "Move tokenizer config",
             },
             {
                 "source": "LiteTTS/tokenizer_config.json",
                 "destination": "LiteTTS/config/tokenizer_config.json",
-                "description": "Move tokenizer config"
+                "description": "Move tokenizer config",
             },
             {
                 "source": "LiteTTS/openapi.json",
                 "destination": "LiteTTS/config/openapi.json",
-                "description": "Move OpenAPI spec"
+                "description": "Move OpenAPI spec",
             },
             # Move test scripts to LiteTTS/tests
             {
                 "source": "LiteTTS/scripts/test_*.py",
                 "destination": "LiteTTS/tests/scripts",
-                "description": "Move test scripts"
+                "description": "Move test scripts",
             },
             {
                 "source": "LiteTTS/scripts/comprehensive_*.py",
                 "destination": "LiteTTS/tests/scripts",
-                "description": "Move comprehensive test scripts"
+                "description": "Move comprehensive test scripts",
             },
             {
                 "source": "LiteTTS/scripts/debug_*.py",
                 "destination": "LiteTTS/tests/scripts",
-                "description": "Move debug scripts"
+                "description": "Move debug scripts",
             },
             {
                 "source": "LiteTTS/scripts/validate_*.py",
                 "destination": "LiteTTS/tests/scripts",
-                "description": "Move validation scripts"
-            }
+                "description": "Move validation scripts",
+            },
         ]
 
         logger.info("Directory reorganizer initialized")
@@ -126,11 +127,7 @@ class DirectoryReorganizer:
         """Create new directory structure"""
         logger.info("Creating new directory structure")
 
-        new_dirs = [
-            "LiteTTS/tests/scripts",
-            "LiteTTS/tests/root_tests",
-            "LiteTTS/benchmarks"
-        ]
+        new_dirs = ["LiteTTS/tests/scripts", "LiteTTS/tests/root_tests", "LiteTTS/benchmarks"]
 
         for dir_path in new_dirs:
             Path(dir_path).mkdir(parents=True, exist_ok=True)
@@ -173,7 +170,7 @@ class DirectoryReorganizer:
         files_to_move = [
             "LiteTTS/tokenizer.json",
             "LiteTTS/tokenizer_config.json",
-            "LiteTTS/openapi.json"
+            "LiteTTS/openapi.json",
         ]
 
         for file_path in files_to_move:
@@ -196,7 +193,7 @@ class DirectoryReorganizer:
             "comprehensive_*.py",
             "debug_*.py",
             "validate_*.py",
-            "benchmark_*.py"
+            "benchmark_*.py",
         ]
 
         moved_files = []
@@ -211,7 +208,7 @@ class DirectoryReorganizer:
 
         # Create __init__.py in scripts directory
         init_file = test_scripts_dest / "__init__.py"
-        with open(init_file, 'w') as f:
+        with open(init_file, "w") as f:
             f.write("# Test scripts package\n")
 
         logger.info(f"Moved {len(moved_files)} test scripts")
@@ -232,11 +229,11 @@ class DirectoryReorganizer:
             "Common updates needed:",
             "- Update relative imports for moved test files",
             "- Update config file paths in code",
-            "- Update test discovery paths in pytest configuration"
+            "- Update test discovery paths in pytest configuration",
         ]
 
         notes_file = Path("IMPORT_UPDATE_NOTES.md")
-        with open(notes_file, 'w') as f:
+        with open(notes_file, "w") as f:
             f.write("# Import Reference Updates Needed\n\n")
             f.writelines(f"{note}\n" for note in update_notes)
 
@@ -274,21 +271,21 @@ class DirectoryReorganizer:
                 "Moved JSON configs to ./LiteTTS/config/",
                 "Moved test scripts to ./LiteTTS/tests/LiteTTS/scripts/",
                 "Created backup at ./structure_backup/",
-                "Updated directory structure for production readiness"
+                "Updated directory structure for production readiness",
             ],
             "new_structure": {
                 "LiteTTS/tests/": "All test files (root tests + kokoro tests)",
                 "LiteTTS/tests/root_tests/": "Original root-level test files",
                 "LiteTTS/tests/LiteTTS/scripts/": "Test and debug scripts",
                 "LiteTTS/config/": "All JSON configuration files",
-                "LiteTTS/benchmarks/": "Benchmark-related code"
+                "LiteTTS/benchmarks/": "Benchmark-related code",
             },
             "manual_updates_needed": [
                 "Update import paths in moved test files",
                 "Update pytest configuration for new test locations",
                 "Update any hardcoded config file paths",
-                "Review and test all moved functionality"
-            ]
+                "Review and test all moved functionality",
+            ],
         }
 
         summary_file = Path("DIRECTORY_REORGANIZATION_SUMMARY.md")
@@ -297,26 +294,27 @@ class DirectoryReorganizer:
         content += f"**Date:** {summary['reorganization_date']}\n\n"
         content += "## Changes Made\n\n"
 
-        for change in summary['changes_made']:
+        for change in summary["changes_made"]:
             content += f"- {change}\n"
 
         content += "\n## New Directory Structure\n\n"
 
-        for path, description in summary['new_structure'].items():
+        for path, description in summary["new_structure"].items():
             content += f"- **{path}** - {description}\n"
 
         content += "\n## Manual Updates Needed\n\n"
 
-        for update in summary['manual_updates_needed']:
+        for update in summary["manual_updates_needed"]:
             content += f"- {update}\n"
 
         content += "\n## Backup Location\n\n"
         content += f"Original structure backed up to: `{self.backup_dir}`\n"
 
-        with open(summary_file, 'w') as f:
+        with open(summary_file, "w") as f:
             f.write(content)
 
         logger.info(f"Summary saved to {summary_file}")
+
 
 def main():
     """Main reorganization execution"""
@@ -341,6 +339,7 @@ def main():
         return False
 
     return True
+
 
 if __name__ == "__main__":
     success = main()

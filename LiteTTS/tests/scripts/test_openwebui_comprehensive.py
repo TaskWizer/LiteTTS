@@ -12,10 +12,11 @@ import time
 import requests
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 BASE_URL = "http://localhost:8354"
+
 
 class OpenWebUIIntegrationTester:
     """Comprehensive OpenWebUI integration tester"""
@@ -59,34 +60,28 @@ class OpenWebUIIntegrationTester:
                         json={
                             "input": f"Testing voice {voice} through OpenWebUI interface.",
                             "voice": voice,
-                            "response_format": "mp3"
+                            "response_format": "mp3",
                         },
                         headers={
                             "Content-Type": "application/json",
-                            "User-Agent": "Mozilla/5.0 OpenWebUI"
+                            "User-Agent": "Mozilla/5.0 OpenWebUI",
                         },
-                        timeout=30
+                        timeout=30,
                     )
 
                     if response.status_code == 200:
                         audio_size = len(response.content)
-                        voice_results[voice] = {
-                            "success": True,
-                            "audio_size": audio_size
-                        }
+                        voice_results[voice] = {"success": True, "audio_size": audio_size}
                         logger.info(f"      ✅ SUCCESS: {audio_size} bytes")
                     else:
                         voice_results[voice] = {
                             "success": False,
-                            "error": f"HTTP {response.status_code}"
+                            "error": f"HTTP {response.status_code}",
                         }
                         logger.error(f"      ❌ FAILED: HTTP {response.status_code}")
 
                 except Exception as e:
-                    voice_results[voice] = {
-                        "success": False,
-                        "error": str(e)
-                    }
+                    voice_results[voice] = {"success": False, "error": str(e)}
                     logger.error(f"      ❌ EXCEPTION: {e}")
 
             successful_voices = sum(1 for r in voice_results.values() if r["success"])
@@ -96,7 +91,7 @@ class OpenWebUIIntegrationTester:
                 "total_voices": len(available_voices),
                 "tested_voices": len(test_voices),
                 "successful_voices": successful_voices,
-                "voice_results": voice_results
+                "voice_results": voice_results,
             }
 
         except Exception as e:
@@ -111,28 +106,28 @@ class OpenWebUIIntegrationTester:
             {
                 "name": "Contractions",
                 "text": "I can't believe it's working! We're testing contractions.",
-                "expected_features": ["contractions"]
+                "expected_features": ["contractions"],
             },
             {
                 "name": "Numbers and Currency",
                 "text": "The price is $123.45 and the temperature is 98.6 degrees.",
-                "expected_features": ["currency", "numbers"]
+                "expected_features": ["currency", "numbers"],
             },
             {
                 "name": "Dates and Times",
                 "text": "The meeting is on January 15th, 2024 at 3:30 PM.",
-                "expected_features": ["dates", "times"]
+                "expected_features": ["dates", "times"],
             },
             {
                 "name": "Acronyms and Abbreviations",
                 "text": "The FBI and CIA work with NATO. Dr. Smith lives on Main St.",
-                "expected_features": ["acronyms", "abbreviations"]
+                "expected_features": ["acronyms", "abbreviations"],
             },
             {
                 "name": "Mixed Content",
                 "text": "On 12/25/2023, we spent $50.99 at the store. It's amazing!",
-                "expected_features": ["dates", "currency", "contractions"]
-            }
+                "expected_features": ["dates", "currency", "contractions"],
+            },
         ]
 
         results = {}
@@ -146,13 +141,13 @@ class OpenWebUIIntegrationTester:
                     json={
                         "input": test_case["text"],
                         "voice": "af_heart",
-                        "response_format": "mp3"
+                        "response_format": "mp3",
                     },
                     headers={
                         "Content-Type": "application/json",
-                        "User-Agent": "Mozilla/5.0 OpenWebUI"
+                        "User-Agent": "Mozilla/5.0 OpenWebUI",
                     },
-                    timeout=30
+                    timeout=30,
                 )
 
                 if response.status_code == 200:
@@ -161,14 +156,14 @@ class OpenWebUIIntegrationTester:
                         "success": True,
                         "audio_size": audio_size,
                         "text_length": len(test_case["text"]),
-                        "features": test_case["expected_features"]
+                        "features": test_case["expected_features"],
                     }
                     logger.info(f"      ✅ SUCCESS: {audio_size} bytes")
                 else:
                     results[test_case["name"]] = {
                         "success": False,
                         "error": f"HTTP {response.status_code}",
-                        "features": test_case["expected_features"]
+                        "features": test_case["expected_features"],
                     }
                     logger.error(f"      ❌ FAILED: HTTP {response.status_code}")
 
@@ -176,7 +171,7 @@ class OpenWebUIIntegrationTester:
                 results[test_case["name"]] = {
                     "success": False,
                     "error": str(e),
-                    "features": test_case["expected_features"]
+                    "features": test_case["expected_features"],
                 }
                 logger.error(f"      ❌ EXCEPTION: {e}")
 
@@ -186,7 +181,7 @@ class OpenWebUIIntegrationTester:
             "success": successful_tests > 0,
             "total_tests": len(linguistic_tests),
             "successful_tests": successful_tests,
-            "test_results": results
+            "test_results": results,
         }
 
     def test_audio_formats(self):
@@ -204,16 +199,12 @@ class OpenWebUIIntegrationTester:
             try:
                 response = requests.post(
                     f"{self.base_url}/v1/audio/speech",
-                    json={
-                        "input": test_text,
-                        "voice": "af_heart",
-                        "response_format": format_name
-                    },
+                    json={"input": test_text, "voice": "af_heart", "response_format": format_name},
                     headers={
                         "Content-Type": "application/json",
-                        "User-Agent": "Mozilla/5.0 OpenWebUI"
+                        "User-Agent": "Mozilla/5.0 OpenWebUI",
                     },
-                    timeout=30
+                    timeout=30,
                 )
 
                 if response.status_code == 200:
@@ -223,21 +214,18 @@ class OpenWebUIIntegrationTester:
                     results[format_name] = {
                         "success": True,
                         "audio_size": audio_size,
-                        "content_type": content_type
+                        "content_type": content_type,
                     }
                     logger.info(f"      ✅ SUCCESS: {audio_size} bytes, {content_type}")
                 else:
                     results[format_name] = {
                         "success": False,
-                        "error": f"HTTP {response.status_code}"
+                        "error": f"HTTP {response.status_code}",
                     }
                     logger.error(f"      ❌ FAILED: HTTP {response.status_code}")
 
             except Exception as e:
-                results[format_name] = {
-                    "success": False,
-                    "error": str(e)
-                }
+                results[format_name] = {"success": False, "error": str(e)}
                 logger.error(f"      ❌ EXCEPTION: {e}")
 
         successful_formats = sum(1 for r in results.values() if r["success"])
@@ -246,14 +234,16 @@ class OpenWebUIIntegrationTester:
             "success": successful_formats > 0,
             "total_formats": len(formats_to_test),
             "successful_formats": successful_formats,
-            "format_results": results
+            "format_results": results,
         }
 
     def test_streaming_functionality(self):
         """Test streaming functionality through OpenWebUI"""
         logger.info("🌊 Testing streaming functionality through OpenWebUI...")
 
-        test_text = "This is a longer text to test the streaming functionality through OpenWebUI. " * 3
+        test_text = (
+            "This is a longer text to test the streaming functionality through OpenWebUI. " * 3
+        )
 
         try:
             start_time = time.time()
@@ -261,17 +251,10 @@ class OpenWebUIIntegrationTester:
 
             response = requests.post(
                 f"{self.base_url}/v1/audio/stream",
-                json={
-                    "input": test_text,
-                    "voice": "af_heart",
-                    "response_format": "mp3"
-                },
-                headers={
-                    "Content-Type": "application/json",
-                    "User-Agent": "Mozilla/5.0 OpenWebUI"
-                },
+                json={"input": test_text, "voice": "af_heart", "response_format": "mp3"},
+                headers={"Content-Type": "application/json", "User-Agent": "Mozilla/5.0 OpenWebUI"},
                 timeout=60,
-                stream=True
+                stream=True,
             )
 
             if response.status_code == 200:
@@ -300,21 +283,15 @@ class OpenWebUIIntegrationTester:
                     "total_size": total_size,
                     "first_chunk_time": first_chunk_time,
                     "total_time": total_time,
-                    "text_length": len(test_text)
+                    "text_length": len(test_text),
                 }
             else:
                 logger.error(f"   ❌ Streaming FAILED: HTTP {response.status_code}")
-                return {
-                    "success": False,
-                    "error": f"HTTP {response.status_code}"
-                }
+                return {"success": False, "error": f"HTTP {response.status_code}"}
 
         except Exception as e:
             logger.error(f"   ❌ Streaming EXCEPTION: {e}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            return {"success": False, "error": str(e)}
 
     def test_mobile_user_agents(self):
         """Test with various mobile user agents"""
@@ -324,29 +301,22 @@ class OpenWebUIIntegrationTester:
             "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15",
             "Mozilla/5.0 (Android 12; Mobile; rv:109.0) Gecko/109.0 Firefox/109.0",
             "Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X) AppleWebKit/605.1.15",
-            "OpenWebUI/1.0 Mobile"
+            "OpenWebUI/1.0 Mobile",
         ]
 
         test_text = "Testing mobile user agent compatibility."
         results = {}
 
         for i, user_agent in enumerate(mobile_user_agents):
-            agent_name = f"Mobile_{i+1}"
+            agent_name = f"Mobile_{i + 1}"
             logger.info(f"   Testing: {agent_name}")
 
             try:
                 response = requests.post(
                     f"{self.base_url}/v1/audio/speech",
-                    json={
-                        "input": test_text,
-                        "voice": "af_heart",
-                        "response_format": "mp3"
-                    },
-                    headers={
-                        "Content-Type": "application/json",
-                        "User-Agent": user_agent
-                    },
-                    timeout=30
+                    json={"input": test_text, "voice": "af_heart", "response_format": "mp3"},
+                    headers={"Content-Type": "application/json", "User-Agent": user_agent},
+                    timeout=30,
                 )
 
                 if response.status_code == 200:
@@ -354,14 +324,14 @@ class OpenWebUIIntegrationTester:
                     results[agent_name] = {
                         "success": True,
                         "audio_size": audio_size,
-                        "user_agent": user_agent[:50] + "..."
+                        "user_agent": user_agent[:50] + "...",
                     }
                     logger.info(f"      ✅ SUCCESS: {audio_size} bytes")
                 else:
                     results[agent_name] = {
                         "success": False,
                         "error": f"HTTP {response.status_code}",
-                        "user_agent": user_agent[:50] + "..."
+                        "user_agent": user_agent[:50] + "...",
                     }
                     logger.error(f"      ❌ FAILED: HTTP {response.status_code}")
 
@@ -369,7 +339,7 @@ class OpenWebUIIntegrationTester:
                 results[agent_name] = {
                     "success": False,
                     "error": str(e),
-                    "user_agent": user_agent[:50] + "..."
+                    "user_agent": user_agent[:50] + "...",
                 }
                 logger.error(f"      ❌ EXCEPTION: {e}")
 
@@ -379,7 +349,7 @@ class OpenWebUIIntegrationTester:
             "success": successful_agents > 0,
             "total_agents": len(mobile_user_agents),
             "successful_agents": successful_agents,
-            "agent_results": results
+            "agent_results": results,
         }
 
     def run_comprehensive_test(self):
@@ -404,13 +374,13 @@ class OpenWebUIIntegrationTester:
             ("Linguistic Features", self.test_linguistic_features),
             ("Audio Formats", self.test_audio_formats),
             ("Streaming Functionality", self.test_streaming_functionality),
-            ("Mobile User Agents", self.test_mobile_user_agents)
+            ("Mobile User Agents", self.test_mobile_user_agents),
         ]
 
         test_results = {}
 
         for test_name, test_func in tests:
-            logger.info(f"\n{'='*20} {test_name} {'='*20}")
+            logger.info(f"\n{'=' * 20} {test_name} {'=' * 20}")
             try:
                 result = test_func()
                 test_results[test_name] = result
@@ -434,7 +404,7 @@ class OpenWebUIIntegrationTester:
             "success": len(self.passed_tests) > len(self.failed_tests),
             "test_results": test_results,
             "passed_tests": self.passed_tests,
-            "failed_tests": self.failed_tests
+            "failed_tests": self.failed_tests,
         }
 
     def generate_test_summary(self, test_results):
@@ -450,7 +420,7 @@ class OpenWebUIIntegrationTester:
         logger.info(f"Total Tests: {total_tests}")
         logger.info(f"Passed: {passed_tests}")
         logger.info(f"Failed: {failed_tests}")
-        logger.info(f"Success Rate: {(passed_tests/total_tests)*100:.1f}%")
+        logger.info(f"Success Rate: {(passed_tests / total_tests) * 100:.1f}%")
 
         if self.passed_tests:
             logger.info("\n✅ PASSED TESTS:")
@@ -475,6 +445,7 @@ class OpenWebUIIntegrationTester:
 
         logger.info("=" * 70)
 
+
 def main():
     """Main test function"""
     tester = OpenWebUIIntegrationTester()
@@ -491,6 +462,7 @@ def main():
         sys.exit(0)
     else:
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

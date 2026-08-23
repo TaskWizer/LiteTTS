@@ -17,8 +17,10 @@ class TestDynamicVoiceManager:
     @pytest.fixture
     def mock_manager(self):
         """Create manager with mocked dependencies"""
-        with patch('LiteTTS.voice.dynamic_manager.VoiceDownloader'), \
-             patch('LiteTTS.voice.dynamic_manager.VoiceDiscovery') as mock_discovery:
+        with (
+            patch("LiteTTS.voice.dynamic_manager.VoiceDownloader"),
+            patch("LiteTTS.voice.dynamic_manager.VoiceDiscovery") as mock_discovery,
+        ):
             mock_discovery_instance = Mock()
             mock_discovery_instance.get_available_voices.return_value = []
             mock_discovery_instance.is_voice_available.return_value = False
@@ -48,7 +50,7 @@ class TestDynamicVoiceManager:
             embedding_data=np.random.randn(128).astype(np.float32),
             metadata={"gender": "female"},
             file_path="/path/to/voice.bin",
-            checksum="abc123"
+            checksum="abc123",
         )
         assert embedding.name == "test_voice"
         assert embedding.checksum == "abc123"
@@ -110,7 +112,7 @@ class TestDynamicVoiceManager:
             embedding_data=np.random.randn(128).astype(np.float32),
             metadata={},
             file_path="/path/to/voice.bin",
-            checksum="abc123"
+            checksum="abc123",
         )
         mock_manager.loaded_voices["af_heart"] = existing_embedding
         result = mock_manager.get_voice_embedding("af_heart")
@@ -135,10 +137,7 @@ class TestDynamicVoiceManager:
         (tmp_path / "test_voice.pt").write_bytes(voice_data.tobytes())
 
         mock_manager.discovery.get_voice_info.return_value = Mock(
-            language="en",
-            gender="female",
-            nationality="american",
-            source="huggingface"
+            language="en", gender="female", nationality="american", source="huggingface"
         )
 
         result = mock_manager.get_voice_embedding("test_voice")
@@ -225,5 +224,6 @@ class TestDynamicVoiceManager:
         mock_manager.voice_mappings = {"heart": "af_heart"}
         mock_manager._save_voice_mappings()
         import json
+
         loaded = json.loads(mock_manager.mappings_cache_file.read_text())
         assert loaded == {"heart": "af_heart"}

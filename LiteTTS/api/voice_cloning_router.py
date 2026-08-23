@@ -21,6 +21,7 @@ except ImportError:
     # Handle direct execution or import issues
     import sys
     from pathlib import Path
+
     sys.path.insert(0, str(Path(__file__).parent.parent))
     from voice.cloning import AudioAnalysisResult, VoiceCloner
     from voice.metadata import VoiceMetadataManager
@@ -31,9 +32,11 @@ except ImportError:
     # Fallback import from models.py file
     import sys
     from pathlib import Path
+
     models_path = Path(__file__).parent.parent / "models.py"
     if models_path.exists():
         import importlib.util
+
         spec = importlib.util.spec_from_file_location("models", models_path)
         models_module = importlib.util.module_from_spec(spec)
         sys.modules["models"] = models_module
@@ -42,6 +45,7 @@ except ImportError:
     else:
         # Final fallback - define minimal class
         from dataclasses import dataclass
+
         @dataclass
         class VoiceMetadata:
             name: str
@@ -52,7 +56,9 @@ except ImportError:
             language: str = "en-us"
             description: str = ""
 
+
 logger = logging.getLogger(__name__)
+
 
 class VoiceCloningRouter:
     """API router for voice cloning endpoints"""
@@ -63,7 +69,7 @@ class VoiceCloningRouter:
         self.metadata_manager = VoiceMetadataManager()
 
         # Supported audio formats
-        self.supported_formats = {'.wav', '.mp3', '.m4a', '.flac', '.ogg'}
+        self.supported_formats = {".wav", ".mp3", ".m4a", ".flac", ".ogg"}
         self.max_file_size = 50 * 1024 * 1024  # 50MB for standard cloning
         self.max_file_size_extended = 200 * 1024 * 1024  # 200MB for enhanced cloning (120s support)
 
@@ -77,11 +83,11 @@ class VoiceCloningRouter:
 
         @self.router.post("/v1/voices/analyze")
         async def analyze_voice_sample(
-            audio_file: UploadFile = File(..., description="Audio file for voice analysis")
+            audio_file: UploadFile = File(..., description="Audio file for voice analysis"),
         ):
             """
             Analyze uploaded audio file for voice cloning suitability
-            
+
             Supports: WAV, MP3, M4A, FLAC, OGG files up to 50MB
             """
             try:
@@ -91,7 +97,9 @@ class VoiceCloningRouter:
                     raise HTTPException(status_code=400, detail=validation_error)
 
                 # Save temporary file
-                with tempfile.NamedTemporaryFile(delete=False, suffix=Path(audio_file.filename).suffix) as temp_file:
+                with tempfile.NamedTemporaryFile(
+                    delete=False, suffix=Path(audio_file.filename).suffix
+                ) as temp_file:
                     shutil.copyfileobj(audio_file.file, temp_file)
                     temp_path = temp_file.name
 
@@ -102,21 +110,21 @@ class VoiceCloningRouter:
                     if not analysis_result.success:
                         raise HTTPException(
                             status_code=400,
-                            detail=f"Audio analysis failed: {analysis_result.error_message}"
+                            detail=f"Audio analysis failed: {analysis_result.error_message}",
                         )
 
                     # Return analysis results
                     return {
-                        'status': 'success',
-                        'analysis': {
-                            'duration': analysis_result.duration,
-                            'sample_rate': analysis_result.sample_rate,
-                            'channels': analysis_result.channels,
-                            'quality_score': analysis_result.quality_score,
-                            'voice_characteristics': analysis_result.voice_characteristics,
-                            'suitability': self._assess_suitability(analysis_result)
+                        "status": "success",
+                        "analysis": {
+                            "duration": analysis_result.duration,
+                            "sample_rate": analysis_result.sample_rate,
+                            "channels": analysis_result.channels,
+                            "quality_score": analysis_result.quality_score,
+                            "voice_characteristics": analysis_result.voice_characteristics,
+                            "suitability": self._assess_suitability(analysis_result),
                         },
-                        'recommendations': self._get_recommendations(analysis_result)
+                        "recommendations": self._get_recommendations(analysis_result),
                     }
 
                 finally:
@@ -129,8 +137,7 @@ class VoiceCloningRouter:
             except Exception as e:
                 logger.error(f"Voice analysis failed: {e}")
                 return JSONResponse(
-                    status_code=500,
-                    content={"error": "Voice analysis failed", "detail": str(e)}
+                    status_code=500, content={"error": "Voice analysis failed", "detail": str(e)}
                 )
 
         @self.router.post("/v1/voices/create")
@@ -140,11 +147,11 @@ class VoiceCloningRouter:
             description: str = Form("", description="Optional description for the voice"),
             temporary: bool = Form(True, description="Create as temporary voice (default: true)"),
             session_id: str = Form(None, description="Session ID for temporary voice grouping"),
-            background_tasks: BackgroundTasks = None
+            background_tasks: BackgroundTasks = None,
         ):
             """
             Create a custom voice from an audio sample
-            
+
             This endpoint processes the audio file and generates a BIN voice file
             compatible with the LiteTTS synthesis engine.
             """
@@ -159,7 +166,9 @@ class VoiceCloningRouter:
                     raise HTTPException(status_code=400, detail=voice_name_error)
 
                 # Save temporary file
-                with tempfile.NamedTemporaryFile(delete=False, suffix=Path(audio_file.filename).suffix) as temp_file:
+                with tempfile.NamedTemporaryFile(
+                    delete=False, suffix=Path(audio_file.filename).suffix
+                ) as temp_file:
                     shutil.copyfileobj(audio_file.file, temp_file)
                     temp_path = temp_file.name
 
@@ -167,15 +176,18 @@ class VoiceCloningRouter:
                     if temporary:
                         # Create temporary voice
                         from ..voice.temporary_storage import TemporaryVoiceManager
+
                         temp_manager = TemporaryVoiceManager()
 
                         # Clone voice to get the voice data
-                        clone_result = self.voice_cloner.clone_voice(temp_path, voice_name, description)
+                        clone_result = self.voice_cloner.clone_voice(
+                            temp_path, voice_name, description
+                        )
 
                         if not clone_result.success:
                             raise HTTPException(
                                 status_code=400,
-                                detail=f"Voice cloning failed: {clone_result.error_message}"
+                                detail=f"Voice cloning failed: {clone_result.error_message}",
                             )
 
                         # Read the created voice file and move it to temporary storage
@@ -190,33 +202,36 @@ class VoiceCloningRouter:
                                 voice_name, voice_data, session_id
                             )
 
-                            logger.info(f"Created temporary voice: {voice_name} at {temp_voice_path}")
+                            logger.info(
+                                f"Created temporary voice: {voice_name} at {temp_voice_path}"
+                            )
 
                             return {
-                                'status': 'success',
-                                'voice': {
-                                    'name': clone_result.voice_name,
-                                    'file_path': temp_voice_path,
-                                    'similarity_score': clone_result.similarity_score,
-                                    'metadata': clone_result.metadata,
-                                    'temporary': True,
-                                    'session_id': session_id
+                                "status": "success",
+                                "voice": {
+                                    "name": clone_result.voice_name,
+                                    "file_path": temp_voice_path,
+                                    "similarity_score": clone_result.similarity_score,
+                                    "metadata": clone_result.metadata,
+                                    "temporary": True,
+                                    "session_id": session_id,
                                 },
-                                'message': f"Temporary voice '{voice_name}' created successfully. Use /v1/voices/custom/{voice_name}/save to make it permanent."
+                                "message": f"Temporary voice '{voice_name}' created successfully. Use /v1/voices/custom/{voice_name}/save to make it permanent.",
                             }
                         else:
                             raise HTTPException(
-                                status_code=500,
-                                detail="Voice file not found after creation"
+                                status_code=500, detail="Voice file not found after creation"
                             )
                     else:
                         # Create permanent voice (original behavior)
-                        clone_result = self.voice_cloner.clone_voice(temp_path, voice_name, description)
+                        clone_result = self.voice_cloner.clone_voice(
+                            temp_path, voice_name, description
+                        )
 
                         if not clone_result.success:
                             raise HTTPException(
                                 status_code=400,
-                                detail=f"Voice cloning failed: {clone_result.error_message}"
+                                detail=f"Voice cloning failed: {clone_result.error_message}",
                             )
 
                         # Register the custom voice with the metadata manager
@@ -226,45 +241,61 @@ class VoiceCloningRouter:
                                 gender="unknown",  # Could be enhanced with voice analysis
                                 accent="custom",
                                 voice_type="cloned",
-                                quality_rating=clone_result.similarity_score * 5.0 if clone_result.similarity_score else 4.0,
+                                quality_rating=clone_result.similarity_score * 5.0
+                                if clone_result.similarity_score
+                                else 4.0,
                                 language="en-us",  # Could be detected from audio
-                                description=description or f"Custom cloned voice: {voice_name}"
+                                description=description or f"Custom cloned voice: {voice_name}",
                             )
                             self.metadata_manager.add_custom_voice(voice_name, voice_metadata)
                             logger.info(f"Registered custom voice metadata for: {voice_name}")
                         except Exception as e:
-                            logger.warning(f"Failed to register voice metadata for {voice_name}: {e}")
+                            logger.warning(
+                                f"Failed to register voice metadata for {voice_name}: {e}"
+                            )
 
                         # Refresh the main app's voice list so the new voice is available for synthesis
                         try:
                             import app
-                            app_instance = getattr(app, 'app_instance', None)
-                            if app_instance and hasattr(app_instance, 'refresh_available_voices'):
+
+                            app_instance = getattr(app, "app_instance", None)
+                            if app_instance and hasattr(app_instance, "refresh_available_voices"):
                                 # Force a comprehensive refresh
                                 success = app_instance.refresh_available_voices()
                                 if success:
-                                    logger.info(f"✅ Refreshed main app voice list after creating: {voice_name}")
+                                    logger.info(
+                                        f"✅ Refreshed main app voice list after creating: {voice_name}"
+                                    )
                                     # Verify the voice is now available
-                                    if hasattr(app_instance, 'available_voices') and voice_name in app_instance.available_voices:
-                                        logger.info(f"✅ Voice '{voice_name}' confirmed available for synthesis")
+                                    if (
+                                        hasattr(app_instance, "available_voices")
+                                        and voice_name in app_instance.available_voices
+                                    ):
+                                        logger.info(
+                                            f"✅ Voice '{voice_name}' confirmed available for synthesis"
+                                        )
                                     else:
-                                        logger.warning(f"⚠️ Voice '{voice_name}' not found after refresh - may need manual restart")
+                                        logger.warning(
+                                            f"⚠️ Voice '{voice_name}' not found after refresh - may need manual restart"
+                                        )
                                 else:
-                                    logger.warning(f"❌ Voice list refresh failed for: {voice_name}")
+                                    logger.warning(
+                                        f"❌ Voice list refresh failed for: {voice_name}"
+                                    )
                         except Exception as e:
                             logger.warning(f"Failed to refresh main app voice list: {e}")
 
                         # Return success response
                         return {
-                            'status': 'success',
-                            'voice': {
-                                'name': clone_result.voice_name,
-                                'file_path': clone_result.voice_file_path,
-                                'similarity_score': clone_result.similarity_score,
-                                'metadata': clone_result.metadata,
-                                'temporary': False
+                            "status": "success",
+                            "voice": {
+                                "name": clone_result.voice_name,
+                                "file_path": clone_result.voice_file_path,
+                                "similarity_score": clone_result.similarity_score,
+                                "metadata": clone_result.metadata,
+                                "temporary": False,
                             },
-                            'message': f"Voice '{voice_name}' created successfully"
+                            "message": f"Voice '{voice_name}' created successfully",
                         }
 
                 finally:
@@ -277,19 +308,22 @@ class VoiceCloningRouter:
             except Exception as e:
                 logger.error(f"Voice creation failed: {e}")
                 return JSONResponse(
-                    status_code=500,
-                    content={"error": "Voice creation failed", "detail": str(e)}
+                    status_code=500, content={"error": "Voice creation failed", "detail": str(e)}
                 )
 
         @self.router.post("/v1/voices/create-extended")
         async def create_extended_voice(
-            audio_files: list[UploadFile] = File(..., description="Audio files for enhanced voice cloning (up to 5 files, 120s each)"),
+            audio_files: list[UploadFile] = File(
+                ..., description="Audio files for enhanced voice cloning (up to 5 files, 120s each)"
+            ),
             voice_name: str = Form(..., description="Name for the custom voice"),
             description: str = Form("", description="Optional description for the voice"),
-            enable_segmentation: bool = Form(True, description="Enable intelligent audio segmentation for long clips"),
+            enable_segmentation: bool = Form(
+                True, description="Enable intelligent audio segmentation for long clips"
+            ),
             temporary: bool = Form(True, description="Create as temporary voice (default: true)"),
             session_id: str = Form(None, description="Session ID for temporary voice grouping"),
-            background_tasks: BackgroundTasks = None
+            background_tasks: BackgroundTasks = None,
         ):
             """
             Create a custom voice using enhanced voice cloning with 120s support
@@ -304,14 +338,12 @@ class VoiceCloningRouter:
                 # Validate number of files
                 if len(audio_files) > 5:
                     raise HTTPException(
-                        status_code=400,
-                        detail=f"Too many audio files: {len(audio_files)} (max: 5)"
+                        status_code=400, detail=f"Too many audio files: {len(audio_files)} (max: 5)"
                     )
 
                 if len(audio_files) == 0:
                     raise HTTPException(
-                        status_code=400,
-                        detail="At least one audio file is required"
+                        status_code=400, detail="At least one audio file is required"
                     )
 
                 # Validate voice name
@@ -331,14 +363,14 @@ class VoiceCloningRouter:
                         if validation_error:
                             raise HTTPException(
                                 status_code=400,
-                                detail=f"File {i+1} validation failed: {validation_error}"
+                                detail=f"File {i + 1} validation failed: {validation_error}",
                             )
 
                         # Save temporary file
                         temp_file = tempfile.NamedTemporaryFile(
                             delete=False,
                             suffix=Path(audio_file.filename).suffix,
-                            prefix=f"voice_clone_{i+1}_"
+                            prefix=f"voice_clone_{i + 1}_",
                         )
                         shutil.copyfileobj(audio_file.file, temp_file)
                         temp_file.close()
@@ -350,7 +382,7 @@ class VoiceCloningRouter:
                         if not analysis_result.success:
                             raise HTTPException(
                                 status_code=400,
-                                detail=f"Audio analysis failed for file {i+1}: {analysis_result.error_message}"
+                                detail=f"Audio analysis failed for file {i + 1}: {analysis_result.error_message}",
                             )
 
                         analysis_results.append(analysis_result)
@@ -360,7 +392,7 @@ class VoiceCloningRouter:
                         if analysis_result.duration > self.voice_cloner.max_audio_duration:
                             raise HTTPException(
                                 status_code=400,
-                                detail=f"File {i+1} too long: {analysis_result.duration:.1f}s (max: {self.voice_cloner.max_audio_duration}s)"
+                                detail=f"File {i + 1} too long: {analysis_result.duration:.1f}s (max: {self.voice_cloner.max_audio_duration}s)",
                             )
 
                     # Check total duration
@@ -368,41 +400,56 @@ class VoiceCloningRouter:
                     if total_duration > max_total_duration:
                         raise HTTPException(
                             status_code=400,
-                            detail=f"Total audio duration too long: {total_duration:.1f}s (max: {max_total_duration}s)"
+                            detail=f"Total audio duration too long: {total_duration:.1f}s (max: {max_total_duration}s)",
                         )
 
                     # Enhanced voice cloning with multiple files
                     if len(temp_files) == 1:
                         # Single file - use standard cloning
-                        clone_result = self.voice_cloner.clone_voice(temp_files[0], voice_name, description)
+                        clone_result = self.voice_cloner.clone_voice(
+                            temp_files[0], voice_name, description
+                        )
                     else:
                         # Multiple files - use enhanced cloning (if available)
                         try:
                             # Try to use enhanced cloning method
-                            if hasattr(self.voice_cloner, 'clone_voice_enhanced'):
+                            if hasattr(self.voice_cloner, "clone_voice_enhanced"):
                                 clone_result = self.voice_cloner.clone_voice_enhanced(
                                     temp_files,
                                     voice_name,
                                     description,
-                                    enable_segmentation=enable_segmentation
+                                    enable_segmentation=enable_segmentation,
                                 )
                             else:
                                 # Fallback: use first file for now
-                                logger.warning("Enhanced cloning not available, using first file only")
-                                clone_result = self.voice_cloner.clone_voice(temp_files[0], voice_name, description)
+                                logger.warning(
+                                    "Enhanced cloning not available, using first file only"
+                                )
+                                clone_result = self.voice_cloner.clone_voice(
+                                    temp_files[0], voice_name, description
+                                )
                         except Exception as e:
-                            logger.error(f"Enhanced cloning failed, falling back to single file: {e}")
-                            clone_result = self.voice_cloner.clone_voice(temp_files[0], voice_name, description)
+                            logger.error(
+                                f"Enhanced cloning failed, falling back to single file: {e}"
+                            )
+                            clone_result = self.voice_cloner.clone_voice(
+                                temp_files[0], voice_name, description
+                            )
 
                     if not clone_result.success:
                         raise HTTPException(
                             status_code=400,
-                            detail=f"Voice cloning failed: {clone_result.error_message}"
+                            detail=f"Voice cloning failed: {clone_result.error_message}",
                         )
 
                     # Calculate enhanced quality metrics
-                    avg_quality = sum(r.quality_score for r in analysis_results) / len(analysis_results)
-                    quality_consistency = 1.0 - (max(r.quality_score for r in analysis_results) - min(r.quality_score for r in analysis_results))
+                    avg_quality = sum(r.quality_score for r in analysis_results) / len(
+                        analysis_results
+                    )
+                    quality_consistency = 1.0 - (
+                        max(r.quality_score for r in analysis_results)
+                        - min(r.quality_score for r in analysis_results)
+                    )
 
                     # Register the custom voice with enhanced metadata
                     try:
@@ -413,7 +460,8 @@ class VoiceCloningRouter:
                             voice_type="enhanced_cloned",
                             quality_rating=avg_quality * 5.0,
                             language="en-us",  # Could be detected from audio
-                            description=description or f"Enhanced cloned voice: {voice_name} ({len(audio_files)} clips, {total_duration:.1f}s total)"
+                            description=description
+                            or f"Enhanced cloned voice: {voice_name} ({len(audio_files)} clips, {total_duration:.1f}s total)",
                         )
                         self.metadata_manager.add_custom_voice(voice_name, voice_metadata)
                         logger.info(f"Registered enhanced voice metadata for: {voice_name}")
@@ -423,40 +471,43 @@ class VoiceCloningRouter:
                     # Refresh the main app's voice list
                     try:
                         import app
-                        app_instance = getattr(app, 'app_instance', None)
-                        if app_instance and hasattr(app_instance, 'refresh_available_voices'):
+
+                        app_instance = getattr(app, "app_instance", None)
+                        if app_instance and hasattr(app_instance, "refresh_available_voices"):
                             success = app_instance.refresh_available_voices()
                             if success:
-                                logger.info(f"✅ Refreshed main app voice list after creating enhanced voice: {voice_name}")
+                                logger.info(
+                                    f"✅ Refreshed main app voice list after creating enhanced voice: {voice_name}"
+                                )
                     except Exception as e:
                         logger.warning(f"Failed to refresh main app voice list: {e}")
 
                     # Return enhanced success response
                     return {
-                        'status': 'success',
-                        'voice': {
-                            'name': clone_result.voice_name,
-                            'file_path': clone_result.voice_file_path,
-                            'similarity_score': clone_result.similarity_score,
-                            'metadata': clone_result.metadata
+                        "status": "success",
+                        "voice": {
+                            "name": clone_result.voice_name,
+                            "file_path": clone_result.voice_file_path,
+                            "similarity_score": clone_result.similarity_score,
+                            "metadata": clone_result.metadata,
                         },
-                        'enhanced_metrics': {
-                            'total_files': len(audio_files),
-                            'total_duration': total_duration,
-                            'average_quality': avg_quality,
-                            'quality_consistency': quality_consistency,
-                            'segmentation_enabled': enable_segmentation
+                        "enhanced_metrics": {
+                            "total_files": len(audio_files),
+                            "total_duration": total_duration,
+                            "average_quality": avg_quality,
+                            "quality_consistency": quality_consistency,
+                            "segmentation_enabled": enable_segmentation,
                         },
-                        'analysis_summary': [
+                        "analysis_summary": [
                             {
-                                'file_index': i + 1,
-                                'duration': result.duration,
-                                'quality_score': result.quality_score,
-                                'sample_rate': result.sample_rate
+                                "file_index": i + 1,
+                                "duration": result.duration,
+                                "quality_score": result.quality_score,
+                                "sample_rate": result.sample_rate,
                             }
                             for i, result in enumerate(analysis_results)
                         ],
-                        'message': f"Enhanced voice '{voice_name}' created successfully from {len(audio_files)} audio files"
+                        "message": f"Enhanced voice '{voice_name}' created successfully from {len(audio_files)} audio files",
                     }
 
                 finally:
@@ -474,7 +525,7 @@ class VoiceCloningRouter:
                 logger.error(f"Enhanced voice creation failed: {e}")
                 return JSONResponse(
                     status_code=500,
-                    content={"error": "Enhanced voice creation failed", "detail": str(e)}
+                    content={"error": "Enhanced voice creation failed", "detail": str(e)},
                 )
 
         @self.router.get("/v1/voices/custom")
@@ -486,16 +537,16 @@ class VoiceCloningRouter:
                 custom_voices = self.voice_cloner.list_custom_voices()
 
                 return {
-                    'status': 'success',
-                    'custom_voices': custom_voices,
-                    'total_count': len(custom_voices)
+                    "status": "success",
+                    "custom_voices": custom_voices,
+                    "total_count": len(custom_voices),
                 }
 
             except Exception as e:
                 logger.error(f"Failed to list custom voices: {e}")
                 return JSONResponse(
                     status_code=500,
-                    content={"error": "Failed to list custom voices", "detail": str(e)}
+                    content={"error": "Failed to list custom voices", "detail": str(e)},
                 )
 
         @self.router.delete("/v1/voices/custom/{voice_name}")
@@ -517,6 +568,7 @@ class VoiceCloningRouter:
                     # Force refresh of voice discovery to update cache
                     try:
                         from ..voice.discovery import VoiceDiscovery
+
                         discovery = VoiceDiscovery(str(self.voice_cloner.voices_dir))
                         discovery.discover_voices()
                         logger.info(f"Refreshed voice discovery cache after deleting: {voice_name}")
@@ -526,22 +578,22 @@ class VoiceCloningRouter:
                     # Refresh the main app's voice list so the deleted voice is removed
                     try:
                         import app
-                        app_instance = getattr(app, 'app_instance', None)
-                        if app_instance and hasattr(app_instance, 'refresh_available_voices'):
+
+                        app_instance = getattr(app, "app_instance", None)
+                        if app_instance and hasattr(app_instance, "refresh_available_voices"):
                             app_instance.refresh_available_voices()
-                            logger.info(f"Refreshed main app voice list after deleting: {voice_name}")
+                            logger.info(
+                                f"Refreshed main app voice list after deleting: {voice_name}"
+                            )
                     except Exception as e:
                         logger.warning(f"Failed to refresh main app voice list: {e}")
 
                     return {
-                        'status': 'success',
-                        'message': f"Voice '{voice_name}' deleted successfully"
+                        "status": "success",
+                        "message": f"Voice '{voice_name}' deleted successfully",
                     }
                 else:
-                    raise HTTPException(
-                        status_code=404,
-                        detail=f"Voice '{voice_name}' not found"
-                    )
+                    raise HTTPException(status_code=404, detail=f"Voice '{voice_name}' not found")
 
             except HTTPException:
                 raise
@@ -549,7 +601,7 @@ class VoiceCloningRouter:
                 logger.error(f"Failed to delete voice {voice_name}: {e}")
                 return JSONResponse(
                     status_code=500,
-                    content={"error": f"Failed to delete voice {voice_name}", "detail": str(e)}
+                    content={"error": f"Failed to delete voice {voice_name}", "detail": str(e)},
                 )
 
         @self.router.post("/v1/voices/custom/{voice_name}/save")
@@ -559,6 +611,7 @@ class VoiceCloningRouter:
             """
             try:
                 from ..voice.temporary_storage import TemporaryVoiceManager
+
                 temp_manager = TemporaryVoiceManager()
 
                 success = temp_manager.save_voice_permanently(voice_name, session_id)
@@ -567,6 +620,7 @@ class VoiceCloningRouter:
                     # Refresh voice discovery to include the new permanent voice
                     try:
                         from ..voice.discovery import VoiceDiscovery
+
                         discovery = VoiceDiscovery(str(self.voice_cloner.voices_dir))
                         discovery.discover_voices()
                         logger.info(f"Refreshed voice discovery after saving: {voice_name}")
@@ -575,19 +629,19 @@ class VoiceCloningRouter:
 
                     return {
                         "status": "success",
-                        "message": f"Voice '{voice_name}' saved permanently"
+                        "message": f"Voice '{voice_name}' saved permanently",
                     }
                 else:
                     return JSONResponse(
                         status_code=404,
-                        content={"error": f"Temporary voice '{voice_name}' not found"}
+                        content={"error": f"Temporary voice '{voice_name}' not found"},
                     )
 
             except Exception as e:
                 logger.error(f"Failed to save voice {voice_name}: {e}")
                 return JSONResponse(
                     status_code=500,
-                    content={"error": f"Failed to save voice {voice_name}", "detail": str(e)}
+                    content={"error": f"Failed to save voice {voice_name}", "detail": str(e)},
                 )
 
         @self.router.get("/v1/voices/temporary")
@@ -597,21 +651,18 @@ class VoiceCloningRouter:
             """
             try:
                 from ..voice.temporary_storage import TemporaryVoiceManager
+
                 temp_manager = TemporaryVoiceManager()
 
                 voices = temp_manager.list_temporary_voices(session_id)
 
-                return {
-                    "status": "success",
-                    "temporary_voices": voices,
-                    "total_count": len(voices)
-                }
+                return {"status": "success", "temporary_voices": voices, "total_count": len(voices)}
 
             except Exception as e:
                 logger.error(f"Failed to list temporary voices: {e}")
                 return JSONResponse(
                     status_code=500,
-                    content={"error": "Failed to list temporary voices", "detail": str(e)}
+                    content={"error": "Failed to list temporary voices", "detail": str(e)},
                 )
 
         @self.router.delete("/v1/voices/temporary/{voice_name}")
@@ -621,6 +672,7 @@ class VoiceCloningRouter:
             """
             try:
                 from ..voice.temporary_storage import TemporaryVoiceManager
+
                 temp_manager = TemporaryVoiceManager()
 
                 success = temp_manager.delete_temporary_voice(voice_name, session_id)
@@ -628,19 +680,22 @@ class VoiceCloningRouter:
                 if success:
                     return {
                         "status": "success",
-                        "message": f"Temporary voice '{voice_name}' deleted successfully"
+                        "message": f"Temporary voice '{voice_name}' deleted successfully",
                     }
                 else:
                     return JSONResponse(
                         status_code=404,
-                        content={"error": f"Temporary voice '{voice_name}' not found"}
+                        content={"error": f"Temporary voice '{voice_name}' not found"},
                     )
 
             except Exception as e:
                 logger.error(f"Failed to delete temporary voice {voice_name}: {e}")
                 return JSONResponse(
                     status_code=500,
-                    content={"error": f"Failed to delete temporary voice {voice_name}", "detail": str(e)}
+                    content={
+                        "error": f"Failed to delete temporary voice {voice_name}",
+                        "detail": str(e),
+                    },
                 )
 
         @self.router.post("/v1/audio/clone")
@@ -648,7 +703,7 @@ class VoiceCloningRouter:
             text: str = Form(..., description="Text to synthesize"),
             voice_name: str = Form(..., description="Name of the custom voice to use"),
             response_format: str = Form("mp3", description="Audio format (mp3, wav)"),
-            speed: float = Form(1.0, description="Speech speed (0.5-2.0)")
+            speed: float = Form(1.0, description="Speech speed (0.5-2.0)"),
         ):
             """
             Generate speech using a cloned voice
@@ -660,8 +715,7 @@ class VoiceCloningRouter:
                 custom_voices = self.voice_cloner.list_custom_voices()
                 if voice_name not in custom_voices:
                     raise HTTPException(
-                        status_code=404,
-                        detail=f"Custom voice '{voice_name}' not found"
+                        status_code=404, detail=f"Custom voice '{voice_name}' not found"
                     )
 
                 # Use the model directly for synthesis
@@ -670,22 +724,20 @@ class VoiceCloningRouter:
                     import app
 
                     # Get the app instance from the global scope
-                    app_instance = getattr(app, 'app_instance', None)
+                    app_instance = getattr(app, "app_instance", None)
 
                     if not app_instance:
-                        raise HTTPException(
-                            status_code=500,
-                            detail="TTS service not available"
-                        )
+                        raise HTTPException(status_code=500, detail="TTS service not available")
 
                     # Create TTS request
                     from LiteTTS.models import TTSRequest
+
                     tts_request = TTSRequest(
                         input=text,
                         voice=voice_name,
                         response_format=response_format,
                         speed=speed,
-                        stream=False
+                        stream=False,
                     )
 
                     # Use the app's internal synthesis method
@@ -694,8 +746,7 @@ class VoiceCloningRouter:
                 except Exception as synthesis_error:
                     logger.error(f"Direct synthesis failed: {synthesis_error}")
                     raise HTTPException(
-                        status_code=500,
-                        detail=f"Voice synthesis failed: {synthesis_error!s}"
+                        status_code=500, detail=f"Voice synthesis failed: {synthesis_error!s}"
                     )
 
             except HTTPException:
@@ -704,14 +755,14 @@ class VoiceCloningRouter:
                 logger.error(f"Cloned voice synthesis failed: {e}")
                 return JSONResponse(
                     status_code=500,
-                    content={"error": "Cloned voice synthesis failed", "detail": str(e)}
+                    content={"error": "Cloned voice synthesis failed", "detail": str(e)},
                 )
 
     def _validate_audio_file(self, audio_file: UploadFile) -> str | None:
         """Validate uploaded audio file"""
 
         # Check file size
-        if hasattr(audio_file, 'size') and audio_file.size > self.max_file_size:
+        if hasattr(audio_file, "size") and audio_file.size > self.max_file_size:
             return f"File too large: {audio_file.size / 1024 / 1024:.1f}MB (max: {self.max_file_size / 1024 / 1024}MB)"
 
         # Check file extension
@@ -721,7 +772,7 @@ class VoiceCloningRouter:
                 return f"Unsupported format: {file_ext}. Supported: {', '.join(self.supported_formats)}"
 
         # Check content type
-        if audio_file.content_type and not audio_file.content_type.startswith('audio/'):
+        if audio_file.content_type and not audio_file.content_type.startswith("audio/"):
             return f"Invalid content type: {audio_file.content_type}. Expected audio file."
 
         return None
@@ -730,7 +781,7 @@ class VoiceCloningRouter:
         """Validate uploaded audio file for extended voice cloning (120s support)"""
 
         # Check file size with extended limit
-        if hasattr(audio_file, 'size') and audio_file.size > self.max_file_size_extended:
+        if hasattr(audio_file, "size") and audio_file.size > self.max_file_size_extended:
             return f"File too large: {audio_file.size / 1024 / 1024:.1f}MB (max: {self.max_file_size_extended / 1024 / 1024}MB for extended cloning)"
 
         # Check file extension
@@ -740,7 +791,7 @@ class VoiceCloningRouter:
                 return f"Unsupported format: {file_ext}. Supported: {', '.join(self.supported_formats)}"
 
         # Check content type
-        if audio_file.content_type and not audio_file.content_type.startswith('audio/'):
+        if audio_file.content_type and not audio_file.content_type.startswith("audio/"):
             return f"Invalid content type: {audio_file.content_type}. Expected audio file."
 
         return None
@@ -756,7 +807,8 @@ class VoiceCloningRouter:
 
         # Check for valid characters (alphanumeric, underscore, hyphen)
         import re
-        if not re.match(r'^[a-zA-Z0-9_-]+$', voice_name):
+
+        if not re.match(r"^[a-zA-Z0-9_-]+$", voice_name):
             return "Voice name can only contain letters, numbers, underscores, and hyphens"
 
         # Check if voice already exists
@@ -770,31 +822,42 @@ class VoiceCloningRouter:
         """Assess audio suitability for voice cloning"""
 
         suitability = {
-            'overall_score': 0.0,
-            'duration_ok': False,
-            'quality_ok': False,
-            'recommended': False,
-            'issues': []
+            "overall_score": 0.0,
+            "duration_ok": False,
+            "quality_ok": False,
+            "recommended": False,
+            "issues": [],
         }
 
         # Duration check
-        if analysis.duration >= self.voice_cloner.min_audio_duration and analysis.duration <= self.voice_cloner.max_audio_duration:
-            suitability['duration_ok'] = True
+        if (
+            analysis.duration >= self.voice_cloner.min_audio_duration
+            and analysis.duration <= self.voice_cloner.max_audio_duration
+        ):
+            suitability["duration_ok"] = True
         else:
             if analysis.duration < self.voice_cloner.min_audio_duration:
-                suitability['issues'].append(f"Audio too short ({analysis.duration:.1f}s, need ≥{self.voice_cloner.min_audio_duration}s)")
+                suitability["issues"].append(
+                    f"Audio too short ({analysis.duration:.1f}s, need ≥{self.voice_cloner.min_audio_duration}s)"
+                )
             else:
-                suitability['issues'].append(f"Audio too long ({analysis.duration:.1f}s, max {self.voice_cloner.max_audio_duration}s)")
+                suitability["issues"].append(
+                    f"Audio too long ({analysis.duration:.1f}s, max {self.voice_cloner.max_audio_duration}s)"
+                )
 
         # Quality check
         if analysis.quality_score >= 0.5:
-            suitability['quality_ok'] = True
+            suitability["quality_ok"] = True
         else:
-            suitability['issues'].append(f"Audio quality too low ({analysis.quality_score:.2f}, need ≥0.5)")
+            suitability["issues"].append(
+                f"Audio quality too low ({analysis.quality_score:.2f}, need ≥0.5)"
+            )
 
         # Overall assessment
-        suitability['overall_score'] = analysis.quality_score * (1.0 if suitability['duration_ok'] else 0.5)
-        suitability['recommended'] = suitability['duration_ok'] and suitability['quality_ok']
+        suitability["overall_score"] = analysis.quality_score * (
+            1.0 if suitability["duration_ok"] else 0.5
+        )
+        suitability["recommended"] = suitability["duration_ok"] and suitability["quality_ok"]
 
         return suitability
 
@@ -804,10 +867,14 @@ class VoiceCloningRouter:
         recommendations = []
 
         if analysis.duration < self.voice_cloner.min_audio_duration:
-            recommendations.append(f"Record at least {self.voice_cloner.min_audio_duration} seconds of clear speech")
+            recommendations.append(
+                f"Record at least {self.voice_cloner.min_audio_duration} seconds of clear speech"
+            )
 
         if analysis.duration > self.voice_cloner.max_audio_duration:
-            recommendations.append(f"Trim audio to under {self.voice_cloner.max_audio_duration} seconds")
+            recommendations.append(
+                f"Trim audio to under {self.voice_cloner.max_audio_duration} seconds"
+            )
 
         if analysis.quality_score < 0.7:
             recommendations.append("Use a quiet environment with minimal background noise")

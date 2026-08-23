@@ -31,31 +31,28 @@ def test_ticker_symbol_processing():
         ("AMZN market cap", "A-M-Z-N market cap"),
         ("NVDA earnings", "N-V-D-A earnings"),
         ("META stock fell", "M-E-T-A stock fell"),
-
         # Multiple tickers in one sentence
         ("TSLA and AAPL both gained today", "T-S-L-A and A-A-P-L both gained today"),
         ("Compare MSFT vs GOOGL performance", "Compare M-S-F-T vs G-O-O-G-L performance"),
-
         # Financial context variations
         ("TSLA stock price", "T-S-L-A stock price"),
         ("AAPL shares trading", "A-A-P-L shares trading"),
         ("MSFT equity position", "M-S-F-T equity position"),
         ("GOOGL security analysis", "G-O-O-G-L security analysis"),
-
         # ETFs and funds
         ("SPY ETF performance", "S-P-Y ETF performance"),
         ("QQQ fund holdings", "Q-Q-Q fund holdings"),
         ("VTI market exposure", "V-T-I market exposure"),
-
         # Crypto-related tickers
         ("COIN stock", "C-O-I-N stock"),
         ("MSTR holdings", "M-S-T-R holdings"),
-
         # Should NOT be processed (exclusions)
         ("The CEO said", "The CEO said"),  # CEO is excluded
-        ("USA market", "USA market"),      # USA is excluded
-        ("API documentation", "A-P-I documentation"),  # API should be excluded but might be processed
-
+        ("USA market", "USA market"),  # USA is excluded
+        (
+            "API documentation",
+            "A-P-I documentation",
+        ),  # API should be excluded but might be processed
         # Edge cases
         ("TSLA", "T-S-L-A"),  # Standalone ticker (should be processed by known tickers)
         ("Buy AAPL", "Buy A-A-P-L"),
@@ -125,32 +122,27 @@ def test_ticker_symbol_processing():
     print(f"Excluded words: {analysis['excluded_words']}")
     print(f"Ambiguous cases: {analysis['ambiguous_cases']}")
 
+
 def test_pronunciation_comparison():
     """Compare old vs new ticker pronunciation approach"""
     print("\n=== Pronunciation Approach Comparison ===\n")
 
-    test_cases = [
-        "TSLA",
-        "AAPL",
-        "MSFT",
-        "GOOGL",
-        "NVDA"
-    ]
+    test_cases = ["TSLA", "AAPL", "MSFT", "GOOGL", "NVDA"]
 
     print("Ticker | Old (Company Name) | New (Letter-by-Letter)")
     print("-" * 55)
 
     old_mappings = {
-        'TSLA': 'Tesla',
-        'AAPL': 'Apple',
-        'MSFT': 'Microsoft',
-        'GOOGL': 'Google',
-        'NVDA': 'NVIDIA'
+        "TSLA": "Tesla",
+        "AAPL": "Apple",
+        "MSFT": "Microsoft",
+        "GOOGL": "Google",
+        "NVDA": "NVIDIA",
     }
 
     for ticker in test_cases:
         old_pronunciation = old_mappings.get(ticker, ticker)
-        new_pronunciation = '-'.join(list(ticker))
+        new_pronunciation = "-".join(list(ticker))
         print(f"{ticker:6} | {old_pronunciation:17} | {new_pronunciation}")
 
     print("\nBenefits of Letter-by-Letter Approach:")
@@ -160,6 +152,7 @@ def test_pronunciation_comparison():
     print("✅ Works for all ticker symbols, not just major ones")
     print("✅ Avoids confusion when company names change")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     test_ticker_symbol_processing()
     test_pronunciation_comparison()

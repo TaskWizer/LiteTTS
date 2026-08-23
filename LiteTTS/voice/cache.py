@@ -23,9 +23,11 @@ except ImportError:
     # Fallback import from models.py file
     import sys
     from pathlib import Path
+
     models_path = Path(__file__).parent.parent / "models.py"
     if models_path.exists():
         import importlib.util
+
         spec = importlib.util.spec_from_file_location("models", models_path)
         models_module = importlib.util.module_from_spec(spec)
         sys.modules["models"] = models_module
@@ -54,13 +56,17 @@ except ImportError:
             metadata: VoiceMetadata | None = None
             loaded_at: datetime | None = None
             file_hash: str = ""
+
+
 from .loader import get_voice_loader
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class CacheEntry:
     """Cache entry for voice embeddings"""
+
     embedding: VoiceEmbedding
     loaded_at: datetime
     last_accessed: datetime
@@ -68,19 +74,25 @@ class CacheEntry:
     memory_size: int = 0
     priority: int = 0  # Added for individual loading optimization
 
+
 class VoiceCache:
     """Manages voice embedding caching with preloading"""
 
-    def __init__(self, voices_dir: str = None,
-                 max_cache_size: int = 5, preload_voices: list[str] = None,
-                 enable_mock: bool = False):
+    def __init__(
+        self,
+        voices_dir: str = None,
+        max_cache_size: int = 5,
+        preload_voices: list[str] = None,
+        enable_mock: bool = False,
+    ):
         # Use configuration if voices_dir not provided
         if voices_dir is None:
             try:
                 from ..config import config
+
                 voices_dir = config.paths.voices_dir
                 # Check if mock mode should be enabled from config
-                if hasattr(config, 'testing') and hasattr(config.testing, 'enable_mock_voices'):
+                if hasattr(config, "testing") and hasattr(config.testing, "enable_mock_voices"):
                     enable_mock = config.testing.enable_mock_voices
             except ImportError:
                 voices_dir = "LiteTTS/voices"  # Fallback
@@ -118,7 +130,9 @@ class VoiceCache:
             except Exception as e:
                 logger.warning(f"Failed to preload voice {voice_name}: {e}")
 
-        logger.info(f"Voice cache initialized with {successful_preloads}/{len(self.preload_voices)} voices preloaded")
+        logger.info(
+            f"Voice cache initialized with {successful_preloads}/{len(self.preload_voices)} voices preloaded"
+        )
 
     def get_voice_embedding(self, voice_name: str) -> VoiceEmbedding | None:
         """Get voice embedding from cache or load if not cached"""
@@ -169,19 +183,21 @@ class VoiceCache:
                 return None
 
             # Add loader information to metadata
-            metadata['loader_used'] = load_result.loader_used
-            metadata['voice_name'] = voice_name
+            metadata["loader_used"] = load_result.loader_used
+            metadata["voice_name"] = voice_name
 
             # Convert metadata dict to VoiceMetadata if needed
             if isinstance(metadata, dict) and not isinstance(metadata, VoiceMetadata):
                 voice_metadata = VoiceMetadata(
-                    name=metadata.get('name', voice_name),
-                    gender=metadata.get('gender', 'unknown'),
-                    accent=metadata.get('accent', 'american'),
-                    voice_type=metadata.get('voice_type', 'neural'),
-                    quality_rating=metadata.get('quality_rating', 4.0),
-                    language=metadata.get('language', 'en-us'),
-                    description=metadata.get('description', f'Voice loaded with {load_result.loader_used}')
+                    name=metadata.get("name", voice_name),
+                    gender=metadata.get("gender", "unknown"),
+                    accent=metadata.get("accent", "american"),
+                    voice_type=metadata.get("voice_type", "neural"),
+                    quality_rating=metadata.get("quality_rating", 4.0),
+                    language=metadata.get("language", "en-us"),
+                    description=metadata.get(
+                        "description", f"Voice loaded with {load_result.loader_used}"
+                    ),
                 )
             else:
                 voice_metadata = metadata
@@ -192,11 +208,15 @@ class VoiceCache:
                 embedding_data=embedding_data,
                 metadata=voice_metadata,
                 loaded_at=datetime.now(),
-                file_hash=self._calculate_file_hash_safe(voice_name, metadata)
+                file_hash=self._calculate_file_hash_safe(voice_name, metadata),
             )
 
             # Calculate memory size
-            memory_size = embedding_data.nbytes if hasattr(embedding_data, 'nbytes') else embedding_data.size * 4
+            memory_size = (
+                embedding_data.nbytes
+                if hasattr(embedding_data, "nbytes")
+                else embedding_data.size * 4
+            )
 
             # Add to cache
             cache_entry = CacheEntry(
@@ -205,7 +225,7 @@ class VoiceCache:
                 last_accessed=datetime.now(),
                 access_count=1,
                 memory_size=memory_size,
-                priority=1 if voice_name in ["af_heart", "am_puck", "af_nicole"] else 0
+                priority=1 if voice_name in ["af_heart", "am_puck", "af_nicole"] else 0,
             )
 
             # Manage cache size
@@ -225,25 +245,21 @@ class VoiceCache:
         """Manage cache size by evicting least recently used entries"""
         if len(self.cache) >= self.max_cache_size:
             # Find least recently used entry
-            lru_voice = min(
-                self.cache.keys(),
-                key=lambda v: self.cache[v].last_accessed
-            )
+            lru_voice = min(self.cache.keys(), key=lambda v: self.cache[v].last_accessed)
 
             # Don't evict preloaded voices unless absolutely necessary
             if lru_voice in self.preload_voices and len(self.cache) < self.max_cache_size * 2:
                 # Find next LRU that's not preloaded
                 non_preloaded = [v for v in self.cache.keys() if v not in self.preload_voices]
                 if non_preloaded:
-                    lru_voice = min(
-                        non_preloaded,
-                        key=lambda v: self.cache[v].last_accessed
-                    )
+                    lru_voice = min(non_preloaded, key=lambda v: self.cache[v].last_accessed)
 
             # Evict the LRU entry
             evicted_entry = self.cache.pop(lru_voice)
-            logger.info(f"Evicted voice from cache: {lru_voice} "
-                       f"(accessed {evicted_entry.access_count} times)")
+            logger.info(
+                f"Evicted voice from cache: {lru_voice} "
+                f"(accessed {evicted_entry.access_count} times)"
+            )
 
     def _calculate_file_hash(self, file_path: Path) -> str:
         """Calculate file hash for integrity checking"""
@@ -311,10 +327,7 @@ class VoiceCache:
         with self.cache_lock:
             if keep_preloaded:
                 # Keep only preloaded voices
-                voices_to_remove = [
-                    v for v in self.cache.keys()
-                    if v not in self.preload_voices
-                ]
+                voices_to_remove = [v for v in self.cache.keys() if v not in self.preload_voices]
                 for voice_name in voices_to_remove:
                     self.cache.pop(voice_name)
                 logger.info(f"Cleared cache, kept {len(self.cache)} preloaded voices")
@@ -330,29 +343,33 @@ class VoiceCache:
             total_memory = sum(entry.memory_size for entry in self.cache.values())
             total_accesses = sum(entry.access_count for entry in self.cache.values())
 
-            hit_rate = self.cache_hits / (self.cache_hits + self.cache_misses) if (self.cache_hits + self.cache_misses) > 0 else 0
+            hit_rate = (
+                self.cache_hits / (self.cache_hits + self.cache_misses)
+                if (self.cache_hits + self.cache_misses) > 0
+                else 0
+            )
 
             return {
-                'cached_voices': len(self.cache),
-                'max_cache_size': self.max_cache_size,
-                'cache_utilization': len(self.cache) / self.max_cache_size,
-                'total_memory_bytes': total_memory,
-                'total_memory_mb': total_memory / (1024 * 1024),
-                'cache_hits': self.cache_hits,
-                'cache_misses': self.cache_misses,
-                'hit_rate': hit_rate,
-                'total_loads': self.total_loads,
-                'total_accesses': total_accesses,
-                'preloaded_voices': self.preload_voices.copy(),
-                'voice_details': {
+                "cached_voices": len(self.cache),
+                "max_cache_size": self.max_cache_size,
+                "cache_utilization": len(self.cache) / self.max_cache_size,
+                "total_memory_bytes": total_memory,
+                "total_memory_mb": total_memory / (1024 * 1024),
+                "cache_hits": self.cache_hits,
+                "cache_misses": self.cache_misses,
+                "hit_rate": hit_rate,
+                "total_loads": self.total_loads,
+                "total_accesses": total_accesses,
+                "preloaded_voices": self.preload_voices.copy(),
+                "voice_details": {
                     voice_name: {
-                        'loaded_at': entry.loaded_at.isoformat(),
-                        'last_accessed': entry.last_accessed.isoformat(),
-                        'access_count': entry.access_count,
-                        'memory_size': entry.memory_size
+                        "loaded_at": entry.loaded_at.isoformat(),
+                        "last_accessed": entry.last_accessed.isoformat(),
+                        "access_count": entry.access_count,
+                        "memory_size": entry.memory_size,
                     }
                     for voice_name, entry in self.cache.items()
-                }
+                },
             }
 
     def optimize_cache(self):
@@ -360,19 +377,14 @@ class VoiceCache:
         with self.cache_lock:
             # Get access frequency for each voice
             voice_frequencies = {
-                voice_name: entry.access_count
-                for voice_name, entry in self.cache.items()
+                voice_name: entry.access_count for voice_name, entry in self.cache.items()
             }
 
             # Sort by frequency
-            sorted_voices = sorted(
-                voice_frequencies.items(),
-                key=lambda x: x[1],
-                reverse=True
-            )
+            sorted_voices = sorted(voice_frequencies.items(), key=lambda x: x[1], reverse=True)
 
             # Update preload list with most frequently used voices
-            top_voices = [voice for voice, freq in sorted_voices[:self.max_cache_size]]
+            top_voices = [voice for voice, freq in sorted_voices[: self.max_cache_size]]
 
             # Add to preload list if not already there
             for voice_name in top_voices:
@@ -432,8 +444,8 @@ class VoiceCache:
         logger.info("Optimizing voice cache for individual file loading")
 
         # Clear any combined file references
-        if hasattr(self, 'combined_data'):
-            delattr(self, 'combined_data')
+        if hasattr(self, "combined_data"):
+            delattr(self, "combined_data")
 
         # Optimize cache eviction for individual files
         # Prioritize recently used voices and default voices
@@ -449,7 +461,9 @@ class VoiceCache:
 
             # Adjust cache size if needed for individual loading
             if self.max_cache_size < 5:
-                logger.info(f"Increasing cache size from {self.max_cache_size} to 10 for individual loading")
+                logger.info(
+                    f"Increasing cache size from {self.max_cache_size} to 10 for individual loading"
+                )
                 self.max_cache_size = 10
 
         logger.info("Individual file optimization complete")
@@ -458,13 +472,14 @@ class VoiceCache:
         """Calculate file hash safely, with fallback for missing files"""
         try:
             # Try to find actual file
-            for ext in ['.pt', '.bin']:
+            for ext in [".pt", ".bin"]:
                 voice_file = self.voices_dir / f"{voice_name}{ext}"
                 if voice_file.exists():
                     return self._calculate_file_hash(voice_file)
 
             # Fallback: use voice name and metadata for hash
             import hashlib
+
             hash_input = f"{voice_name}_{metadata.get('loader_used', 'unknown')}"
             return hashlib.md5(hash_input.encode()).hexdigest()
 
@@ -472,10 +487,11 @@ class VoiceCache:
             logger.warning(f"Could not calculate file hash for {voice_name}: {e}")
             # Final fallback: use voice name
             import hashlib
+
             return hashlib.md5(voice_name.encode()).hexdigest()
 
     def get_loader_statistics(self) -> dict[str, Any]:
         """Get voice loader statistics"""
-        if hasattr(self.voice_loader, 'get_load_statistics'):
+        if hasattr(self.voice_loader, "get_load_statistics"):
             return self.voice_loader.get_load_statistics()
         return {}

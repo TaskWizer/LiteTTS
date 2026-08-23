@@ -24,12 +24,14 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class EnhancedAudioMetrics:
     """Enhanced audio quality metrics"""
+
     # Core metrics
     wer: float = 0.0
     mos_prediction: float = 0.0
@@ -61,9 +63,11 @@ class EnhancedAudioMetrics:
     test_category: str = ""
     timestamp: float = field(default_factory=time.time)
 
+
 @dataclass
 class EnhancedTestCase:
     """Enhanced test case with comprehensive expectations"""
+
     test_id: str
     input_text: str
     expected_transcription: str
@@ -87,6 +91,7 @@ class EnhancedTestCase:
     expected_speaking_rate_range: tuple[float, float] = (120, 200)  # WPM
     expected_pitch_range: tuple[float, float] = (80, 300)  # Hz
 
+
 class EnhancedAudioQualityTester:
     """Enhanced automated audio quality testing framework"""
 
@@ -103,155 +108,175 @@ class EnhancedAudioQualityTester:
         test_cases = []
 
         # Symbol pronunciation tests
-        test_cases.extend([
-            EnhancedTestCase(
-                test_id="symbol_question_mark",
-                input_text="What is your name?",
-                expected_transcription="what is your name question mark",
-                test_category="symbol_processing",
-                description="Question mark pronunciation accuracy",
-                priority="critical",
-                expected_symbols=["?"],
-                expected_pronunciations={"?": "question mark"},
-                min_pronunciation_accuracy=0.95
-            ),
-            EnhancedTestCase(
-                test_id="symbol_asterisk",
-                input_text="Use the * symbol carefully",
-                expected_transcription="use the asterisk symbol carefully",
-                test_category="symbol_processing",
-                description="Asterisk symbol pronunciation",
-                priority="high",
-                expected_symbols=["*"],
-                expected_pronunciations={"*": "asterisk"}
-            ),
-            EnhancedTestCase(
-                test_id="symbol_ampersand",
-                input_text="Johnson & Johnson company",
-                expected_transcription="johnson and johnson company",
-                test_category="symbol_processing",
-                description="Ampersand pronunciation as 'and'",
-                priority="normal",
-                expected_symbols=["&"],
-                expected_pronunciations={"&": "and"}
-            )
-        ])
+        test_cases.extend(
+            [
+                EnhancedTestCase(
+                    test_id="symbol_question_mark",
+                    input_text="What is your name?",
+                    expected_transcription="what is your name question mark",
+                    test_category="symbol_processing",
+                    description="Question mark pronunciation accuracy",
+                    priority="critical",
+                    expected_symbols=["?"],
+                    expected_pronunciations={"?": "question mark"},
+                    min_pronunciation_accuracy=0.95,
+                ),
+                EnhancedTestCase(
+                    test_id="symbol_asterisk",
+                    input_text="Use the * symbol carefully",
+                    expected_transcription="use the asterisk symbol carefully",
+                    test_category="symbol_processing",
+                    description="Asterisk symbol pronunciation",
+                    priority="high",
+                    expected_symbols=["*"],
+                    expected_pronunciations={"*": "asterisk"},
+                ),
+                EnhancedTestCase(
+                    test_id="symbol_ampersand",
+                    input_text="Johnson & Johnson company",
+                    expected_transcription="johnson and johnson company",
+                    test_category="symbol_processing",
+                    description="Ampersand pronunciation as 'and'",
+                    priority="normal",
+                    expected_symbols=["&"],
+                    expected_pronunciations={"&": "and"},
+                ),
+            ]
+        )
 
         # Interjection pronunciation tests
-        test_cases.extend([
-            EnhancedTestCase(
-                test_id="interjection_hmm",
-                input_text="Hmm, that's interesting",
-                expected_transcription="hmm that's interesting",
-                test_category="interjections",
-                description="Hmm pronunciation (not hum)",
-                priority="critical",
-                expected_pronunciations={"hmm": "hmm"},
-                min_pronunciation_accuracy=0.95
-            ),
-            EnhancedTestCase(
-                test_id="interjection_variations",
-                input_text="Hmmm, let me think about it",
-                expected_transcription="hmm let me think about it",
-                test_category="interjections",
-                description="Hmm variations pronunciation",
-                priority="normal"
-            )
-        ])
+        test_cases.extend(
+            [
+                EnhancedTestCase(
+                    test_id="interjection_hmm",
+                    input_text="Hmm, that's interesting",
+                    expected_transcription="hmm that's interesting",
+                    test_category="interjections",
+                    description="Hmm pronunciation (not hum)",
+                    priority="critical",
+                    expected_pronunciations={"hmm": "hmm"},
+                    min_pronunciation_accuracy=0.95,
+                ),
+                EnhancedTestCase(
+                    test_id="interjection_variations",
+                    input_text="Hmmm, let me think about it",
+                    expected_transcription="hmm let me think about it",
+                    test_category="interjections",
+                    description="Hmm variations pronunciation",
+                    priority="normal",
+                ),
+            ]
+        )
 
         # Contraction pronunciation tests
-        test_cases.extend([
-            EnhancedTestCase(
-                test_id="contraction_im",
-                input_text="I'm going to the store",
-                expected_transcription="i'm going to the store",
-                test_category="contractions",
-                description="I'm contraction (not 'im')",
-                priority="critical",
-                expected_pronunciations={"I'm": "i am"},
-                min_pronunciation_accuracy=0.95
-            ),
-            EnhancedTestCase(
-                test_id="contraction_multiple",
-                input_text="You're welcome, we're here",
-                expected_transcription="you're welcome we're here",
-                test_category="contractions",
-                description="Multiple contractions",
-                priority="high"
-            )
-        ])
+        test_cases.extend(
+            [
+                EnhancedTestCase(
+                    test_id="contraction_im",
+                    input_text="I'm going to the store",
+                    expected_transcription="i'm going to the store",
+                    test_category="contractions",
+                    description="I'm contraction (not 'im')",
+                    priority="critical",
+                    expected_pronunciations={"I'm": "i am"},
+                    min_pronunciation_accuracy=0.95,
+                ),
+                EnhancedTestCase(
+                    test_id="contraction_multiple",
+                    input_text="You're welcome, we're here",
+                    expected_transcription="you're welcome we're here",
+                    test_category="contractions",
+                    description="Multiple contractions",
+                    priority="high",
+                ),
+            ]
+        )
 
         # Word pronunciation tests
-        test_cases.extend([
-            EnhancedTestCase(
-                test_id="word_well",
-                input_text="Well, that's good news",
-                expected_transcription="well that's good news",
-                test_category="word_pronunciation",
-                description="Well pronunciation (not 'oral')",
-                priority="critical",
-                expected_pronunciations={"well": "well"},
-                min_pronunciation_accuracy=0.95
-            )
-        ])
+        test_cases.extend(
+            [
+                EnhancedTestCase(
+                    test_id="word_well",
+                    input_text="Well, that's good news",
+                    expected_transcription="well that's good news",
+                    test_category="word_pronunciation",
+                    description="Well pronunciation (not 'oral')",
+                    priority="critical",
+                    expected_pronunciations={"well": "well"},
+                    min_pronunciation_accuracy=0.95,
+                )
+            ]
+        )
 
         # Performance tests
-        test_cases.extend([
-            EnhancedTestCase(
-                test_id="performance_short_text",
-                input_text="Hello world",
-                expected_transcription="hello world",
-                test_category="performance",
-                description="Short text RTF performance",
-                priority="high",
-                max_rtf=0.2,
-                expected_speaking_rate_range=(140, 180)
-            ),
-            EnhancedTestCase(
-                test_id="performance_long_text",
-                input_text="This is a longer text that contains multiple sentences and should test the performance of the TTS system with more complex input. The goal is to measure processing time and audio quality.",
-                expected_transcription="this is a longer text that contains multiple sentences and should test the performance of the tts system with more complex input the goal is to measure processing time and audio quality",
-                test_category="performance",
-                description="Long text processing performance",
-                priority="normal",
-                max_rtf=0.25
-            )
-        ])
+        test_cases.extend(
+            [
+                EnhancedTestCase(
+                    test_id="performance_short_text",
+                    input_text="Hello world",
+                    expected_transcription="hello world",
+                    test_category="performance",
+                    description="Short text RTF performance",
+                    priority="high",
+                    max_rtf=0.2,
+                    expected_speaking_rate_range=(140, 180),
+                ),
+                EnhancedTestCase(
+                    test_id="performance_long_text",
+                    input_text="This is a longer text that contains multiple sentences and should test the performance of the TTS system with more complex input. The goal is to measure processing time and audio quality.",
+                    expected_transcription="this is a longer text that contains multiple sentences and should test the performance of the tts system with more complex input the goal is to measure processing time and audio quality",
+                    test_category="performance",
+                    description="Long text processing performance",
+                    priority="normal",
+                    max_rtf=0.25,
+                ),
+            ]
+        )
 
         # Complex mixed tests
-        test_cases.extend([
-            EnhancedTestCase(
-                test_id="complex_mixed",
-                input_text="Well, I'm not sure? Hmm, what do you think about the * symbol?",
-                expected_transcription="well i'm not sure question mark hmm what do you think about the asterisk symbol question mark",
-                test_category="complex_cases",
-                description="Complex sentence with multiple pronunciation challenges",
-                priority="critical",
-                expected_symbols=["?", "*"],
-                expected_pronunciations={"?": "question mark", "*": "asterisk", "hmm": "hmm", "I'm": "i am", "well": "well"},
-                min_pronunciation_accuracy=0.9
-            )
-        ])
+        test_cases.extend(
+            [
+                EnhancedTestCase(
+                    test_id="complex_mixed",
+                    input_text="Well, I'm not sure? Hmm, what do you think about the * symbol?",
+                    expected_transcription="well i'm not sure question mark hmm what do you think about the asterisk symbol question mark",
+                    test_category="complex_cases",
+                    description="Complex sentence with multiple pronunciation challenges",
+                    priority="critical",
+                    expected_symbols=["?", "*"],
+                    expected_pronunciations={
+                        "?": "question mark",
+                        "*": "asterisk",
+                        "hmm": "hmm",
+                        "I'm": "i am",
+                        "well": "well",
+                    },
+                    min_pronunciation_accuracy=0.9,
+                )
+            ]
+        )
 
         return test_cases
 
-    async def generate_audio(self, text: str, voice: str = "af_heart") -> tuple[bool, bytes, float, str]:
+    async def generate_audio(
+        self, text: str, voice: str = "af_heart"
+    ) -> tuple[bool, bytes, float, str]:
         """Generate audio for given text"""
         try:
             start_time = time.time()
 
             async with aiohttp.ClientSession() as session:
                 payload = {
-                    'model': 'kokoro',
-                    'input': text,
-                    'voice': voice,
-                    'response_format': 'wav'
+                    "model": "kokoro",
+                    "input": text,
+                    "voice": voice,
+                    "response_format": "wav",
                 }
 
                 async with session.post(
                     f"{self.api_base_url}/v1/audio/speech",
                     json=payload,
-                    timeout=aiohttp.ClientTimeout(total=30)
+                    timeout=aiohttp.ClientTimeout(total=30),
                 ) as response:
                     generation_time = time.time() - start_time
 
@@ -270,12 +295,12 @@ class EnhancedAudioQualityTester:
         """Analyze audio properties for quality metrics"""
         try:
             # Save audio to temporary file for analysis
-            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_file:
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_file:
                 temp_file.write(audio_data)
                 temp_path = temp_file.name
 
             # Basic audio analysis using wave module
-            with wave.open(temp_path, 'rb') as wav_file:
+            with wave.open(temp_path, "rb") as wav_file:
                 frames = wav_file.getnframes()
                 sample_rate = wav_file.getframerate()
                 duration = frames / float(sample_rate)
@@ -322,7 +347,7 @@ class EnhancedAudioQualityTester:
                 "energy_std": energy_std,
                 "zero_crossing_rate": float(zero_crossing_rate),
                 "silence_ratio": float(silence_ratio),
-                "audio_length": len(audio_array)
+                "audio_length": len(audio_array),
             }
 
         except Exception as e:
@@ -335,7 +360,7 @@ class EnhancedAudioQualityTester:
                 "energy_std": 0.0,
                 "zero_crossing_rate": 0.0,
                 "silence_ratio": 0.0,
-                "audio_length": 0
+                "audio_length": 0,
             }
 
     def calculate_wer(self, reference: str, hypothesis: str) -> float:
@@ -395,7 +420,9 @@ class EnhancedAudioQualityTester:
 
         return min(5.0, max(1.0, base_score))
 
-    def analyze_pronunciation_accuracy(self, test_case: EnhancedTestCase, audio_props: dict[str, Any]) -> float:
+    def analyze_pronunciation_accuracy(
+        self, test_case: EnhancedTestCase, audio_props: dict[str, Any]
+    ) -> float:
         """Analyze pronunciation accuracy based on expected pronunciations"""
         if not test_case.expected_pronunciations:
             return 1.0
@@ -426,8 +453,7 @@ class EnhancedAudioQualityTester:
 
         # Generate audio
         success, audio_data, processing_time, error = await self.generate_audio(
-            test_case.input_text,
-            test_case.voice_model
+            test_case.input_text, test_case.voice_model
         )
 
         if not success:
@@ -436,7 +462,7 @@ class EnhancedAudioQualityTester:
                 processing_time=processing_time,
                 voice_model=test_case.voice_model,
                 text_length=len(test_case.input_text),
-                test_category=test_case.test_category
+                test_category=test_case.test_category,
             )
 
         # Analyze audio properties
@@ -444,7 +470,7 @@ class EnhancedAudioQualityTester:
         duration = audio_props.get("duration", 0)
 
         # Calculate RTF
-        rtf = processing_time / duration if duration > 0 else float('inf')
+        rtf = processing_time / duration if duration > 0 else float("inf")
 
         # Calculate speaking rate
         words = len(test_case.input_text.split())
@@ -484,10 +510,12 @@ class EnhancedAudioQualityTester:
             clarity_score=clarity_score,
             voice_model=test_case.voice_model,
             text_length=len(test_case.input_text),
-            test_category=test_case.test_category
+            test_category=test_case.test_category,
         )
 
-        logger.info(f"Completed: {test_case.test_id} - MOS: {mos_prediction:.2f}, RTF: {rtf:.3f}, Pronunciation: {pronunciation_accuracy:.2f}")
+        logger.info(
+            f"Completed: {test_case.test_id} - MOS: {mos_prediction:.2f}, RTF: {rtf:.3f}, Pronunciation: {pronunciation_accuracy:.2f}"
+        )
         return metrics
 
     async def run_comprehensive_test_suite(self) -> dict[str, Any]:
@@ -499,10 +527,7 @@ class EnhancedAudioQualityTester:
 
         for test_case in self.test_cases:
             metrics = await self.test_single_case(test_case)
-            results.append({
-                "test_case": asdict(test_case),
-                "metrics": asdict(metrics)
-            })
+            results.append({"test_case": asdict(test_case), "metrics": asdict(metrics)})
 
             # Categorize results
             category = test_case.test_category
@@ -513,7 +538,7 @@ class EnhancedAudioQualityTester:
                     "avg_rtf": 0.0,
                     "avg_pronunciation_accuracy": 0.0,
                     "avg_prosody_score": 0.0,
-                    "tests": []
+                    "tests": [],
                 }
 
             category_stats[category]["total"] += 1
@@ -525,7 +550,9 @@ class EnhancedAudioQualityTester:
             if tests:
                 stats["avg_mos"] = sum(t.mos_prediction for t in tests) / len(tests)
                 stats["avg_rtf"] = sum(t.rtf for t in tests) / len(tests)
-                stats["avg_pronunciation_accuracy"] = sum(t.pronunciation_accuracy for t in tests) / len(tests)
+                stats["avg_pronunciation_accuracy"] = sum(
+                    t.pronunciation_accuracy for t in tests
+                ) / len(tests)
                 stats["avg_prosody_score"] = sum(t.prosody_score for t in tests) / len(tests)
 
         # Generate overall summary
@@ -534,26 +561,40 @@ class EnhancedAudioQualityTester:
             "test_timestamp": time.time(),
             "total_tests": len(results),
             "overall_metrics": {
-                "avg_mos": sum(m["mos_prediction"] for m in all_metrics) / len(all_metrics) if all_metrics else 0,
-                "avg_rtf": sum(m["rtf"] for m in all_metrics) / len(all_metrics) if all_metrics else 0,
-                "avg_pronunciation_accuracy": sum(m["pronunciation_accuracy"] for m in all_metrics) / len(all_metrics) if all_metrics else 0,
-                "avg_prosody_score": sum(m["prosody_score"] for m in all_metrics) / len(all_metrics) if all_metrics else 0,
-                "avg_naturalness_score": sum(m["naturalness_score"] for m in all_metrics) / len(all_metrics) if all_metrics else 0,
-                "avg_clarity_score": sum(m["clarity_score"] for m in all_metrics) / len(all_metrics) if all_metrics else 0
+                "avg_mos": sum(m["mos_prediction"] for m in all_metrics) / len(all_metrics)
+                if all_metrics
+                else 0,
+                "avg_rtf": sum(m["rtf"] for m in all_metrics) / len(all_metrics)
+                if all_metrics
+                else 0,
+                "avg_pronunciation_accuracy": sum(m["pronunciation_accuracy"] for m in all_metrics)
+                / len(all_metrics)
+                if all_metrics
+                else 0,
+                "avg_prosody_score": sum(m["prosody_score"] for m in all_metrics) / len(all_metrics)
+                if all_metrics
+                else 0,
+                "avg_naturalness_score": sum(m["naturalness_score"] for m in all_metrics)
+                / len(all_metrics)
+                if all_metrics
+                else 0,
+                "avg_clarity_score": sum(m["clarity_score"] for m in all_metrics) / len(all_metrics)
+                if all_metrics
+                else 0,
             },
-            "category_breakdown": {cat: {k: v for k, v in stats.items() if k != "tests"} for cat, stats in category_stats.items()},
+            "category_breakdown": {
+                cat: {k: v for k, v in stats.items() if k != "tests"}
+                for cat, stats in category_stats.items()
+            },
             "quality_assessment": self._assess_overall_quality(all_metrics),
             "performance_assessment": self._assess_performance(all_metrics),
-            "recommendations": self._generate_recommendations(all_metrics, category_stats)
+            "recommendations": self._generate_recommendations(all_metrics, category_stats),
         }
 
         # Save detailed results
         results_file = self.results_dir / f"enhanced_audio_quality_test_{int(time.time())}.json"
-        with open(results_file, 'w') as f:
-            json.dump({
-                "summary": summary,
-                "detailed_results": results
-            }, f, indent=2, default=str)
+        with open(results_file, "w") as f:
+            json.dump({"summary": summary, "detailed_results": results}, f, indent=2, default=str)
 
         logger.info(f"Test suite completed. Results saved to: {results_file}")
         return summary
@@ -595,7 +636,9 @@ class EnhancedAudioQualityTester:
         else:
             return "NEEDS_OPTIMIZATION"
 
-    def _generate_recommendations(self, metrics: list[dict[str, Any]], category_stats: dict[str, Any]) -> list[str]:
+    def _generate_recommendations(
+        self, metrics: list[dict[str, Any]], category_stats: dict[str, Any]
+    ) -> list[str]:
         """Generate recommendations based on test results"""
         recommendations = []
 
@@ -605,24 +648,34 @@ class EnhancedAudioQualityTester:
         # Performance recommendations
         avg_rtf = sum(m["rtf"] for m in metrics) / len(metrics)
         if avg_rtf > 0.25:
-            recommendations.append(f"Optimize performance: Average RTF {avg_rtf:.3f} exceeds target of 0.25")
+            recommendations.append(
+                f"Optimize performance: Average RTF {avg_rtf:.3f} exceeds target of 0.25"
+            )
 
         # Quality recommendations
         avg_mos = sum(m["mos_prediction"] for m in metrics) / len(metrics)
         if avg_mos < 3.5:
-            recommendations.append(f"Improve audio quality: Average MOS {avg_mos:.2f} below target of 3.5")
+            recommendations.append(
+                f"Improve audio quality: Average MOS {avg_mos:.2f} below target of 3.5"
+            )
 
         # Pronunciation recommendations
         avg_pronunciation = sum(m["pronunciation_accuracy"] for m in metrics) / len(metrics)
         if avg_pronunciation < 0.9:
-            recommendations.append(f"Improve pronunciation accuracy: {avg_pronunciation:.2f} below target of 0.9")
+            recommendations.append(
+                f"Improve pronunciation accuracy: {avg_pronunciation:.2f} below target of 0.9"
+            )
 
         # Category-specific recommendations
         for category, stats in category_stats.items():
             if stats["avg_mos"] < 3.0:
-                recommendations.append(f"Focus on {category} category: Low MOS score {stats['avg_mos']:.2f}")
+                recommendations.append(
+                    f"Focus on {category} category: Low MOS score {stats['avg_mos']:.2f}"
+                )
             if stats["avg_rtf"] > 0.3:
-                recommendations.append(f"Optimize {category} performance: High RTF {stats['avg_rtf']:.3f}")
+                recommendations.append(
+                    f"Optimize {category} performance: High RTF {stats['avg_rtf']:.3f}"
+                )
 
         # Naturalness recommendations
         avg_naturalness = sum(m["naturalness_score"] for m in metrics) / len(metrics)
@@ -631,6 +684,7 @@ class EnhancedAudioQualityTester:
 
         return recommendations
 
+
 async def main():
     """Main function to run enhanced audio quality testing"""
     tester = EnhancedAudioQualityTester()
@@ -638,9 +692,9 @@ async def main():
     try:
         summary = await tester.run_comprehensive_test_suite()
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("ENHANCED AUDIO QUALITY TESTING SUMMARY")
-        print("="*80)
+        print("=" * 80)
 
         print(f"Total Tests: {summary['total_tests']}")
 
@@ -658,18 +712,22 @@ async def main():
 
         print("\nCategory Breakdown:")
         for category, stats in summary["category_breakdown"].items():
-            print(f"  {category}: {stats['total']} tests, MOS: {stats['avg_mos']:.2f}, RTF: {stats['avg_rtf']:.3f}")
+            print(
+                f"  {category}: {stats['total']} tests, MOS: {stats['avg_mos']:.2f}, RTF: {stats['avg_rtf']:.3f}"
+            )
 
         print("\nRecommendations:")
         for i, rec in enumerate(summary["recommendations"], 1):
             print(f"  {i}. {rec}")
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
 
     except Exception as e:
         logger.error(f"Testing failed: {e}")
         import traceback
+
         logger.error(f"Full traceback: {traceback.format_exc()}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

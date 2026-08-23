@@ -16,8 +16,10 @@ from .emotion_detector import EmotionProfile
 
 logger = logging.getLogger(__name__)
 
+
 class SpeechRegister(Enum):
     """Speech register types for different contexts"""
+
     FORMAL = "formal"
     CASUAL = "casual"
     INTIMATE = "intimate"
@@ -26,8 +28,10 @@ class SpeechRegister(Enum):
     EDUCATIONAL = "educational"
     ENTERTAINMENT = "entertainment"
 
+
 class ContentType(Enum):
     """Content type categories"""
+
     CONVERSATIONAL = "conversational"
     NARRATIVE = "narrative"
     INSTRUCTIONAL = "instructional"
@@ -35,8 +39,10 @@ class ContentType(Enum):
     INFORMATIONAL = "informational"
     EXPRESSIVE = "expressive"
 
+
 class AudienceType(Enum):
     """Target audience categories"""
+
     GENERAL = "general"
     CHILDREN = "children"
     ELDERLY = "elderly"
@@ -44,9 +50,11 @@ class AudienceType(Enum):
     STUDENTS = "students"
     CUSTOMERS = "customers"
 
+
 @dataclass
 class SpeechContext:
     """Comprehensive speech context information"""
+
     register: SpeechRegister
     content_type: ContentType
     audience: AudienceType
@@ -58,9 +66,11 @@ class SpeechContext:
     time_constraints: float | None  # seconds available
     environment: str  # "quiet", "noisy", "public", "private"
 
+
 @dataclass
 class AdaptationParameters:
     """Synthesis parameters adapted for context"""
+
     speech_rate: float  # Multiplier for base rate
     pitch_adjustment: float  # Semitones adjustment
     pitch_range: float  # Multiplier for pitch range
@@ -70,6 +80,7 @@ class AdaptationParameters:
     pause_duration_multiplier: float
     emphasis_strength: float  # 0.0 to 1.0
     voice_quality_adjustments: dict[str, float]
+
 
 class ContextAdapter:
     """Dynamic context-aware synthesis parameter adaptation"""
@@ -91,7 +102,7 @@ class ContextAdapter:
                 "articulation_clarity": 1.0,  # Maximum clarity
                 "emotional_expressiveness": 0.6,  # Reduced expression
                 "pause_duration_multiplier": 1.2,  # Longer pauses
-                "emphasis_strength": 0.8  # Moderate emphasis
+                "emphasis_strength": 0.8,  # Moderate emphasis
             },
             SpeechRegister.CASUAL: {
                 "speech_rate": 1.05,  # Slightly faster
@@ -100,7 +111,7 @@ class ContextAdapter:
                 "articulation_clarity": 0.8,  # Relaxed articulation
                 "emotional_expressiveness": 1.0,  # Full expression
                 "pause_duration_multiplier": 0.9,  # Shorter pauses
-                "emphasis_strength": 1.0  # Natural emphasis
+                "emphasis_strength": 1.0,  # Natural emphasis
             },
             SpeechRegister.INTIMATE: {
                 "speech_rate": 0.9,  # Slower, more personal
@@ -109,7 +120,7 @@ class ContextAdapter:
                 "articulation_clarity": 0.7,  # Softer articulation
                 "emotional_expressiveness": 1.2,  # Enhanced expression
                 "pause_duration_multiplier": 1.3,  # Longer, meaningful pauses
-                "emphasis_strength": 0.9  # Gentle emphasis
+                "emphasis_strength": 0.9,  # Gentle emphasis
             },
             SpeechRegister.PUBLIC: {
                 "speech_rate": 0.85,  # Slower for clarity
@@ -118,7 +129,7 @@ class ContextAdapter:
                 "articulation_clarity": 1.0,  # Maximum clarity
                 "emotional_expressiveness": 1.1,  # Enhanced for audience
                 "pause_duration_multiplier": 1.4,  # Strategic pauses
-                "emphasis_strength": 1.2  # Strong emphasis
+                "emphasis_strength": 1.2,  # Strong emphasis
             },
             SpeechRegister.PROFESSIONAL: {
                 "speech_rate": 1.0,  # Standard rate
@@ -127,8 +138,8 @@ class ContextAdapter:
                 "articulation_clarity": 0.95,  # High clarity
                 "emotional_expressiveness": 0.7,  # Controlled expression
                 "pause_duration_multiplier": 1.1,  # Thoughtful pauses
-                "emphasis_strength": 0.9  # Professional emphasis
-            }
+                "emphasis_strength": 0.9,  # Professional emphasis
+            },
         }
 
     def _load_content_adaptations(self) -> dict[ContentType, dict[str, float]]:
@@ -139,36 +150,36 @@ class ContextAdapter:
                 "emotional_expressiveness": 1.0,
                 "pause_duration_multiplier": 1.0,
                 "emphasis_strength": 1.0,
-                "naturalness_enhancement": 1.2  # Enhanced naturalness
+                "naturalness_enhancement": 1.2,  # Enhanced naturalness
             },
             ContentType.NARRATIVE: {
                 "speech_rate": 0.95,  # Storytelling pace
                 "emotional_expressiveness": 1.3,  # Enhanced for story
                 "pause_duration_multiplier": 1.2,  # Dramatic pauses
                 "emphasis_strength": 1.1,  # Character emphasis
-                "voice_variation": 1.2  # Character voices
+                "voice_variation": 1.2,  # Character voices
             },
             ContentType.INSTRUCTIONAL: {
                 "speech_rate": 0.9,  # Clear instruction pace
                 "articulation_clarity": 1.0,  # Maximum clarity
                 "pause_duration_multiplier": 1.3,  # Processing time
                 "emphasis_strength": 1.2,  # Key point emphasis
-                "repetition_tolerance": 1.0  # Allow repetition
+                "repetition_tolerance": 1.0,  # Allow repetition
             },
             ContentType.PRESENTATIONAL: {
                 "speech_rate": 0.85,  # Presentation pace
                 "pitch_range": 1.2,  # Engaging variation
                 "emotional_expressiveness": 1.1,  # Engaging delivery
                 "pause_duration_multiplier": 1.4,  # Strategic pauses
-                "emphasis_strength": 1.3  # Strong key points
+                "emphasis_strength": 1.3,  # Strong key points
             },
             ContentType.INFORMATIONAL: {
                 "speech_rate": 1.0,  # Standard pace
                 "articulation_clarity": 0.95,  # High clarity
                 "emotional_expressiveness": 0.8,  # Neutral delivery
                 "pause_duration_multiplier": 1.1,  # Processing pauses
-                "emphasis_strength": 1.0  # Factual emphasis
-            }
+                "emphasis_strength": 1.0,  # Factual emphasis
+            },
         }
 
     def _load_audience_adaptations(self) -> dict[AudienceType, dict[str, float]]:
@@ -180,7 +191,7 @@ class ContextAdapter:
                 "pitch_range": 1.4,  # More animated
                 "emotional_expressiveness": 1.4,  # Very expressive
                 "articulation_clarity": 1.0,  # Very clear
-                "enthusiasm_boost": 1.3  # More enthusiastic
+                "enthusiasm_boost": 1.3,  # More enthusiastic
             },
             AudienceType.ELDERLY: {
                 "speech_rate": 0.75,  # Slower for processing
@@ -188,22 +199,22 @@ class ContextAdapter:
                 "articulation_clarity": 1.0,  # Maximum clarity
                 "volume_boost": 1.1,  # Slightly louder
                 "pause_duration_multiplier": 1.5,  # Longer pauses
-                "emphasis_strength": 1.1  # Clear emphasis
+                "emphasis_strength": 1.1,  # Clear emphasis
             },
             AudienceType.PROFESSIONALS: {
                 "speech_rate": 1.1,  # Efficient pace
                 "articulation_clarity": 0.9,  # Professional clarity
                 "emotional_expressiveness": 0.7,  # Controlled
                 "technical_precision": 1.0,  # Accurate pronunciation
-                "confidence_boost": 1.1  # Authoritative
+                "confidence_boost": 1.1,  # Authoritative
             },
             AudienceType.STUDENTS: {
                 "speech_rate": 0.9,  # Learning pace
                 "articulation_clarity": 0.95,  # Clear for learning
                 "pause_duration_multiplier": 1.2,  # Processing time
                 "emphasis_strength": 1.2,  # Educational emphasis
-                "encouragement_tone": 1.1  # Supportive
-            }
+                "encouragement_tone": 1.1,  # Supportive
+            },
         }
 
     def _load_environment_adaptations(self) -> dict[str, dict[str, float]]:
@@ -212,25 +223,25 @@ class ContextAdapter:
             "quiet": {
                 "volume_level": 0.9,  # Softer in quiet environments
                 "articulation_clarity": 0.8,  # Can be more relaxed
-                "intimacy_boost": 1.1  # More personal
+                "intimacy_boost": 1.1,  # More personal
             },
             "noisy": {
                 "volume_level": 1.2,  # Louder to overcome noise
                 "articulation_clarity": 1.0,  # Maximum clarity
                 "pitch_adjustment": 1.0,  # Higher to cut through
-                "emphasis_strength": 1.2  # Stronger emphasis
+                "emphasis_strength": 1.2,  # Stronger emphasis
             },
             "public": {
                 "volume_level": 1.1,  # Projected voice
                 "articulation_clarity": 1.0,  # Very clear
                 "speech_rate": 0.9,  # Slower for audience
-                "pause_duration_multiplier": 1.3  # Strategic pauses
+                "pause_duration_multiplier": 1.3,  # Strategic pauses
             },
             "private": {
                 "volume_level": 0.9,  # Softer, more intimate
                 "emotional_expressiveness": 1.1,  # More personal
-                "intimacy_boost": 1.2  # Enhanced intimacy
-            }
+                "intimacy_boost": 1.2,  # Enhanced intimacy
+            },
         }
 
     def analyze_context(self, text: str, metadata: dict[str, Any] | None = None) -> SpeechContext:
@@ -261,7 +272,7 @@ class ContextAdapter:
             intimacy_level=intimacy,
             technical_complexity=complexity,
             time_constraints=time_constraints,
-            environment=environment
+            environment=environment,
         )
 
     def _detect_speech_register(self, text: str) -> SpeechRegister:
@@ -270,29 +281,31 @@ class ContextAdapter:
 
         # Formal indicators
         formal_indicators = [
-            r'\b(therefore|furthermore|consequently|nevertheless)\b',
-            r'\b(shall|would|could|might)\b',
-            r'\b(regarding|concerning|pursuant)\b',
-            r'\b(ladies and gentlemen|distinguished)\b'
+            r"\b(therefore|furthermore|consequently|nevertheless)\b",
+            r"\b(shall|would|could|might)\b",
+            r"\b(regarding|concerning|pursuant)\b",
+            r"\b(ladies and gentlemen|distinguished)\b",
         ]
 
         # Casual indicators
         casual_indicators = [
-            r'\b(yeah|yep|nope|gonna|wanna|gotta)\b',
-            r'\b(hey|hi|sup|cool|awesome)\b',
-            r'\b(like|you know|I mean)\b'
+            r"\b(yeah|yep|nope|gonna|wanna|gotta)\b",
+            r"\b(hey|hi|sup|cool|awesome)\b",
+            r"\b(like|you know|I mean)\b",
         ]
 
         # Professional indicators
         professional_indicators = [
-            r'\b(analysis|strategy|implementation|optimization)\b',
-            r'\b(meeting|presentation|report|proposal)\b',
-            r'\b(client|customer|stakeholder)\b'
+            r"\b(analysis|strategy|implementation|optimization)\b",
+            r"\b(meeting|presentation|report|proposal)\b",
+            r"\b(client|customer|stakeholder)\b",
         ]
 
         formal_score = sum(len(re.findall(pattern, text_lower)) for pattern in formal_indicators)
         casual_score = sum(len(re.findall(pattern, text_lower)) for pattern in casual_indicators)
-        professional_score = sum(len(re.findall(pattern, text_lower)) for pattern in professional_indicators)
+        professional_score = sum(
+            len(re.findall(pattern, text_lower)) for pattern in professional_indicators
+        )
 
         if professional_score > max(formal_score, casual_score):
             return SpeechRegister.PROFESSIONAL
@@ -306,19 +319,19 @@ class ContextAdapter:
         text_lower = text.lower()
 
         # Conversational indicators
-        if re.search(r'\b(how are you|what do you think|tell me)\b', text_lower):
+        if re.search(r"\b(how are you|what do you think|tell me)\b", text_lower):
             return ContentType.CONVERSATIONAL
 
         # Narrative indicators
-        if re.search(r'\b(once upon|story|character|plot)\b', text_lower):
+        if re.search(r"\b(once upon|story|character|plot)\b", text_lower):
             return ContentType.NARRATIVE
 
         # Instructional indicators
-        if re.search(r'\b(step|first|next|then|finally|how to)\b', text_lower):
+        if re.search(r"\b(step|first|next|then|finally|how to)\b", text_lower):
             return ContentType.INSTRUCTIONAL
 
         # Presentational indicators
-        if re.search(r'\b(today|presentation|agenda|overview)\b', text_lower):
+        if re.search(r"\b(today|presentation|agenda|overview)\b", text_lower):
             return ContentType.PRESENTATIONAL
 
         return ContentType.INFORMATIONAL
@@ -334,11 +347,11 @@ class ContextAdapter:
         text_lower = text.lower()
 
         # Children indicators
-        if re.search(r'\b(kids|children|fun|play|learn)\b', text_lower):
+        if re.search(r"\b(kids|children|fun|play|learn)\b", text_lower):
             return AudienceType.CHILDREN
 
         # Professional indicators
-        if re.search(r'\b(business|corporate|professional|industry)\b', text_lower):
+        if re.search(r"\b(business|corporate|professional|industry)\b", text_lower):
             return AudienceType.PROFESSIONALS
 
         return AudienceType.GENERAL
@@ -346,11 +359,11 @@ class ContextAdapter:
     def _analyze_urgency(self, text: str) -> float:
         """Analyze urgency level from text"""
         urgency_indicators = [
-            (r'\b(urgent|emergency|immediately|asap|now)\b', 1.0),
-            (r'\b(quickly|soon|fast|hurry)\b', 0.7),
-            (r'\b(when you can|at your convenience)\b', 0.2),
-            (r'!{2,}', 0.8),
-            (r'\b(deadline|time-sensitive)\b', 0.9)
+            (r"\b(urgent|emergency|immediately|asap|now)\b", 1.0),
+            (r"\b(quickly|soon|fast|hurry)\b", 0.7),
+            (r"\b(when you can|at your convenience)\b", 0.2),
+            (r"!{2,}", 0.8),
+            (r"\b(deadline|time-sensitive)\b", 0.9),
         ]
 
         max_urgency = 0.0
@@ -367,16 +380,16 @@ class ContextAdapter:
 
         # Formal indicators
         formal_patterns = [
-            r'\b(please|thank you|sincerely|respectfully)\b',
-            r'\b(Mr\.|Mrs\.|Dr\.|Professor)\b',
-            r'\b(would|could|might|shall)\b'
+            r"\b(please|thank you|sincerely|respectfully)\b",
+            r"\b(Mr\.|Mrs\.|Dr\.|Professor)\b",
+            r"\b(would|could|might|shall)\b",
         ]
 
         # Informal indicators
         informal_patterns = [
-            r'\b(hey|hi|yeah|nope|gonna)\b',
-            r'\b(cool|awesome|great|nice)\b',
-            r"[.!?]{2,}"  # Multiple punctuation
+            r"\b(hey|hi|yeah|nope|gonna)\b",
+            r"\b(cool|awesome|great|nice)\b",
+            r"[.!?]{2,}",  # Multiple punctuation
         ]
 
         for pattern in formal_patterns:
@@ -394,9 +407,9 @@ class ContextAdapter:
     def _analyze_intimacy(self, text: str) -> float:
         """Analyze intimacy level from text"""
         intimate_indicators = [
-            r'\b(love|dear|honey|sweetheart)\b',
-            r'\b(personal|private|between us)\b',
-            r'\b(feel|emotion|heart)\b'
+            r"\b(love|dear|honey|sweetheart)\b",
+            r"\b(personal|private|between us)\b",
+            r"\b(feel|emotion|heart)\b",
         ]
 
         intimacy_score = 0.0
@@ -410,10 +423,10 @@ class ContextAdapter:
     def _analyze_technical_complexity(self, text: str) -> float:
         """Analyze technical complexity from text"""
         technical_indicators = [
-            r'\b[A-Z]{2,}\b',  # Acronyms
-            r'\b\w{12,}\b',    # Long technical words
-            r'\d+\.\d+',       # Numbers with decimals
-            r'\b(algorithm|implementation|optimization|configuration)\b'
+            r"\b[A-Z]{2,}\b",  # Acronyms
+            r"\b\w{12,}\b",  # Long technical words
+            r"\d+\.\d+",  # Numbers with decimals
+            r"\b(algorithm|implementation|optimization|configuration)\b",
         ]
 
         complexity_score = 0.0
@@ -437,7 +450,7 @@ class ContextAdapter:
             emotional_expressiveness=1.0,
             pause_duration_multiplier=1.0,
             emphasis_strength=1.0,
-            voice_quality_adjustments={}
+            voice_quality_adjustments={},
         )
 
         # Apply register adaptations
@@ -472,8 +485,13 @@ class ContextAdapter:
                 current_value = getattr(params, key)
                 if isinstance(current_value, float):
                     # Multiplicative adaptation for most parameters
-                    if key in ["speech_rate", "pitch_range", "volume_level",
-                              "pause_duration_multiplier", "emphasis_strength"]:
+                    if key in [
+                        "speech_rate",
+                        "pitch_range",
+                        "volume_level",
+                        "pause_duration_multiplier",
+                        "emphasis_strength",
+                    ]:
                         setattr(params, key, current_value * value)
                     # Additive adaptation for adjustments
                     elif key.endswith("_adjustment"):
@@ -482,51 +500,48 @@ class ContextAdapter:
                     else:
                         setattr(params, key, value)
 
-    def _apply_emotional_adaptations(self, params: AdaptationParameters,
-                                   emotion: EmotionProfile):
+    def _apply_emotional_adaptations(self, params: AdaptationParameters, emotion: EmotionProfile):
         """Apply emotional adaptations to parameters"""
         if emotion.prosodic_parameters:
             for key, value in emotion.prosodic_parameters.items():
                 if key == "pitch_shift":
                     params.pitch_adjustment += value * emotion.intensity
                 elif key == "pitch_range":
-                    params.pitch_range *= (1.0 + (value - 1.0) * emotion.intensity)
+                    params.pitch_range *= 1.0 + (value - 1.0) * emotion.intensity
                 elif key == "rate_change":
-                    params.speech_rate *= (1.0 + (value - 1.0) * emotion.intensity)
+                    params.speech_rate *= 1.0 + (value - 1.0) * emotion.intensity
                 elif key == "energy":
-                    params.volume_level *= (1.0 + (value - 1.0) * emotion.intensity)
+                    params.volume_level *= 1.0 + (value - 1.0) * emotion.intensity
 
-    def _apply_contextual_adjustments(self, params: AdaptationParameters,
-                                    context: SpeechContext):
+    def _apply_contextual_adjustments(self, params: AdaptationParameters, context: SpeechContext):
         """Apply contextual factor adjustments"""
 
         # Urgency adjustments
         if context.urgency_level > 0.5:
-            params.speech_rate *= (1.0 + context.urgency_level * 0.2)
-            params.emphasis_strength *= (1.0 + context.urgency_level * 0.3)
+            params.speech_rate *= 1.0 + context.urgency_level * 0.2
+            params.emphasis_strength *= 1.0 + context.urgency_level * 0.3
 
         # Formality adjustments
         formality_factor = context.formality_level
-        params.articulation_clarity = max(params.articulation_clarity,
-                                        0.8 + formality_factor * 0.2)
-        params.emotional_expressiveness *= (1.0 - formality_factor * 0.3)
+        params.articulation_clarity = max(params.articulation_clarity, 0.8 + formality_factor * 0.2)
+        params.emotional_expressiveness *= 1.0 - formality_factor * 0.3
 
         # Intimacy adjustments
         if context.intimacy_level > 0.5:
-            params.volume_level *= (1.0 - context.intimacy_level * 0.2)
-            params.emotional_expressiveness *= (1.0 + context.intimacy_level * 0.3)
+            params.volume_level *= 1.0 - context.intimacy_level * 0.2
+            params.emotional_expressiveness *= 1.0 + context.intimacy_level * 0.3
 
         # Technical complexity adjustments
         if context.technical_complexity > 0.5:
-            params.speech_rate *= (1.0 - context.technical_complexity * 0.2)
-            params.pause_duration_multiplier *= (1.0 + context.technical_complexity * 0.3)
+            params.speech_rate *= 1.0 - context.technical_complexity * 0.2
+            params.pause_duration_multiplier *= 1.0 + context.technical_complexity * 0.3
             params.articulation_clarity = max(params.articulation_clarity, 0.95)
 
         # Time constraint adjustments
         if context.time_constraints and context.time_constraints < 30:
             # Speed up for time constraints
             time_pressure = max(0, (30 - context.time_constraints) / 30)
-            params.speech_rate *= (1.0 + time_pressure * 0.3)
-            params.pause_duration_multiplier *= (1.0 - time_pressure * 0.2)
+            params.speech_rate *= 1.0 + time_pressure * 0.3
+            params.pause_duration_multiplier *= 1.0 - time_pressure * 0.2
 
         return params

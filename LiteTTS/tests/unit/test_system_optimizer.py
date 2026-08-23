@@ -17,12 +17,7 @@ class TestSIMDCapabilities:
 
     def test_creation_custom(self):
         """Test creating SIMD capabilities with custom values"""
-        caps = SIMDCapabilities(
-            has_sse=True,
-            has_sse2=True,
-            has_avx=True,
-            has_avx2=True
-        )
+        caps = SIMDCapabilities(has_sse=True, has_sse2=True, has_avx=True, has_avx2=True)
         assert caps.has_sse is True
         assert caps.has_avx2 is True
 
@@ -33,11 +28,7 @@ class TestBatchRequest:
     def test_creation(self):
         """Test creating batch request"""
         request = BatchRequest(
-            id="req1",
-            text="Hello world",
-            voice="af_heart",
-            speed=1.0,
-            format="mp3"
+            id="req1", text="Hello world", voice="af_heart", speed=1.0, format="mp3"
         )
         assert request.id == "req1"
         assert request.text == "Hello world"
@@ -46,12 +37,7 @@ class TestBatchRequest:
     def test_creation_with_priority(self):
         """Test creating batch request with priority"""
         request = BatchRequest(
-            id="req2",
-            text="Test",
-            voice="am_puck",
-            speed=1.0,
-            format="wav",
-            priority=5
+            id="req2", text="Test", voice="am_puck", speed=1.0, format="wav", priority=5
         )
         assert request.priority == 5
 

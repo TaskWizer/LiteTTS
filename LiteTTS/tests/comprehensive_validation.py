@@ -53,7 +53,7 @@ def test_package_structure() -> dict[str, bool]:
         "LiteTTS/models/__init__.py",
         "LiteTTS/performance/__init__.py",
         "LiteTTS/LiteTTS/scripts/__init__.py",
-        "LiteTTS/tests/__init__.py"
+        "LiteTTS/tests/__init__.py",
     ]
 
     for init_file in init_files:
@@ -66,6 +66,7 @@ def test_package_structure() -> dict[str, bool]:
 
     return results
 
+
 def test_configuration_system() -> dict[str, bool]:
     """Test the enhanced configuration system"""
     print("\n⚙️ Testing configuration system...")
@@ -74,10 +75,11 @@ def test_configuration_system() -> dict[str, bool]:
 
     try:
         from LiteTTS.config import ConfigManager
+
         config = ConfigManager()
 
         # Test new configuration sections
-        sections = ['model', 'voice', 'audio', 'server', 'performance', 'repository', 'paths']
+        sections = ["model", "voice", "audio", "server", "performance", "repository", "paths"]
         for section in sections:
             if hasattr(config, section):
                 results[f"config_{section}"] = True
@@ -87,14 +89,14 @@ def test_configuration_system() -> dict[str, bool]:
                 print(f"❌ Configuration section '{section}' missing")
 
         # Test specific configuration values
-        if hasattr(config, 'voice') and hasattr(config.voice, 'default_voice'):
+        if hasattr(config, "voice") and hasattr(config.voice, "default_voice"):
             results["config_default_voice"] = True
             print(f"✅ Default voice: {config.voice.default_voice}")
         else:
             results["config_default_voice"] = False
             print("❌ Default voice configuration missing")
 
-        if hasattr(config, 'server') and hasattr(config.server, 'port'):
+        if hasattr(config, "server") and hasattr(config.server, "port"):
             results["config_server_port"] = True
             print(f"✅ Server port: {config.server.port}")
         else:
@@ -106,6 +108,7 @@ def test_configuration_system() -> dict[str, bool]:
         print(f"❌ Configuration system failed: {e}")
 
     return results
+
 
 def test_logging_system() -> dict[str, bool]:
     """Test the comprehensive logging system"""
@@ -129,7 +132,7 @@ def test_logging_system() -> dict[str, bool]:
         "performance.log",
         "cache.log",
         "errors.log",
-        "structured.jsonl"
+        "structured.jsonl",
     ]
 
     for log_file in expected_logs:
@@ -143,6 +146,7 @@ def test_logging_system() -> dict[str, bool]:
 
     return results
 
+
 def test_app_startup() -> dict[str, bool]:
     """Test application startup without errors"""
     print("\n🚀 Testing application startup...")
@@ -151,11 +155,12 @@ def test_app_startup() -> dict[str, bool]:
 
     try:
         import app
+
         results["app_import"] = True
         print("✅ App module imported successfully")
 
         # Test that the app can be imported and has the main function
-        if hasattr(app, 'main') or hasattr(app, 'create_app'):
+        if hasattr(app, "main") or hasattr(app, "create_app"):
             results["app_main_function"] = True
             print("✅ App main function exists")
         else:
@@ -174,9 +179,11 @@ def test_app_startup() -> dict[str, bool]:
         results["app_startup"] = False
         print(f"❌ App startup failed: {e}")
         import traceback
+
         print(f"Full traceback: {traceback.format_exc()}")
 
     return results
+
 
 def test_api_endpoints(base_url: str = "http://localhost:8354") -> dict[str, bool]:
     """Test API endpoints (requires running server)"""
@@ -202,7 +209,7 @@ def test_api_endpoints(base_url: str = "http://localhost:8354") -> dict[str, boo
         response = requests.get(f"{base_url}/v1/voices", timeout=5)
         if response.status_code == 200:
             data = response.json()
-            if 'voices' in data and len(data['voices']) > 0:
+            if "voices" in data and len(data["voices"]) > 0:
                 results["voices_endpoint"] = True
                 print(f"✅ Voices endpoint responding with {len(data['voices'])} voices")
             else:
@@ -216,6 +223,7 @@ def test_api_endpoints(base_url: str = "http://localhost:8354") -> dict[str, boo
         print(f"❌ Voices endpoint error: {e}")
 
     return results
+
 
 def main():
     """Run comprehensive validation"""
@@ -256,16 +264,20 @@ def main():
     results_file = Path("docs/logs/validation_results.json")
     results_file.parent.mkdir(parents=True, exist_ok=True)
 
-    with open(results_file, 'w') as f:
-        json.dump({
-            'timestamp': time.time(),
-            'summary': {
-                'passed': passed,
-                'total': total,
-                'success_rate': passed / total if total > 0 else 0
+    with open(results_file, "w") as f:
+        json.dump(
+            {
+                "timestamp": time.time(),
+                "summary": {
+                    "passed": passed,
+                    "total": total,
+                    "success_rate": passed / total if total > 0 else 0,
+                },
+                "results": all_results,
             },
-            'results': all_results
-        }, f, indent=2)
+            f,
+            indent=2,
+        )
 
     print(f"\n📄 Results saved to: {results_file}")
 
@@ -276,6 +288,7 @@ def main():
     else:
         print(f"\n⚠️ {total - passed} tests failed. Please review and fix issues.")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

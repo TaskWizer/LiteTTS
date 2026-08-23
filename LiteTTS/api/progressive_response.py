@@ -16,6 +16,7 @@ from ..audio.progressive_generator import ProgressiveAudioGenerator
 
 logger = logging.getLogger(__name__)
 
+
 class ProgressiveResponseHandler:
     """Handles progressive audio responses for chunked generation"""
 
@@ -30,11 +31,11 @@ class ProgressiveResponseHandler:
         response_format: str = "mp3",
         speed: float = 1.0,
         streaming: bool = True,
-        generation_id: str | None = None
+        generation_id: str | None = None,
     ) -> StreamingResponse:
         """
         Create a progressive streaming response
-        
+
         Args:
             text: Text to synthesize
             voice: Voice to use
@@ -42,7 +43,7 @@ class ProgressiveResponseHandler:
             speed: Speech speed
             streaming: Whether to use streaming mode
             generation_id: Optional generation ID
-            
+
         Returns:
             StreamingResponse with progressive audio
         """
@@ -53,16 +54,14 @@ class ProgressiveResponseHandler:
             "start_time": time.time(),
             "text": text,
             "voice": voice,
-            "format": response_format
+            "format": response_format,
         }
 
         try:
             if streaming:
                 # Create streaming response with chunked audio
                 return StreamingResponse(
-                    self._stream_chunked_audio(
-                        text, voice, response_format, speed, generation_id
-                    ),
+                    self._stream_chunked_audio(text, voice, response_format, speed, generation_id),
                     media_type=f"audio/{response_format}",
                     headers={
                         "Content-Disposition": f"attachment; filename=progressive_speech.{response_format}",
@@ -72,15 +71,13 @@ class ProgressiveResponseHandler:
                         "X-Generation-ID": generation_id,
                         "Access-Control-Allow-Origin": "*",
                         "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
-                        "Access-Control-Allow-Headers": "*"
-                    }
+                        "Access-Control-Allow-Headers": "*",
+                    },
                 )
             else:
                 # Create response with complete audio (but still chunked internally)
                 return StreamingResponse(
-                    self._stream_complete_audio(
-                        text, voice, response_format, speed, generation_id
-                    ),
+                    self._stream_complete_audio(text, voice, response_format, speed, generation_id),
                     media_type=f"audio/{response_format}",
                     headers={
                         "Content-Disposition": f"attachment; filename=speech.{response_format}",
@@ -90,8 +87,8 @@ class ProgressiveResponseHandler:
                         "X-Generation-ID": generation_id,
                         "Access-Control-Allow-Origin": "*",
                         "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
-                        "Access-Control-Allow-Headers": "*"
-                    }
+                        "Access-Control-Allow-Headers": "*",
+                    },
                 )
         except Exception as e:
             logger.error(f"Failed to create progressive response: {e}")
@@ -101,12 +98,7 @@ class ProgressiveResponseHandler:
             raise
 
     async def _stream_chunked_audio(
-        self,
-        text: str,
-        voice: str,
-        response_format: str,
-        speed: float,
-        generation_id: str
+        self, text: str, voice: str, response_format: str, speed: float, generation_id: str
     ) -> AsyncIterator[bytes]:
         """Stream audio chunks as they become available"""
 
@@ -119,7 +111,7 @@ class ProgressiveResponseHandler:
                 voice=voice,
                 response_format=response_format,
                 speed=speed,
-                generation_id=generation_id
+                generation_id=generation_id,
             ):
                 # Yield the audio data
                 yield chunk_result.audio_data
@@ -135,11 +127,13 @@ class ProgressiveResponseHandler:
 
                 # Update stream info
                 if generation_id in self.active_streams:
-                    self.active_streams[generation_id].update({
-                        "chunks_sent": chunk_count,
-                        "bytes_sent": total_bytes,
-                        "last_chunk_time": time.time()
-                    })
+                    self.active_streams[generation_id].update(
+                        {
+                            "chunks_sent": chunk_count,
+                            "bytes_sent": total_bytes,
+                            "last_chunk_time": time.time(),
+                        }
+                    )
 
                 # If this is the final chunk, log completion
                 if chunk_result.is_final:
@@ -159,12 +153,7 @@ class ProgressiveResponseHandler:
                 del self.active_streams[generation_id]
 
     async def _stream_complete_audio(
-        self,
-        text: str,
-        voice: str,
-        response_format: str,
-        speed: float,
-        generation_id: str
+        self, text: str, voice: str, response_format: str, speed: float, generation_id: str
     ) -> AsyncIterator[bytes]:
         """Generate complete audio using chunked processing but return as single stream"""
 
@@ -178,7 +167,7 @@ class ProgressiveResponseHandler:
                 voice=voice,
                 response_format=response_format,
                 speed=speed,
-                generation_id=generation_id
+                generation_id=generation_id,
             ):
                 audio_chunks.append(chunk_result.audio_data)
                 chunk_count += 1
@@ -194,7 +183,7 @@ class ProgressiveResponseHandler:
 
             # Combine all chunks and yield as single response
             if audio_chunks:
-                combined_audio = b''.join(audio_chunks)
+                combined_audio = b"".join(audio_chunks)
 
                 elapsed_time = time.time() - self.active_streams[generation_id]["start_time"]
                 logger.info(
@@ -221,20 +210,18 @@ class ProgressiveResponseHandler:
         voice: str,
         response_format: str = "mp3",
         speed: float = 1.0,
-        generation_id: str | None = None
+        generation_id: str | None = None,
     ) -> StreamingResponse:
         """
         Create Server-Sent Events response for real-time progress updates
-        
+
         Returns:
             StreamingResponse with SSE format
         """
         generation_id = generation_id or f"sse_{int(time.time() * 1000)}"
 
         return StreamingResponse(
-            self._stream_sse_events(
-                text, voice, response_format, speed, generation_id
-            ),
+            self._stream_sse_events(text, voice, response_format, speed, generation_id),
             media_type="text/event-stream",
             headers={
                 "Cache-Control": "no-cache",
@@ -242,17 +229,12 @@ class ProgressiveResponseHandler:
                 "X-Generation-ID": generation_id,
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
-                "Access-Control-Allow-Headers": "*"
-            }
+                "Access-Control-Allow-Headers": "*",
+            },
         )
 
     async def _stream_sse_events(
-        self,
-        text: str,
-        voice: str,
-        response_format: str,
-        speed: float,
-        generation_id: str
+        self, text: str, voice: str, response_format: str, speed: float, generation_id: str
     ) -> AsyncIterator[str]:
         """Stream Server-Sent Events with audio chunks and progress"""
 
@@ -268,13 +250,14 @@ class ProgressiveResponseHandler:
                 voice=voice,
                 response_format=response_format,
                 speed=speed,
-                generation_id=generation_id
+                generation_id=generation_id,
             ):
                 chunk_count += 1
 
                 # Encode audio data as base64 for SSE
                 import base64
-                encoded_audio = base64.b64encode(chunk_result.audio_data).decode('utf-8')
+
+                encoded_audio = base64.b64encode(chunk_result.audio_data).decode("utf-8")
 
                 # Send chunk event
                 event_data = {
@@ -284,7 +267,7 @@ class ProgressiveResponseHandler:
                     "generation_time": chunk_result.generation_time,
                     "chunk_text": chunk_result.chunk_text,
                     "is_final": chunk_result.is_final,
-                    "metadata": chunk_result.metadata
+                    "metadata": chunk_result.metadata,
                 }
 
                 yield "event: chunk\n"
@@ -298,7 +281,7 @@ class ProgressiveResponseHandler:
                     progress_data = {
                         "progress": progress,
                         "completed_chunks": chunk_count,
-                        "total_chunks": total_chunks
+                        "total_chunks": total_chunks,
                     }
 
                     yield "event: progress\n"
@@ -313,11 +296,7 @@ class ProgressiveResponseHandler:
         except Exception as e:
             logger.error(f"SSE streaming failed for generation {generation_id}: {e}")
             # Send error event
-            error_data = {
-                "generation_id": generation_id,
-                "status": "error",
-                "error": str(e)
-            }
+            error_data = {"generation_id": generation_id, "status": "error", "error": str(e)}
             yield "event: error\n"
             yield f"data: {json.dumps(error_data)}\n\n"
 
@@ -335,16 +314,18 @@ class ProgressiveResponseHandler:
             "elapsed_time": current_time - stream_info["start_time"],
             "text": stream_info["text"],
             "voice": stream_info["voice"],
-            "format": stream_info["format"]
+            "format": stream_info["format"],
         }
 
         # Add progress info if available
         if "chunks_sent" in stream_info:
-            status.update({
-                "chunks_sent": stream_info["chunks_sent"],
-                "bytes_sent": stream_info["bytes_sent"],
-                "last_chunk_time": stream_info.get("last_chunk_time")
-            })
+            status.update(
+                {
+                    "chunks_sent": stream_info["chunks_sent"],
+                    "bytes_sent": stream_info["bytes_sent"],
+                    "last_chunk_time": stream_info.get("last_chunk_time"),
+                }
+            )
 
         return status
 
@@ -359,8 +340,7 @@ class ProgressiveResponseHandler:
     def get_active_streams(self) -> dict[str, dict[str, Any]]:
         """Get information about all active streams"""
         return {
-            stream_id: self.get_stream_status(stream_id)
-            for stream_id in self.active_streams.keys()
+            stream_id: self.get_stream_status(stream_id) for stream_id in self.active_streams.keys()
         }
 
     def cleanup_expired_streams(self, max_age_seconds: int = 3600):

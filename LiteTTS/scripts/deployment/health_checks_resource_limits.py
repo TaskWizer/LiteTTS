@@ -20,12 +20,14 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class HealthCheckResult:
     """Health check result"""
+
     check_name: str
     status: str  # healthy, warning, critical, unknown
     message: str
@@ -33,9 +35,11 @@ class HealthCheckResult:
     timestamp: float
     response_time_ms: float
 
+
 @dataclass
 class ResourceLimits:
     """Resource limits configuration"""
+
     max_memory_mb: int
     max_cpu_percent: float
     max_disk_usage_percent: float
@@ -44,14 +48,17 @@ class ResourceLimits:
     request_timeout_seconds: int
     health_check_interval_seconds: int
 
+
 @dataclass
 class MonitoringEndpoint:
     """Monitoring endpoint configuration"""
+
     endpoint_path: str
     method: str
     description: str
     response_format: str
     authentication_required: bool
+
 
 class HealthCheckManager:
     """Health checks and resource limits manager"""
@@ -83,7 +90,7 @@ class HealthCheckManager:
             max_open_files=1024,  # File descriptor limit
             max_concurrent_requests=100,  # Concurrent request limit
             request_timeout_seconds=30,  # Request timeout
-            health_check_interval_seconds=30  # Health check frequency
+            health_check_interval_seconds=30,  # Health check frequency
         )
 
     def _create_monitoring_endpoints(self) -> list[MonitoringEndpoint]:
@@ -94,43 +101,43 @@ class HealthCheckManager:
                 method="GET",
                 description="Basic health check endpoint",
                 response_format="json",
-                authentication_required=False
+                authentication_required=False,
             ),
             MonitoringEndpoint(
                 endpoint_path="/health/detailed",
                 method="GET",
                 description="Detailed health check with all components",
                 response_format="json",
-                authentication_required=False
+                authentication_required=False,
             ),
             MonitoringEndpoint(
                 endpoint_path="/metrics",
                 method="GET",
                 description="Prometheus-compatible metrics endpoint",
                 response_format="text",
-                authentication_required=False
+                authentication_required=False,
             ),
             MonitoringEndpoint(
                 endpoint_path="/status",
                 method="GET",
                 description="System status and resource usage",
                 response_format="json",
-                authentication_required=False
+                authentication_required=False,
             ),
             MonitoringEndpoint(
                 endpoint_path="/ready",
                 method="GET",
                 description="Readiness probe for Kubernetes",
                 response_format="json",
-                authentication_required=False
+                authentication_required=False,
             ),
             MonitoringEndpoint(
                 endpoint_path="/live",
                 method="GET",
                 description="Liveness probe for Kubernetes",
                 response_format="json",
-                authentication_required=False
-            )
+                authentication_required=False,
+            ),
         ]
 
     def _get_system_info(self) -> dict[str, Any]:
@@ -139,10 +146,10 @@ class HealthCheckManager:
             return {
                 "cpu_count": psutil.cpu_count(),
                 "memory_total_gb": round(psutil.virtual_memory().total / (1024**3), 2),
-                "disk_total_gb": round(psutil.disk_usage('/').total / (1024**3), 2),
+                "disk_total_gb": round(psutil.disk_usage("/").total / (1024**3), 2),
                 "platform": sys.platform,
                 "python_version": sys.version,
-                "process_id": os.getpid()
+                "process_id": os.getpid(),
             }
         except Exception as e:
             logger.warning(f"Could not get system info: {e}")
@@ -172,7 +179,7 @@ class HealthCheckManager:
                 "memory_mb": round(memory_mb, 2),
                 "memory_percent": round(memory_percent, 2),
                 "limit_mb": self.resource_limits.max_memory_mb,
-                "virtual_memory": memory_info.vms / (1024 * 1024)
+                "virtual_memory": memory_info.vms / (1024 * 1024),
             }
 
         except Exception as e:
@@ -188,7 +195,7 @@ class HealthCheckManager:
             message=message,
             details=details,
             timestamp=time.time(),
-            response_time_ms=round(response_time, 2)
+            response_time_ms=round(response_time, 2),
         )
 
     def check_cpu_usage(self) -> HealthCheckResult:
@@ -199,7 +206,7 @@ class HealthCheckManager:
             # Get CPU usage over a short interval
             cpu_percent = psutil.cpu_percent(interval=1.0)
             cpu_count = psutil.cpu_count()
-            load_avg = os.getloadavg() if hasattr(os, 'getloadavg') else [0, 0, 0]
+            load_avg = os.getloadavg() if hasattr(os, "getloadavg") else [0, 0, 0]
 
             if cpu_percent > self.resource_limits.max_cpu_percent:
                 status = "critical"
@@ -217,7 +224,7 @@ class HealthCheckManager:
                 "load_average_1m": round(load_avg[0], 2),
                 "load_average_5m": round(load_avg[1], 2),
                 "load_average_15m": round(load_avg[2], 2),
-                "limit_percent": self.resource_limits.max_cpu_percent
+                "limit_percent": self.resource_limits.max_cpu_percent,
             }
 
         except Exception as e:
@@ -233,7 +240,7 @@ class HealthCheckManager:
             message=message,
             details=details,
             timestamp=time.time(),
-            response_time_ms=round(response_time, 2)
+            response_time_ms=round(response_time, 2),
         )
 
     def check_disk_usage(self) -> HealthCheckResult:
@@ -241,7 +248,7 @@ class HealthCheckManager:
         start_time = time.time()
 
         try:
-            disk_usage = psutil.disk_usage('/')
+            disk_usage = psutil.disk_usage("/")
             disk_percent = (disk_usage.used / disk_usage.total) * 100
             free_gb = disk_usage.free / (1024**3)
 
@@ -260,7 +267,7 @@ class HealthCheckManager:
                 "free_gb": round(free_gb, 2),
                 "total_gb": round(disk_usage.total / (1024**3), 2),
                 "used_gb": round(disk_usage.used / (1024**3), 2),
-                "limit_percent": self.resource_limits.max_disk_usage_percent
+                "limit_percent": self.resource_limits.max_disk_usage_percent,
             }
 
         except Exception as e:
@@ -276,7 +283,7 @@ class HealthCheckManager:
             message=message,
             details=details,
             timestamp=time.time(),
-            response_time_ms=round(response_time, 2)
+            response_time_ms=round(response_time, 2),
         )
 
     def check_file_descriptors(self) -> HealthCheckResult:
@@ -300,7 +307,7 @@ class HealthCheckManager:
             details = {
                 "open_files": open_files,
                 "limit": self.resource_limits.max_open_files,
-                "usage_percent": round((open_files / self.resource_limits.max_open_files) * 100, 2)
+                "usage_percent": round((open_files / self.resource_limits.max_open_files) * 100, 2),
             }
 
         except Exception as e:
@@ -316,7 +323,7 @@ class HealthCheckManager:
             message=message,
             details=details,
             timestamp=time.time(),
-            response_time_ms=round(response_time, 2)
+            response_time_ms=round(response_time, 2),
         )
 
     def check_model_availability(self) -> HealthCheckResult:
@@ -341,7 +348,7 @@ class HealthCheckManager:
                     details = {
                         "models_dir": str(models_dir),
                         "model_count": len(model_files),
-                        "model_files": [f.name for f in model_files]
+                        "model_files": [f.name for f in model_files],
                     }
 
         except Exception as e:
@@ -357,7 +364,7 @@ class HealthCheckManager:
             message=message,
             details=details,
             timestamp=time.time(),
-            response_time_ms=round(response_time, 2)
+            response_time_ms=round(response_time, 2),
         )
 
     def check_voice_availability(self) -> HealthCheckResult:
@@ -382,7 +389,7 @@ class HealthCheckManager:
                     details = {
                         "voices_dir": str(voices_dir),
                         "voice_count": len(voice_files),
-                        "sample_voices": [f.name for f in voice_files[:5]]  # First 5 voices
+                        "sample_voices": [f.name for f in voice_files[:5]],  # First 5 voices
                     }
 
         except Exception as e:
@@ -398,7 +405,7 @@ class HealthCheckManager:
             message=message,
             details=details,
             timestamp=time.time(),
-            response_time_ms=round(response_time, 2)
+            response_time_ms=round(response_time, 2),
         )
 
     def check_api_endpoint(self) -> HealthCheckResult:
@@ -416,7 +423,7 @@ class HealthCheckManager:
                 message = "API endpoint responsive"
                 details = {
                     "status_code": response.status_code,
-                    "response_time_ms": round((time.time() - start_time) * 1000, 2)
+                    "response_time_ms": round((time.time() - start_time) * 1000, 2),
                 }
             else:
                 status = "warning"
@@ -440,7 +447,7 @@ class HealthCheckManager:
             message=message,
             details=details,
             timestamp=time.time(),
-            response_time_ms=round(response_time, 2)
+            response_time_ms=round(response_time, 2),
         )
 
     def run_all_health_checks(self) -> dict[str, HealthCheckResult]:
@@ -454,7 +461,7 @@ class HealthCheckManager:
             "file_descriptors": self.check_file_descriptors(),
             "model_availability": self.check_model_availability(),
             "voice_availability": self.check_voice_availability(),
-            "api_endpoint": self.check_api_endpoint()
+            "api_endpoint": self.check_api_endpoint(),
         }
 
         self.health_results = checks
@@ -626,7 +633,7 @@ async def liveness_probe():
 
         # Save endpoints code
         endpoints_file = self.results_dir / "health_endpoints.py"
-        with open(endpoints_file, 'w') as f:
+        with open(endpoints_file, "w") as f:
             f.write(endpoints_code)
 
         logger.info(f"Health check endpoints saved: {endpoints_file}")
@@ -636,7 +643,7 @@ async def liveness_probe():
         """Generate Docker health check configuration"""
         logger.info("Generating Docker health check configuration...")
 
-        docker_config = f'''# Docker Health Check Configuration
+        docker_config = f"""# Docker Health Check Configuration
 # Add this to your Dockerfile
 
 # Health check configuration
@@ -695,11 +702,11 @@ services:
 networks:
   kokoro-network:
     driver: bridge
-'''
+"""
 
         # Save Docker configuration
         docker_file = self.results_dir / "docker_health_config.yml"
-        with open(docker_file, 'w') as f:
+        with open(docker_file, "w") as f:
             f.write(docker_config)
 
         logger.info(f"Docker health configuration saved: {docker_file}")
@@ -836,7 +843,7 @@ spec:
 
         # Save Kubernetes configuration
         k8s_file = self.results_dir / "kubernetes_deployment.yaml"
-        with open(k8s_file, 'w') as f:
+        with open(k8s_file, "w") as f:
             f.write(k8s_config)
 
         logger.info(f"Kubernetes configuration saved: {k8s_file}")
@@ -846,7 +853,7 @@ spec:
         """Generate monitoring script"""
         logger.info("Generating monitoring script...")
 
-        monitoring_script = '''#!/bin/bash
+        monitoring_script = """#!/bin/bash
 # Kokoro TTS Health Monitoring Script
 # Generated automatically - do not edit manually
 
@@ -926,11 +933,11 @@ else
 fi
 
 echo "$(date): Health monitoring check completed" >> "$LOG_FILE"
-'''
+"""
 
         # Save monitoring script
         script_file = self.results_dir / "health_monitor.sh"
-        with open(script_file, 'w') as f:
+        with open(script_file, "w") as f:
             f.write(monitoring_script)
         os.chmod(script_file, 0o755)
 
@@ -954,7 +961,9 @@ echo "$(date): Health monitoring check completed" >> "$LOG_FILE"
         # Calculate health summary
         healthy_checks = sum(1 for check in health_checks.values() if check.status == "healthy")
         total_checks = len(health_checks)
-        avg_response_time = sum(check.response_time_ms for check in health_checks.values()) / total_checks
+        avg_response_time = (
+            sum(check.response_time_ms for check in health_checks.values()) / total_checks
+        )
 
         # Compile results
         setup_results = {
@@ -964,7 +973,7 @@ echo "$(date): Health monitoring check completed" >> "$LOG_FILE"
                 "healthy_checks": healthy_checks,
                 "total_checks": total_checks,
                 "health_percentage": round((healthy_checks / total_checks) * 100, 1),
-                "average_response_time_ms": round(avg_response_time, 2)
+                "average_response_time_ms": round(avg_response_time, 2),
             },
             "resource_limits": asdict(self.resource_limits),
             "system_info": self.system_info,
@@ -973,31 +982,36 @@ echo "$(date): Health monitoring check completed" >> "$LOG_FILE"
                 "health_endpoints": "health_endpoints.py",
                 "docker_config": "docker_health_config.yml",
                 "kubernetes_config": "kubernetes_deployment.yaml",
-                "monitoring_script": "health_monitor.sh"
+                "monitoring_script": "health_monitor.sh",
             },
             "monitoring_endpoints": [asdict(endpoint) for endpoint in self.monitoring_endpoints],
             "setup_summary": self._generate_health_summary(health_checks, overall_status),
-            "next_steps": self._generate_health_next_steps(overall_status, health_checks)
+            "next_steps": self._generate_health_next_steps(overall_status, health_checks),
         }
 
         # Save complete configuration
         results_file = self.results_dir / f"health_setup_results_{int(time.time())}.json"
-        with open(results_file, 'w') as f:
+        with open(results_file, "w") as f:
             json.dump(setup_results, f, indent=2, default=str)
 
         logger.info(f"Health checks setup completed. Results saved to: {results_file}")
         return setup_results
 
-    def _generate_health_summary(self, health_checks: dict[str, HealthCheckResult],
-                                overall_status: str) -> dict[str, Any]:
+    def _generate_health_summary(
+        self, health_checks: dict[str, HealthCheckResult], overall_status: str
+    ) -> dict[str, Any]:
         """Generate health setup summary"""
 
         status_counts = {}
         for check in health_checks.values():
             status_counts[check.status] = status_counts.get(check.status, 0) + 1
 
-        critical_issues = [check.message for check in health_checks.values() if check.status == "critical"]
-        warning_issues = [check.message for check in health_checks.values() if check.status == "warning"]
+        critical_issues = [
+            check.message for check in health_checks.values() if check.status == "critical"
+        ]
+        warning_issues = [
+            check.message for check in health_checks.values() if check.status == "warning"
+        ]
 
         summary = {
             "overall_status": overall_status,
@@ -1007,13 +1021,14 @@ echo "$(date): Health monitoring check completed" >> "$LOG_FILE"
             "total_endpoints_generated": len(self.monitoring_endpoints),
             "resource_limits_configured": True,
             "monitoring_enabled": True,
-            "production_ready": overall_status in ["healthy", "warning"]
+            "production_ready": overall_status in ["healthy", "warning"],
         }
 
         return summary
 
-    def _generate_health_next_steps(self, overall_status: str,
-                                  health_checks: dict[str, HealthCheckResult]) -> list[str]:
+    def _generate_health_next_steps(
+        self, overall_status: str, health_checks: dict[str, HealthCheckResult]
+    ) -> list[str]:
         """Generate next steps for health monitoring deployment"""
         next_steps = [
             "Integrate health check endpoints into your FastAPI application",
@@ -1025,7 +1040,7 @@ echo "$(date): Health monitoring check completed" >> "$LOG_FILE"
             "Configure resource limit alerts and notifications",
             "Test Kubernetes readiness and liveness probes",
             "Implement custom health checks for business logic",
-            "Document health check procedures for operations team"
+            "Document health check procedures for operations team",
         ]
 
         # Add specific recommendations based on health status
@@ -1051,6 +1066,7 @@ echo "$(date): Health monitoring check completed" >> "$LOG_FILE"
 
         return next_steps
 
+
 def main():
     """Main function to run health checks and resource limits setup"""
     manager = HealthCheckManager()
@@ -1059,20 +1075,24 @@ def main():
         # Run comprehensive health setup
         results = manager.run_comprehensive_health_setup()
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("HEALTH CHECKS AND RESOURCE LIMITS SUMMARY")
-        print("="*80)
+        print("=" * 80)
 
         summary = results["setup_summary"]
         health_summary = results["health_summary"]
 
         print(f"Overall Health Status: {summary['overall_status'].upper()}")
-        print(f"Health Score: {health_summary['healthy_checks']}/{health_summary['total_checks']} ({health_summary['health_percentage']:.1f}%)")
+        print(
+            f"Health Score: {health_summary['healthy_checks']}/{health_summary['total_checks']} ({health_summary['health_percentage']:.1f}%)"
+        )
         print(f"Average Response Time: {health_summary['average_response_time_ms']:.2f}ms")
 
         print("\nHealth Check Results:")
         for status, count in summary["status_distribution"].items():
-            emoji = {"healthy": "✅", "warning": "⚠️", "critical": "❌", "unknown": "❓"}.get(status, "❓")
+            emoji = {"healthy": "✅", "warning": "⚠️", "critical": "❌", "unknown": "❓"}.get(
+                status, "❓"
+            )
             print(f"  {emoji} {status.title()}: {count}")
 
         if summary["critical_issues"]:
@@ -1109,12 +1129,14 @@ def main():
         if len(results["next_steps"]) > 5:
             print(f"  ... and {len(results['next_steps']) - 5} more steps")
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
 
     except Exception as e:
         logger.error(f"Health checks setup failed: {e}")
         import traceback
+
         logger.error(f"Full traceback: {traceback.format_exc()}")
+
 
 if __name__ == "__main__":
     main()

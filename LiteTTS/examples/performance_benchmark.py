@@ -21,12 +21,16 @@ import psutil
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class BenchmarkResult:
     """Benchmark result data"""
+
     test_name: str
     model_name: str
     audio_duration: float
@@ -36,6 +40,7 @@ class BenchmarkResult:
     cpu_usage_percent: float
     success: bool
     error_message: str = ""
+
 
 class PerformanceBenchmark:
     """Performance benchmarking system for Whisper alternatives"""
@@ -51,7 +56,7 @@ class PerformanceBenchmark:
             "cpu_count_logical": psutil.cpu_count(logical=True),
             "memory_total_gb": psutil.virtual_memory().total / (1024**3),
             "platform": sys.platform,
-            "python_version": sys.version.split()[0]
+            "python_version": sys.version.split()[0],
         }
 
     def generate_test_audio(self, duration: float, complexity: str = "medium") -> str:
@@ -68,9 +73,9 @@ class PerformanceBenchmark:
             elif complexity == "medium":
                 # Multiple harmonics
                 audio = (
-                    0.3 * np.sin(2 * np.pi * 220 * t) +
-                    0.2 * np.sin(2 * np.pi * 440 * t) +
-                    0.1 * np.sin(2 * np.pi * 880 * t)
+                    0.3 * np.sin(2 * np.pi * 220 * t)
+                    + 0.2 * np.sin(2 * np.pi * 440 * t)
+                    + 0.1 * np.sin(2 * np.pi * 880 * t)
                 )
             else:  # complex
                 # Speech-like signal with modulation
@@ -96,7 +101,7 @@ class PerformanceBenchmark:
             audio = audio / np.max(np.abs(audio)) * 0.8
 
             # Save to temporary file
-            temp_file = tempfile.NamedTemporaryFile(suffix='.wav', delete=False)
+            temp_file = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
             sf.write(temp_file.name, audio.astype(np.float32), sample_rate)
 
             return temp_file.name
@@ -108,8 +113,9 @@ class PerformanceBenchmark:
             logger.error(f"Failed to generate test audio: {e}")
             raise
 
-    def benchmark_whisper_processor(self, model_name: str = "distil-small.en",
-                                  compute_type: str = "int8") -> list[BenchmarkResult]:
+    def benchmark_whisper_processor(
+        self, model_name: str = "distil-small.en", compute_type: str = "int8"
+    ) -> list[BenchmarkResult]:
         """Benchmark Whisper processor with different audio lengths"""
         logger.info(f"🔬 Benchmarking Whisper processor: {model_name} ({compute_type})")
 
@@ -120,9 +126,7 @@ class PerformanceBenchmark:
 
             # Create processor
             processor = create_whisper_processor(
-                model_name=model_name,
-                compute_type=compute_type,
-                enable_fallback=True
+                model_name=model_name, compute_type=compute_type, enable_fallback=True
             )
 
             # Test with different audio durations
@@ -160,12 +164,14 @@ class PerformanceBenchmark:
                         memory_usage_mb=memory_usage,
                         cpu_usage_percent=cpu_usage,
                         success=result.success,
-                        error_message=result.error_message or ""
+                        error_message=result.error_message or "",
                     )
 
                     results.append(benchmark_result)
 
-                    logger.info(f"    RTF: {rtf:.3f}, Memory: {memory_usage:.1f}MB, Success: {result.success}")
+                    logger.info(
+                        f"    RTF: {rtf:.3f}, Memory: {memory_usage:.1f}MB, Success: {result.success}"
+                    )
 
                 except Exception as e:
                     error_result = BenchmarkResult(
@@ -173,11 +179,11 @@ class PerformanceBenchmark:
                         model_name=f"{model_name}-{compute_type}",
                         audio_duration=duration,
                         processing_time=0,
-                        rtf=float('inf'),
+                        rtf=float("inf"),
                         memory_usage_mb=0,
                         cpu_usage_percent=0,
                         success=False,
-                        error_message=str(e)
+                        error_message=str(e),
                     )
                     results.append(error_result)
                     logger.error(f"    Failed: {e}")
@@ -241,12 +247,16 @@ class PerformanceBenchmark:
                             memory_usage_mb=memory_usage,
                             cpu_usage_percent=cpu_usage,
                             success=result.suitable,
-                            error_message="" if result.suitable else f"Quality: {result.quality_score:.3f}"
+                            error_message=""
+                            if result.suitable
+                            else f"Quality: {result.quality_score:.3f}",
                         )
 
                         results.append(benchmark_result)
 
-                        logger.info(f"    RTF: {rtf:.3f}, Memory: {memory_usage:.1f}MB, Quality: {result.quality_score:.3f}")
+                        logger.info(
+                            f"    RTF: {rtf:.3f}, Memory: {memory_usage:.1f}MB, Quality: {result.quality_score:.3f}"
+                        )
 
                     except Exception as e:
                         error_result = BenchmarkResult(
@@ -254,11 +264,11 @@ class PerformanceBenchmark:
                             model_name="voice_cloning",
                             audio_duration=duration,
                             processing_time=0,
-                            rtf=float('inf'),
+                            rtf=float("inf"),
                             memory_usage_mb=0,
                             cpu_usage_percent=0,
                             success=False,
-                            error_message=str(e)
+                            error_message=str(e),
                         )
                         results.append(error_result)
                         logger.error(f"    Failed: {e}")
@@ -341,7 +351,7 @@ class PerformanceBenchmark:
                 "max": max(rtfs),
                 "mean": sum(rtfs) / len(rtfs),
                 "median": sorted(rtfs)[len(rtfs) // 2],
-                "models_under_1_0": len([r for r in rtfs if r < 1.0])
+                "models_under_1_0": len([r for r in rtfs if r < 1.0]),
             }
 
             # Memory statistics
@@ -350,7 +360,7 @@ class PerformanceBenchmark:
                 "min": min(memories),
                 "max": max(memories),
                 "mean": sum(memories) / len(memories),
-                "median": sorted(memories)[len(memories) // 2]
+                "median": sorted(memories)[len(memories) // 2],
             }
 
             # Best performers
@@ -361,23 +371,19 @@ class PerformanceBenchmark:
                 "fastest_rtf": {
                     "model": best_rtf.model_name,
                     "rtf": best_rtf.rtf,
-                    "duration": best_rtf.audio_duration
+                    "duration": best_rtf.audio_duration,
                 },
                 "lowest_memory": {
                     "model": best_memory.model_name,
                     "memory_mb": best_memory.memory_usage_mb,
-                    "duration": best_memory.audio_duration
-                }
+                    "duration": best_memory.audio_duration,
+                },
             }
 
         # Failed tests summary
         if failed_results:
             report["failures"] = [
-                {
-                    "test": r.test_name,
-                    "model": r.model_name,
-                    "error": r.error_message
-                }
+                {"test": r.test_name, "model": r.model_name, "error": r.error_message}
                 for r in failed_results
             ]
 
@@ -394,11 +400,12 @@ class PerformanceBenchmark:
 
         report = self.generate_report()
 
-        with open(filename, 'w') as f:
+        with open(filename, "w") as f:
             json.dump(report, f, indent=2, default=str)
 
         logger.info(f"📊 Benchmark report saved to {filename}")
         return filename
+
 
 def main():
     """Run performance benchmark"""
@@ -418,26 +425,30 @@ def main():
         logger.info(f"Failed: {report['failed_tests']}")
         logger.info(f"Success rate: {report['success_rate']:.1%}")
 
-        if 'rtf_stats' in report:
-            rtf_stats = report['rtf_stats']
+        if "rtf_stats" in report:
+            rtf_stats = report["rtf_stats"]
             logger.info("\nRTF Statistics:")
             logger.info(f"  Mean: {rtf_stats['mean']:.3f}")
             logger.info(f"  Median: {rtf_stats['median']:.3f}")
             logger.info(f"  Range: {rtf_stats['min']:.3f} - {rtf_stats['max']:.3f}")
             logger.info(f"  Models under RTF 1.0: {rtf_stats['models_under_1_0']}")
 
-        if 'memory_stats' in report:
-            mem_stats = report['memory_stats']
+        if "memory_stats" in report:
+            mem_stats = report["memory_stats"]
             logger.info("\nMemory Statistics:")
             logger.info(f"  Mean: {mem_stats['mean']:.1f}MB")
             logger.info(f"  Median: {mem_stats['median']:.1f}MB")
             logger.info(f"  Range: {mem_stats['min']:.1f} - {mem_stats['max']:.1f}MB")
 
-        if 'best_performers' in report:
-            best = report['best_performers']
+        if "best_performers" in report:
+            best = report["best_performers"]
             logger.info("\nBest Performers:")
-            logger.info(f"  Fastest RTF: {best['fastest_rtf']['model']} ({best['fastest_rtf']['rtf']:.3f})")
-            logger.info(f"  Lowest Memory: {best['lowest_memory']['model']} ({best['lowest_memory']['memory_mb']:.1f}MB)")
+            logger.info(
+                f"  Fastest RTF: {best['fastest_rtf']['model']} ({best['fastest_rtf']['rtf']:.3f})"
+            )
+            logger.info(
+                f"  Lowest Memory: {best['lowest_memory']['model']} ({best['lowest_memory']['memory_mb']:.1f}MB)"
+            )
 
         # Save report
         report_file = benchmark.save_report()
@@ -450,6 +461,7 @@ def main():
     except Exception as e:
         logger.error(f"❌ Benchmark failed: {e}")
         return False
+
 
 if __name__ == "__main__":
     success = main()

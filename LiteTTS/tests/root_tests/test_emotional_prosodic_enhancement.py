@@ -53,13 +53,21 @@ class TestLLMContextAnalyzer:
 
             if detected_emotion == expected_emotion:
                 success_count += 1
-                print(f"✓ '{text}' -> {detected_emotion.value} (confidence: {analysis.confidence_score:.2f})")
+                print(
+                    f"✓ '{text}' -> {detected_emotion.value} (confidence: {analysis.confidence_score:.2f})"
+                )
             else:
-                print(f"✗ '{text}' -> Expected: {expected_emotion.value}, Got: {detected_emotion.value}")
+                print(
+                    f"✗ '{text}' -> Expected: {expected_emotion.value}, Got: {detected_emotion.value}"
+                )
 
         success_rate = success_count / len(test_cases)
-        print(f"\nEmotion Detection Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})")
-        assert success_rate >= 0.7, f"Emotion detection success rate {success_rate:.1%} below 70% threshold"
+        print(
+            f"\nEmotion Detection Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})"
+        )
+        assert success_rate >= 0.7, (
+            f"Emotion detection success rate {success_rate:.1%} below 70% threshold"
+        )
 
     def test_intensity_detection(self):
         """Test emotional intensity detection"""
@@ -82,7 +90,7 @@ class TestLLMContextAnalyzer:
                 EmotionalIntensity.LOW: 0.3,
                 EmotionalIntensity.MODERATE: 0.5,
                 EmotionalIntensity.HIGH: 0.7,
-                EmotionalIntensity.VERY_HIGH: 0.9
+                EmotionalIntensity.VERY_HIGH: 0.9,
             }
 
             expected_val = intensity_values[expected_intensity]
@@ -91,21 +99,29 @@ class TestLLMContextAnalyzer:
             # Allow ±0.2 difference
             if abs(expected_val - detected_val) <= 0.2:
                 success_count += 1
-                print(f"✓ '{text}' -> {detected_intensity.name} (expected: {expected_intensity.name})")
+                print(
+                    f"✓ '{text}' -> {detected_intensity.name} (expected: {expected_intensity.name})"
+                )
             else:
-                print(f"✗ '{text}' -> Expected: {expected_intensity.name}, Got: {detected_intensity.name}")
+                print(
+                    f"✗ '{text}' -> Expected: {expected_intensity.name}, Got: {detected_intensity.name}"
+                )
 
         success_rate = success_count / len(test_cases)
-        print(f"\nIntensity Detection Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})")
-        assert success_rate >= 0.6, f"Intensity detection success rate {success_rate:.1%} below 60% threshold"
+        print(
+            f"\nIntensity Detection Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})"
+        )
+        assert success_rate >= 0.6, (
+            f"Intensity detection success rate {success_rate:.1%} below 60% threshold"
+        )
 
     def test_prosodic_analysis(self):
         """Test prosodic context analysis"""
         test_cases = [
             ("What are you doing?", "rising"),  # Question intonation
-            ("Stop right now!", "emphatic"),   # Exclamation
+            ("Stop right now!", "emphatic"),  # Exclamation
             ("This is... interesting.", "trailing"),  # Ellipses
-            ("I need to hurry up!", 1.2),      # Fast speech rate
+            ("I need to hurry up!", 1.2),  # Fast speech rate
             ("Let's speak slowly and calmly.", 0.8),  # Slow speech rate
         ]
 
@@ -120,18 +136,26 @@ class TestLLMContextAnalyzer:
                     success_count += 1
                     print(f"✓ '{text}' -> intonation: {prosody.intonation_contour}")
                 else:
-                    print(f"✗ '{text}' -> Expected intonation: {expected}, Got: {prosody.intonation_contour}")
+                    print(
+                        f"✗ '{text}' -> Expected intonation: {expected}, Got: {prosody.intonation_contour}"
+                    )
             else:
                 # Test speech rate modifier
                 if abs(prosody.speech_rate_modifier - expected) <= 0.2:
                     success_count += 1
                     print(f"✓ '{text}' -> speech rate: {prosody.speech_rate_modifier:.1f}")
                 else:
-                    print(f"✗ '{text}' -> Expected rate: {expected}, Got: {prosody.speech_rate_modifier:.1f}")
+                    print(
+                        f"✗ '{text}' -> Expected rate: {expected}, Got: {prosody.speech_rate_modifier:.1f}"
+                    )
 
         success_rate = success_count / len(test_cases)
-        print(f"\nProsodic Analysis Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})")
-        assert success_rate >= 0.6, f"Prosodic analysis success rate {success_rate:.1%} below 60% threshold"
+        print(
+            f"\nProsodic Analysis Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})"
+        )
+        assert success_rate >= 0.6, (
+            f"Prosodic analysis success rate {success_rate:.1%} below 60% threshold"
+        )
 
     def test_performance(self):
         """Test analysis performance"""
@@ -157,6 +181,7 @@ class TestLLMContextAnalyzer:
 
         assert avg_time < 0.1, f"Average analysis time {avg_time:.3f}s exceeds 0.1s threshold"
         assert max_time < 0.2, f"Maximum analysis time {max_time:.3f}s exceeds 0.2s threshold"
+
 
 class TestDynamicEmotionIntonationSystem:
     """Test the Dynamic Emotion Intonation System"""
@@ -189,8 +214,12 @@ class TestDynamicEmotionIntonationSystem:
 
                 # Check that markers are valid
                 for marker in markers:
-                    assert isinstance(marker, IntonationMarker), "Each marker should be an IntonationMarker"
-                    assert 0 <= marker.position <= len(text), "Marker position should be within text bounds"
+                    assert isinstance(marker, IntonationMarker), (
+                        "Each marker should be an IntonationMarker"
+                    )
+                    assert 0 <= marker.position <= len(text), (
+                        "Marker position should be within text bounds"
+                    )
                     assert marker.length >= 0, "Marker length should be non-negative"
 
                 success_count += 1
@@ -200,8 +229,12 @@ class TestDynamicEmotionIntonationSystem:
                 print(f"✗ '{text}' -> Error: {e}")
 
         success_rate = success_count / len(test_cases)
-        print(f"\nIntonation Processing Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})")
-        assert success_rate >= 0.9, f"Intonation processing success rate {success_rate:.1%} below 90% threshold"
+        print(
+            f"\nIntonation Processing Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})"
+        )
+        assert success_rate >= 0.9, (
+            f"Intonation processing success rate {success_rate:.1%} below 90% threshold"
+        )
 
     def test_question_detection(self):
         """Test question intonation detection"""
@@ -230,8 +263,12 @@ class TestDynamicEmotionIntonationSystem:
                 print(f"✗ '{text}' -> No question intonation detected")
 
         success_rate = success_count / len(question_texts)
-        print(f"\nQuestion Detection Success Rate: {success_rate:.1%} ({success_count}/{len(question_texts)})")
-        assert success_rate >= 0.8, f"Question detection success rate {success_rate:.1%} below 80% threshold"
+        print(
+            f"\nQuestion Detection Success Rate: {success_rate:.1%} ({success_count}/{len(question_texts)})"
+        )
+        assert success_rate >= 0.8, (
+            f"Question detection success rate {success_rate:.1%} below 80% threshold"
+        )
 
     def test_exclamation_detection(self):
         """Test exclamation intonation detection"""
@@ -260,8 +297,12 @@ class TestDynamicEmotionIntonationSystem:
                 print(f"✗ '{text}' -> No exclamation intonation detected")
 
         success_rate = success_count / len(exclamation_texts)
-        print(f"\nExclamation Detection Success Rate: {success_rate:.1%} ({success_count}/{len(exclamation_texts)})")
-        assert success_rate >= 0.8, f"Exclamation detection success rate {success_rate:.1%} below 80% threshold"
+        print(
+            f"\nExclamation Detection Success Rate: {success_rate:.1%} ({success_count}/{len(exclamation_texts)})"
+        )
+        assert success_rate >= 0.8, (
+            f"Exclamation detection success rate {success_rate:.1%} below 80% threshold"
+        )
 
     def test_llm_integration(self):
         """Test LLM integration functionality"""
@@ -276,7 +317,9 @@ class TestDynamicEmotionIntonationSystem:
 
         # Test without LLM enhancement
         self.system.set_configuration(use_llm_enhancement=False)
-        processed_without_llm, markers_without_llm = self.system.process_emotion_intonation(test_text)
+        processed_without_llm, markers_without_llm = self.system.process_emotion_intonation(
+            test_text
+        )
 
         # Both should work
         assert isinstance(processed_with_llm, str)
@@ -292,6 +335,7 @@ class TestDynamicEmotionIntonationSystem:
         print(f"LLM Analysis Info: {llm_info}")
 
         assert llm_info.get("available", False), "LLM analysis should be available"
+
 
 class TestUnifiedProcessorIntegration:
     """Test integration with Unified Text Processor"""
@@ -329,8 +373,12 @@ class TestUnifiedProcessorIntegration:
                 print(f"✗ '{text}' -> Error: {e}")
 
         success_rate = success_count / len(test_texts)
-        print(f"\nPremium Mode Integration Success Rate: {success_rate:.1%} ({success_count}/{len(test_texts)})")
-        assert success_rate >= 0.9, f"Premium mode integration success rate {success_rate:.1%} below 90% threshold"
+        print(
+            f"\nPremium Mode Integration Success Rate: {success_rate:.1%} ({success_count}/{len(test_texts)})"
+        )
+        assert success_rate >= 0.9, (
+            f"Premium mode integration success rate {success_rate:.1%} below 90% threshold"
+        )
 
     def test_performance_regression(self):
         """Test that emotional enhancement doesn't significantly impact performance"""
@@ -357,7 +405,10 @@ class TestUnifiedProcessorIntegration:
         print(f"Performance impact: {performance_impact:.1%}")
 
         # Allow up to 500% performance impact for emotional enhancement (premium features)
-        assert performance_impact <= 5.0, f"Performance impact {performance_impact:.1%} exceeds 500% threshold"
+        assert performance_impact <= 5.0, (
+            f"Performance impact {performance_impact:.1%} exceeds 500% threshold"
+        )
+
 
 def run_comprehensive_tests():
     """Run all tests and provide summary"""
@@ -368,7 +419,7 @@ def run_comprehensive_tests():
     test_classes = [
         TestLLMContextAnalyzer,
         TestDynamicEmotionIntonationSystem,
-        TestUnifiedProcessorIntegration
+        TestUnifiedProcessorIntegration,
     ]
 
     total_tests = 0
@@ -380,7 +431,7 @@ def run_comprehensive_tests():
         print(f"{'-' * 60}")
 
         test_instance = test_class()
-        test_methods = [method for method in dir(test_instance) if method.startswith('test_')]
+        test_methods = [method for method in dir(test_instance) if method.startswith("test_")]
 
         for method_name in test_methods:
             total_tests += 1
@@ -406,9 +457,12 @@ def run_comprehensive_tests():
     elif success_rate >= 0.7:
         print("⚠️  ACCEPTABLE: Emotional & Prosodic Enhancement Engine needs some improvements.")
     else:
-        print("❌ NEEDS WORK: Emotional & Prosodic Enhancement Engine requires significant improvements.")
+        print(
+            "❌ NEEDS WORK: Emotional & Prosodic Enhancement Engine requires significant improvements."
+        )
 
     return success_rate
+
 
 if __name__ == "__main__":
     run_comprehensive_tests()

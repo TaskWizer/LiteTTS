@@ -10,9 +10,11 @@ from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class VoiceModulation:
     """Voice modulation parameters"""
+
     voice_name: str
     volume_multiplier: float = 1.0
     speed_multiplier: float = 1.0
@@ -20,14 +22,17 @@ class VoiceModulation:
     tone: str = "normal"  # normal, whisper, emphasis, soft, etc.
     blend_ratio: float = 1.0  # For voice blending
 
+
 @dataclass
 class ModulationSegment:
     """Text segment with voice modulation"""
+
     text: str
     start_pos: int
     end_pos: int
     modulation: VoiceModulation
     original_text: str
+
 
 class VoiceModulationSystem:
     """Advanced voice modulation system for natural TTS expression"""
@@ -47,172 +52,195 @@ class VoiceModulationSystem:
         """Load text patterns that trigger voice modulation"""
         return [
             # Parenthetical text - enhanced whisper mode with af_nicole blend
-            (r'\(([^)]+)\)', 'parenthetical_whisper', {
-                'voice_name': 'af_nicole',
-                'volume_multiplier': 0.55,  # Quieter for better whisper effect
-                'speed_multiplier': 0.85,   # Slower for more intimate delivery
-                'pitch_adjustment': -0.15,  # Lower pitch for whisper
-                'tone': 'whisper',
-                'blend_ratio': 0.8,         # Higher blend ratio for more af_nicole
-                'breathing_pause': 0.1,     # Add slight pause before/after
-                'intimacy_level': 'high'    # Enhanced intimacy for parenthetical content
-            }),
-
+            (
+                r"\(([^)]+)\)",
+                "parenthetical_whisper",
+                {
+                    "voice_name": "af_nicole",
+                    "volume_multiplier": 0.55,  # Quieter for better whisper effect
+                    "speed_multiplier": 0.85,  # Slower for more intimate delivery
+                    "pitch_adjustment": -0.15,  # Lower pitch for whisper
+                    "tone": "whisper",
+                    "blend_ratio": 0.8,  # Higher blend ratio for more af_nicole
+                    "breathing_pause": 0.1,  # Add slight pause before/after
+                    "intimacy_level": "high",  # Enhanced intimacy for parenthetical content
+                },
+            ),
             # Nested parenthetical - even quieter
-            (r'\(\(([^)]+)\)\)', 'nested_parenthetical', {
-                'voice_name': 'af_nicole',
-                'volume_multiplier': 0.4,
-                'speed_multiplier': 0.8,
-                'pitch_adjustment': -0.2,
-                'tone': 'deep_whisper',
-                'blend_ratio': 0.9
-            }),
-
+            (
+                r"\(\(([^)]+)\)\)",
+                "nested_parenthetical",
+                {
+                    "voice_name": "af_nicole",
+                    "volume_multiplier": 0.4,
+                    "speed_multiplier": 0.8,
+                    "pitch_adjustment": -0.2,
+                    "tone": "deep_whisper",
+                    "blend_ratio": 0.9,
+                },
+            ),
             # Aside text - similar to parenthetical but different pattern
-            (r'\[aside\]([^[]+)\[/aside\]', 'aside_whisper', {
-                'voice_name': 'af_nicole',
-                'volume_multiplier': 0.6,
-                'speed_multiplier': 0.9,
-                'pitch_adjustment': -0.1,
-                'tone': 'aside',
-                'blend_ratio': 0.75
-            }),
-
+            (
+                r"\[aside\]([^[]+)\[/aside\]",
+                "aside_whisper",
+                {
+                    "voice_name": "af_nicole",
+                    "volume_multiplier": 0.6,
+                    "speed_multiplier": 0.9,
+                    "pitch_adjustment": -0.1,
+                    "tone": "aside",
+                    "blend_ratio": 0.75,
+                },
+            ),
             # Italicized text - emphasis
-            (r'\*([^*]+)\*', 'emphasis', {
-                'volume_multiplier': 1.2,
-                'speed_multiplier': 0.95,
-                'pitch_adjustment': 0.05,
-                'tone': 'emphasis'
-            }),
-
+            (
+                r"\*([^*]+)\*",
+                "emphasis",
+                {
+                    "volume_multiplier": 1.2,
+                    "speed_multiplier": 0.95,
+                    "pitch_adjustment": 0.05,
+                    "tone": "emphasis",
+                },
+            ),
             # Bold text - strong emphasis
-            (r'\*\*([^*]+)\*\*', 'strong_emphasis', {
-                'volume_multiplier': 1.3,
-                'speed_multiplier': 0.9,
-                'pitch_adjustment': 0.1,
-                'tone': 'strong_emphasis'
-            }),
-
+            (
+                r"\*\*([^*]+)\*\*",
+                "strong_emphasis",
+                {
+                    "volume_multiplier": 1.3,
+                    "speed_multiplier": 0.9,
+                    "pitch_adjustment": 0.1,
+                    "tone": "strong_emphasis",
+                },
+            ),
             # Quoted text - different tone
-            (r'"([^"]+)"', 'quoted', {
-                'volume_multiplier': 1.1,
-                'speed_multiplier': 1.0,
-                'pitch_adjustment': 0.02,
-                'tone': 'quoted'
-            }),
-
+            (
+                r'"([^"]+)"',
+                "quoted",
+                {
+                    "volume_multiplier": 1.1,
+                    "speed_multiplier": 1.0,
+                    "pitch_adjustment": 0.02,
+                    "tone": "quoted",
+                },
+            ),
             # Whispered text (explicit)
-            (r'\[whisper\]([^[]+)\[/whisper\]', 'explicit_whisper', {
-                'voice_name': 'af_nicole',
-                'volume_multiplier': 0.5,
-                'speed_multiplier': 0.85,
-                'pitch_adjustment': -0.15,
-                'tone': 'whisper',
-                'blend_ratio': 0.8
-            }),
-
+            (
+                r"\[whisper\]([^[]+)\[/whisper\]",
+                "explicit_whisper",
+                {
+                    "voice_name": "af_nicole",
+                    "volume_multiplier": 0.5,
+                    "speed_multiplier": 0.85,
+                    "pitch_adjustment": -0.15,
+                    "tone": "whisper",
+                    "blend_ratio": 0.8,
+                },
+            ),
             # Soft text
-            (r'\[soft\]([^[]+)\[/soft\]', 'soft', {
-                'volume_multiplier': 0.8,
-                'speed_multiplier': 0.95,
-                'pitch_adjustment': -0.05,
-                'tone': 'soft'
-            }),
-
+            (
+                r"\[soft\]([^[]+)\[/soft\]",
+                "soft",
+                {
+                    "volume_multiplier": 0.8,
+                    "speed_multiplier": 0.95,
+                    "pitch_adjustment": -0.05,
+                    "tone": "soft",
+                },
+            ),
             # Loud text
-            (r'\[loud\]([^[]+)\[/loud\]', 'loud', {
-                'volume_multiplier': 1.4,
-                'speed_multiplier': 1.05,
-                'pitch_adjustment': 0.1,
-                'tone': 'loud'
-            }),
-
+            (
+                r"\[loud\]([^[]+)\[/loud\]",
+                "loud",
+                {
+                    "volume_multiplier": 1.4,
+                    "speed_multiplier": 1.05,
+                    "pitch_adjustment": 0.1,
+                    "tone": "loud",
+                },
+            ),
             # Fast text
-            (r'\[fast\]([^[]+)\[/fast\]', 'fast', {
-                'speed_multiplier': 1.3,
-                'tone': 'fast'
-            }),
-
+            (r"\[fast\]([^[]+)\[/fast\]", "fast", {"speed_multiplier": 1.3, "tone": "fast"}),
             # Slow text
-            (r'\[slow\]([^[]+)\[/slow\]', 'slow', {
-                'speed_multiplier': 0.7,
-                'tone': 'slow'
-            }),
-
+            (r"\[slow\]([^[]+)\[/slow\]", "slow", {"speed_multiplier": 0.7, "tone": "slow"}),
             # Aside text (similar to parenthetical but different marker)
-            (r'\[aside\]([^[]+)\[/aside\]', 'aside', {
-                'voice_name': 'af_nicole',
-                'volume_multiplier': 0.7,
-                'speed_multiplier': 0.9,
-                'pitch_adjustment': -0.08,
-                'tone': 'aside',
-                'blend_ratio': 0.6
-            }),
+            (
+                r"\[aside\]([^[]+)\[/aside\]",
+                "aside",
+                {
+                    "voice_name": "af_nicole",
+                    "volume_multiplier": 0.7,
+                    "speed_multiplier": 0.9,
+                    "pitch_adjustment": -0.08,
+                    "tone": "aside",
+                    "blend_ratio": 0.6,
+                },
+            ),
         ]
 
     def _load_voice_profiles(self) -> dict[str, VoiceModulation]:
         """Load predefined voice profiles"""
         return {
-            'whisper': VoiceModulation(
-                voice_name='af_nicole',
+            "whisper": VoiceModulation(
+                voice_name="af_nicole",
                 volume_multiplier=0.55,  # Enhanced quieter whisper
-                speed_multiplier=0.85,   # Slower for intimacy
+                speed_multiplier=0.85,  # Slower for intimacy
                 pitch_adjustment=-0.15,  # Lower pitch for better whisper
-                tone='whisper',
-                blend_ratio=0.8          # Higher af_nicole blend
+                tone="whisper",
+                blend_ratio=0.8,  # Higher af_nicole blend
             ),
-            'parenthetical_whisper': VoiceModulation(
-                voice_name='af_nicole',
+            "parenthetical_whisper": VoiceModulation(
+                voice_name="af_nicole",
                 volume_multiplier=0.55,
                 speed_multiplier=0.85,
                 pitch_adjustment=-0.15,
-                tone='parenthetical_whisper',
-                blend_ratio=0.8
+                tone="parenthetical_whisper",
+                blend_ratio=0.8,
             ),
-            'deep_whisper': VoiceModulation(
-                voice_name='af_nicole',
-                volume_multiplier=0.4,   # Even quieter for nested parenthetical
+            "deep_whisper": VoiceModulation(
+                voice_name="af_nicole",
+                volume_multiplier=0.4,  # Even quieter for nested parenthetical
                 speed_multiplier=0.8,
                 pitch_adjustment=-0.2,
-                tone='deep_whisper',
-                blend_ratio=0.9
+                tone="deep_whisper",
+                blend_ratio=0.9,
             ),
-            'aside': VoiceModulation(
-                voice_name='af_nicole',
+            "aside": VoiceModulation(
+                voice_name="af_nicole",
                 volume_multiplier=0.6,
                 speed_multiplier=0.9,
                 pitch_adjustment=-0.1,
-                tone='aside',
-                blend_ratio=0.75
+                tone="aside",
+                blend_ratio=0.75,
             ),
-            'emphasis': VoiceModulation(
-                voice_name='default',
+            "emphasis": VoiceModulation(
+                voice_name="default",
                 volume_multiplier=1.2,
                 speed_multiplier=0.95,
                 pitch_adjustment=0.05,
-                tone='emphasis'
+                tone="emphasis",
             ),
-            'soft': VoiceModulation(
-                voice_name='default',
+            "soft": VoiceModulation(
+                voice_name="default",
                 volume_multiplier=0.8,
                 speed_multiplier=0.95,
                 pitch_adjustment=-0.05,
-                tone='soft'
+                tone="soft",
             ),
-            'excited': VoiceModulation(
-                voice_name='default',
+            "excited": VoiceModulation(
+                voice_name="default",
                 volume_multiplier=1.3,
                 speed_multiplier=1.1,
                 pitch_adjustment=0.15,
-                tone='excited'
+                tone="excited",
             ),
-            'calm': VoiceModulation(
-                voice_name='default',
+            "calm": VoiceModulation(
+                voice_name="default",
                 volume_multiplier=0.9,
                 speed_multiplier=0.85,
                 pitch_adjustment=-0.05,
-                tone='calm'
+                tone="calm",
             ),
         }
 
@@ -220,26 +248,25 @@ class VoiceModulationSystem:
         """Load SSML-like markers for voice modulation"""
         return {
             # Volume markers
-            '<volume level="soft">': '[soft]',
-            '</volume>': '[/soft]',
-            '<volume level="loud">': '[loud]',
-
+            '<volume level="soft">': "[soft]",
+            "</volume>": "[/soft]",
+            '<volume level="loud">': "[loud]",
             # Speed markers
-            '<prosody rate="slow">': '[slow]',
-            '</prosody>': '[/slow]',
-            '<prosody rate="fast">': '[fast]',
-
+            '<prosody rate="slow">': "[slow]",
+            "</prosody>": "[/slow]",
+            '<prosody rate="fast">': "[fast]",
             # Voice markers
-            '<voice name="whisper">': '[whisper]',
-            '</voice>': '[/whisper]',
-
+            '<voice name="whisper">': "[whisper]",
+            "</voice>": "[/whisper]",
             # Emphasis markers
-            '<emphasis level="strong">': '**',
-            '</emphasis>': '**',
-            '<emphasis level="moderate">': '*',
+            '<emphasis level="strong">': "**",
+            "</emphasis>": "**",
+            '<emphasis level="moderate">': "*",
         }
 
-    def process_voice_modulation(self, text: str, base_voice: str = "default") -> tuple[str, list[ModulationSegment]]:
+    def process_voice_modulation(
+        self, text: str, base_voice: str = "default"
+    ) -> tuple[str, list[ModulationSegment]]:
         """Process text for voice modulation and return processed text with modulation segments"""
         logger.debug(f"Processing voice modulation in: {text[:100]}...")
 
@@ -253,7 +280,9 @@ class VoiceModulationSystem:
         processed_text = self._remove_modulation_markers(text)
 
         # Add breathing pauses for parenthetical content
-        processed_text, modulation_segments = self._add_breathing_pauses(processed_text, modulation_segments)
+        processed_text, modulation_segments = self._add_breathing_pauses(
+            processed_text, modulation_segments
+        )
 
         logger.debug(f"Found {len(modulation_segments)} modulation segments")
         logger.debug(f"Voice modulation result: {processed_text[:100]}...")
@@ -276,12 +305,12 @@ class VoiceModulationSystem:
             for match in matches:
                 # Create modulation object
                 modulation = VoiceModulation(
-                    voice_name=params.get('voice_name', base_voice),
-                    volume_multiplier=params.get('volume_multiplier', 1.0),
-                    speed_multiplier=params.get('speed_multiplier', 1.0),
-                    pitch_adjustment=params.get('pitch_adjustment', 0.0),
-                    tone=params.get('tone', 'normal'),
-                    blend_ratio=params.get('blend_ratio', 1.0)
+                    voice_name=params.get("voice_name", base_voice),
+                    volume_multiplier=params.get("volume_multiplier", 1.0),
+                    speed_multiplier=params.get("speed_multiplier", 1.0),
+                    pitch_adjustment=params.get("pitch_adjustment", 0.0),
+                    tone=params.get("tone", "normal"),
+                    blend_ratio=params.get("blend_ratio", 1.0),
                 )
 
                 # Create segment
@@ -290,7 +319,7 @@ class VoiceModulationSystem:
                     start_pos=match.start(),
                     end_pos=match.end(),
                     modulation=modulation,
-                    original_text=match.group(0)  # The full match including markers
+                    original_text=match.group(0),  # The full match including markers
                 )
 
                 segments.append(segment)
@@ -304,15 +333,16 @@ class VoiceModulationSystem:
         """Remove modulation markers from text, leaving only the content"""
         # Remove markers but keep the content
         for pattern, _, _ in self.modulation_patterns:
-            text = re.sub(pattern, r'\1', text)
+            text = re.sub(pattern, r"\1", text)
 
         # Clean up any remaining markers
-        text = re.sub(r'\[/?[a-zA-Z_]+\]', '', text)
+        text = re.sub(r"\[/?[a-zA-Z_]+\]", "", text)
 
         return text
 
-    def generate_ssml_with_modulation(self, text: str, segments: list[ModulationSegment],
-                                    base_voice: str = "default") -> str:
+    def generate_ssml_with_modulation(
+        self, text: str, segments: list[ModulationSegment], base_voice: str = "default"
+    ) -> str:
         """Generate SSML with voice modulation markers"""
         if not segments:
             return text
@@ -324,7 +354,7 @@ class VoiceModulationSystem:
         for segment in segments:
             # Add text before this segment
             if segment.start_pos > last_pos:
-                before_text = text[last_pos:segment.start_pos]
+                before_text = text[last_pos : segment.start_pos]
                 ssml_parts.append(before_text)
 
             # Add modulated segment
@@ -337,7 +367,7 @@ class VoiceModulationSystem:
         if last_pos < len(text):
             ssml_parts.append(text[last_pos:])
 
-        return ''.join(ssml_parts)
+        return "".join(ssml_parts)
 
     def _create_ssml_segment(self, segment: ModulationSegment) -> str:
         """Create SSML for a modulated segment"""
@@ -377,51 +407,53 @@ class VoiceModulationSystem:
             tags.append(f'<prosody pitch="{pitch_change}">')
 
         # Emphasis
-        if modulation.tone in ['emphasis', 'strong_emphasis']:
-            level = "strong" if modulation.tone == 'strong_emphasis' else "moderate"
+        if modulation.tone in ["emphasis", "strong_emphasis"]:
+            level = "strong" if modulation.tone == "strong_emphasis" else "moderate"
             tags.append(f'<emphasis level="{level}">')
 
         # Build the complete SSML segment
-        opening_tags = ''.join(tags)
-        closing_tags = ''.join(f'</{tag.split()[0][1:]}>' for tag in reversed(tags))
+        opening_tags = "".join(tags)
+        closing_tags = "".join(f"</{tag.split()[0][1:]}>" for tag in reversed(tags))
 
         return f"{opening_tags}{content}{closing_tags}"
 
     def analyze_modulation_opportunities(self, text: str) -> dict[str, list[str]]:
         """Analyze text for potential voice modulation opportunities"""
         info = {
-            'parenthetical_text': [],
-            'emphasized_text': [],
-            'quoted_text': [],
-            'explicit_markers': [],
-            'potential_whispers': []
+            "parenthetical_text": [],
+            "emphasized_text": [],
+            "quoted_text": [],
+            "explicit_markers": [],
+            "potential_whispers": [],
         }
 
         # Find parenthetical text
-        parenthetical = re.findall(r'\(([^)]+)\)', text)
-        info['parenthetical_text'] = parenthetical
+        parenthetical = re.findall(r"\(([^)]+)\)", text)
+        info["parenthetical_text"] = parenthetical
 
         # Find emphasized text (markdown style)
-        emphasized = re.findall(r'\*([^*]+)\*', text)
-        info['emphasized_text'] = emphasized
+        emphasized = re.findall(r"\*([^*]+)\*", text)
+        info["emphasized_text"] = emphasized
 
         # Find quoted text
         quoted = re.findall(r'"([^"]+)"', text)
-        info['quoted_text'] = quoted
+        info["quoted_text"] = quoted
 
         # Find explicit markers
-        explicit_markers = re.findall(r'\[([a-zA-Z_]+)\]', text)
-        info['explicit_markers'] = explicit_markers
+        explicit_markers = re.findall(r"\[([a-zA-Z_]+)\]", text)
+        info["explicit_markers"] = explicit_markers
 
         # Find potential whisper opportunities (words that suggest quiet speech)
-        whisper_indicators = ['whisper', 'quietly', 'softly', 'murmur', 'aside', 'secretly']
+        whisper_indicators = ["whisper", "quietly", "softly", "murmur", "aside", "secretly"]
         for indicator in whisper_indicators:
             if indicator in text.lower():
-                info['potential_whispers'].append(indicator)
+                info["potential_whispers"].append(indicator)
 
         return info
 
-    def _add_breathing_pauses(self, text: str, segments: list[ModulationSegment]) -> tuple[str, list[ModulationSegment]]:
+    def _add_breathing_pauses(
+        self, text: str, segments: list[ModulationSegment]
+    ) -> tuple[str, list[ModulationSegment]]:
         """Add breathing pauses before and after parenthetical content"""
         if not segments:
             return text, segments
@@ -433,15 +465,16 @@ class VoiceModulationSystem:
 
         for segment in sorted_segments:
             # Check if this segment needs breathing pauses
-            needs_breathing = (
-                hasattr(segment.modulation, 'tone') and
-                segment.modulation.tone in ['parenthetical_whisper', 'deep_whisper', 'aside']
-            )
+            needs_breathing = hasattr(segment.modulation, "tone") and segment.modulation.tone in [
+                "parenthetical_whisper",
+                "deep_whisper",
+                "aside",
+            ]
 
             if needs_breathing:
                 # Add slight pause before parenthetical content
                 pause_before = "... "  # Natural pause marker
-                pause_after = " ..."   # Natural pause marker
+                pause_after = " ..."  # Natural pause marker
 
                 # Find the actual position in the processed text
                 # (This is simplified - in a full implementation, you'd track position changes)
@@ -454,10 +487,10 @@ class VoiceModulationSystem:
                 after_text = modified_text[end_pos:]
 
                 # Only add pauses if not already present
-                if not before_text.endswith(('...', '. ', ', ')):
+                if not before_text.endswith(("...", ". ", ", ")):
                     before_text += pause_before
 
-                if not after_text.startswith(('...', ' .', ' ,')):
+                if not after_text.startswith(("...", " .", " ,")):
                     after_text = pause_after + after_text
 
                 modified_text = before_text + segment_text + after_text
@@ -477,13 +510,13 @@ class VoiceModulationSystem:
         """Enhanced processing specifically for parenthetical content"""
         # Detect different types of parenthetical content
         patterns = [
-            (r'\(([Ii]magine[^)]*)\)', 'imagination'),
-            (r'\(([Ff]or example[^)]*)\)', 'example'),
-            (r'\(([Nn]ote[^)]*)\)', 'note'),
-            (r'\(([Tt]hink[^)]*)\)', 'thought'),
-            (r'\(([Ww]hisper[^)]*)\)', 'whisper_explicit'),
-            (r'\(([^)]{1,20})\)', 'short_aside'),
-            (r'\(([^)]{21,})\)', 'long_aside')
+            (r"\(([Ii]magine[^)]*)\)", "imagination"),
+            (r"\(([Ff]or example[^)]*)\)", "example"),
+            (r"\(([Nn]ote[^)]*)\)", "note"),
+            (r"\(([Tt]hink[^)]*)\)", "thought"),
+            (r"\(([Ww]hisper[^)]*)\)", "whisper_explicit"),
+            (r"\(([^)]{1,20})\)", "short_aside"),
+            (r"\(([^)]{21,})\)", "long_aside"),
         ]
 
         processed_text = text
@@ -495,13 +528,13 @@ class VoiceModulationSystem:
                 content = match.group(1)
 
                 # Apply content-type specific processing
-                if content_type == 'imagination':
+                if content_type == "imagination":
                     # Extra soft for imagination prompts
                     replacement = f"[whisper]{content}[/whisper]"
-                elif content_type == 'whisper_explicit':
+                elif content_type == "whisper_explicit":
                     # Deep whisper for explicit whisper requests
                     replacement = f"[deep_whisper]{content}[/deep_whisper]"
-                elif content_type == 'long_aside':
+                elif content_type == "long_aside":
                     # Slower pace for longer asides
                     replacement = f"[aside]{content}[/aside]"
                 else:
@@ -512,10 +545,16 @@ class VoiceModulationSystem:
 
         return processed_text
 
-    def create_voice_profile(self, name: str, voice_name: str = "default",
-                           volume_multiplier: float = 1.0, speed_multiplier: float = 1.0,
-                           pitch_adjustment: float = 0.0, tone: str = "normal",
-                           blend_ratio: float = 1.0):
+    def create_voice_profile(
+        self,
+        name: str,
+        voice_name: str = "default",
+        volume_multiplier: float = 1.0,
+        speed_multiplier: float = 1.0,
+        pitch_adjustment: float = 0.0,
+        tone: str = "normal",
+        blend_ratio: float = 1.0,
+    ):
         """Create a custom voice profile"""
         profile = VoiceModulation(
             voice_name=voice_name,
@@ -523,16 +562,19 @@ class VoiceModulationSystem:
             speed_multiplier=speed_multiplier,
             pitch_adjustment=pitch_adjustment,
             tone=tone,
-            blend_ratio=blend_ratio
+            blend_ratio=blend_ratio,
         )
 
         self.voice_profiles[name] = profile
         logger.info(f"Created voice profile: {name}")
 
-    def set_configuration(self, enable_parenthetical_whisper: bool = None,
-                         enable_emphasis_detection: bool = None,
-                         enable_voice_blending: bool = None,
-                         default_whisper_voice: str = None):
+    def set_configuration(
+        self,
+        enable_parenthetical_whisper: bool = None,
+        enable_emphasis_detection: bool = None,
+        enable_voice_blending: bool = None,
+        default_whisper_voice: str = None,
+    ):
         """Set configuration options"""
         if enable_parenthetical_whisper is not None:
             self.enable_parenthetical_whisper = enable_parenthetical_whisper
@@ -543,11 +585,13 @@ class VoiceModulationSystem:
         if default_whisper_voice is not None:
             self.default_whisper_voice = default_whisper_voice
 
-        logger.info(f"Voice modulation configuration updated: "
-                   f"parenthetical_whisper={self.enable_parenthetical_whisper}, "
-                   f"emphasis_detection={self.enable_emphasis_detection}, "
-                   f"voice_blending={self.enable_voice_blending}, "
-                   f"default_whisper_voice={self.default_whisper_voice}")
+        logger.info(
+            f"Voice modulation configuration updated: "
+            f"parenthetical_whisper={self.enable_parenthetical_whisper}, "
+            f"emphasis_detection={self.enable_emphasis_detection}, "
+            f"voice_blending={self.enable_voice_blending}, "
+            f"default_whisper_voice={self.default_whisper_voice}"
+        )
 
     def get_voice_profiles(self) -> dict[str, VoiceModulation]:
         """Get all available voice profiles"""

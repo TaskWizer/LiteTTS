@@ -12,13 +12,17 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class ModelConfig:
     """Model configuration"""
+
     name: str = "LiteTTS"
     type: str = "style_text_to_speech_2"
     version: str = "1.0.0"
-    default_variant: str = "model_q4.onnx"  # Use Q4 quantized model for optimal performance/size balance
+    default_variant: str = (
+        "model_q4.onnx"  # Use Q4 quantized model for optimal performance/size balance
+    )
     available_variants: list[str] = None
     auto_discovery: bool = True
     cache_models: bool = True
@@ -36,12 +40,14 @@ class ModelConfig:
                 "model_q8f16.onnx",
                 "model_quantized.onnx",
                 "model_uint8.onnx",
-                "model_uint8f16.onnx"
+                "model_uint8f16.onnx",
             ]
+
 
 @dataclass
 class VoiceConfig:
     """Voice configuration"""
+
     default_voice: str = "af_heart"
     auto_discovery: bool = True
     download_all_on_startup: bool = False  # Changed default to False for individual loading
@@ -61,9 +67,11 @@ class VoiceConfig:
         if self.default_voices is None:
             self.default_voices = ["af_heart", "am_puck"]
 
+
 @dataclass
 class ChunkedGenerationConfig:
     """Chunked generation configuration for progressive audio output"""
+
     enabled: bool = True
     strategy: str = "adaptive"  # sentence, phrase, fixed_size, adaptive
     max_chunk_size: int = 200
@@ -75,9 +83,11 @@ class ChunkedGenerationConfig:
     enable_for_streaming: bool = True
     min_text_length_for_chunking: int = 100
 
+
 @dataclass
 class AudioConfig:
     """Audio configuration"""
+
     default_format: str = "mp3"
     default_speed: float = 1.0
     default_language: str = "en-us"
@@ -115,9 +125,11 @@ class AudioConfig:
         if self.chunked_generation is None:
             self.chunked_generation = ChunkedGenerationConfig()
 
+
 @dataclass
 class ServerConfig:
     """Server configuration"""
+
     port: int = 8354
     max_port_attempts: int = 10
     host: str = "0.0.0.0"
@@ -130,9 +142,11 @@ class ServerConfig:
         if self.cors_origins is None:
             self.cors_origins = ["*"]
 
+
 @dataclass
 class PerformanceConfig:
     """Performance configuration"""
+
     hot_reload: bool = True
     cache_enabled: bool = True
     preload_models: bool = False
@@ -145,9 +159,15 @@ class PerformanceConfig:
     memory_optimization: bool = True
 
     # Text preprocessing configuration - Use settings.json as source of truth
-    expand_contractions: bool = False  # Default: preserve natural speech, expand only problematic contractions
-    expand_problematic_contractions_only: bool = True  # Only expand problematic contractions by default
-    preserve_natural_speech: bool = True  # Preserve natural speech patterns while fixing pronunciation issues
+    expand_contractions: bool = (
+        False  # Default: preserve natural speech, expand only problematic contractions
+    )
+    expand_problematic_contractions_only: bool = (
+        True  # Only expand problematic contractions by default
+    )
+    preserve_natural_speech: bool = (
+        True  # Preserve natural speech patterns while fixing pronunciation issues
+    )
 
     # Emoji and symbol handling configuration
     filter_emojis: bool = True  # Default: remove emojis to prevent verbalization
@@ -165,9 +185,11 @@ class PerformanceConfig:
     # Dynamic CPU allocation configuration
     dynamic_cpu_allocation: dict | None = None
 
+
 @dataclass
 class RepositoryConfig:
     """Repository configuration"""
+
     huggingface_repo: str = "onnx-community/Kokoro-82M-v1.0-ONNX"
     models_path: str = "onnx"
     voices_path: str = "voices"
@@ -175,26 +197,32 @@ class RepositoryConfig:
     model_branch: str = "main"  # Git branch for model repository
     cache_dir: str = "models"  # Local cache directory for models
 
+
 @dataclass
 class PathsConfig:
     """Paths configuration"""
+
     models_dir: str = "LiteTTS/models"
     voices_dir: str = "LiteTTS/voices"
     cache_dir: str = "cache"
     logs_dir: str = "docs/logs"
     temp_dir: str = "LiteTTS/temp"
 
+
 @dataclass
 class TokenizerConfig:
     """Tokenizer configuration"""
+
     character_set: str = " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?;:-'"
     pad_token_id: int = 0
     unk_token_id: int = 0
     type: str = "character"
 
+
 @dataclass
 class EndpointsConfig:
     """API endpoints configuration"""
+
     tts: str = "/v1/audio/speech"
     stream: str = "/v1/audio/stream"
     voices: str = "/v1/voices"
@@ -204,9 +232,11 @@ class EndpointsConfig:
     dashboard: str = "/dashboard"
     metrics: str = "/metrics"
 
+
 @dataclass
 class ApplicationConfig:
     """Application metadata configuration"""
+
     name: str = "LiteTTS"
     description: str = "High-quality text-to-speech service with ONNX optimization and OpenWebUI compatibility (part of TaskWizer framework)"
     version: str = "1.0.0"
@@ -214,9 +244,11 @@ class ApplicationConfig:
     license: str = "MIT"
     documentation_url: str = "https://github.com/aliasfoxkde/LiteTTS"
 
+
 @dataclass
 class TTSConfig:
     """Legacy TTS engine configuration for backward compatibility"""
+
     model_path: str = "LiteTTS/models/model_q4.onnx"  # Use Q4 quantized model by default
     voices_path: str = "LiteTTS/voices"
     default_voice: str = "af_heart"
@@ -224,9 +256,11 @@ class TTSConfig:
     chunk_size: int = 100
     device: str = "cpu"
 
+
 @dataclass
 class APIConfig:
     """API server configuration"""
+
     host: str = "0.0.0.0"
     port: int = 8354  # Use same default as ServerConfig
     workers: int = 1
@@ -238,9 +272,11 @@ class APIConfig:
         if self.cors_origins is None:
             self.cors_origins = ["*"]
 
+
 @dataclass
 class CacheConfig:
     """Caching configuration"""
+
     enabled: bool = True
     max_size: int = 100  # Maximum cached items
     ttl: int = 3600  # Time to live in seconds
@@ -256,9 +292,11 @@ class CacheConfig:
     text_disk_cache_mb: int = 50
     text_cache_ttl: int = 86400  # 24 hours for text cache
 
+
 @dataclass
 class MonitoringConfig:
     """Performance monitoring configuration"""
+
     enabled: bool = True
     max_history: int = 1000
     system_monitoring: bool = True
@@ -266,26 +304,32 @@ class MonitoringConfig:
     join_timeout: float = 5.0  # seconds
     metrics_retention_days: int = 7  # days
 
+
 @dataclass
 class TestingConfig:
     """Testing configuration"""
+
     enable_mock_voices: bool = False
     mock_voice_count: int = 10
     enable_performance_testing: bool = True
     test_timeout_seconds: int = 30
 
+
 @dataclass
 class LoggingConfig:
     """Logging configuration"""
+
     level: str = "INFO"
     format: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     file_path: str | None = None
     max_file_size: int = 10 * 1024 * 1024  # 10MB
     backup_count: int = 5
 
+
 @dataclass
 class MetricsConfig:
     """Monitoring and metrics configuration"""
+
     enabled: bool = True
     metrics_endpoint: bool = True
     health_endpoint: bool = True
@@ -293,9 +337,11 @@ class MetricsConfig:
     performance_logging: bool = True
     metrics_retention_days: int = 7
 
+
 @dataclass
 class SecurityConfig:
     """Security configuration"""
+
     api_key_required: bool = False
     api_key: str | None = None
     rate_limit_enabled: bool = True
@@ -307,6 +353,7 @@ class SecurityConfig:
     def __post_init__(self):
         if self.allowed_origins is None:
             self.allowed_origins = ["*"]
+
 
 class ConfigManager:
     """Central configuration manager with comprehensive environment variable support"""
@@ -354,7 +401,7 @@ class ConfigManager:
             # Load base configuration
             config_data = {}
             if self.config_file.exists():
-                with open(self.config_file, 'r', encoding='utf-8') as f:
+                with open(self.config_file, "r", encoding="utf-8") as f:
                     config_data = json.load(f)
                 logger.info(f"Loaded base configuration from {self.config_file}")
             else:
@@ -364,14 +411,16 @@ class ConfigManager:
             override_config_file = Path("override.json")
             if override_config_file.exists():
                 try:
-                    with open(override_config_file, 'r') as f:
+                    with open(override_config_file, "r") as f:
                         override_config_data = json.load(f)
 
                     # Merge override configuration with base configuration
                     config_data = self._deep_merge_config(config_data, override_config_data)
                     logger.info(f"Applied configuration overrides from {override_config_file}")
                 except Exception as e:
-                    logger.error(f"Failed to load override configuration from {override_config_file}: {e}")
+                    logger.error(
+                        f"Failed to load override configuration from {override_config_file}: {e}"
+                    )
                     logger.warning("Continuing with base configuration only")
 
             # Initialize configuration sections with merged data
@@ -400,8 +449,17 @@ class ConfigManager:
                 repo_config = config_data.get("repository", {})
                 # Filter out any unknown parameters that might cause issues
                 valid_repo_params = {
-                    k: v for k, v in repo_config.items()
-                    if k in ['huggingface_repo', 'models_path', 'voices_path', 'base_url', 'model_branch', 'cache_dir']
+                    k: v
+                    for k, v in repo_config.items()
+                    if k
+                    in [
+                        "huggingface_repo",
+                        "models_path",
+                        "voices_path",
+                        "base_url",
+                        "model_branch",
+                        "cache_dir",
+                    ]
                 }
                 self.repository = RepositoryConfig(**valid_repo_params)
             except TypeError as e:
@@ -426,16 +484,22 @@ class ConfigManager:
             try:
                 self.repository = RepositoryConfig()
             except TypeError as repo_error:
-                logger.warning(f"RepositoryConfig initialization failed: {repo_error}, using minimal config")
+                logger.warning(
+                    f"RepositoryConfig initialization failed: {repo_error}, using minimal config"
+                )
                 # Create minimal repository config manually
-                self.repository = type('RepositoryConfig', (), {
-                    'huggingface_repo': "onnx-community/Kokoro-82M-v1.0-ONNX",
-                    'models_path': "onnx",
-                    'voices_path': "voices",
-                    'base_url': "https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main",
-                    'model_branch': "main",
-                    'cache_dir': "models"
-                })()
+                self.repository = type(
+                    "RepositoryConfig",
+                    (),
+                    {
+                        "huggingface_repo": "onnx-community/Kokoro-82M-v1.0-ONNX",
+                        "models_path": "onnx",
+                        "voices_path": "voices",
+                        "base_url": "https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main",
+                        "model_branch": "main",
+                        "cache_dir": "models",
+                    },
+                )()
 
             self.paths = PathsConfig()
             self.tokenizer = TokenizerConfig()
@@ -481,38 +545,77 @@ class ConfigManager:
         try:
             # Model Configuration
             self.model.name = os.getenv("KOKORO_MODEL_NAME", self.model.name)
-            self.model.default_variant = os.getenv("KOKORO_MODEL_VARIANT", self.model.default_variant)
-            self.model.auto_discovery = os.getenv("KOKORO_MODEL_AUTO_DISCOVERY", str(self.model.auto_discovery)).lower() == "true"
-            self.model.cache_models = os.getenv("KOKORO_CACHE_MODELS", str(self.model.cache_models)).lower() == "true"
+            self.model.default_variant = os.getenv(
+                "KOKORO_MODEL_VARIANT", self.model.default_variant
+            )
+            self.model.auto_discovery = (
+                os.getenv("KOKORO_MODEL_AUTO_DISCOVERY", str(self.model.auto_discovery)).lower()
+                == "true"
+            )
+            self.model.cache_models = (
+                os.getenv("KOKORO_CACHE_MODELS", str(self.model.cache_models)).lower() == "true"
+            )
 
             # Voice Configuration
             self.voice.default_voice = os.getenv("KOKORO_DEFAULT_VOICE", self.voice.default_voice)
-            self.voice.auto_discovery = os.getenv("KOKORO_VOICE_AUTO_DISCOVERY", str(self.voice.auto_discovery)).lower() == "true"
-            self.voice.download_all_on_startup = os.getenv("DOWNLOAD_ALL_VOICES", str(self.voice.download_all_on_startup)).lower() == "true"
-            self.voice.cache_discovery = os.getenv("KOKORO_CACHE_DISCOVERY", str(self.voice.cache_discovery)).lower() == "true"
-            self.voice.discovery_cache_hours = int(os.getenv("KOKORO_DISCOVERY_CACHE_HOURS", str(self.voice.discovery_cache_hours)))
+            self.voice.auto_discovery = (
+                os.getenv("KOKORO_VOICE_AUTO_DISCOVERY", str(self.voice.auto_discovery)).lower()
+                == "true"
+            )
+            self.voice.download_all_on_startup = (
+                os.getenv("DOWNLOAD_ALL_VOICES", str(self.voice.download_all_on_startup)).lower()
+                == "true"
+            )
+            self.voice.cache_discovery = (
+                os.getenv("KOKORO_CACHE_DISCOVERY", str(self.voice.cache_discovery)).lower()
+                == "true"
+            )
+            self.voice.discovery_cache_hours = int(
+                os.getenv("KOKORO_DISCOVERY_CACHE_HOURS", str(self.voice.discovery_cache_hours))
+            )
 
             # Audio Configuration
-            self.audio.default_format = os.getenv("KOKORO_DEFAULT_FORMAT", self.audio.default_format)
-            self.audio.sample_rate = int(os.getenv("KOKORO_SAMPLE_RATE", str(self.audio.sample_rate)))
+            self.audio.default_format = os.getenv(
+                "KOKORO_DEFAULT_FORMAT", self.audio.default_format
+            )
+            self.audio.sample_rate = int(
+                os.getenv("KOKORO_SAMPLE_RATE", str(self.audio.sample_rate))
+            )
 
             # Server Configuration
             self.server.port = int(os.getenv("PORT", str(self.server.port)))
-            self.server.max_port_attempts = int(os.getenv("MAX_PORT_ATTEMPTS", str(self.server.max_port_attempts)))
+            self.server.max_port_attempts = int(
+                os.getenv("MAX_PORT_ATTEMPTS", str(self.server.max_port_attempts))
+            )
             self.server.host = os.getenv("API_HOST", self.server.host)
             self.server.workers = int(os.getenv("WORKERS", str(self.server.workers)))
             self.server.environment = os.getenv("ENVIRONMENT", self.server.environment)
 
             # Performance Configuration
-            self.performance.hot_reload = os.getenv("KOKORO_HOT_RELOAD", str(self.performance.hot_reload)).lower() == "true"
-            self.performance.cache_enabled = os.getenv("CACHE_ENABLED", str(self.performance.cache_enabled)).lower() == "true"
-            self.performance.preload_models = os.getenv("KOKORO_PRELOAD_MODELS", str(self.performance.preload_models)).lower() == "true"
-            self.performance.chunk_size = int(os.getenv("KOKORO_CHUNK_SIZE", str(self.performance.chunk_size)))
-            self.performance.max_text_length = int(os.getenv("MAX_TEXT_LENGTH", str(self.performance.max_text_length)))
-            self.performance.timeout_seconds = int(os.getenv("KOKORO_TIMEOUT", str(self.performance.timeout_seconds)))
+            self.performance.hot_reload = (
+                os.getenv("KOKORO_HOT_RELOAD", str(self.performance.hot_reload)).lower() == "true"
+            )
+            self.performance.cache_enabled = (
+                os.getenv("CACHE_ENABLED", str(self.performance.cache_enabled)).lower() == "true"
+            )
+            self.performance.preload_models = (
+                os.getenv("KOKORO_PRELOAD_MODELS", str(self.performance.preload_models)).lower()
+                == "true"
+            )
+            self.performance.chunk_size = int(
+                os.getenv("KOKORO_CHUNK_SIZE", str(self.performance.chunk_size))
+            )
+            self.performance.max_text_length = int(
+                os.getenv("MAX_TEXT_LENGTH", str(self.performance.max_text_length))
+            )
+            self.performance.timeout_seconds = int(
+                os.getenv("KOKORO_TIMEOUT", str(self.performance.timeout_seconds))
+            )
 
             # Repository Configuration
-            self.repository.huggingface_repo = os.getenv("LITETTS_HF_REPO", self.repository.huggingface_repo)
+            self.repository.huggingface_repo = os.getenv(
+                "LITETTS_HF_REPO", self.repository.huggingface_repo
+            )
             self.repository.base_url = os.getenv("LITETTS_BASE_URL", self.repository.base_url)
 
             # Paths Configuration
@@ -521,11 +624,15 @@ class ConfigManager:
             self.paths.cache_dir = os.getenv("LITETTS_CACHE_DIR", self.paths.cache_dir)
 
             # Legacy TTS Configuration (for backward compatibility)
-            self.tts.model_path = os.getenv("KOKORO_MODEL_PATH", str(Path(self.paths.models_dir) / self.model.default_variant))
+            self.tts.model_path = os.getenv(
+                "KOKORO_MODEL_PATH", str(Path(self.paths.models_dir) / self.model.default_variant)
+            )
             self.tts.voices_path = os.getenv("KOKORO_VOICES_PATH", self.paths.voices_dir)
             self.tts.default_voice = os.getenv("KOKORO_DEFAULT_VOICE", self.voice.default_voice)
             self.tts.sample_rate = int(os.getenv("KOKORO_SAMPLE_RATE", str(self.audio.sample_rate)))
-            self.tts.chunk_size = int(os.getenv("KOKORO_CHUNK_SIZE", str(self.performance.chunk_size)))
+            self.tts.chunk_size = int(
+                os.getenv("KOKORO_CHUNK_SIZE", str(self.performance.chunk_size))
+            )
             self.tts.device = "cuda" if os.getenv("USE_CUDA", "false").lower() == "true" else "cpu"
 
             # API Configuration - sync with server configuration
@@ -544,51 +651,92 @@ class ConfigManager:
             self.cache.enabled = os.getenv("CACHE_ENABLED", "true").lower() == "true"
             self.cache.max_size = int(os.getenv("CACHE_MAX_SIZE", str(self.cache.max_size)))
             self.cache.ttl = int(os.getenv("CACHE_TTL", str(self.cache.ttl)))
-            self.cache.voice_cache_size = int(os.getenv("VOICE_CACHE_SIZE", str(self.cache.voice_cache_size)))
-            self.cache.audio_cache_size = int(os.getenv("AUDIO_CACHE_SIZE", str(self.cache.audio_cache_size)))
+            self.cache.voice_cache_size = int(
+                os.getenv("VOICE_CACHE_SIZE", str(self.cache.voice_cache_size))
+            )
+            self.cache.audio_cache_size = int(
+                os.getenv("AUDIO_CACHE_SIZE", str(self.cache.audio_cache_size))
+            )
 
             # Logging Configuration
             self.logging.level = os.getenv("LOG_LEVEL", self.logging.level)
             self.logging.file_path = os.getenv("LOG_FILE_PATH")
-            self.logging.max_file_size = int(os.getenv("LOG_MAX_FILE_SIZE", str(self.logging.max_file_size)))
-            self.logging.backup_count = int(os.getenv("LOG_BACKUP_COUNT", str(self.logging.backup_count)))
+            self.logging.max_file_size = int(
+                os.getenv("LOG_MAX_FILE_SIZE", str(self.logging.max_file_size))
+            )
+            self.logging.backup_count = int(
+                os.getenv("LOG_BACKUP_COUNT", str(self.logging.backup_count))
+            )
 
             # Monitoring Configuration
-            self.monitoring.enabled = os.getenv("MONITORING_ENABLED", str(self.monitoring.enabled)).lower() == "true"
-            self.monitoring.max_history = int(os.getenv("MONITORING_MAX_HISTORY", str(self.monitoring.max_history)))
-            self.monitoring.system_monitoring = os.getenv("SYSTEM_MONITORING", str(self.monitoring.system_monitoring)).lower() == "true"
-            self.monitoring.monitoring_interval = float(os.getenv("MONITORING_INTERVAL", str(self.monitoring.monitoring_interval)))
-            self.monitoring.join_timeout = float(os.getenv("MONITORING_JOIN_TIMEOUT", str(self.monitoring.join_timeout)))
+            self.monitoring.enabled = (
+                os.getenv("MONITORING_ENABLED", str(self.monitoring.enabled)).lower() == "true"
+            )
+            self.monitoring.max_history = int(
+                os.getenv("MONITORING_MAX_HISTORY", str(self.monitoring.max_history))
+            )
+            self.monitoring.system_monitoring = (
+                os.getenv("SYSTEM_MONITORING", str(self.monitoring.system_monitoring)).lower()
+                == "true"
+            )
+            self.monitoring.monitoring_interval = float(
+                os.getenv("MONITORING_INTERVAL", str(self.monitoring.monitoring_interval))
+            )
+            self.monitoring.join_timeout = float(
+                os.getenv("MONITORING_JOIN_TIMEOUT", str(self.monitoring.join_timeout))
+            )
 
             # Metrics Configuration
-            self.metrics.enabled = os.getenv("METRICS_ENABLED", str(self.metrics.enabled)).lower() == "true"
-            self.metrics.metrics_endpoint = os.getenv("METRICS_ENDPOINT", str(self.metrics.metrics_endpoint)).lower() == "true"
-            self.metrics.health_endpoint = os.getenv("HEALTH_ENDPOINT", str(self.metrics.health_endpoint)).lower() == "true"
-            self.metrics.request_tracking = os.getenv("REQUEST_TRACKING", str(self.metrics.request_tracking)).lower() == "true"
+            self.metrics.enabled = (
+                os.getenv("METRICS_ENABLED", str(self.metrics.enabled)).lower() == "true"
+            )
+            self.metrics.metrics_endpoint = (
+                os.getenv("METRICS_ENDPOINT", str(self.metrics.metrics_endpoint)).lower() == "true"
+            )
+            self.metrics.health_endpoint = (
+                os.getenv("HEALTH_ENDPOINT", str(self.metrics.health_endpoint)).lower() == "true"
+            )
+            self.metrics.request_tracking = (
+                os.getenv("REQUEST_TRACKING", str(self.metrics.request_tracking)).lower() == "true"
+            )
 
             # Security Configuration
-            self.security.api_key_required = os.getenv("API_KEY_REQUIRED", "false").lower() == "true"
+            self.security.api_key_required = (
+                os.getenv("API_KEY_REQUIRED", "false").lower() == "true"
+            )
             self.security.api_key = os.getenv("API_KEY")
-            self.security.rate_limit_enabled = os.getenv("RATE_LIMIT_ENABLED", "true").lower() == "true"
-            self.security.rate_limit_requests = int(os.getenv("RATE_LIMIT_REQUESTS", str(self.security.rate_limit_requests)))
-            self.security.rate_limit_window = int(os.getenv("RATE_LIMIT_WINDOW", str(self.security.rate_limit_window)))
-            self.security.max_text_length = int(os.getenv("MAX_TEXT_LENGTH", str(self.security.max_text_length)))
+            self.security.rate_limit_enabled = (
+                os.getenv("RATE_LIMIT_ENABLED", "true").lower() == "true"
+            )
+            self.security.rate_limit_requests = int(
+                os.getenv("RATE_LIMIT_REQUESTS", str(self.security.rate_limit_requests))
+            )
+            self.security.rate_limit_window = int(
+                os.getenv("RATE_LIMIT_WINDOW", str(self.security.rate_limit_window))
+            )
+            self.security.max_text_length = int(
+                os.getenv("MAX_TEXT_LENGTH", str(self.security.max_text_length))
+            )
 
             # Parse allowed origins
             allowed_origins = os.getenv("ALLOWED_ORIGINS")
             if allowed_origins:
-                self.security.allowed_origins = [origin.strip() for origin in allowed_origins.split(",")]
+                self.security.allowed_origins = [
+                    origin.strip() for origin in allowed_origins.split(",")
+                ]
 
         except (ValueError, TypeError) as e:
             logger.error(f"Error loading configuration from environment: {e}")
             # Use lazy import to avoid circular dependency
             from .exceptions import ConfigurationError
+
             raise ConfigurationError(f"Invalid environment variable configuration: {e}")
 
     def _validate_startup(self):
         """Validate configuration at startup"""
         if not self.validate():
             from .exceptions import ConfigurationError
+
             raise ConfigurationError("Configuration validation failed")
 
         # Log configuration summary
@@ -734,7 +882,7 @@ class ConfigManager:
                 "rate_limit_window": self.security.rate_limit_window,
                 "max_text_length": self.security.max_text_length,
                 "allowed_origins": self.security.allowed_origins,
-            }
+            },
         }
 
     def save_to_json(self, filepath: str | None = None) -> bool:
@@ -795,10 +943,10 @@ class ConfigManager:
                     "models_dir": self.paths.models_dir,
                     "voices_dir": self.paths.voices_dir,
                     "cache_dir": self.paths.cache_dir,
-                }
+                },
             }
 
-            with open(filepath, 'w', encoding='utf-8') as f:
+            with open(filepath, "w", encoding="utf-8") as f:
                 json.dump(config_data, f, indent=2, ensure_ascii=False)
 
             logger.info(f"Configuration saved to {filepath}")
@@ -807,6 +955,7 @@ class ConfigManager:
         except Exception as e:
             logger.error(f"Failed to save configuration to {filepath}: {e}")
             return False
+
 
 # Global configuration instance - prioritize comprehensive settings file
 config = ConfigManager()

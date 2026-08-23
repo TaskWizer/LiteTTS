@@ -1,4 +1,3 @@
-
 import torch
 from torch import nn
 from torch.nn.utils.parametrizations import _WeightNorm
@@ -15,10 +14,14 @@ def get_regularized_weight(modules: dict[str, nn.Module], parameter_name: str) -
     :param str parameter_name: the base parameter name from which the normalized weight derives.
     :return nn.Parameter: the computed normalized weight parameter.
     """
-    assert "weight_g" in parameter_name or "weight_v" in parameter_name, f"Attempted to get the normalized weight for a non weight parameter, {parameter_name}."
+    assert "weight_g" in parameter_name or "weight_v" in parameter_name, (
+        f"Attempted to get the normalized weight for a non weight parameter, {parameter_name}."
+    )
     parent_module_name = ".".join(parameter_name.split(".")[:-1])
     if parent_module_name not in modules:
-        raise KeyError(f"Failed to find module, {parent_module_name}, for parameter, {parameter_name}, in modules dictionary.")
+        raise KeyError(
+            f"Failed to find module, {parent_module_name}, for parameter, {parameter_name}, in modules dictionary."
+        )
     module = modules[parent_module_name]
     for hook in module._forward_pre_hooks.values():
         if isinstance(hook, WeightNorm):
@@ -27,7 +30,9 @@ def get_regularized_weight(modules: dict[str, nn.Module], parameter_name: str) -
     return module.weight
 
 
-def get_normalized_weight_from_parametrizations(modules: dict[str, nn.Module], parameter_name: str) -> torch.Tensor:
+def get_normalized_weight_from_parametrizations(
+    modules: dict[str, nn.Module], parameter_name: str
+) -> torch.Tensor:
     """
     Attempts to call the default parametrization forward pass for weight normalization such that the true weight
     can be determined via the stored parametrized variables.
@@ -38,13 +43,17 @@ def get_normalized_weight_from_parametrizations(modules: dict[str, nn.Module], p
     """
     parent_module_name = parameter_name.split(".parametrizations")[0]
     if parent_module_name not in modules:
-        raise KeyError(f"Failed to find module, {parent_module_name}, for parameter, {parameter_name}, in modules dictionary.")
+        raise KeyError(
+            f"Failed to find module, {parent_module_name}, for parameter, {parameter_name}, in modules dictionary."
+        )
     module = modules[parent_module_name]
     if "weight" not in module.parametrizations:
-        raise KeyError(f"Failed to find parameterized weight on module, {parent_module_name}, for parameter, {parameter_name}.")
+        raise KeyError(
+            f"Failed to find parameterized weight on module, {parent_module_name}, for parameter, {parameter_name}."
+        )
     assert isinstance(module.parametrizations["weight"][0], _WeightNorm)
     return torch._weight_norm(
         module.parametrizations["weight"].original1,
         module.parametrizations["weight"].original0,
-        module.parametrizations["weight"][0].dim
+        module.parametrizations["weight"][0].dim,
     )

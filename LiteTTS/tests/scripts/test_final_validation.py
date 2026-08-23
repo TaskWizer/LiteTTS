@@ -18,26 +18,14 @@ def test_api_with_question_marks():
 
     # Test cases specifically for question mark issue
     test_cases = [
-        {
-            "text": "Hello? How are you?",
-            "description": "Basic question mark test"
-        },
-        {
-            "text": "What time is it? Are you ready?",
-            "description": "Multiple question marks"
-        },
-        {
-            "text": "Question mark test: ?",
-            "description": "Isolated question mark"
-        },
-        {
-            "text": "Use the * symbol carefully.",
-            "description": "Asterisk pronunciation test"
-        },
+        {"text": "Hello? How are you?", "description": "Basic question mark test"},
+        {"text": "What time is it? Are you ready?", "description": "Multiple question marks"},
+        {"text": "Question mark test: ?", "description": "Isolated question mark"},
+        {"text": "Use the * symbol carefully.", "description": "Asterisk pronunciation test"},
         {
             "text": "Visit https://example.com for more info.",
-            "description": "URL with symbols test"
-        }
+            "description": "URL with symbols test",
+        },
     ]
 
     # API endpoint
@@ -55,20 +43,17 @@ def test_api_with_question_marks():
         # Prepare request
         payload = {
             "model": "kokoro",
-            "input": test_case['text'],
+            "input": test_case["text"],
             "voice": "af_heart",
             "response_format": "mp3",
-            "speed": 1.0
+            "speed": 1.0,
         }
 
         try:
             # Make API request
             start_time = time.time()
             response = requests.post(
-                api_url,
-                json=payload,
-                headers={"Content-Type": "application/json"},
-                timeout=30
+                api_url, json=payload, headers={"Content-Type": "application/json"}, timeout=30
             )
 
             processing_time = time.time() - start_time
@@ -76,7 +61,7 @@ def test_api_with_question_marks():
             if response.status_code == 200:
                 # Check response
                 content_length = len(response.content)
-                content_type = response.headers.get('content-type', 'unknown')
+                content_type = response.headers.get("content-type", "unknown")
 
                 print(f"   ✅ Success: {content_length} bytes, {content_type}")
                 print(f"   ⏱️  Processing time: {processing_time:.2f}s")
@@ -90,7 +75,7 @@ def test_api_with_question_marks():
 
                 # Save audio file for manual verification
                 output_file = f"final_test_{i}.mp3"
-                with open(output_file, 'wb') as f:
+                with open(output_file, "wb") as f:
                     f.write(response.content)
                 print(f"   💾 Audio saved: {output_file}")
 
@@ -104,7 +89,7 @@ def test_api_with_question_marks():
     # Summary
     print("\n📊 Test Summary:")
     print(f"   ✅ Successful tests: {success_count}/{total_tests}")
-    print(f"   📈 Success rate: {success_count/total_tests*100:.1f}%")
+    print(f"   📈 Success rate: {success_count / total_tests * 100:.1f}%")
 
     if success_count == total_tests:
         print("\n🎉 ALL TESTS PASSED!")
@@ -114,6 +99,7 @@ def test_api_with_question_marks():
     else:
         print("\n❌ Some tests failed.")
         return False
+
 
 def test_text_processing_pipeline():
     """Test the text processing pipeline directly"""
@@ -138,7 +124,7 @@ def test_text_processing_pipeline():
                     "fix_question_mark_pronunciation": True,
                     "fix_asterisk_pronunciation": True,
                     "context_aware_processing": True,
-                    "punctuation_mode": "some"
+                    "punctuation_mode": "some",
                 }
             }
         }
@@ -148,10 +134,7 @@ def test_text_processing_pipeline():
         # Test the critical question mark case
         test_text = "Hello? How are you today?"
 
-        options = ProcessingOptions(
-            mode=ProcessingMode.ENHANCED,
-            use_espeak_enhanced_symbols=True
-        )
+        options = ProcessingOptions(mode=ProcessingMode.ENHANCED, use_espeak_enhanced_symbols=True)
 
         print(f"📝 Input: '{test_text}'")
 
@@ -176,6 +159,7 @@ def test_text_processing_pipeline():
     except Exception as e:
         print(f"❌ Processing error: {e}")
         return False
+
 
 def main():
     """Main validation function"""
@@ -213,6 +197,7 @@ def main():
         print("   Some components may need additional debugging.")
 
     return success
+
 
 if __name__ == "__main__":
     success = main()

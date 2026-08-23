@@ -23,26 +23,34 @@ class TestChunkedPerformanceMonitor:
 
     def test_start_generation_tracking(self, monitor):
         """Test starting generation tracking"""
-        result = monitor.start_generation_tracking("gen1", GenerationType.STANDARD, "Hello world", "voice1")
+        result = monitor.start_generation_tracking(
+            "gen1", GenerationType.STANDARD, "Hello world", "voice1"
+        )
         assert isinstance(result, str)
 
     def test_record_chunk_completion(self, monitor):
         """Test recording chunk completion"""
-        gen_id = monitor.start_generation_tracking("gen1", GenerationType.CHUNKED, "Hello world", "voice1", 5)
+        gen_id = monitor.start_generation_tracking(
+            "gen1", GenerationType.CHUNKED, "Hello world", "voice1", 5
+        )
         monitor.record_chunk_completion(gen_id, 1, 0.5, 1000)
         result = monitor.get_real_time_stats()
         assert isinstance(result, dict)
 
     def test_record_resource_usage(self, monitor):
         """Test recording resource usage"""
-        gen_id = monitor.start_generation_tracking("gen1", GenerationType.STANDARD, "Hello world", "voice1")
+        gen_id = monitor.start_generation_tracking(
+            "gen1", GenerationType.STANDARD, "Hello world", "voice1"
+        )
         monitor.record_resource_usage(gen_id, 100.0, 25.0)
         result = monitor.get_real_time_stats()
         assert isinstance(result, dict)
 
     def test_complete_generation_tracking(self, monitor):
         """Test completing generation tracking"""
-        gen_id = monitor.start_generation_tracking("gen1", GenerationType.CHUNKED, "Hello world", "voice1", 3)
+        gen_id = monitor.start_generation_tracking(
+            "gen1", GenerationType.CHUNKED, "Hello world", "voice1", 3
+        )
         monitor.record_chunk_completion(gen_id, 1, 0.5, 1000)
         monitor.complete_generation_tracking(gen_id, 5000, 2.0)
         result = monitor.get_real_time_stats()

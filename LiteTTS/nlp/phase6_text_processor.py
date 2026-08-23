@@ -19,14 +19,18 @@ logger = logging.getLogger(__name__)
 # Import the enhanced contraction processor
 try:
     from .enhanced_contraction_processor_v2 import EnhancedContractionProcessorV2
+
     ENHANCED_CONTRACTIONS_AVAILABLE = True
 except ImportError:
     ENHANCED_CONTRACTIONS_AVAILABLE = False
-    logger.warning("Enhanced Contraction Processor V2 not available, falling back to basic processing")
+    logger.warning(
+        "Enhanced Contraction Processor V2 not available, falling back to basic processing"
+    )
 
 # Import advanced number, currency, and date processors
 try:
     from .advanced_currency_processor import AdvancedCurrencyProcessor, FinancialContext
+
     ADVANCED_CURRENCY_AVAILABLE = True
 except ImportError:
     ADVANCED_CURRENCY_AVAILABLE = False
@@ -34,6 +38,7 @@ except ImportError:
 
 try:
     from .enhanced_datetime_processor import EnhancedDateTimeProcessor
+
     ENHANCED_DATETIME_AVAILABLE = True
 except ImportError:
     ENHANCED_DATETIME_AVAILABLE = False
@@ -41,6 +46,7 @@ except ImportError:
 
 try:
     from .text_normalizer import TextNormalizer
+
     TEXT_NORMALIZER_AVAILABLE = True
 except ImportError:
     TEXT_NORMALIZER_AVAILABLE = False
@@ -48,16 +54,20 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+
 class Phase6ProcessingMode(Enum):
     """Phase 6 processing modes"""
+
     BASIC = "basic"
     STANDARD = "standard"
     ADVANCED = "advanced"
     COMPREHENSIVE = "comprehensive"
 
+
 @dataclass
 class Phase6ProcessingResult:
     """Result of Phase 6 text processing"""
+
     processed_text: str
     original_text: str
     processing_time: float
@@ -67,10 +77,11 @@ class Phase6ProcessingResult:
     warnings: list[str] = field(default_factory=list)
     metadata: dict[str, Any] = field(default_factory=dict)
 
+
 class Phase6TextProcessor:
     """
     Advanced text processor for Phase 6 enhancements
-    
+
     This processor handles:
     - Enhanced number processing (currency, percentages, fractions)
     - Advanced unit handling (measurements, scientific notation)
@@ -81,7 +92,7 @@ class Phase6TextProcessor:
 
     def __init__(self, config: dict | None = None):
         """Initialize Phase 6 text processor
-        
+
         Args:
             config: Configuration dictionary
         """
@@ -129,7 +140,9 @@ class Phase6TextProcessor:
             try:
                 # Configure for full number expansion (not preserve_natural_speech mode)
                 self.text_normalizer = TextNormalizer()
-                self.text_normalizer.preserve_natural_speech = False  # Enable full number processing
+                self.text_normalizer.preserve_natural_speech = (
+                    False  # Enable full number processing
+                )
                 self.use_text_normalizer = True
                 logger.debug("Text Normalizer initialized with full number expansion")
             except Exception as e:
@@ -141,21 +154,44 @@ class Phase6TextProcessor:
     def _init_number_processors(self):
         """Initialize number processing components"""
         # Enhanced number patterns
-        self.currency_pattern = re.compile(r'\$[\d,]+\.?\d*')
-        self.percentage_pattern = re.compile(r'\d+\.?\d*%')
-        self.fraction_pattern = re.compile(r'\d+/\d+')
-        self.decimal_pattern = re.compile(r'\d+\.\d+')
-        self.large_number_pattern = re.compile(r'\d{4,}')
+        self.currency_pattern = re.compile(r"\$[\d,]+\.?\d*")
+        self.percentage_pattern = re.compile(r"\d+\.?\d*%")
+        self.fraction_pattern = re.compile(r"\d+/\d+")
+        self.decimal_pattern = re.compile(r"\d+\.\d+")
+        self.large_number_pattern = re.compile(r"\d{4,}")
 
         # Number word mappings
         self.number_words = {
-            '0': 'zero', '1': 'one', '2': 'two', '3': 'three', '4': 'four',
-            '5': 'five', '6': 'six', '7': 'seven', '8': 'eight', '9': 'nine',
-            '10': 'ten', '11': 'eleven', '12': 'twelve', '13': 'thirteen',
-            '14': 'fourteen', '15': 'fifteen', '16': 'sixteen', '17': 'seventeen',
-            '18': 'eighteen', '19': 'nineteen', '20': 'twenty', '30': 'thirty',
-            '40': 'forty', '50': 'fifty', '60': 'sixty', '70': 'seventy',
-            '80': 'eighty', '90': 'ninety', '100': 'hundred', '1000': 'thousand'
+            "0": "zero",
+            "1": "one",
+            "2": "two",
+            "3": "three",
+            "4": "four",
+            "5": "five",
+            "6": "six",
+            "7": "seven",
+            "8": "eight",
+            "9": "nine",
+            "10": "ten",
+            "11": "eleven",
+            "12": "twelve",
+            "13": "thirteen",
+            "14": "fourteen",
+            "15": "fifteen",
+            "16": "sixteen",
+            "17": "seventeen",
+            "18": "eighteen",
+            "19": "nineteen",
+            "20": "twenty",
+            "30": "thirty",
+            "40": "forty",
+            "50": "fifty",
+            "60": "sixty",
+            "70": "seventy",
+            "80": "eighty",
+            "90": "ninety",
+            "100": "hundred",
+            "1000": "thousand",
         }
 
     def _init_unit_processors(self):
@@ -163,57 +199,78 @@ class Phase6TextProcessor:
         # Common unit abbreviations and their spoken forms
         self.unit_mappings = {
             # Distance/Length
-            'mm': 'millimeters', 'cm': 'centimeters', 'm': 'meters', 'km': 'kilometers',
-            'in': 'inches', 'ft': 'feet', 'yd': 'yards', 'mi': 'miles',
-
+            "mm": "millimeters",
+            "cm": "centimeters",
+            "m": "meters",
+            "km": "kilometers",
+            "in": "inches",
+            "ft": "feet",
+            "yd": "yards",
+            "mi": "miles",
             # Weight/Mass
-            'mg': 'milligrams', 'g': 'grams', 'kg': 'kilograms', 't': 'tons',
-            'oz': 'ounces', 'lb': 'pounds', 'lbs': 'pounds',
-
+            "mg": "milligrams",
+            "g": "grams",
+            "kg": "kilograms",
+            "t": "tons",
+            "oz": "ounces",
+            "lb": "pounds",
+            "lbs": "pounds",
             # Volume
-            'ml': 'milliliters', 'l': 'liters', 'gal': 'gallons', 'qt': 'quarts',
-            'pt': 'pints', 'fl oz': 'fluid ounces',
-
+            "ml": "milliliters",
+            "l": "liters",
+            "gal": "gallons",
+            "qt": "quarts",
+            "pt": "pints",
+            "fl oz": "fluid ounces",
             # Time
-            'ms': 'milliseconds', 's': 'seconds', 'min': 'minutes', 'hr': 'hours',
-            'hrs': 'hours', 'h': 'hours',
-
+            "ms": "milliseconds",
+            "s": "seconds",
+            "min": "minutes",
+            "hr": "hours",
+            "hrs": "hours",
+            "h": "hours",
             # Technology
-            'GB': 'gigabytes', 'MB': 'megabytes', 'KB': 'kilobytes', 'TB': 'terabytes',
-            'GHz': 'gigahertz', 'MHz': 'megahertz', 'kHz': 'kilohertz',
-
+            "GB": "gigabytes",
+            "MB": "megabytes",
+            "KB": "kilobytes",
+            "TB": "terabytes",
+            "GHz": "gigahertz",
+            "MHz": "megahertz",
+            "kHz": "kilohertz",
             # Temperature
-            '°C': 'degrees celsius', '°F': 'degrees fahrenheit', 'K': 'kelvin'
+            "°C": "degrees celsius",
+            "°F": "degrees fahrenheit",
+            "K": "kelvin",
         }
 
     def _init_homograph_processors(self):
         """Initialize homograph resolution components"""
         # Context-sensitive homograph mappings
         self.homograph_rules = {
-            'read': {
-                'past_tense': 'red',
-                'present_tense': 'reed',
-                'patterns': [
-                    (r'\bread\b(?=.*yesterday|last|ago)', 'red'),
-                    (r'\bread\b(?=.*will|going to|plan)', 'reed')
-                ]
+            "read": {
+                "past_tense": "red",
+                "present_tense": "reed",
+                "patterns": [
+                    (r"\bread\b(?=.*yesterday|last|ago)", "red"),
+                    (r"\bread\b(?=.*will|going to|plan)", "reed"),
+                ],
             },
-            'lead': {
-                'metal': 'led',
-                'guide': 'leed',
-                'patterns': [
-                    (r'\blead\b(?=.*metal|pipe|paint)', 'led'),
-                    (r'\blead\b(?=.*team|group|guide)', 'leed')
-                ]
+            "lead": {
+                "metal": "led",
+                "guide": "leed",
+                "patterns": [
+                    (r"\blead\b(?=.*metal|pipe|paint)", "led"),
+                    (r"\blead\b(?=.*team|group|guide)", "leed"),
+                ],
             },
-            'tear': {
-                'rip': 'tair',
-                'cry': 'teer',
-                'patterns': [
-                    (r'\btear\b(?=.*paper|cloth|rip)', 'tair'),
-                    (r'\btear\b(?=.*cry|sad|eye)', 'teer')
-                ]
-            }
+            "tear": {
+                "rip": "tair",
+                "cry": "teer",
+                "patterns": [
+                    (r"\btear\b(?=.*paper|cloth|rip)", "tair"),
+                    (r"\btear\b(?=.*cry|sad|eye)", "teer"),
+                ],
+            },
         }
 
     def _init_contraction_processors(self):
@@ -222,7 +279,7 @@ class Phase6TextProcessor:
         if ENHANCED_CONTRACTIONS_AVAILABLE:
             try:
                 self.enhanced_contraction_processor = EnhancedContractionProcessorV2(
-                    config={'debug': self.config.get('debug_contractions', False)}
+                    config={"debug": self.config.get("debug_contractions", False)}
                 )
                 self.use_enhanced_contractions = True
                 logger.info("Enhanced Contraction Processor V2 initialized successfully")
@@ -265,17 +322,19 @@ class Phase6TextProcessor:
             "he'll": "he will",
             "she'll": "she will",
             "we'll": "we will",
-            "they'll": "they will"
+            "they'll": "they will",
         }
 
-    def process_text(self, text: str, mode: Phase6ProcessingMode | None = None) -> Phase6ProcessingResult:
+    def process_text(
+        self, text: str, mode: Phase6ProcessingMode | None = None
+    ) -> Phase6ProcessingResult:
         """
         Process text with Phase 6 enhancements
-        
+
         Args:
             text: Input text to process
             mode: Processing mode (optional)
-            
+
         Returns:
             Phase6ProcessingResult with processed text and metadata
         """
@@ -293,34 +352,34 @@ class Phase6TextProcessor:
         try:
             # Stage 1: Enhanced contraction processing (first to avoid interference)
             text, contraction_changes = self._process_contractions(text)
-            changes_by_category['contractions'] = contraction_changes
+            changes_by_category["contractions"] = contraction_changes
             if contraction_changes > 0:
-                processing_stages.append('contraction_processing')
+                processing_stages.append("contraction_processing")
 
             # Stage 2: Enhanced number processing
             text, number_changes = self._process_numbers(text)
-            changes_by_category['numbers'] = number_changes
+            changes_by_category["numbers"] = number_changes
             if number_changes > 0:
-                processing_stages.append('number_processing')
+                processing_stages.append("number_processing")
 
             # Stage 3: Unit processing
             text, unit_changes = self._process_units(text)
-            changes_by_category['units'] = unit_changes
+            changes_by_category["units"] = unit_changes
             if unit_changes > 0:
-                processing_stages.append('unit_processing')
+                processing_stages.append("unit_processing")
 
             # Stage 4: Homograph resolution
             text, homograph_changes = self._process_homographs(text)
-            changes_by_category['homographs'] = homograph_changes
+            changes_by_category["homographs"] = homograph_changes
             if homograph_changes > 0:
-                processing_stages.append('homograph_resolution')
+                processing_stages.append("homograph_resolution")
 
             # Stage 5: Context normalization (advanced modes only)
             if mode in [Phase6ProcessingMode.ADVANCED, Phase6ProcessingMode.COMPREHENSIVE]:
                 text, context_changes = self._process_context_normalization(text)
-                changes_by_category['context'] = context_changes
+                changes_by_category["context"] = context_changes
                 if context_changes > 0:
-                    processing_stages.append('context_normalization')
+                    processing_stages.append("context_normalization")
 
             total_changes = sum(changes_by_category.values())
             processing_time = time.perf_counter() - start_time
@@ -333,10 +392,12 @@ class Phase6TextProcessor:
                 changes_by_category=changes_by_category,
                 processing_stages=processing_stages,
                 warnings=warnings,
-                metadata={'mode': mode.value}
+                metadata={"mode": mode.value},
             )
 
-            logger.debug(f"Phase 6 processing complete: {total_changes} changes in {processing_time:.3f}s")
+            logger.debug(
+                f"Phase 6 processing complete: {total_changes} changes in {processing_time:.3f}s"
+            )
             return result
 
         except Exception as e:
@@ -347,7 +408,7 @@ class Phase6TextProcessor:
                 original_text=original_text,
                 processing_time=time.perf_counter() - start_time,
                 total_changes=0,
-                warnings=[f"Processing failed: {e!s}"]
+                warnings=[f"Processing failed: {e!s}"],
             )
 
     def _process_numbers(self, text: str) -> tuple[str, int]:
@@ -358,7 +419,9 @@ class Phase6TextProcessor:
         # Stage 1: Process currency using advanced processor
         if self.use_advanced_currency:
             try:
-                processed_currency = self.currency_processor.process_currency_text(text, self.financial_context)
+                processed_currency = self.currency_processor.process_currency_text(
+                    text, self.financial_context
+                )
                 if processed_currency != text:
                     text = processed_currency
                     changes += 1
@@ -392,7 +455,9 @@ class Phase6TextProcessor:
             logger.debug("Skipping text normalizer - advanced processors already applied")
 
         # Fallback: Basic processing if advanced processors not available
-        if not any([self.use_advanced_currency, self.use_enhanced_datetime, self.use_text_normalizer]):
+        if not any(
+            [self.use_advanced_currency, self.use_enhanced_datetime, self.use_text_normalizer]
+        ):
             text, fallback_changes = self._process_numbers_fallback(text)
             changes += fallback_changes
 
@@ -415,7 +480,7 @@ class Phase6TextProcessor:
         def replace_percentage(match):
             nonlocal changes
             changes += 1
-            return match.group(0).replace('%', ' percent')
+            return match.group(0).replace("%", " percent")
 
         text = self.percentage_pattern.sub(replace_percentage, text)
 
@@ -427,7 +492,7 @@ class Phase6TextProcessor:
 
         # CRITICAL FIX: Skip unit processing for problematic units that interfere with contractions
         # Units 'm' and 't' are too common in contractions and cause issues
-        problematic_units = {'m', 't'}  # Skip these to avoid contraction interference
+        problematic_units = {"m", "t"}  # Skip these to avoid contraction interference
 
         for abbrev, full_form in self.unit_mappings.items():
             # Skip problematic units that interfere with contractions
@@ -435,25 +500,25 @@ class Phase6TextProcessor:
                 continue
 
             # CRITICAL FIX: Special context-aware handling for "in" to prevent time context interference
-            if abbrev == 'in':
+            if abbrev == "in":
                 # Skip conversion in time contexts like "7:15 in the evening"
                 if self._is_time_context_for_in(text):
                     continue  # Skip "in" processing in time contexts
 
                 # Convert "in" to "inches" when preceded by a number (measurement context)
-                pattern = r'(\d+(?:\.\d+)?)\s+' + re.escape(abbrev) + r'\b'
+                pattern = r"(\d+(?:\.\d+)?)\s+" + re.escape(abbrev) + r"\b"
                 if re.search(pattern, text):
-                    text = re.sub(pattern, r'\1 ' + full_form, text)
+                    text = re.sub(pattern, r"\1 " + full_form, text)
                     changes += 1
                 continue
 
             # Special handling for 'a.m./p.m.' protection (keep existing logic)
-            if abbrev == 'a' or abbrev == 'p':
+            if abbrev == "a" or abbrev == "p":
                 # Only match when not part of a.m. or p.m.
-                pattern = r'\b' + re.escape(abbrev) + r'\b(?!\s*\.?\s*m\.?)'
+                pattern = r"\b" + re.escape(abbrev) + r"\b(?!\s*\.?\s*m\.?)"
             else:
                 # Standard pattern for safe units
-                pattern = r'\b' + re.escape(abbrev) + r'\b'
+                pattern = r"\b" + re.escape(abbrev) + r"\b"
 
             if re.search(pattern, text):
                 text = re.sub(pattern, full_form, text)
@@ -465,12 +530,12 @@ class Phase6TextProcessor:
         """Check if 'in' appears in a time context where it shouldn't be converted to 'inches'"""
         # Common time context patterns where "in" is a preposition, not a unit
         time_context_patterns = [
-            r'\d{1,2}:\d{2}\s+in\s+the\s+(morning|afternoon|evening|night)',  # "7:15 in the evening"
-            r'\d{1,2}\s+(AM|PM|a\.m\.|p\.m\.)\s+in\s+the\s+(morning|afternoon|evening|night)',  # "7 PM in the evening"
-            r'in\s+the\s+(morning|afternoon|evening|night)',  # "in the morning"
-            r'in\s+\d+\s+(minutes?|hours?|days?|weeks?|months?|years?)',  # "in 5 minutes"
-            r'in\s+(January|February|March|April|May|June|July|August|September|October|November|December)',  # "in January"
-            r'in\s+\d{4}',  # "in 2024"
+            r"\d{1,2}:\d{2}\s+in\s+the\s+(morning|afternoon|evening|night)",  # "7:15 in the evening"
+            r"\d{1,2}\s+(AM|PM|a\.m\.|p\.m\.)\s+in\s+the\s+(morning|afternoon|evening|night)",  # "7 PM in the evening"
+            r"in\s+the\s+(morning|afternoon|evening|night)",  # "in the morning"
+            r"in\s+\d+\s+(minutes?|hours?|days?|weeks?|months?|years?)",  # "in 5 minutes"
+            r"in\s+(January|February|March|April|May|June|July|August|September|October|November|December)",  # "in January"
+            r"in\s+\d{4}",  # "in 2024"
         ]
 
         for pattern in time_context_patterns:
@@ -484,9 +549,9 @@ class Phase6TextProcessor:
         changes = 0
 
         for word, rules in self.homograph_rules.items():
-            for pattern, replacement in rules.get('patterns', []):
+            for pattern, replacement in rules.get("patterns", []):
                 if re.search(pattern, text, re.IGNORECASE):
-                    text = re.sub(r'\b' + word + r'\b', replacement, text, flags=re.IGNORECASE)
+                    text = re.sub(r"\b" + word + r"\b", replacement, text, flags=re.IGNORECASE)
                     changes += 1
 
         return text, changes
@@ -508,20 +573,32 @@ class Phase6TextProcessor:
                 if processed_text != original_text:
                     # Simple heuristic: count the number of contractions that were likely processed
                     for contraction in self.enhanced_contraction_processor.contraction_rules.keys():
-                        original_count = len(re.findall(r'\b' + re.escape(contraction) + r'\b', original_text, re.IGNORECASE))
-                        processed_count = len(re.findall(r'\b' + re.escape(contraction) + r'\b', processed_text, re.IGNORECASE))
+                        original_count = len(
+                            re.findall(
+                                r"\b" + re.escape(contraction) + r"\b", original_text, re.IGNORECASE
+                            )
+                        )
+                        processed_count = len(
+                            re.findall(
+                                r"\b" + re.escape(contraction) + r"\b",
+                                processed_text,
+                                re.IGNORECASE,
+                            )
+                        )
                         changes += max(0, original_count - processed_count)
 
                 logger.debug(f"Enhanced contraction processing: {changes} contractions processed")
                 return processed_text, changes
 
             except Exception as e:
-                logger.warning(f"Enhanced contraction processing failed: {e}, falling back to basic processing")
+                logger.warning(
+                    f"Enhanced contraction processing failed: {e}, falling back to basic processing"
+                )
 
         # Fallback: Basic contraction processing
         changes = 0
         for contraction, expansion in self.contraction_mappings.items():
-            pattern = r'\b' + re.escape(contraction) + r'\b'
+            pattern = r"\b" + re.escape(contraction) + r"\b"
             if re.search(pattern, text, re.IGNORECASE):
                 text = re.sub(pattern, expansion, text, flags=re.IGNORECASE)
                 changes += 1
@@ -533,7 +610,8 @@ class Phase6TextProcessor:
         changes = 0
 
         # Example: Handle scientific notation
-        scientific_pattern = r'(\d+\.?\d*)[eE]([+-]?\d+)'
+        scientific_pattern = r"(\d+\.?\d*)[eE]([+-]?\d+)"
+
         def replace_scientific(match):
             nonlocal changes
             base, exponent = match.groups()
@@ -547,15 +625,15 @@ class Phase6TextProcessor:
     def get_capabilities(self) -> dict[str, bool]:
         """Get Phase 6 processing capabilities"""
         return {
-            'enhanced_numbers': True,
-            'enhanced_units': True,
-            'enhanced_homographs': True,
-            'enhanced_contractions': True,
-            'context_normalization': True,
-            'scientific_notation': True,
-            'currency_processing': True,
-            'percentage_processing': True,
-            'fraction_processing': True
+            "enhanced_numbers": True,
+            "enhanced_units": True,
+            "enhanced_homographs": True,
+            "enhanced_contractions": True,
+            "context_normalization": True,
+            "scientific_notation": True,
+            "currency_processing": True,
+            "percentage_processing": True,
+            "fraction_processing": True,
         }
 
     def set_mode(self, mode: Phase6ProcessingMode):
@@ -563,10 +641,12 @@ class Phase6TextProcessor:
         self.mode = mode
         logger.debug(f"Phase 6 processing mode set to: {mode.value}")
 
+
 # Factory function for easy instantiation
 def create_phase6_processor(config: dict | None = None) -> Phase6TextProcessor:
     """Create a Phase 6 text processor instance"""
     return Phase6TextProcessor(config)
+
 
 # Example usage
 if __name__ == "__main__":
@@ -577,7 +657,7 @@ if __name__ == "__main__":
         "I can't believe it costs $1,234.56 and weighs 5.5 kg!",
         "The temperature is 25°C and the speed is 100 km/h.",
         "He read the book yesterday and will read another tomorrow.",
-        "The lead pipe contains lead metal."
+        "The lead pipe contains lead metal.",
     ]
 
     for text in test_texts:

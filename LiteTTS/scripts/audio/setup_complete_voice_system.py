@@ -17,20 +17,25 @@ from LiteTTS.voice.dynamic_manager import DynamicVoiceManager
 
 # Setup logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s | %(levelname)s | %(name)s | %(message)s'
+    level=logging.INFO, format="%(asctime)s | %(levelname)s | %(name)s | %(message)s"
 )
 logger = logging.getLogger(__name__)
+
 
 def progress_callback(progress: DownloadProgress):
     """Enhanced progress callback for downloads"""
     bar_length = 30
     filled_length = int(bar_length * progress.percentage / 100)
-    bar = '█' * filled_length + '-' * (bar_length - filled_length)
+    bar = "█" * filled_length + "-" * (bar_length - filled_length)
 
-    print(f"\r{progress.filename}: [{bar}] {progress.percentage:.1f}% "
-          f"({progress.downloaded_bytes}/{progress.total_bytes} bytes) "
-          f"@ {progress.speed_mbps:.1f} MB/s", end="", flush=True)
+    print(
+        f"\r{progress.filename}: [{bar}] {progress.percentage:.1f}% "
+        f"({progress.downloaded_bytes}/{progress.total_bytes} bytes) "
+        f"@ {progress.speed_mbps:.1f} MB/s",
+        end="",
+        flush=True,
+    )
+
 
 def download_all_voices():
     """Download all available voices from HuggingFace"""
@@ -48,7 +53,7 @@ def download_all_voices():
         print(f"   - Downloaded voices: {stats['downloaded_voices']}")
         print(f"   - Missing voices: {stats['missing_voices']}")
 
-        if stats['missing_voices'] == 0:
+        if stats["missing_voices"] == 0:
             print("✅ All voices already downloaded!")
             return True
 
@@ -64,7 +69,7 @@ def download_all_voices():
 
         # Confirm download
         response = input("\nProceed with download? (y/N): ").strip().lower()
-        if response != 'y':
+        if response != "y":
             print("❌ Download cancelled")
             return False
 
@@ -84,7 +89,7 @@ def download_all_voices():
         print("\n✅ Download complete!")
         print(f"   - Success: {successful}/{total} voices")
         print(f"   - Time: {download_time:.1f} seconds")
-        print(f"   - Average: {download_time/total:.1f}s per voice")
+        print(f"   - Average: {download_time / total:.1f}s per voice")
 
         if successful < total:
             print("\n❌ Failed downloads:")
@@ -97,8 +102,10 @@ def download_all_voices():
     except Exception as e:
         logger.error(f"Error during voice download: {e}")
         import traceback
+
         traceback.print_exc()
         return False
+
 
 def test_voice_system():
     """Test the complete voice system"""
@@ -128,7 +135,7 @@ def test_voice_system():
 
         # Test download status
         download_info = voice_manager.downloader.get_download_info()
-        downloaded_count = sum(1 for info in download_info.values() if info['downloaded'])
+        downloaded_count = sum(1 for info in download_info.values() if info["downloaded"])
         print(f"\n📊 Download status: {downloaded_count}/{len(download_info)} voices downloaded")
 
         return True
@@ -136,6 +143,7 @@ def test_voice_system():
     except Exception as e:
         print(f"❌ Voice system test failed: {e}")
         return False
+
 
 def show_voice_summary():
     """Show comprehensive voice system summary"""
@@ -157,8 +165,8 @@ def show_voice_summary():
         downloaded_voices = voice_manager.downloader.get_downloaded_voices()
         categories = {}
         for voice in downloaded_voices:
-            if '_' in voice:
-                prefix = voice.split('_')[0]
+            if "_" in voice:
+                prefix = voice.split("_")[0]
                 if prefix not in categories:
                     categories[prefix] = []
                 categories[prefix].append(voice)
@@ -166,23 +174,23 @@ def show_voice_summary():
         print("\n🎭 Voice Categories:")
         for category, voices in sorted(categories.items()):
             category_name = {
-                'af': 'American Female',
-                'am': 'American Male',
-                'bf': 'British Female',
-                'bm': 'British Male',
-                'jf': 'Japanese Female',
-                'jm': 'Japanese Male',
-                'zf': 'Chinese Female',
-                'zm': 'Chinese Male',
-                'ef': 'European Female',
-                'em': 'European Male',
-                'hf': 'Hindi Female',
-                'hm': 'Hindi Male',
-                'if': 'Italian Female',
-                'im': 'Italian Male',
-                'pf': 'Portuguese Female',
-                'pm': 'Portuguese Male',
-                'ff': 'French Female'
+                "af": "American Female",
+                "am": "American Male",
+                "bf": "British Female",
+                "bm": "British Male",
+                "jf": "Japanese Female",
+                "jm": "Japanese Male",
+                "zf": "Chinese Female",
+                "zm": "Chinese Male",
+                "ef": "European Female",
+                "em": "European Male",
+                "hf": "Hindi Female",
+                "hm": "Hindi Male",
+                "if": "Italian Female",
+                "im": "Italian Male",
+                "pf": "Portuguese Female",
+                "pm": "Portuguese Male",
+                "ff": "French Female",
             }.get(category, category.upper())
 
             print(f"   {category_name}: {len(voices)} voices")
@@ -199,6 +207,7 @@ def show_voice_summary():
     except Exception as e:
         print(f"❌ Failed to show summary: {e}")
         return False
+
 
 def main():
     """Main function"""
@@ -237,12 +246,12 @@ def main():
 
         print("\n📋 Detailed Voice Information:")
         for voice_name, info in sorted(download_info.items()):
-            status = "✅ Downloaded" if info['downloaded'] else "❌ Missing"
-            size_mb = info['file_size'] / (1024 * 1024) if info['file_size'] > 0 else 0
-            expected_mb = info['expected_size'] / (1024 * 1024) if info['expected_size'] > 0 else 0
+            status = "✅ Downloaded" if info["downloaded"] else "❌ Missing"
+            size_mb = info["file_size"] / (1024 * 1024) if info["file_size"] > 0 else 0
+            expected_mb = info["expected_size"] / (1024 * 1024) if info["expected_size"] > 0 else 0
 
             print(f"\n   {voice_name}: {status}")
-            if info['downloaded']:
+            if info["downloaded"]:
                 print(f"      Local size: {size_mb:.1f} MB")
                 print(f"      Path: {info['local_path']}")
             else:
@@ -257,6 +266,7 @@ def main():
         return 1
 
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

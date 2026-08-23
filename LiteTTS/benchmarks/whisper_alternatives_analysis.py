@@ -24,9 +24,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class WhisperModelConfig:
     """Configuration for a Whisper model variant"""
+
     name: str
     model_id: str
     model_size_mb: float
@@ -36,9 +38,11 @@ class WhisperModelConfig:
     device: str = "cpu"
     additional_params: dict[str, Any] = field(default_factory=dict)
 
+
 @dataclass
 class EdgeHardwareSpec:
     """Edge hardware specification for testing"""
+
     name: str
     cpu_model: str
     cpu_cores: int
@@ -48,9 +52,11 @@ class EdgeHardwareSpec:
     simd_support: list[str]  # ['neon', 'avx2', 'sse4.1']
     os_info: str
 
+
 @dataclass
 class PerformanceResult:
     """Performance measurement result"""
+
     model_config: WhisperModelConfig
     hardware_spec: EdgeHardwareSpec
     audio_duration_s: float
@@ -68,9 +74,11 @@ class PerformanceResult:
     error_message: str | None = None
     success: bool = True
 
+
 @dataclass
 class AudioTestSample:
     """Test audio sample with metadata"""
+
     file_path: str
     duration_s: float
     sample_rate: int
@@ -78,6 +86,7 @@ class AudioTestSample:
     audio_quality: str  # 'studio', 'phone', 'noisy'
     content_type: str  # 'technical', 'audiobook', 'podcast', 'conversation'
     speaker_info: dict[str, Any] = field(default_factory=dict)
+
 
 class SystemMonitor:
     """System resource monitoring during benchmarks"""
@@ -103,14 +112,14 @@ class SystemMonitor:
         if not self.metrics:
             return 0.0, 0.0, 0.0, 0.0
 
-        memory_values = [m['memory_mb'] for m in self.metrics]
-        cpu_values = [m['cpu_percent'] for m in self.metrics]
+        memory_values = [m["memory_mb"] for m in self.metrics]
+        cpu_values = [m["cpu_percent"] for m in self.metrics]
 
         return (
             max(memory_values),
             sum(memory_values) / len(memory_values),
             max(cpu_values),
-            sum(cpu_values) / len(cpu_values)
+            sum(cpu_values) / len(cpu_values),
         )
 
     def _monitor_loop(self):
@@ -121,15 +130,18 @@ class SystemMonitor:
                 memory_info = process.memory_info()
                 cpu_percent = process.cpu_percent()
 
-                self.metrics.append({
-                    'timestamp': time.time(),
-                    'memory_mb': memory_info.rss / 1024 / 1024,
-                    'cpu_percent': cpu_percent
-                })
+                self.metrics.append(
+                    {
+                        "timestamp": time.time(),
+                        "memory_mb": memory_info.rss / 1024 / 1024,
+                        "cpu_percent": cpu_percent,
+                    }
+                )
                 time.sleep(0.1)  # Monitor every 100ms
             except Exception as e:
                 logger.warning(f"Monitoring error: {e}")
                 break
+
 
 class WhisperAlternativesAnalyzer:
     """Main analyzer for Whisper alternatives performance"""
@@ -153,65 +165,75 @@ class WhisperAlternativesAnalyzer:
         configs = []
 
         # Distil-Whisper models
-        configs.extend([
-            WhisperModelConfig(
-                name="distil-small.en",
-                model_id="distil-whisper/distil-small.en",
-                model_size_mb=244,
-                implementation="distil-whisper"
-            ),
-            WhisperModelConfig(
-                name="distil-medium.en",
-                model_id="distil-whisper/distil-medium.en",
-                model_size_mb=769,
-                implementation="distil-whisper"
-            ),
-            WhisperModelConfig(
-                name="distil-large-v2",
-                model_id="distil-whisper/distil-large-v2",
-                model_size_mb=1500,
-                implementation="distil-whisper"
-            )
-        ])
+        configs.extend(
+            [
+                WhisperModelConfig(
+                    name="distil-small.en",
+                    model_id="distil-whisper/distil-small.en",
+                    model_size_mb=244,
+                    implementation="distil-whisper",
+                ),
+                WhisperModelConfig(
+                    name="distil-medium.en",
+                    model_id="distil-whisper/distil-medium.en",
+                    model_size_mb=769,
+                    implementation="distil-whisper",
+                ),
+                WhisperModelConfig(
+                    name="distil-large-v2",
+                    model_id="distil-whisper/distil-large-v2",
+                    model_size_mb=1500,
+                    implementation="distil-whisper",
+                ),
+            ]
+        )
 
         # OpenAI Whisper models
-        configs.extend([
-            WhisperModelConfig(
-                name="whisper-tiny",
-                model_id="openai/whisper-tiny",
-                model_size_mb=39,
-                implementation="openai-whisper"
-            ),
-            WhisperModelConfig(
-                name="whisper-tiny.en",
-                model_id="openai/whisper-tiny.en",
-                model_size_mb=39,
-                implementation="openai-whisper"
-            ),
-            WhisperModelConfig(
-                name="whisper-base",
-                model_id="openai/whisper-base",
-                model_size_mb=74,
-                implementation="openai-whisper"
-            ),
-            WhisperModelConfig(
-                name="whisper-base.en",
-                model_id="openai/whisper-base.en",
-                model_size_mb=74,
-                implementation="openai-whisper"
-            )
-        ])
+        configs.extend(
+            [
+                WhisperModelConfig(
+                    name="whisper-tiny",
+                    model_id="openai/whisper-tiny",
+                    model_size_mb=39,
+                    implementation="openai-whisper",
+                ),
+                WhisperModelConfig(
+                    name="whisper-tiny.en",
+                    model_id="openai/whisper-tiny.en",
+                    model_size_mb=39,
+                    implementation="openai-whisper",
+                ),
+                WhisperModelConfig(
+                    name="whisper-base",
+                    model_id="openai/whisper-base",
+                    model_size_mb=74,
+                    implementation="openai-whisper",
+                ),
+                WhisperModelConfig(
+                    name="whisper-base.en",
+                    model_id="openai/whisper-base.en",
+                    model_size_mb=74,
+                    implementation="openai-whisper",
+                ),
+            ]
+        )
 
         # Faster-Whisper with quantization variants
         for model_size in ["tiny", "base", "small"]:
             for quant in ["int8", "int4", "fp16"]:
-                configs.append(WhisperModelConfig(
-                    name=f"faster-whisper-{model_size}-{quant}",
-                    model_id=f"openai/whisper-{model_size}",
-                    model_size_mb=39 if model_size == "tiny" else 74 if model_size == "base" else 244,
-                    implementation="faster-whisper",
-                    quantization=quant
-                ))
+                configs.append(
+                    WhisperModelConfig(
+                        name=f"faster-whisper-{model_size}-{quant}",
+                        model_id=f"openai/whisper-{model_size}",
+                        model_size_mb=39
+                        if model_size == "tiny"
+                        else 74
+                        if model_size == "base"
+                        else 244,
+                        implementation="faster-whisper",
+                        quantization=quant,
+                    )
+                )
 
         return configs
 
@@ -235,20 +257,21 @@ class WhisperAlternativesAnalyzer:
         simd_support = []
         try:
             import cpuinfo
+
             info = cpuinfo.get_cpu_info()
-            flags = info.get('flags', [])
-            if 'avx2' in flags:
-                simd_support.append('avx2')
-            if 'sse4_1' in flags:
-                simd_support.append('sse4.1')
-            if 'neon' in flags:
-                simd_support.append('neon')
+            flags = info.get("flags", [])
+            if "avx2" in flags:
+                simd_support.append("avx2")
+            if "sse4_1" in flags:
+                simd_support.append("sse4.1")
+            if "neon" in flags:
+                simd_support.append("neon")
         except:
             # Fallback detection
-            if platform.machine().lower() in ['aarch64', 'arm64']:
-                simd_support.append('neon')
-            elif platform.machine().lower() in ['x86_64', 'amd64']:
-                simd_support.extend(['sse4.1', 'avx2'])  # Assume modern x86
+            if platform.machine().lower() in ["aarch64", "arm64"]:
+                simd_support.append("neon")
+            elif platform.machine().lower() in ["x86_64", "amd64"]:
+                simd_support.extend(["sse4.1", "avx2"])  # Assume modern x86
 
         return EdgeHardwareSpec(
             name=f"{platform.node()}-{platform.machine()}",
@@ -258,7 +281,7 @@ class WhisperAlternativesAnalyzer:
             ram_gb=psutil.virtual_memory().total / (1024**3),
             architecture=platform.machine(),
             simd_support=simd_support,
-            os_info=f"{platform.system()} {platform.release()}"
+            os_info=f"{platform.system()} {platform.release()}",
         )
 
     def generate_test_audio_samples(self) -> list[AudioTestSample]:
@@ -273,7 +296,7 @@ class WhisperAlternativesAnalyzer:
             "technical": "The neural network architecture utilizes transformer-based attention mechanisms with multi-head self-attention layers.",
             "audiobook": "It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness.",
             "podcast": "Welcome to today's episode where we'll be discussing the latest developments in artificial intelligence and machine learning.",
-            "conversation": "Hey, how are you doing today? I was wondering if you could help me with this project I'm working on."
+            "conversation": "Hey, how are you doing today? I was wondering if you could help me with this project I'm working on.",
         }
 
         # Generate synthetic audio samples (placeholder - in real implementation, use TTS or recorded samples)
@@ -291,7 +314,7 @@ class WhisperAlternativesAnalyzer:
                     sample_rate=16000,
                     reference_transcription=repeated_text,
                     audio_quality="studio",
-                    content_type=content_type
+                    content_type=content_type,
                 )
                 samples.append(sample)
 
@@ -336,8 +359,9 @@ class WhisperAlternativesAnalyzer:
 
         return results
 
-    async def _benchmark_model_on_sample(self, model_config: WhisperModelConfig,
-                                       sample: AudioTestSample) -> PerformanceResult:
+    async def _benchmark_model_on_sample(
+        self, model_config: WhisperModelConfig, sample: AudioTestSample
+    ) -> PerformanceResult:
         """Benchmark a model on a specific audio sample"""
         monitor = SystemMonitor()
 
@@ -358,7 +382,9 @@ class WhisperAlternativesAnalyzer:
 
             # Perform transcription
             transcribe_start = time.time()
-            transcription, confidence = await self._transcribe_audio(model, audio_data, model_config)
+            transcription, confidence = await self._transcribe_audio(
+                model, audio_data, model_config
+            )
             processing_time = time.time() - transcribe_start
 
             cold_start_time = time.time() - cold_start
@@ -367,7 +393,11 @@ class WhisperAlternativesAnalyzer:
             rtf = processing_time / sample.duration_s
 
             # Calculate WER if reference available
-            wer = self._calculate_wer(sample.reference_transcription, transcription) if sample.reference_transcription else None
+            wer = (
+                self._calculate_wer(sample.reference_transcription, transcription)
+                if sample.reference_transcription
+                else None
+            )
 
             # Stop monitoring and get metrics
             peak_mem, avg_mem, peak_cpu, avg_cpu = monitor.stop_monitoring()
@@ -387,7 +417,7 @@ class WhisperAlternativesAnalyzer:
                 wer=wer,
                 model_load_time_s=load_time,
                 cold_start_time_s=cold_start_time,
-                success=True
+                success=True,
             )
 
         except Exception as e:
@@ -397,7 +427,7 @@ class WhisperAlternativesAnalyzer:
                 hardware_spec=self.hardware_specs,
                 audio_duration_s=sample.duration_s,
                 processing_time_s=0.0,
-                rtf=float('inf'),
+                rtf=float("inf"),
                 peak_memory_mb=0.0,
                 avg_memory_mb=0.0,
                 peak_cpu_percent=0.0,
@@ -405,7 +435,7 @@ class WhisperAlternativesAnalyzer:
                 transcription="",
                 confidence_score=0.0,
                 error_message=str(e),
-                success=False
+                success=False,
             )
 
     async def _load_model(self, model_config: WhisperModelConfig):
@@ -431,7 +461,7 @@ class WhisperAlternativesAnalyzer:
                 model_config.model_id,
                 torch_dtype=torch.float16 if model_config.device == "cuda" else torch.float32,
                 low_cpu_mem_usage=True,
-                use_safetensors=True
+                use_safetensors=True,
             )
             processor = AutoProcessor.from_pretrained(model_config.model_id)
 
@@ -447,7 +477,7 @@ class WhisperAlternativesAnalyzer:
             model = WhisperModel(
                 model_config.model_id.split("/")[-1],  # Extract model size
                 device="cpu",
-                compute_type=model_config.quantization or "int8"
+                compute_type=model_config.quantization or "int8",
             )
 
             return {"model": model, "type": "faster-whisper"}
@@ -470,8 +500,9 @@ class WhisperAlternativesAnalyzer:
         # Placeholder for whisper.cpp integration
         raise NotImplementedError("Whisper.cpp integration not yet implemented")
 
-    async def _transcribe_audio(self, model, audio_data: np.ndarray,
-                              model_config: WhisperModelConfig) -> tuple[str, float]:
+    async def _transcribe_audio(
+        self, model, audio_data: np.ndarray, model_config: WhisperModelConfig
+    ) -> tuple[str, float]:
         """Transcribe audio using the loaded model"""
         if model["type"] == "distil-whisper":
             return await self._transcribe_distil_whisper(model, audio_data)
@@ -513,7 +544,7 @@ class WhisperAlternativesAnalyzer:
 
             # Combine segments
             transcription = " ".join([segment.text for segment in segments])
-            confidence = info.language_probability if hasattr(info, 'language_probability') else 1.0
+            confidence = info.language_probability if hasattr(info, "language_probability") else 1.0
 
             return transcription, confidence
         except Exception as e:
@@ -561,10 +592,10 @@ class WhisperAlternativesAnalyzer:
 
         for i in range(1, len(ref_words) + 1):
             for j in range(1, len(hyp_words) + 1):
-                if ref_words[i-1] == hyp_words[j-1]:
-                    d[i][j] = d[i-1][j-1]
+                if ref_words[i - 1] == hyp_words[j - 1]:
+                    d[i][j] = d[i - 1][j - 1]
                 else:
-                    d[i][j] = min(d[i-1][j], d[i][j-1], d[i-1][j-1]) + 1
+                    d[i][j] = min(d[i - 1][j], d[i][j - 1], d[i - 1][j - 1]) + 1
 
         return d[len(ref_words)][len(hyp_words)] / len(ref_words) if ref_words else 0.0
 
@@ -600,25 +631,28 @@ class WhisperAlternativesAnalyzer:
                     "avg_wer": np.mean(wers) if wers else None,
                     "success_rate": len(successful_results) / len(results),
                     "model_size_mb": successful_results[0].model_config.model_size_mb,
-                    "implementation": successful_results[0].model_config.implementation
+                    "implementation": successful_results[0].model_config.implementation,
                 }
             else:
-                summary[model_name] = {
-                    "success_rate": 0.0,
-                    "error": "All tests failed"
-                }
+                summary[model_name] = {"success_rate": 0.0, "error": "All tests failed"}
 
         # Find best performers
         rtf_performers = sorted(
-            [(name, stats) for name, stats in summary.items()
-             if isinstance(stats, dict) and "avg_rtf" in stats],
-            key=lambda x: x[1]["avg_rtf"]
+            [
+                (name, stats)
+                for name, stats in summary.items()
+                if isinstance(stats, dict) and "avg_rtf" in stats
+            ],
+            key=lambda x: x[1]["avg_rtf"],
         )
 
         memory_performers = sorted(
-            [(name, stats) for name, stats in summary.items()
-             if isinstance(stats, dict) and "avg_memory_mb" in stats],
-            key=lambda x: x[1]["avg_memory_mb"]
+            [
+                (name, stats)
+                for name, stats in summary.items()
+                if isinstance(stats, dict) and "avg_memory_mb" in stats
+            ],
+            key=lambda x: x[1]["avg_memory_mb"],
         )
 
         return {
@@ -629,10 +663,11 @@ class WhisperAlternativesAnalyzer:
             "best_rtf_performers": rtf_performers[:5],
             "best_memory_performers": memory_performers[:5],
             "models_meeting_rtf_target": [
-                name for name, stats in summary.items()
-                if isinstance(stats, dict) and stats.get("avg_rtf", float('inf')) < 1.0
+                name
+                for name, stats in summary.items()
+                if isinstance(stats, dict) and stats.get("avg_rtf", float("inf")) < 1.0
             ],
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     def _save_results(self):
@@ -650,6 +685,7 @@ class WhisperAlternativesAnalyzer:
 
         logger.info(f"Results saved to {self.output_dir}")
 
+
 async def main():
     """Main function to run the analysis"""
     analyzer = WhisperAlternativesAnalyzer()
@@ -657,24 +693,24 @@ async def main():
     try:
         report = await analyzer.run_comprehensive_analysis()
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("WHISPER ALTERNATIVES PERFORMANCE ANALYSIS COMPLETE")
-        print("="*80)
+        print("=" * 80)
 
         print(f"\nHardware: {report['hardware_spec']['name']}")
         print(f"Total models tested: {report['total_models_tested']}")
         print(f"Total tests run: {report['total_tests_run']}")
 
         print("\nModels meeting RTF < 1.0 target:")
-        for model in report['models_meeting_rtf_target']:
+        for model in report["models_meeting_rtf_target"]:
             print(f"  ✅ {model}")
 
         print("\nTop RTF performers:")
-        for i, (model, stats) in enumerate(report['best_rtf_performers'][:3], 1):
+        for i, (model, stats) in enumerate(report["best_rtf_performers"][:3], 1):
             print(f"  {i}. {model}: RTF {stats['avg_rtf']:.3f}")
 
         print("\nTop memory performers:")
-        for i, (model, stats) in enumerate(report['best_memory_performers'][:3], 1):
+        for i, (model, stats) in enumerate(report["best_memory_performers"][:3], 1):
             print(f"  {i}. {model}: {stats['avg_memory_mb']:.1f} MB")
 
         print(f"\nDetailed results saved to: {analyzer.output_dir}")
@@ -682,6 +718,7 @@ async def main():
     except Exception as e:
         logger.error(f"Analysis failed: {e}")
         print(f"❌ Analysis failed: {e}")
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)

@@ -33,8 +33,13 @@ class OrpheusEncoder(TTSEncoder):
     gguf_encoder.write()
     ```
     """
-    def __init__(self, model_path: Path | str = "./orpheus.gguf", repo_id: Path | str = DEFAULT_ORPHEUS_REPO_ID,
-                 snac_repo_id: Path | str = DEFAULT_SNAC_REPO_ID):
+
+    def __init__(
+        self,
+        model_path: Path | str = "./orpheus.gguf",
+        repo_id: Path | str = DEFAULT_ORPHEUS_REPO_ID,
+        snac_repo_id: Path | str = DEFAULT_SNAC_REPO_ID,
+    ):
         """
         :param Path or str model_path: The path to save the generated GGUF file.
         :param Path or str repo_id: The path or repository from which to pull the orpheus model and its tokenizer.
@@ -52,7 +57,9 @@ class OrpheusEncoder(TTSEncoder):
     def model(self) -> LlamaForCausalLM:
         if self._model is None:
             try:
-                self._model = AutoModelForCausalLM.from_pretrained(self.repo_id).eval().to(device="cpu")
+                self._model = (
+                    AutoModelForCausalLM.from_pretrained(self.repo_id).eval().to(device="cpu")
+                )
             except Exception as e:
                 self.logger.exception(
                     f"Failed with exception, {e}, when attempting to obtain Orpheus at path or repo: '{self.repo_id}'"
@@ -76,13 +83,13 @@ class OrpheusEncoder(TTSEncoder):
     def tokenizer_json(self) -> dict:
         if self._tokenizer_json is None:
             try:
-                conf_path = hf_hub_download(repo_id=self.repo_id, filename='tokenizer.json')
+                conf_path = hf_hub_download(repo_id=self.repo_id, filename="tokenizer.json")
             except Exception as e:
                 self.logger.exception(
                     f"Failed with exception, {e}, attempting to obtain tokenizer.json via repository '{self.repo_id}'."
                 )
                 raise e
-            with open(conf_path, "r+", encoding='utf-8') as f:
+            with open(conf_path, "r+", encoding="utf-8") as f:
                 self._tokenizer_json = json.load(f)
         return self._tokenizer_json
 
@@ -117,7 +124,7 @@ class OrpheusEncoder(TTSEncoder):
 
     def prepare_orpheus_tensors(self):
         for name, param in self.model.model.named_parameters():
-            name = f"orpheus.{name[:-7]}" # all names end in ".weight" for Orpheus
+            name = f"orpheus.{name[:-7]}"  # all names end in ".weight" for Orpheus
             self.set_tensor(name, param)
         self.set_tensor("orpheus.lm_head", self.model.lm_head.weight)
 
@@ -143,7 +150,7 @@ class OrpheusEncoder(TTSEncoder):
 
     def prepare_rope_frequencies(self):
         """
-        Because Llama-3 like Rotary Positional Embeddings are not currently supported out-of-the-box in GGML, 
+        Because Llama-3 like Rotary Positional Embeddings are not currently supported out-of-the-box in GGML,
         we need to encode the rope frequency vectors to use directly.
         """
         base = self.model.config.rope_theta
@@ -152,7 +159,9 @@ class OrpheusEncoder(TTSEncoder):
         factor = self.model.config.rope_scaling.get("factor", 8.0)
         low_freq_factor = self.model.config.rope_scaling.get("low_freq_factor", 1.0)
         high_freq_factor = self.model.config.rope_scaling.get("high_freq_factor", 4.0)
-        old_context_len = self.model.config.rope_scaling.get("original_max_position_embeddings", 8192)
+        old_context_len = self.model.config.rope_scaling.get(
+            "original_max_position_embeddings", 8192
+        )
 
         low_freq_wavelen = old_context_len / low_freq_factor
         high_freq_wavelen = old_context_len / high_freq_factor
@@ -167,7 +176,8 @@ class OrpheusEncoder(TTSEncoder):
                 rope_factors.append(factor)
             else:
                 smooth = (old_context_len / wavelen - low_freq_factor) / (
-                        high_freq_factor - low_freq_factor)
+                    high_freq_factor - low_freq_factor
+                )
                 rope_factors.append(1 / ((1 - smooth) / factor + smooth))
 
         self.set_tensor("orpheus.rope_frequencies", torch.tensor(rope_factors, dtype=torch.float32))
@@ -176,12 +186,16 @@ class OrpheusEncoder(TTSEncoder):
         """
         Implementation of TTSEncoder's Abstract method see TTSEncoder for more information
         """
-        total_params, shared_params, expert_params, expert_count = self.gguf_writer.get_total_parameter_count()
+        total_params, shared_params, expert_params, expert_count = (
+            self.gguf_writer.get_total_parameter_count()
+        )
         self.metadata = gguf.Metadata.load(None, None, self.repo_id, total_params)
 
         # Generate parameter weight class (useful for leader boards) if not yet determined
         if self.metadata.size_label is None and total_params > 0:
-            self.metadata.size_label = gguf.size_label(total_params, shared_params, expert_params, expert_count)
+            self.metadata.size_label = gguf.size_label(
+                total_params, shared_params, expert_params, expert_count
+            )
 
         self.set_type()
         self.set_gguf_parameters()
@@ -199,25 +213,44 @@ class OrpheusEncoder(TTSEncoder):
         self.gguf_writer.add_uint32(f"{self.gguf_writer.arch}.stopping_token_id", 128258)
 
         # ---- Orpheus configuration ----
-        self.gguf_writer.add_uint32(f"{self.gguf_writer.arch}.hidden_size", self.model.config.hidden_size)
-        self.gguf_writer.add_uint32(f"{self.gguf_writer.arch}.vocab_size", self.model.config.vocab_size)
-        self.gguf_writer.add_uint32(f"{self.gguf_writer.arch}.attn_heads", self.model.config.num_attention_heads)
-        self.gguf_writer.add_uint32(f"{self.gguf_writer.arch}.kv_attn_heads", self.model.config.num_key_value_heads)
+        self.gguf_writer.add_uint32(
+            f"{self.gguf_writer.arch}.hidden_size", self.model.config.hidden_size
+        )
+        self.gguf_writer.add_uint32(
+            f"{self.gguf_writer.arch}.vocab_size", self.model.config.vocab_size
+        )
+        self.gguf_writer.add_uint32(
+            f"{self.gguf_writer.arch}.attn_heads", self.model.config.num_attention_heads
+        )
+        self.gguf_writer.add_uint32(
+            f"{self.gguf_writer.arch}.kv_attn_heads", self.model.config.num_key_value_heads
+        )
         self.gguf_writer.add_uint32(f"{self.gguf_writer.arch}.head_dim", self.model.config.head_dim)
-        self.gguf_writer.add_uint32(f"{self.gguf_writer.arch}.layers", self.model.config.num_hidden_layers)
+        self.gguf_writer.add_uint32(
+            f"{self.gguf_writer.arch}.layers", self.model.config.num_hidden_layers
+        )
         self.gguf_writer.add_uint32(
             f"{self.gguf_writer.arch}.kv_hidden_size",
-            self.model.config.hidden_size // (self.model.config.num_attention_heads // self.model.config.num_key_value_heads)
+            self.model.config.hidden_size
+            // (self.model.config.num_attention_heads // self.model.config.num_key_value_heads),
         )
 
         # ---- SNAC configuration ----
-        self.gguf_writer.add_uint32("snac.audio_token_channels", self.snac_model.quantizer.n_codebooks)
+        self.gguf_writer.add_uint32(
+            "snac.audio_token_channels", self.snac_model.quantizer.n_codebooks
+        )
         layer_index = 0
         for module in self.snac_model.decoder.model:
             if isinstance(module, DecoderBlock):
-                self.gguf_writer.add_uint32(f"snac.snac_layer_stride_{layer_index}", module.block[1].stride[0])
-                self.gguf_writer.add_uint32(f"snac.snac_layer_padding_{layer_index}", module.block[1].padding[0])
-                self.gguf_writer.add_uint32(f"snac.snac_layer_grouping_{layer_index}", module.block[3].block[1].groups)
+                self.gguf_writer.add_uint32(
+                    f"snac.snac_layer_stride_{layer_index}", module.block[1].stride[0]
+                )
+                self.gguf_writer.add_uint32(
+                    f"snac.snac_layer_padding_{layer_index}", module.block[1].padding[0]
+                )
+                self.gguf_writer.add_uint32(
+                    f"snac.snac_layer_grouping_{layer_index}", module.block[3].block[1].groups
+                )
                 layer_index += 1
 
         # The file type setting is purely for describing the primary precision of the model as it is stored in the GGUF file.
@@ -233,8 +266,13 @@ class OrpheusEncoder(TTSEncoder):
         The purpose of this function is to add the vocab, merges, and configuration for Orpheus' BPE tokenizer
         to the GGUF file writer.
         """
-        assert "model" in self.tokenizer_json and "type" in self.tokenizer_json["model"] and self.tokenizer_json["model"]["type"] == "BPE" \
-               and "merges" in self.tokenizer_json["model"] and "vocab" in self.tokenizer_json["model"]
+        assert (
+            "model" in self.tokenizer_json
+            and "type" in self.tokenizer_json["model"]
+            and self.tokenizer_json["model"]["type"] == "BPE"
+            and "merges" in self.tokenizer_json["model"]
+            and "vocab" in self.tokenizer_json["model"]
+        )
         tokens = list(self.tokenizer_json["model"]["vocab"].keys())
         print(f"HERE WTF is going on {len(tokens)}.")
         merges = [" ".join(pair) for pair in self.tokenizer_json["model"]["merges"]]

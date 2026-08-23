@@ -32,30 +32,26 @@ class DebugRouter:
         @self.router.post("/phonetics")
         async def debug_phonetics(text: str, voice: str = "af_heart"):
             """Show text processing pipeline stages."""
-            result = {
-                "input": text,
-                "voice": voice,
-                "timestamp": time.time()
-            }
+            result = {"input": text, "voice": voice, "timestamp": time.time()}
 
             try:
                 from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
+
                 prep = PhonemizationPreprocessor()
                 prep_result = prep.preprocess_text(text)
                 result["phonemizer"] = {
                     "output": prep_result.processed_text,
-                    "confidence": prep_result.confidence_score
+                    "confidence": prep_result.confidence_score,
                 }
             except Exception as e:
                 result["phonemizer"] = {"error": str(e)}
 
             try:
                 from LiteTTS.nlp.clean_text_normalizer import CleanTextNormalizer
+
                 clean = CleanTextNormalizer()
                 clean_result = clean.normalize_text(text)
-                result["clean_normalizer"] = {
-                    "output": clean_result.processed_text
-                }
+                result["clean_normalizer"] = {"output": clean_result.processed_text}
             except Exception as e:
                 result["clean_normalizer"] = {"error": str(e)}
 
@@ -69,17 +65,13 @@ class DebugRouter:
 
             import requests
 
-            result = {
-                "input": text,
-                "voice": voice,
-                "timestamp": time.time()
-            }
+            result = {"input": text, "voice": voice, "timestamp": time.time()}
 
             try:
                 resp = requests.post(
                     "http://localhost:8354/v1/audio/speech",
                     json={"input": text, "voice": voice, "response_format": "mp3"},
-                    timeout=30
+                    timeout=30,
                 )
                 result["tts_status"] = resp.status_code
 
@@ -90,9 +82,14 @@ class DebugRouter:
 
                     try:
                         from LiteTTS.backends.whisper_optimized import OptimizedWhisperProcessor
+
                         whisper = OptimizedWhisperProcessor()
                         whisper_result = whisper.transcribe(str(audio_path))
-                        result["transcription"] = whisper_result.text if hasattr(whisper_result, 'text') else str(whisper_result)
+                        result["transcription"] = (
+                            whisper_result.text
+                            if hasattr(whisper_result, "text")
+                            else str(whisper_result)
+                        )
                     finally:
                         audio_path.unlink(missing_ok=True)
             except Exception as e:
@@ -104,8 +101,12 @@ class DebugRouter:
         async def debug_pipeline():
             """Get pipeline info."""
             return {
-                "processors": ["unified_text_processor", "phonemizer_preprocessor",
-                             "clean_text_normalizer", "text_normalizer"]
+                "processors": [
+                    "unified_text_processor",
+                    "phonemizer_preprocessor",
+                    "clean_text_normalizer",
+                    "text_normalizer",
+                ]
             }
 
     def get_router(self) -> APIRouter:

@@ -15,7 +15,9 @@ def save_conv2d_layer(f, gguf_writer, prefix, inp_c, filters, size, batch_normal
         rolling_mean = np.fromfile(f, dtype=np.float32, count=filters)
         gguf_writer.add_tensor(prefix + "_rolling_mean", rolling_mean, raw_shape=(1, filters, 1, 1))
         rolling_variance = np.fromfile(f, dtype=np.float32, count=filters)
-        gguf_writer.add_tensor(prefix + "_rolling_variance", rolling_variance, raw_shape=(1, filters, 1, 1))
+        gguf_writer.add_tensor(
+            prefix + "_rolling_variance", rolling_variance, raw_shape=(1, filters, 1, 1)
+        )
 
     weights_count = filters * inp_c * size * size
     l0_weights = np.fromfile(f, dtype=np.float32, count=weights_count)
@@ -24,15 +26,15 @@ def save_conv2d_layer(f, gguf_writer, prefix, inp_c, filters, size, batch_normal
     gguf_writer.add_tensor(prefix + "_weights", l0_weights, raw_shape=(filters, inp_c, size, size))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage: %s <yolov3-tiny.weights>" % sys.argv[0])
         sys.exit(1)
-    outfile = 'yolov3-tiny.gguf'
-    gguf_writer = gguf.GGUFWriter(outfile, 'yolov3-tiny')
+    outfile = "yolov3-tiny.gguf"
+    gguf_writer = gguf.GGUFWriter(outfile, "yolov3-tiny")
 
-    f = open(sys.argv[1], 'rb')
-    f.read(20) # skip header
+    f = open(sys.argv[1], "rb")
+    f.read(20)  # skip header
     save_conv2d_layer(f, gguf_writer, "l0", 3, 16, 3)
     save_conv2d_layer(f, gguf_writer, "l1", 16, 32, 3)
     save_conv2d_layer(f, gguf_writer, "l2", 32, 64, 3)

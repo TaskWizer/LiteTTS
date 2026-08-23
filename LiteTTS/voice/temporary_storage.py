@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class TemporaryVoiceManager:
     """
     Manages temporary voice storage with automatic cleanup and explicit save functionality.
-    
+
     Features:
     - Session-based temporary voice management
     - Automatic cleanup of expired temporary voices
@@ -54,7 +54,7 @@ class TemporaryVoiceManager:
         """Load existing sessions from disk"""
         try:
             if self.session_file.exists():
-                with open(self.session_file, 'r') as f:
+                with open(self.session_file, "r") as f:
                     self.sessions = json.load(f)
                 logger.info(f"Loaded {len(self.sessions)} temporary voice sessions")
         except Exception as e:
@@ -64,13 +64,14 @@ class TemporaryVoiceManager:
     def _save_sessions(self):
         """Save sessions to disk"""
         try:
-            with open(self.session_file, 'w') as f:
+            with open(self.session_file, "w") as f:
                 json.dump(self.sessions, f, indent=2)
         except Exception as e:
             logger.error(f"Failed to save sessions: {e}")
 
     def _start_cleanup_thread(self):
         """Start background cleanup thread"""
+
         def cleanup_worker():
             while True:
                 try:
@@ -84,18 +85,22 @@ class TemporaryVoiceManager:
         cleanup_thread.start()
         logger.info("Started temporary voice cleanup thread")
 
-    def create_temporary_voice(self, voice_name: str, voice_data: bytes,
-                             session_id: str | None = None,
-                             ttl_hours: int | None = None) -> str:
+    def create_temporary_voice(
+        self,
+        voice_name: str,
+        voice_data: bytes,
+        session_id: str | None = None,
+        ttl_hours: int | None = None,
+    ) -> str:
         """
         Create a temporary voice file
-        
+
         Args:
             voice_name: Name of the voice
             voice_data: Binary voice data
             session_id: Optional session ID for grouping
             ttl_hours: Time to live in hours (default: 24)
-        
+
         Returns:
             Path to the temporary voice file
         """
@@ -114,31 +119,30 @@ class TemporaryVoiceManager:
             expires_at = datetime.now() + timedelta(hours=ttl_hours)
 
             if session_id not in self.sessions:
-                self.sessions[session_id] = {
-                    "created_at": datetime.now().isoformat(),
-                    "voices": {}
-                }
+                self.sessions[session_id] = {"created_at": datetime.now().isoformat(), "voices": {}}
 
             self.sessions[session_id]["voices"][voice_name] = {
                 "file_path": str(temp_voice_file),
                 "created_at": datetime.now().isoformat(),
                 "expires_at": expires_at.isoformat(),
-                "ttl_hours": ttl_hours
+                "ttl_hours": ttl_hours,
             }
 
             self._save_sessions()
 
-            logger.info(f"Created temporary voice: {voice_name} (session: {session_id}, expires: {expires_at})")
+            logger.info(
+                f"Created temporary voice: {voice_name} (session: {session_id}, expires: {expires_at})"
+            )
             return str(temp_voice_file)
 
     def save_voice_permanently(self, voice_name: str, session_id: str | None = None) -> bool:
         """
         Move a temporary voice to permanent storage
-        
+
         Args:
             voice_name: Name of the voice to save
             session_id: Session ID (if None, searches all sessions)
-        
+
         Returns:
             True if saved successfully, False otherwise
         """
@@ -148,7 +152,10 @@ class TemporaryVoiceManager:
             voice_info = None
 
             if session_id:
-                if session_id in self.sessions and voice_name in self.sessions[session_id]["voices"]:
+                if (
+                    session_id in self.sessions
+                    and voice_name in self.sessions[session_id]["voices"]
+                ):
                     found_session = session_id
                     voice_info = self.sessions[session_id]["voices"][voice_name]
             else:
@@ -193,11 +200,11 @@ class TemporaryVoiceManager:
     def delete_temporary_voice(self, voice_name: str, session_id: str | None = None) -> bool:
         """
         Delete a temporary voice
-        
+
         Args:
             voice_name: Name of the voice to delete
             session_id: Session ID (if None, searches all sessions)
-        
+
         Returns:
             True if deleted successfully, False otherwise
         """
@@ -207,7 +214,10 @@ class TemporaryVoiceManager:
             voice_info = None
 
             if session_id:
-                if session_id in self.sessions and voice_name in self.sessions[session_id]["voices"]:
+                if (
+                    session_id in self.sessions
+                    and voice_name in self.sessions[session_id]["voices"]
+                ):
                     found_session = session_id
                     voice_info = self.sessions[session_id]["voices"][voice_name]
             else:
@@ -247,7 +257,7 @@ class TemporaryVoiceManager:
     def cleanup_expired_voices(self) -> int:
         """
         Clean up expired temporary voices
-        
+
         Returns:
             Number of voices cleaned up
         """
@@ -289,17 +299,19 @@ class TemporaryVoiceManager:
 
             if cleaned_count > 0 or sessions_to_remove:
                 self._save_sessions()
-                logger.info(f"Cleanup completed: {cleaned_count} voices, {len(sessions_to_remove)} sessions")
+                logger.info(
+                    f"Cleanup completed: {cleaned_count} voices, {len(sessions_to_remove)} sessions"
+                )
 
             return cleaned_count
 
     def list_temporary_voices(self, session_id: str | None = None) -> dict[str, dict]:
         """
         List temporary voices
-        
+
         Args:
             session_id: Optional session ID to filter by
-        
+
         Returns:
             Dictionary of voice information
         """
@@ -311,10 +323,7 @@ class TemporaryVoiceManager:
             for sid in sessions_to_check:
                 if sid in self.sessions:
                     for voice_name, voice_info in self.sessions[sid]["voices"].items():
-                        result[voice_name] = {
-                            **voice_info,
-                            "session_id": sid
-                        }
+                        result[voice_name] = {**voice_info, "session_id": sid}
 
             return result
 

@@ -21,9 +21,11 @@ from .system_optimizer import SystemOptimizer
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class PerformanceTargets:
     """Performance optimization targets"""
+
     max_memory_mb: int = 150
     target_rtf: float = 0.25
     max_cpu_usage: float = 85.0
@@ -31,9 +33,11 @@ class PerformanceTargets:
     max_startup_time: float = 10.0
     max_response_time: float = 2.0
 
+
 @dataclass
 class OptimizationResults:
     """Results from performance optimization"""
+
     memory_optimized: bool = False
     cpu_optimized: bool = False
     cache_optimized: bool = False
@@ -46,6 +50,7 @@ class OptimizationResults:
     rtf_improvement_percent: float = 0.0
     optimization_time: float = 0.0
     errors: list[str] = field(default_factory=list)
+
 
 class IntegratedPerformanceOptimizer:
     """
@@ -66,7 +71,7 @@ class IntegratedPerformanceOptimizer:
             max_memory_mb=self.config.get("max_memory_mb", 150),
             target_rtf=self.config.get("target_rtf", 0.25),
             max_cpu_usage=self.config.get("max_cpu_usage", 85.0),
-            min_cache_hit_rate=self.config.get("min_cache_hit_rate", 0.7)
+            min_cache_hit_rate=self.config.get("min_cache_hit_rate", 0.7),
         )
 
         # Optimization state
@@ -120,8 +125,14 @@ class IntegratedPerformanceOptimizer:
                 results.optimized_memory_mb = optimized_memory
                 results.optimized_rtf = optimized_rtf
                 results.memory_reduction_mb = baseline_memory - optimized_memory
-                results.memory_reduction_percent = (results.memory_reduction_mb / baseline_memory) * 100 if baseline_memory > 0 else 0
-                results.rtf_improvement_percent = ((baseline_rtf - optimized_rtf) / baseline_rtf) * 100 if baseline_rtf > 0 else 0
+                results.memory_reduction_percent = (
+                    (results.memory_reduction_mb / baseline_memory) * 100
+                    if baseline_memory > 0
+                    else 0
+                )
+                results.rtf_improvement_percent = (
+                    ((baseline_rtf - optimized_rtf) / baseline_rtf) * 100 if baseline_rtf > 0 else 0
+                )
 
                 # 7. Start continuous monitoring
                 self._start_performance_monitoring()
@@ -130,8 +141,12 @@ class IntegratedPerformanceOptimizer:
                 self.optimization_applied = True
 
                 logger.info(f"✅ Optimization complete in {results.optimization_time:.2f}s")
-                logger.info(f"📈 Memory: {baseline_memory:.1f}MB → {optimized_memory:.1f}MB ({results.memory_reduction_percent:+.1f}%)")
-                logger.info(f"📈 RTF: {baseline_rtf:.3f} → {optimized_rtf:.3f} ({results.rtf_improvement_percent:+.1f}%)")
+                logger.info(
+                    f"📈 Memory: {baseline_memory:.1f}MB → {optimized_memory:.1f}MB ({results.memory_reduction_percent:+.1f}%)"
+                )
+                logger.info(
+                    f"📈 RTF: {baseline_rtf:.3f} → {optimized_rtf:.3f} ({results.rtf_improvement_percent:+.1f}%)"
+                )
 
                 return results
 
@@ -147,7 +162,9 @@ class IntegratedPerformanceOptimizer:
             config = self.memory_optimizer.calculate_optimal_config(self.targets.max_memory_mb)
 
             # Apply memory optimizations
-            optimization_results = self.memory_optimizer.run_comprehensive_optimization(self.targets.max_memory_mb)
+            optimization_results = self.memory_optimizer.run_comprehensive_optimization(
+                self.targets.max_memory_mb
+            )
 
             # Force garbage collection
             collected = gc.collect()
@@ -192,13 +209,15 @@ class IntegratedPerformanceOptimizer:
         """Optimize cache performance"""
         try:
             # Configure cache sizes based on memory target
-            cache_memory_budget = min(64, self.targets.max_memory_mb // 3)  # 1/3 of memory for caching
+            cache_memory_budget = min(
+                64, self.targets.max_memory_mb // 3
+            )  # 1/3 of memory for caching
 
             cache_config = {
                 "voice_cache_mb": min(32, cache_memory_budget // 2),
                 "audio_cache_mb": min(16, cache_memory_budget // 4),
                 "text_cache_mb": min(8, cache_memory_budget // 8),
-                "model_cache_mb": min(8, cache_memory_budget // 8)
+                "model_cache_mb": min(8, cache_memory_budget // 8),
             }
 
             # Apply cache configuration
@@ -234,11 +253,13 @@ class IntegratedPerformanceOptimizer:
             # Set ONNX Runtime memory limits
             memory_limit_mb = min(64, self.targets.max_memory_mb // 3)
 
-            os.environ.update({
-                "ORT_MEMORY_LIMIT_MB": str(memory_limit_mb),
-                "ORT_ENABLE_MEMORY_ARENA": "1",
-                "ORT_ARENA_EXTEND_STRATEGY": "kSameAsRequested"
-            })
+            os.environ.update(
+                {
+                    "ORT_MEMORY_LIMIT_MB": str(memory_limit_mb),
+                    "ORT_ENABLE_MEMORY_ARENA": "1",
+                    "ORT_ARENA_EXTEND_STRATEGY": "kSameAsRequested",
+                }
+            )
 
             logger.info(f"ONNX memory limit set to {memory_limit_mb}MB")
 
@@ -315,9 +336,11 @@ class IntegratedPerformanceOptimizer:
             "targets": {
                 "max_memory_mb": self.targets.max_memory_mb,
                 "target_rtf": self.targets.target_rtf,
-                "max_cpu_usage": self.targets.max_cpu_usage
+                "max_cpu_usage": self.targets.max_cpu_usage,
             },
-            "performance_stats": self.performance_monitor.get_stats() if self.monitoring_active else {}
+            "performance_stats": self.performance_monitor.get_stats()
+            if self.monitoring_active
+            else {},
         }
 
     def validate_performance_targets(self) -> dict[str, bool]:
@@ -335,7 +358,7 @@ class IntegratedPerformanceOptimizer:
             "cache_target_met": cache_hit_rate >= self.targets.min_cache_hit_rate,
             "current_memory_mb": current_memory,
             "current_rtf": current_rtf,
-            "current_cache_hit_rate": cache_hit_rate
+            "current_cache_hit_rate": cache_hit_rate,
         }
 
     def optimize_for_request(self, text: str = None, voice: str = None, **kwargs) -> dict[str, Any]:
@@ -359,7 +382,7 @@ class IntegratedPerformanceOptimizer:
                 "optimizations_applied": [],
                 "performance_hints": {},
                 "environment_adjustments": {},
-                "timing": {}
+                "timing": {},
             }
 
             # Text-based optimizations
@@ -385,11 +408,13 @@ class IntegratedPerformanceOptimizer:
                 result["performance_hints"]["voice"] = voice
 
                 # Apply voice-specific CPU affinity if available
-                if hasattr(self.cpu_optimizer, 'set_hybrid_cpu_affinity'):
+                if hasattr(self.cpu_optimizer, "set_hybrid_cpu_affinity"):
                     # For high-quality voices, use more aggressive CPU settings
-                    if any(quality in voice.lower() for quality in ['heart', 'soul', 'premium']):
+                    if any(quality in voice.lower() for quality in ["heart", "soul", "premium"]):
                         self.cpu_optimizer.set_hybrid_cpu_affinity(enable_aggressive=True)
-                        result["optimizations_applied"].append("aggressive_cpu_affinity_for_quality_voice")
+                        result["optimizations_applied"].append(
+                            "aggressive_cpu_affinity_for_quality_voice"
+                        )
                     else:
                         self.cpu_optimizer.set_hybrid_cpu_affinity(enable_aggressive=False)
                         result["optimizations_applied"].append("standard_cpu_affinity")
@@ -404,15 +429,20 @@ class IntegratedPerformanceOptimizer:
 
             # Apply request-level ONNX optimizations
             import os
+
             request_env_vars = {}
 
             # Optimize ONNX thread count based on request characteristics
             if text and len(text) > 200:
                 # Long text - use more threads
-                request_env_vars["ORT_INTRA_OP_NUM_THREADS"] = str(min(8, self.cpu_optimizer.cpu_info.total_cores))
+                request_env_vars["ORT_INTRA_OP_NUM_THREADS"] = str(
+                    min(8, self.cpu_optimizer.cpu_info.total_cores)
+                )
             else:
                 # Short text - use fewer threads to reduce overhead
-                request_env_vars["ORT_INTRA_OP_NUM_THREADS"] = str(min(4, self.cpu_optimizer.cpu_info.total_cores))
+                request_env_vars["ORT_INTRA_OP_NUM_THREADS"] = str(
+                    min(4, self.cpu_optimizer.cpu_info.total_cores)
+                )
 
             # Apply environment variables
             for var, value in request_env_vars.items():
@@ -429,7 +459,9 @@ class IntegratedPerformanceOptimizer:
             result["performance_hints"]["recommended_rtf_target"] = self.targets.target_rtf
             result["performance_hints"]["memory_budget_mb"] = self.targets.max_memory_mb
 
-            logger.debug(f"Request optimization completed in {optimization_time*1000:.1f}ms: {len(result['optimizations_applied'])} optimizations applied")
+            logger.debug(
+                f"Request optimization completed in {optimization_time * 1000:.1f}ms: {len(result['optimizations_applied'])} optimizations applied"
+            )
 
             return result
 
@@ -440,11 +472,13 @@ class IntegratedPerformanceOptimizer:
                 "error": str(e),
                 "optimizations_applied": [],
                 "performance_hints": {},
-                "environment_adjustments": {}
+                "environment_adjustments": {},
             }
+
 
 # Global optimizer instance
 _global_optimizer: IntegratedPerformanceOptimizer | None = None
+
 
 def get_global_optimizer() -> IntegratedPerformanceOptimizer:
     """Get or create global optimizer instance"""
@@ -452,6 +486,7 @@ def get_global_optimizer() -> IntegratedPerformanceOptimizer:
     if _global_optimizer is None:
         _global_optimizer = IntegratedPerformanceOptimizer()
     return _global_optimizer
+
 
 def optimize_performance(config: dict[str, Any] | None = None) -> OptimizationResults:
     """Convenience function to run performance optimization"""

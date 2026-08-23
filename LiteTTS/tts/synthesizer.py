@@ -20,6 +20,7 @@ from .engine import KokoroTTSEngine
 
 logger = logging.getLogger(__name__)
 
+
 class TTSSynthesizer:
     """Main TTS synthesizer that coordinates all components"""
 
@@ -29,23 +30,22 @@ class TTSSynthesizer:
         # Initialize components
         self.engine = KokoroTTSEngine(config)
         self.emotion_controller = EmotionController()
-        self.chunk_processor = ChunkProcessor(
-            max_chunk_length=config.chunk_size,
-            overlap_length=20
-        )
+        self.chunk_processor = ChunkProcessor(max_chunk_length=config.chunk_size, overlap_length=20)
         # Get global configuration for NLP processor
         try:
             from ..config import config as global_config
-            config_dict = global_config.to_dict() if hasattr(global_config, 'to_dict') else {}
+
+            config_dict = global_config.to_dict() if hasattr(global_config, "to_dict") else {}
         except ImportError:
             # Fallback to loading config file directly (prefer centralized location)
             import json
+
             config_dict = {}
-            config_files = ['config/settings.json', 'config.json']
+            config_files = ["config/settings.json", "config.json"]
 
             for config_file in config_files:
                 try:
-                    with open(config_file, 'r', encoding='utf-8') as f:
+                    with open(config_file, "r", encoding="utf-8") as f:
                         config_dict = json.load(f)
                     break  # Successfully loaded
                 except FileNotFoundError:
@@ -62,51 +62,57 @@ class TTSSynthesizer:
         self.unified_processor = UnifiedTextProcessor()
 
         # Configure processing options based on config
-        text_config = config_dict.get('text_processing', {})
-        pronunciation_dict_config = config_dict.get('pronunciation_dictionary', {})
-        symbol_config = config_dict.get('symbol_processing', {})
-        espeak_config = symbol_config.get('espeak_enhanced_processing', {})
-        interjection_config = config_dict.get('interjection_handling', {})
-        voice_modulation_config = config_dict.get('voice_modulation', {})
+        text_config = config_dict.get("text_processing", {})
+        pronunciation_dict_config = config_dict.get("pronunciation_dictionary", {})
+        symbol_config = config_dict.get("symbol_processing", {})
+        espeak_config = symbol_config.get("espeak_enhanced_processing", {})
+        interjection_config = config_dict.get("interjection_handling", {})
+        voice_modulation_config = config_dict.get("voice_modulation", {})
 
         # Respect pronunciation_dictionary.enabled setting for ticker symbol processing
-        pronunciation_dict_enabled = pronunciation_dict_config.get('enabled', False)
-        ticker_processing_enabled = (pronunciation_dict_enabled and
-                                   pronunciation_dict_config.get('ticker_symbol_processing', True))
+        pronunciation_dict_enabled = pronunciation_dict_config.get("enabled", False)
+        ticker_processing_enabled = pronunciation_dict_enabled and pronunciation_dict_config.get(
+            "ticker_symbol_processing", True
+        )
 
         # Respect pronunciation_dictionary.enabled setting for proper name processing
-        proper_name_enabled = (pronunciation_dict_enabled and
-                             pronunciation_dict_config.get('proper_name_pronunciation', True))
+        proper_name_enabled = pronunciation_dict_enabled and pronunciation_dict_config.get(
+            "proper_name_pronunciation", True
+        )
 
         # Respect espeak_enhanced_processing.enabled setting
-        espeak_enhanced_enabled = espeak_config.get('enabled', False)
+        espeak_enhanced_enabled = espeak_config.get("enabled", False)
 
         # Get individual configuration settings
-        interjection_enabled = interjection_config.get('enabled', False)
-        voice_modulation_enabled = voice_modulation_config.get('enabled', False)
+        interjection_enabled = interjection_config.get("enabled", False)
+        voice_modulation_enabled = voice_modulation_config.get("enabled", False)
 
         self.processing_options = ProcessingOptions(
             mode=ProcessingMode.ENHANCED,  # Use enhanced mode for production
-            use_advanced_currency=text_config.get('natural_speech', True),
-            use_enhanced_datetime=text_config.get('natural_speech', True),
+            use_advanced_currency=text_config.get("natural_speech", True),
+            use_enhanced_datetime=text_config.get("natural_speech", True),
             # Respect symbol_processing configuration
-            use_advanced_symbols=symbol_config.get('enabled', False),
+            use_advanced_symbols=symbol_config.get("enabled", False),
             # Respect espeak_enhanced_processing configuration for question mark fixes
-            use_espeak_enhanced_symbols=espeak_enhanced_enabled and espeak_config.get('fix_question_mark_pronunciation', False),
+            use_espeak_enhanced_symbols=espeak_enhanced_enabled
+            and espeak_config.get("fix_question_mark_pronunciation", False),
             use_ticker_symbol_processing=ticker_processing_enabled,  # Respect config setting
             use_proper_name_pronunciation=proper_name_enabled,  # Respect config setting
-            use_pronunciation_rules=text_config.get('pronunciation_fixes', True),
+            use_pronunciation_rules=text_config.get("pronunciation_fixes", True),
             # Respect interjection_handling configuration for hmm fixes
-            use_interjection_fixes=interjection_enabled and interjection_config.get('fix_hmm_pronunciation', False),
+            use_interjection_fixes=interjection_enabled
+            and interjection_config.get("fix_hmm_pronunciation", False),
             # Respect pronunciation_dictionary configuration
             use_clean_normalizer=pronunciation_dict_enabled,
             # Respect text_processing configuration for normalization
-            normalize_text=text_config.get('enabled', False),
+            normalize_text=text_config.get("enabled", False),
             # Respect pronunciation_dictionary configuration for homograph resolution
-            resolve_homographs=pronunciation_dict_enabled and pronunciation_dict_config.get('use_context_awareness', True),
+            resolve_homographs=pronunciation_dict_enabled
+            and pronunciation_dict_config.get("use_context_awareness", True),
             # Respect pronunciation_dictionary configuration for phonetic processing
-            process_phonetics=pronunciation_dict_enabled and pronunciation_dict_config.get('use_phonetic_spelling', True),
-            handle_spell_functions=True
+            process_phonetics=pronunciation_dict_enabled
+            and pronunciation_dict_config.get("use_phonetic_spelling", True),
+            handle_spell_functions=True,
         )
         self.audio_processor = AudioProcessor()
         self.ssml_processor = SSMLProcessor(config.sample_rate)
@@ -138,7 +144,7 @@ class TTSSynthesizer:
                 min_chunk_size=50,
                 overlap_size=20,
                 respect_sentence_boundaries=True,
-                respect_paragraph_boundaries=True
+                respect_paragraph_boundaries=True,
             )
 
             # Configure progressive generation
@@ -150,27 +156,30 @@ class TTSSynthesizer:
                 enable_voice_consistency=True,
                 enable_prosody_continuity=True,
                 buffer_size=4096,  # Smaller buffer for lower latency
-                streaming_delay=0.05  # Minimal delay between chunks
+                streaming_delay=0.05,  # Minimal delay between chunks
             )
 
             self.progressive_generator = ProgressiveAudioGenerator(self.engine, progressive_config)
             logger.info("Progressive audio generator initialized for streaming")
 
         except Exception as e:
-            logger.warning(f"Failed to initialize progressive generator: {e}. Streaming will use fallback.")
+            logger.warning(
+                f"Failed to initialize progressive generator: {e}. Streaming will use fallback."
+            )
             self.progressive_generator = None
 
     def _initialize_time_stretcher(self, config: TTSConfiguration) -> TimeStretcher:
         """Initialize time-stretching feature from configuration"""
         try:
             # Get time-stretching config from main config or global config
-            stretch_config = getattr(config, 'time_stretching', {})
+            stretch_config = getattr(config, "time_stretching", {})
 
             # If not in TTSConfiguration, try to get from global config
             if not stretch_config:
                 try:
                     from ..config import config as global_config
-                    stretch_config = global_config.get('time_stretching', {})
+
+                    stretch_config = global_config.get("time_stretching", {})
                 except ImportError:
                     stretch_config = {}
 
@@ -178,21 +187,24 @@ class TTSSynthesizer:
             if not stretch_config:
                 try:
                     from ..config import config as global_config
-                    text_processing = global_config.get('text_processing', {})
-                    stretch_config = text_processing.get('time_stretching_optimization', {})
+
+                    text_processing = global_config.get("text_processing", {})
+                    stretch_config = text_processing.get("time_stretching_optimization", {})
                 except ImportError:
                     stretch_config = {}
 
             # Create time-stretch configuration with all new options
             time_stretch_config = TimeStretchConfig(
-                enabled=stretch_config.get('enabled', False),
-                compress_playback_rate=stretch_config.get('compress_playback_rate', 20),
-                correction_quality=StretchQuality(stretch_config.get('correction_quality', 'medium')),
-                max_rate=stretch_config.get('max_rate', 100),
-                min_rate=stretch_config.get('min_rate', 10),
-                auto_enable_threshold=stretch_config.get('auto_enable_threshold', 50),
-                quality_fallback=stretch_config.get('quality_fallback', True),
-                benchmark_mode=stretch_config.get('benchmark_mode', False)
+                enabled=stretch_config.get("enabled", False),
+                compress_playback_rate=stretch_config.get("compress_playback_rate", 20),
+                correction_quality=StretchQuality(
+                    stretch_config.get("correction_quality", "medium")
+                ),
+                max_rate=stretch_config.get("max_rate", 100),
+                min_rate=stretch_config.get("min_rate", 10),
+                auto_enable_threshold=stretch_config.get("auto_enable_threshold", 50),
+                quality_fallback=stretch_config.get("quality_fallback", True),
+                benchmark_mode=stretch_config.get("benchmark_mode", False),
             )
 
             return TimeStretcher(time_stretch_config)
@@ -202,61 +214,71 @@ class TTSSynthesizer:
             # Return disabled time-stretcher as fallback
             return TimeStretcher(TimeStretchConfig(enabled=False))
 
-    def synthesize(self, request: TTSRequest,
-                  progress_callback: Callable[[dict[str, Any]], None] | None = None) -> AudioSegment:
+    def synthesize(
+        self, request: TTSRequest, progress_callback: Callable[[dict[str, Any]], None] | None = None
+    ) -> AudioSegment:
         """Main synthesis method"""
         logger.info(f"Starting synthesis: '{request.input[:50]}...' with voice '{request.voice}'")
 
         try:
             # Step 1: SSML processing and text preprocessing
             if progress_callback:
-                progress_callback({'stage': 'ssml_processing', 'progress': 0.05})
+                progress_callback({"stage": "ssml_processing", "progress": 0.05})
 
             # Check if input contains SSML and process it
-            plain_text, background_config, ssml_metadata = self.ssml_processor.process_ssml(request.input)
+            plain_text, background_config, ssml_metadata = self.ssml_processor.process_ssml(
+                request.input
+            )
 
             if progress_callback:
-                progress_callback({'stage': 'preprocessing', 'progress': 0.1})
+                progress_callback({"stage": "preprocessing", "progress": 0.1})
 
             # Use UnifiedTextProcessor for advanced text processing
             # This handles TSLA→T-S-L-A, $5,678.89→currency words, ~$568.91→symbol words, custom phonetics
             try:
-                processing_result = self.unified_processor.process_text(plain_text, self.processing_options)
+                processing_result = self.unified_processor.process_text(
+                    plain_text, self.processing_options
+                )
                 processed_text = processing_result.processed_text
 
                 # Log processing details for debugging
                 if processing_result.changes_made:
-                    logger.info(f"Advanced text processing applied: {', '.join(processing_result.changes_made[:3])}")
+                    logger.info(
+                        f"Advanced text processing applied: {', '.join(processing_result.changes_made[:3])}"
+                    )
                 if processing_result.currency_enhancements > 0:
-                    logger.debug(f"Currency processing: {processing_result.currency_enhancements} enhancements")
+                    logger.debug(
+                        f"Currency processing: {processing_result.currency_enhancements} enhancements"
+                    )
                 if processing_result.datetime_enhancements > 0:
-                    logger.debug(f"DateTime processing: {processing_result.datetime_enhancements} enhancements")
+                    logger.debug(
+                        f"DateTime processing: {processing_result.datetime_enhancements} enhancements"
+                    )
 
             except Exception as e:
                 logger.warning(f"Advanced text processing failed, falling back to basic: {e}")
                 # Fallback to basic NLP processor
                 processed_text = self.nlp_processor.process_text(
-                    plain_text,
-                    request.normalization_options
+                    plain_text, request.normalization_options
                 )
 
             # Step 2: Text chunking (if needed)
             if progress_callback:
-                progress_callback({'stage': 'chunking', 'progress': 0.2})
+                progress_callback({"stage": "chunking", "progress": 0.2})
 
             chunks = self.chunk_processor.chunk_text(processed_text)
 
             # Step 3: Voice and emotion preparation
             if progress_callback:
-                progress_callback({'stage': 'voice_preparation', 'progress': 0.3})
+                progress_callback({"stage": "voice_preparation", "progress": 0.3})
 
             voice_embedding = self.engine.load_voice(request.voice)
             if not voice_embedding:
                 raise RuntimeError(f"Failed to load voice: {request.voice}")
 
             # Apply emotion if specified
-            emotion = getattr(request, 'emotion', None)
-            emotion_strength = getattr(request, 'emotion_strength', 1.0)
+            emotion = getattr(request, "emotion", None)
+            emotion_strength = getattr(request, "emotion_strength", 1.0)
 
             if emotion and emotion in self.emotion_controller.get_supported_emotions():
                 voice_embedding.embedding_data = self.emotion_controller.apply_emotion(
@@ -265,7 +287,7 @@ class TTSSynthesizer:
 
             # Step 4: Synthesis (with optional time-stretching optimization)
             if progress_callback:
-                progress_callback({'stage': 'synthesis', 'progress': 0.4})
+                progress_callback({"stage": "synthesis", "progress": 0.4})
 
             # Check if time-stretching should be applied (API parameters override config)
             use_time_stretching = False
@@ -274,7 +296,9 @@ class TTSSynthesizer:
                 use_time_stretching = request.time_stretching_enabled
             else:
                 # Use config-based decision
-                use_time_stretching = self.time_stretcher.should_apply_stretching(len(processed_text))
+                use_time_stretching = self.time_stretcher.should_apply_stretching(
+                    len(processed_text)
+                )
 
             synthesis_speed = request.speed
             generation_start_time = None
@@ -282,24 +306,34 @@ class TTSSynthesizer:
             if use_time_stretching:
                 # Create temporary time-stretcher with API parameters if provided
                 active_time_stretcher = self.time_stretcher
-                if request.time_stretching_rate is not None or request.time_stretching_quality is not None:
+                if (
+                    request.time_stretching_rate is not None
+                    or request.time_stretching_quality is not None
+                ):
                     # Create temporary config with API overrides
                     from ..audio.time_stretcher import StretchQuality, TimeStretchConfig
+
                     temp_config = TimeStretchConfig(
                         enabled=True,
-                        compress_playback_rate=request.time_stretching_rate or self.time_stretcher.config.compress_playback_rate,
-                        correction_quality=StretchQuality(request.time_stretching_quality) if request.time_stretching_quality else self.time_stretcher.config.correction_quality,
+                        compress_playback_rate=request.time_stretching_rate
+                        or self.time_stretcher.config.compress_playback_rate,
+                        correction_quality=StretchQuality(request.time_stretching_quality)
+                        if request.time_stretching_quality
+                        else self.time_stretcher.config.correction_quality,
                         max_rate=self.time_stretcher.config.max_rate,
                         min_rate=self.time_stretcher.config.min_rate,
                         auto_enable_threshold=self.time_stretcher.config.auto_enable_threshold,
                         quality_fallback=self.time_stretcher.config.quality_fallback,
-                        benchmark_mode=self.time_stretcher.config.benchmark_mode
+                        benchmark_mode=self.time_stretcher.config.benchmark_mode,
                     )
                     from ..audio.time_stretcher import TimeStretcher
+
                     active_time_stretcher = TimeStretcher(temp_config)
 
                 # Generate at faster speed for time-stretching optimization
-                generation_speed_multiplier = active_time_stretcher.get_generation_speed_multiplier()
+                generation_speed_multiplier = (
+                    active_time_stretcher.get_generation_speed_multiplier()
+                )
                 synthesis_speed = request.speed * generation_speed_multiplier
                 generation_start_time = time.perf_counter()
                 logger.debug(f"Time-stretching enabled: generating at {synthesis_speed:.2f}x speed")
@@ -314,28 +348,35 @@ class TTSSynthesizer:
             # Apply time-stretching correction if enabled
             if use_time_stretching:
                 if progress_callback:
-                    progress_callback({'stage': 'time_stretching', 'progress': 0.45})
+                    progress_callback({"stage": "time_stretching", "progress": 0.45})
 
                 generation_time = time.perf_counter() - generation_start_time
-                generation_speed_multiplier = active_time_stretcher.get_generation_speed_multiplier()
+                generation_speed_multiplier = (
+                    active_time_stretcher.get_generation_speed_multiplier()
+                )
 
-                audio_segment, stretch_metrics = active_time_stretcher.stretch_audio_to_normal_speed(
-                    audio_segment, generation_speed_multiplier
+                audio_segment, stretch_metrics = (
+                    active_time_stretcher.stretch_audio_to_normal_speed(
+                        audio_segment, generation_speed_multiplier
+                    )
                 )
 
                 # Update metrics
                 stretch_metrics.generation_time = generation_time
                 stretch_metrics.total_time = generation_time + stretch_metrics.stretch_time
                 stretch_metrics.rtf_original = generation_time / stretch_metrics.original_duration
-                stretch_metrics.rtf_stretched = stretch_metrics.total_time / stretch_metrics.stretched_duration
+                stretch_metrics.rtf_stretched = (
+                    stretch_metrics.total_time / stretch_metrics.stretched_duration
+                )
 
-                logger.debug(f"Time-stretching metrics: RTF {stretch_metrics.rtf_original:.3f} → {stretch_metrics.rtf_stretched:.3f}")
-
+                logger.debug(
+                    f"Time-stretching metrics: RTF {stretch_metrics.rtf_original:.3f} → {stretch_metrics.rtf_stretched:.3f}"
+                )
 
             # Step 5: Background audio mixing (if SSML background specified)
             if background_config:
                 if progress_callback:
-                    progress_callback({'stage': 'background_mixing', 'progress': 0.75})
+                    progress_callback({"stage": "background_mixing", "progress": 0.75})
 
                 audio_segment = self.ssml_processor.synthesize_with_background(
                     audio_segment, background_config
@@ -343,7 +384,7 @@ class TTSSynthesizer:
 
             # Step 6: Post-processing
             if progress_callback:
-                progress_callback({'stage': 'post_processing', 'progress': 0.8})
+                progress_callback({"stage": "post_processing", "progress": 0.8})
 
             # Apply volume adjustment
             if request.volume_multiplier != 1.0:
@@ -355,14 +396,14 @@ class TTSSynthesizer:
 
             # Step 6: Format conversion
             if progress_callback:
-                progress_callback({'stage': 'format_conversion', 'progress': 0.9})
+                progress_callback({"stage": "format_conversion", "progress": 0.9})
 
             # The format conversion will be handled by the API layer
             # Here we just ensure the audio is in the right format
             audio_segment.format = request.response_format
 
             if progress_callback:
-                progress_callback({'stage': 'complete', 'progress': 1.0})
+                progress_callback({"stage": "complete", "progress": 1.0})
 
             logger.info(f"Synthesis completed: {audio_segment.duration:.2f}s audio generated")
             return audio_segment
@@ -370,20 +411,17 @@ class TTSSynthesizer:
         except Exception as e:
             logger.error(f"Synthesis failed: {e}")
             if progress_callback:
-                progress_callback({'stage': 'error', 'progress': 0.0, 'error': str(e)})
+                progress_callback({"stage": "error", "progress": 0.0, "error": str(e)})
             raise
 
-    def synthesize_simple(self, text: str, voice: str = None,
-                         speed: float = 1.0, emotion: str = None) -> AudioSegment:
+    def synthesize_simple(
+        self, text: str, voice: str = None, speed: float = 1.0, emotion: str = None
+    ) -> AudioSegment:
         """Simple synthesis method with minimal parameters"""
         if voice is None:
             voice = self.config.default_voice
 
-        request = TTSRequest(
-            input=text,
-            voice=voice,
-            speed=speed
-        )
+        request = TTSRequest(input=text, voice=voice, speed=speed)
 
         # Add emotion if specified
         if emotion:
@@ -399,7 +437,7 @@ class TTSSynthesizer:
         response_format: str = "mp3",
         speed: float = 1.0,
         emotion: str = None,
-        emotion_strength: float = 1.0
+        emotion_strength: float = 1.0,
     ):
         """
         Synthesize audio with true streaming for low latency.
@@ -420,13 +458,12 @@ class TTSSynthesizer:
             ChunkResult objects containing audio data as it's generated
         """
         if self.progressive_generator is None:
-            logger.warning("Progressive generator not available, falling back to standard synthesis")
+            logger.warning(
+                "Progressive generator not available, falling back to standard synthesis"
+            )
             # Fall back to regular synthesis (no streaming)
             request = TTSRequest(
-                input=text,
-                voice=voice,
-                speed=speed,
-                response_format=response_format
+                input=text, voice=voice, speed=speed, response_format=response_format
             )
             if emotion:
                 request.emotion = emotion
@@ -434,13 +471,16 @@ class TTSSynthesizer:
             audio = self.synthesize(request)
             # Yield single chunk
             from ..audio.progressive_generator import ChunkResult
+
             yield ChunkResult(
                 chunk_id=0,
-                audio_data=audio.audio_data.tobytes() if hasattr(audio.audio_data, 'tobytes') else bytes(audio.audio_data),
+                audio_data=audio.audio_data.tobytes()
+                if hasattr(audio.audio_data, "tobytes")
+                else bytes(audio.audio_data),
                 duration=audio.duration,
                 generation_time=0.0,
                 chunk_text=text,
-                is_final=True
+                is_final=True,
             )
             return
 
@@ -451,7 +491,7 @@ class TTSSynthesizer:
                 voice=voice,
                 response_format=response_format,
                 speed=speed,
-                generation_id=None
+                generation_id=None,
             ):
                 yield chunk
         except Exception as e:
@@ -507,12 +547,12 @@ class TTSSynthesizer:
             errors.append(f"Voice '{request.voice}' not available")
 
         # Check emotion if specified
-        emotion = getattr(request, 'emotion', None)
+        emotion = getattr(request, "emotion", None)
         if emotion and emotion not in self.get_supported_emotions():
             errors.append(f"Emotion '{emotion}' not supported")
 
         # Check emotion strength
-        emotion_strength = getattr(request, 'emotion_strength', 1.0)
+        emotion_strength = getattr(request, "emotion_strength", 1.0)
         is_valid, msg = self.emotion_controller.validate_emotion_strength(emotion_strength)
         if not is_valid:
             errors.append(msg)
@@ -537,19 +577,19 @@ class TTSSynthesizer:
         voice_system_status = self.engine.voice_manager.get_system_status()
 
         return {
-            'engine': engine_info,
-            'voices': voice_system_status,
-            'emotions': {
-                'supported_emotions': self.get_supported_emotions(),
-                'total_emotions': len(self.get_supported_emotions())
+            "engine": engine_info,
+            "voices": voice_system_status,
+            "emotions": {
+                "supported_emotions": self.get_supported_emotions(),
+                "total_emotions": len(self.get_supported_emotions()),
             },
-            'nlp': self.nlp_processor.get_processing_stats(),
-            'configuration': {
-                'max_text_length': self.config.max_text_length,
-                'chunk_size': self.config.chunk_size,
-                'sample_rate': self.config.sample_rate,
-                'device': self.config.device
-            }
+            "nlp": self.nlp_processor.get_processing_stats(),
+            "configuration": {
+                "max_text_length": self.config.max_text_length,
+                "chunk_size": self.config.chunk_size,
+                "sample_rate": self.config.sample_rate,
+                "device": self.config.device,
+            },
         }
 
     def suggest_voice_for_text(self, text: str) -> str:
@@ -558,29 +598,29 @@ class TTSSynthesizer:
         text_lower = text.lower()
 
         # Check for gender-specific content
-        if any(word in text_lower for word in ['she', 'her', 'woman', 'girl', 'female']):
+        if any(word in text_lower for word in ["she", "her", "woman", "girl", "female"]):
             # Prefer female voices
-            female_voices = [v for v in self.get_available_voices() if v.startswith('af_')]
+            female_voices = [v for v in self.get_available_voices() if v.startswith("af_")]
             if female_voices:
                 return female_voices[0]  # Default to first available female voice
 
-        if any(word in text_lower for word in ['he', 'him', 'man', 'boy', 'male']):
+        if any(word in text_lower for word in ["he", "him", "man", "boy", "male"]):
             # Prefer male voices
-            male_voices = [v for v in self.get_available_voices() if v.startswith('am_')]
+            male_voices = [v for v in self.get_available_voices() if v.startswith("am_")]
             if male_voices:
                 return male_voices[0]  # Default to first available male voice
 
         # Check for content type
-        if any(word in text_lower for word in ['professional', 'business', 'formal']):
+        if any(word in text_lower for word in ["professional", "business", "formal"]):
             # Prefer professional voices
-            professional_voices = ['af_alloy', 'am_liam', 'af_nicole']
+            professional_voices = ["af_alloy", "am_liam", "af_nicole"]
             for voice in professional_voices:
                 if voice in self.get_available_voices():
                     return voice
 
-        if any(word in text_lower for word in ['story', 'tale', 'narrative']):
+        if any(word in text_lower for word in ["story", "tale", "narrative"]):
             # Prefer narrative voices
-            narrative_voices = ['af_heart', 'am_puck']
+            narrative_voices = ["af_heart", "am_puck"]
             for voice in narrative_voices:
                 if voice in self.get_available_voices():
                     return voice
@@ -592,27 +632,30 @@ class TTSSynthesizer:
         """Suggest an appropriate emotion based on text content"""
         return self.emotion_controller.suggest_emotion_for_text(text)
 
-    def create_synthesis_profile(self, name: str, voice: str, speed: float = 1.0,
-                               emotion: str = None, emotion_strength: float = 1.0,
-                               volume_multiplier: float = 1.0) -> dict[str, Any]:
+    def create_synthesis_profile(
+        self,
+        name: str,
+        voice: str,
+        speed: float = 1.0,
+        emotion: str = None,
+        emotion_strength: float = 1.0,
+        volume_multiplier: float = 1.0,
+    ) -> dict[str, Any]:
         """Create a reusable synthesis profile"""
         profile = {
-            'name': name,
-            'voice': voice,
-            'speed': speed,
-            'volume_multiplier': volume_multiplier
+            "name": name,
+            "voice": voice,
+            "speed": speed,
+            "volume_multiplier": volume_multiplier,
         }
 
         if emotion:
-            profile['emotion'] = emotion
-            profile['emotion_strength'] = emotion_strength
+            profile["emotion"] = emotion
+            profile["emotion_strength"] = emotion_strength
 
         # Validate profile
         test_request = TTSRequest(
-            input="Test",
-            voice=voice,
-            speed=speed,
-            volume_multiplier=volume_multiplier
+            input="Test", voice=voice, speed=speed, volume_multiplier=volume_multiplier
         )
 
         if emotion:
@@ -629,19 +672,23 @@ class TTSSynthesizer:
         """Synthesize using a predefined profile"""
         request = TTSRequest(
             input=text,
-            voice=profile['voice'],
-            speed=profile.get('speed', 1.0),
-            volume_multiplier=profile.get('volume_multiplier', 1.0)
+            voice=profile["voice"],
+            speed=profile.get("speed", 1.0),
+            volume_multiplier=profile.get("volume_multiplier", 1.0),
         )
 
-        if 'emotion' in profile:
-            request.emotion = profile['emotion']
-            request.emotion_strength = profile.get('emotion_strength', 1.0)
+        if "emotion" in profile:
+            request.emotion = profile["emotion"]
+            request.emotion_strength = profile.get("emotion_strength", 1.0)
 
         return self.synthesize(request)
 
-    def batch_synthesize(self, texts: list[str], voice: str,
-                        progress_callback: Callable[[dict[str, Any]], None] | None = None) -> list[AudioSegment]:
+    def batch_synthesize(
+        self,
+        texts: list[str],
+        voice: str,
+        progress_callback: Callable[[dict[str, Any]], None] | None = None,
+    ) -> list[AudioSegment]:
         """Synthesize multiple texts in batch"""
         results = []
         total_texts = len(texts)
@@ -649,12 +696,14 @@ class TTSSynthesizer:
         for i, text in enumerate(texts):
             try:
                 if progress_callback:
-                    progress_callback({
-                        'stage': 'batch_synthesis',
-                        'progress': i / total_texts,
-                        'current_item': i + 1,
-                        'total_items': total_texts
-                    })
+                    progress_callback(
+                        {
+                            "stage": "batch_synthesis",
+                            "progress": i / total_texts,
+                            "current_item": i + 1,
+                            "total_items": total_texts,
+                        }
+                    )
 
                 audio = self.synthesize_simple(text, voice)
                 results.append(audio)
@@ -665,12 +714,14 @@ class TTSSynthesizer:
                 results.append(AudioSegment.silence(0.1))
 
         if progress_callback:
-            progress_callback({
-                'stage': 'batch_complete',
-                'progress': 1.0,
-                'total_items': total_texts,
-                'successful_items': len([r for r in results if r.duration > 0.1])
-            })
+            progress_callback(
+                {
+                    "stage": "batch_complete",
+                    "progress": 1.0,
+                    "total_items": total_texts,
+                    "successful_items": len([r for r in results if r.duration > 0.1]),
+                }
+            )
 
         return results
 
@@ -689,15 +740,15 @@ class TTSSynthesizer:
         cache_stats = self.engine.voice_manager.cache.get_cache_stats()
 
         return {
-            'voice_usage': voice_stats,
-            'cache_performance': {
-                'hit_rate': cache_stats['hit_rate'],
-                'total_hits': cache_stats['cache_hits'],
-                'total_misses': cache_stats['cache_misses']
+            "voice_usage": voice_stats,
+            "cache_performance": {
+                "hit_rate": cache_stats["hit_rate"],
+                "total_hits": cache_stats["cache_hits"],
+                "total_misses": cache_stats["cache_misses"],
             },
-            'system_health': {
-                'engine_loaded': self.engine.model_loaded,
-                'available_voices': len(self.get_available_voices()),
-                'cached_voices': cache_stats['cached_voices']
-            }
+            "system_health": {
+                "engine_loaded": self.engine.model_loaded,
+                "available_voices": len(self.get_available_voices()),
+                "cached_voices": cache_stats["cached_voices"],
+            },
         }

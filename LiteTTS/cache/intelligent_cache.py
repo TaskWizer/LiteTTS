@@ -23,21 +23,21 @@ class IntelligentCache:
 
         # Performance tracking
         self.performance_stats = {
-            'cache_hits': 0,
-            'cache_misses': 0,
-            'avg_hit_time': 0.0,
-            'avg_miss_time': 0.0,
-            'cache_size': 0,
-            'hit_rate': 0.0
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "avg_hit_time": 0.0,
+            "avg_miss_time": 0.0,
+            "cache_size": 0,
+            "hit_rate": 0.0,
         }
 
     def get_cache_key(self, text: str, voice: str, **kwargs) -> str:
         """Generate cache key for text and voice combination"""
         # Create deterministic hash from text, voice, and parameters
         cache_data = {
-            'text': text.strip().lower(),
-            'voice': voice,
-            'params': sorted(kwargs.items())
+            "text": text.strip().lower(),
+            "voice": voice,
+            "params": sorted(kwargs.items()),
         }
 
         cache_string = json.dumps(cache_data, sort_keys=True)
@@ -82,7 +82,7 @@ class IntelligentCache:
             self.access_times[cache_key] = time.time()
 
             # Update stats
-            self.performance_stats['cache_size'] = len(self.cache)
+            self.performance_stats["cache_size"] = len(self.cache)
 
     def _evict_lru(self):
         """Evict least recently used item"""
@@ -90,8 +90,7 @@ class IntelligentCache:
             return
 
         # Find LRU item
-        lru_key = min(self.access_times.keys(),
-                     key=lambda k: self.access_times[k])
+        lru_key = min(self.access_times.keys(), key=lambda k: self.access_times[k])
 
         # Remove from cache
         if lru_key in self.cache:
@@ -100,37 +99,31 @@ class IntelligentCache:
 
     def _update_hit_stats(self, hit_time: float):
         """Update cache hit statistics"""
-        self.performance_stats['cache_hits'] += 1
+        self.performance_stats["cache_hits"] += 1
 
         # Running average
-        hits = self.performance_stats['cache_hits']
-        current_avg = self.performance_stats['avg_hit_time']
-        self.performance_stats['avg_hit_time'] = (
-            (current_avg * (hits - 1) + hit_time) / hits
-        )
+        hits = self.performance_stats["cache_hits"]
+        current_avg = self.performance_stats["avg_hit_time"]
+        self.performance_stats["avg_hit_time"] = (current_avg * (hits - 1) + hit_time) / hits
 
         self._update_hit_rate()
 
     def _update_miss_stats(self, miss_time: float):
         """Update cache miss statistics"""
-        self.performance_stats['cache_misses'] += 1
+        self.performance_stats["cache_misses"] += 1
 
         # Running average
-        misses = self.performance_stats['cache_misses']
-        current_avg = self.performance_stats['avg_miss_time']
-        self.performance_stats['avg_miss_time'] = (
-            (current_avg * (misses - 1) + miss_time) / misses
-        )
+        misses = self.performance_stats["cache_misses"]
+        current_avg = self.performance_stats["avg_miss_time"]
+        self.performance_stats["avg_miss_time"] = (current_avg * (misses - 1) + miss_time) / misses
 
         self._update_hit_rate()
 
     def _update_hit_rate(self):
         """Update cache hit rate"""
-        total = self.performance_stats['cache_hits'] + self.performance_stats['cache_misses']
+        total = self.performance_stats["cache_hits"] + self.performance_stats["cache_misses"]
         if total > 0:
-            self.performance_stats['hit_rate'] = (
-                self.performance_stats['cache_hits'] / total
-            )
+            self.performance_stats["hit_rate"] = self.performance_stats["cache_hits"] / total
 
     def get_stats(self) -> dict[str, Any]:
         """Get cache performance statistics"""
@@ -142,10 +135,12 @@ class IntelligentCache:
         with self.lock:
             self.cache.clear()
             self.access_times.clear()
-            self.performance_stats['cache_size'] = 0
+            self.performance_stats["cache_size"] = 0
+
 
 # Global cache instance
 _intelligent_cache = IntelligentCache()
+
 
 def get_intelligent_cache():
     """Get the global intelligent cache instance"""

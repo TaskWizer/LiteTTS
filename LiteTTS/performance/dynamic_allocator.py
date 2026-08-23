@@ -16,9 +16,11 @@ from .cpu_optimizer import get_cpu_optimizer
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class DynamicAllocationConfig:
     """Configuration for dynamic CPU allocation"""
+
     enabled: bool = True
     min_cores: int = 1
     max_cores: int | None = None  # None = auto-detect (total_cores - 1)
@@ -26,6 +28,7 @@ class DynamicAllocationConfig:
     thermal_protection: bool = True
     onnx_integration: bool = True
     update_environment: bool = True
+
 
 class DynamicCPUAllocator:
     """Dynamic CPU core allocator that integrates with existing systems"""
@@ -42,11 +45,13 @@ class DynamicCPUAllocator:
         if self.config.max_cores is None:
             self.config.max_cores = max(1, total_cores - 1)
 
-        logger.info(f"🎯 Dynamic CPU Allocator initialized: "
-                   f"cores={self.config.min_cores}-{self.config.max_cores}, "
-                   f"aggressive={self.config.aggressive_mode}, "
-                   f"thermal_protection={self.config.thermal_protection}, "
-                   f"onnx_integration={self.config.onnx_integration}")
+        logger.info(
+            f"🎯 Dynamic CPU Allocator initialized: "
+            f"cores={self.config.min_cores}-{self.config.max_cores}, "
+            f"aggressive={self.config.aggressive_mode}, "
+            f"thermal_protection={self.config.thermal_protection}, "
+            f"onnx_integration={self.config.onnx_integration}"
+        )
 
         # Log aggressive mode configuration details
         if self.config.aggressive_mode:
@@ -67,14 +72,18 @@ class DynamicCPUAllocator:
         try:
             with self._lock:
                 # Validate allocation bounds
-                bounded_cores = max(self.config.min_cores,
-                                  min(self.config.max_cores, allocation.allocated_cores))
+                bounded_cores = max(
+                    self.config.min_cores, min(self.config.max_cores, allocation.allocated_cores)
+                )
 
                 if bounded_cores != allocation.allocated_cores:
-                    logger.info(f"Bounded core allocation: {allocation.allocated_cores} → {bounded_cores}")
+                    logger.info(
+                        f"Bounded core allocation: {allocation.allocated_cores} → {bounded_cores}"
+                    )
                     allocation.allocated_cores = bounded_cores
-                    allocation.inter_op_threads, allocation.intra_op_threads = \
+                    allocation.inter_op_threads, allocation.intra_op_threads = (
                         self.cpu_monitor.calculate_thread_allocation(bounded_cores)
+                    )
 
                 # Apply thermal protection if enabled
                 if self.config.thermal_protection:
@@ -83,10 +92,13 @@ class DynamicCPUAllocator:
                         # Reduce allocation under thermal stress
                         safe_cores = max(self.config.min_cores, bounded_cores // 2)
                         if safe_cores != bounded_cores:
-                            logger.warning(f"Thermal protection: reducing cores {bounded_cores} → {safe_cores}")
+                            logger.warning(
+                                f"Thermal protection: reducing cores {bounded_cores} → {safe_cores}"
+                            )
                             allocation.allocated_cores = safe_cores
-                            allocation.inter_op_threads, allocation.intra_op_threads = \
+                            allocation.inter_op_threads, allocation.intra_op_threads = (
                                 self.cpu_monitor.calculate_thread_allocation(safe_cores)
+                            )
 
                 # Update ONNX Runtime configuration if enabled
                 if self.config.onnx_integration:
@@ -96,11 +108,13 @@ class DynamicCPUAllocator:
                 if self.config.update_environment:
                     self._update_environment_variables(allocation)
 
-                logger.info(f"Applied dynamic CPU allocation: "
-                           f"cores={allocation.allocated_cores}, "
-                           f"inter_op={allocation.inter_op_threads}, "
-                           f"intra_op={allocation.intra_op_threads}, "
-                           f"reason={allocation.allocation_reason}")
+                logger.info(
+                    f"Applied dynamic CPU allocation: "
+                    f"cores={allocation.allocated_cores}, "
+                    f"inter_op={allocation.inter_op_threads}, "
+                    f"intra_op={allocation.intra_op_threads}, "
+                    f"reason={allocation.allocation_reason}"
+                )
 
         except Exception as e:
             logger.error(f"Failed to apply CPU allocation change: {e}")
@@ -113,7 +127,7 @@ class DynamicCPUAllocator:
             self._current_onnx_config = {
                 "inter_op_num_threads": allocation.inter_op_threads,
                 "intra_op_num_threads": allocation.intra_op_threads,
-                "allocated_cores": allocation.allocated_cores
+                "allocated_cores": allocation.allocated_cores,
             }
 
             logger.debug(f"Updated ONNX configuration: {self._current_onnx_config}")
@@ -141,10 +155,12 @@ class DynamicCPUAllocator:
                     "OMP_PROC_BIND": "spread",
                     "OMP_PLACES": "cores",
                     "KMP_AFFINITY": "granularity=fine,compact,1,0",
-                    "KMP_BLOCKTIME": "0"
+                    "KMP_BLOCKTIME": "0",
                 }
                 env_updates.update(aggressive_env_vars)
-                logger.info(f"⚡ Applied AGGRESSIVE mode environment variables: {list(aggressive_env_vars.keys())}")
+                logger.info(
+                    f"⚡ Applied AGGRESSIVE mode environment variables: {list(aggressive_env_vars.keys())}"
+                )
             else:
                 logger.info("🔒 Skipping aggressive environment variables (conservative mode)")
 
@@ -160,7 +176,7 @@ class DynamicCPUAllocator:
     def get_current_onnx_config(self) -> dict | None:
         """Get current ONNX configuration for new sessions"""
         with self._lock:
-            return getattr(self, '_current_onnx_config', None)
+            return getattr(self, "_current_onnx_config", None)
 
     def apply_to_onnx_session_options(self, session_options) -> bool:
         """Apply current allocation to ONNX session options"""
@@ -172,9 +188,11 @@ class DynamicCPUAllocator:
             session_options.inter_op_num_threads = config["inter_op_num_threads"]
             session_options.intra_op_num_threads = config["intra_op_num_threads"]
 
-            logger.debug(f"Applied dynamic allocation to ONNX session: "
-                        f"inter_op={config['inter_op_num_threads']}, "
-                        f"intra_op={config['intra_op_num_threads']}")
+            logger.debug(
+                f"Applied dynamic allocation to ONNX session: "
+                f"inter_op={config['inter_op_num_threads']}, "
+                f"intra_op={config['intra_op_num_threads']}"
+            )
             return True
 
         except Exception as e:
@@ -196,7 +214,7 @@ class DynamicCPUAllocator:
             "concurrent_requests": min(12, max(2, allocation.allocated_cores)),
             "allocated_cores": allocation.allocated_cores,
             "utilization_percent": allocation.utilization_percent,
-            "allocation_reason": allocation.allocation_reason
+            "allocation_reason": allocation.allocation_reason,
         }
 
     def get_allocation_stats(self) -> dict:
@@ -208,8 +226,8 @@ class DynamicCPUAllocator:
                 "max_cores": self.config.max_cores,
                 "aggressive_mode": self.config.aggressive_mode,
                 "thermal_protection": self.config.thermal_protection,
-                "onnx_integration": self.config.onnx_integration
-            }
+                "onnx_integration": self.config.onnx_integration,
+            },
         }
 
         if self.cpu_monitor:
@@ -239,7 +257,7 @@ class DynamicCPUAllocator:
             timestamp=time.time(),
             inter_op_threads=inter_op,
             intra_op_threads=intra_op,
-            allocation_reason=reason
+            allocation_reason=reason,
         )
 
         # Apply the allocation
@@ -252,8 +270,10 @@ class DynamicCPUAllocator:
             self.cpu_monitor.stop_monitoring()
         logger.info("Dynamic CPU allocator shutdown")
 
+
 # Global allocator instance
 _dynamic_allocator: DynamicCPUAllocator | None = None
+
 
 def get_dynamic_allocator(config: DynamicAllocationConfig | None = None) -> DynamicCPUAllocator:
     """Get or create global dynamic allocator instance"""
@@ -262,9 +282,9 @@ def get_dynamic_allocator(config: DynamicAllocationConfig | None = None) -> Dyna
         _dynamic_allocator = DynamicCPUAllocator(config)
     return _dynamic_allocator
 
+
 def initialize_dynamic_allocation(
-    allocation_config: DynamicAllocationConfig | None = None,
-    monitor_config: dict | None = None
+    allocation_config: DynamicAllocationConfig | None = None, monitor_config: dict | None = None
 ) -> DynamicCPUAllocator:
     """Initialize dynamic CPU allocation system"""
     allocator = get_dynamic_allocator(allocation_config)

@@ -28,4 +28,4 @@ class TestRetryManager:
 
     def test_retry_with_backoff_exists(self):
         """Test retry_with_backoff method exists"""
-        assert hasattr(RetryManager, 'retry_with_backoff')
+        assert hasattr(RetryManager, "retry_with_backoff")

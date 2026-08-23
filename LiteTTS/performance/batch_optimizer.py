@@ -15,9 +15,11 @@ import psutil
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class BatchRequest:
     """Individual request in a batch"""
+
     request_id: str
     text: str
     voice: str
@@ -27,9 +29,11 @@ class BatchRequest:
     priority: int = 0
     future: asyncio.Future | None = None
 
+
 @dataclass
 class BatchConfig:
     """Batch processing configuration"""
+
     # Text length categories for optimal batching
     short_text_threshold: int = 20
     medium_text_threshold: int = 100
@@ -58,9 +62,11 @@ class BatchConfig:
     tuning_interval: float = 30.0
     performance_window: int = 100
 
+
 @dataclass
 class BatchMetrics:
     """Batch processing performance metrics"""
+
     total_requests: int = 0
     batched_requests: int = 0
     batch_efficiency: float = 0.0
@@ -70,6 +76,7 @@ class BatchMetrics:
     memory_usage_mb: float = 0.0
     throughput_rps: float = 0.0
     cache_hit_rate: float = 0.0
+
 
 class DynamicBatchOptimizer:
     """
@@ -98,22 +105,24 @@ class DynamicBatchOptimizer:
         self.current_batch_sizes = {
             "short": self.config.short_text_batch_size,
             "medium": self.config.medium_text_batch_size,
-            "long": self.config.long_text_batch_size
+            "long": self.config.long_text_batch_size,
         }
 
         self.current_timeouts = {
             "short": self.config.short_text_timeout,
             "medium": self.config.medium_text_timeout,
-            "long": self.config.long_text_timeout
+            "long": self.config.long_text_timeout,
         }
 
         # Processing lock
         self.processing_lock = asyncio.Lock()
 
         logger.info("Dynamic Batch Optimizer initialized")
-        logger.info(f"Batch sizes: Short={self.current_batch_sizes['short']}, "
-                   f"Medium={self.current_batch_sizes['medium']}, "
-                   f"Long={self.current_batch_sizes['long']}")
+        logger.info(
+            f"Batch sizes: Short={self.current_batch_sizes['short']}, "
+            f"Medium={self.current_batch_sizes['medium']}, "
+            f"Long={self.current_batch_sizes['long']}"
+        )
 
     def categorize_request(self, text: str) -> str:
         """Categorize request by text length"""
@@ -217,7 +226,9 @@ class DynamicBatchOptimizer:
             # Check memory constraints
             current_memory = self._get_current_memory_usage()
             if current_memory > self.config.max_memory_mb:
-                logger.warning(f"Memory usage {current_memory:.1f}MB exceeds limit, processing smaller batches")
+                logger.warning(
+                    f"Memory usage {current_memory:.1f}MB exceeds limit, processing smaller batches"
+                )
                 # Split batch if memory is high
                 if len(batch) > 1:
                     mid = len(batch) // 2
@@ -258,7 +269,9 @@ class DynamicBatchOptimizer:
                 if not request.future.done():
                     request.future.set_exception(e)
 
-    async def _process_voice_batch(self, requests: list[BatchRequest], voice: str) -> dict[str, Any]:
+    async def _process_voice_batch(
+        self, requests: list[BatchRequest], voice: str
+    ) -> dict[str, Any]:
         """Process batch of requests for a specific voice"""
         # This would integrate with the actual TTS engine
         # For now, simulate batch processing
@@ -278,7 +291,7 @@ class DynamicBatchOptimizer:
                 "audio_data": f"audio_for_{request.request_id}",
                 "duration": len(request.text) * 0.05,  # 50ms per character
                 "voice": voice,
-                "batch_processed": True
+                "batch_processed": True,
             }
 
         return results
@@ -294,7 +307,7 @@ class DynamicBatchOptimizer:
                 "audio_data": f"audio_for_{request.request_id}",
                 "duration": len(request.text) * 0.05,
                 "voice": request.voice,
-                "batch_processed": False
+                "batch_processed": False,
             }
 
             request.future.set_result(result)
@@ -331,28 +344,30 @@ class DynamicBatchOptimizer:
         efficiency = len(batch) / max_batch_size
 
         # Update running averages
-        self.metrics.batch_efficiency = (self.metrics.batch_efficiency * 0.9 + efficiency * 0.1)
-        self.metrics.avg_batch_size = (self.metrics.avg_batch_size * 0.9 + len(batch) * 0.1)
+        self.metrics.batch_efficiency = self.metrics.batch_efficiency * 0.9 + efficiency * 0.1
+        self.metrics.avg_batch_size = self.metrics.avg_batch_size * 0.9 + len(batch) * 0.1
 
         # Calculate latency and RTF
         avg_text_length = sum(req.text_length for req in batch) / len(batch)
         latency_ms = processing_time * 1000
         rtf = processing_time / (avg_text_length * 0.05)  # Assuming 50ms per character audio
 
-        self.metrics.avg_latency_ms = (self.metrics.avg_latency_ms * 0.9 + latency_ms * 0.1)
-        self.metrics.avg_rtf = (self.metrics.avg_rtf * 0.9 + rtf * 0.1)
+        self.metrics.avg_latency_ms = self.metrics.avg_latency_ms * 0.9 + latency_ms * 0.1
+        self.metrics.avg_rtf = self.metrics.avg_rtf * 0.9 + rtf * 0.1
         self.metrics.memory_usage_mb = self._get_current_memory_usage()
 
         # Add to performance history
-        self.performance_history.append({
-            "timestamp": time.time(),
-            "category": category,
-            "batch_size": len(batch),
-            "processing_time": processing_time,
-            "latency_ms": latency_ms,
-            "rtf": rtf,
-            "efficiency": efficiency
-        })
+        self.performance_history.append(
+            {
+                "timestamp": time.time(),
+                "category": category,
+                "batch_size": len(batch),
+                "processing_time": processing_time,
+                "latency_ms": latency_ms,
+                "rtf": rtf,
+                "efficiency": efficiency,
+            }
+        )
 
     async def _auto_tune_parameters(self):
         """Auto-tune batch sizes and timeouts based on performance"""
@@ -390,7 +405,10 @@ class DynamicBatchOptimizer:
                 if avg_rtf < self.config.target_rtf * 0.8 and avg_efficiency > 0.8:
                     # Performance is good, can increase batch size
                     new_batch_size = min(current_batch_size + 1, current_batch_size * 2)
-                elif avg_rtf > self.config.target_rtf * 1.2 or avg_latency > self.config.max_latency_ms:
+                elif (
+                    avg_rtf > self.config.target_rtf * 1.2
+                    or avg_latency > self.config.max_latency_ms
+                ):
                     # Performance is poor, decrease batch size
                     new_batch_size = max(current_batch_size - 1, 1)
                 else:
@@ -398,7 +416,9 @@ class DynamicBatchOptimizer:
 
                 if new_batch_size != current_batch_size:
                     self.current_batch_sizes[category] = new_batch_size
-                    logger.info(f"Auto-tuned {category} batch size: {current_batch_size} → {new_batch_size}")
+                    logger.info(
+                        f"Auto-tuned {category} batch size: {current_batch_size} → {new_batch_size}"
+                    )
 
                 # Adjust timeout based on efficiency
                 current_timeout = self.current_timeouts[category]
@@ -413,7 +433,9 @@ class DynamicBatchOptimizer:
 
                 if abs(new_timeout - current_timeout) > 5.0:
                     self.current_timeouts[category] = new_timeout
-                    logger.info(f"Auto-tuned {category} timeout: {current_timeout:.1f}ms → {new_timeout:.1f}ms")
+                    logger.info(
+                        f"Auto-tuned {category} timeout: {current_timeout:.1f}ms → {new_timeout:.1f}ms"
+                    )
 
         except Exception as e:
             logger.warning(f"Auto-tuning failed: {e}")
@@ -428,17 +450,19 @@ class DynamicBatchOptimizer:
             "queue_lengths": {
                 "short": len(self.short_queue),
                 "medium": len(self.medium_queue),
-                "long": len(self.long_queue)
+                "long": len(self.long_queue),
             },
             "current_batch_sizes": self.current_batch_sizes.copy(),
             "current_timeouts": self.current_timeouts.copy(),
             "active_batches": len(self.active_batches),
             "metrics": self.metrics,
-            "memory_usage_mb": self._get_current_memory_usage()
+            "memory_usage_mb": self._get_current_memory_usage(),
         }
+
 
 # Global batch optimizer instance
 _global_batch_optimizer: DynamicBatchOptimizer | None = None
+
 
 def get_batch_optimizer() -> DynamicBatchOptimizer:
     """Get or create global batch optimizer instance"""

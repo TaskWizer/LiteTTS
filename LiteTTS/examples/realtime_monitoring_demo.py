@@ -19,17 +19,22 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class PerformanceAlert:
     """Performance alert data"""
+
     timestamp: datetime
     alert_type: str
     message: str
     severity: str
     metrics: dict[str, Any]
+
 
 class RealTimeMonitor:
     """Real-time performance monitoring system"""
@@ -44,7 +49,7 @@ class RealTimeMonitor:
             "memory_warning": 1500,  # MB
             "memory_critical": 2500,  # MB
             "processing_time_warning": 30,  # seconds
-            "processing_time_critical": 60   # seconds
+            "processing_time_critical": 60,  # seconds
         }
 
     def start_monitoring(self):
@@ -72,10 +77,7 @@ class RealTimeMonitor:
                 self._check_alerts(metrics)
 
                 # Store metrics
-                self.metrics_history.append({
-                    "timestamp": datetime.now(),
-                    "metrics": metrics
-                })
+                self.metrics_history.append({"timestamp": datetime.now(), "metrics": metrics})
 
                 # Limit history size
                 if len(self.metrics_history) > 1000:
@@ -97,7 +99,7 @@ class RealTimeMonitor:
             memory = psutil.virtual_memory()
 
             # Disk usage
-            disk = psutil.disk_usage('/')
+            disk = psutil.disk_usage("/")
 
             # Process-specific metrics
             process = psutil.Process()
@@ -109,7 +111,7 @@ class RealTimeMonitor:
                 "memory_available_gb": memory.available / 1024**3,
                 "disk_percent": disk.percent,
                 "process_memory_mb": process_memory,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
 
         except Exception as e:
@@ -126,43 +128,51 @@ class RealTimeMonitor:
         # Memory alerts
         process_memory = metrics.get("process_memory_mb", 0)
         if process_memory > self.alert_thresholds["memory_critical"]:
-            alerts.append(PerformanceAlert(
-                timestamp=datetime.now(),
-                alert_type="memory",
-                message=f"Critical memory usage: {process_memory:.1f}MB",
-                severity="critical",
-                metrics=metrics
-            ))
+            alerts.append(
+                PerformanceAlert(
+                    timestamp=datetime.now(),
+                    alert_type="memory",
+                    message=f"Critical memory usage: {process_memory:.1f}MB",
+                    severity="critical",
+                    metrics=metrics,
+                )
+            )
         elif process_memory > self.alert_thresholds["memory_warning"]:
-            alerts.append(PerformanceAlert(
-                timestamp=datetime.now(),
-                alert_type="memory",
-                message=f"High memory usage: {process_memory:.1f}MB",
-                severity="warning",
-                metrics=metrics
-            ))
+            alerts.append(
+                PerformanceAlert(
+                    timestamp=datetime.now(),
+                    alert_type="memory",
+                    message=f"High memory usage: {process_memory:.1f}MB",
+                    severity="warning",
+                    metrics=metrics,
+                )
+            )
 
         # CPU alerts
         cpu_percent = metrics.get("cpu_percent", 0)
         if cpu_percent > 90:
-            alerts.append(PerformanceAlert(
-                timestamp=datetime.now(),
-                alert_type="cpu",
-                message=f"High CPU usage: {cpu_percent:.1f}%",
-                severity="warning",
-                metrics=metrics
-            ))
+            alerts.append(
+                PerformanceAlert(
+                    timestamp=datetime.now(),
+                    alert_type="cpu",
+                    message=f"High CPU usage: {cpu_percent:.1f}%",
+                    severity="warning",
+                    metrics=metrics,
+                )
+            )
 
         # Disk alerts
         disk_percent = metrics.get("disk_percent", 0)
         if disk_percent > 90:
-            alerts.append(PerformanceAlert(
-                timestamp=datetime.now(),
-                alert_type="disk",
-                message=f"Low disk space: {disk_percent:.1f}% used",
-                severity="warning",
-                metrics=metrics
-            ))
+            alerts.append(
+                PerformanceAlert(
+                    timestamp=datetime.now(),
+                    alert_type="disk",
+                    message=f"Low disk space: {disk_percent:.1f}% used",
+                    severity="warning",
+                    metrics=metrics,
+                )
+            )
 
         # Log and store alerts
         for alert in alerts:
@@ -179,15 +189,18 @@ class RealTimeMonitor:
             return {"status": "no_data"}
 
         latest_metrics = self.metrics_history[-1]["metrics"]
-        recent_alerts = [a for a in self.alerts if (datetime.now() - a.timestamp).seconds < 300]  # Last 5 minutes
+        recent_alerts = [
+            a for a in self.alerts if (datetime.now() - a.timestamp).seconds < 300
+        ]  # Last 5 minutes
 
         return {
             "status": "monitoring" if self.monitoring else "stopped",
             "latest_metrics": latest_metrics,
             "recent_alerts": len(recent_alerts),
             "total_alerts": len(self.alerts),
-            "uptime_minutes": len(self.metrics_history) * 5 / 60  # Approximate
+            "uptime_minutes": len(self.metrics_history) * 5 / 60,  # Approximate
         }
+
 
 class FileSystemWatcher:
     """File system monitoring for voice files and audio processing"""
@@ -209,19 +222,21 @@ class FileSystemWatcher:
                     self.watcher = watcher
 
                 def on_created(self, event):
-                    if not event.is_directory and event.src_path.endswith(('.wav', '.mp3', '.bin')):
+                    if not event.is_directory and event.src_path.endswith((".wav", ".mp3", ".bin")):
                         self.watcher._handle_file_event("created", event.src_path)
 
                 def on_modified(self, event):
-                    if not event.is_directory and event.src_path.endswith(('.wav', '.mp3', '.bin')):
+                    if not event.is_directory and event.src_path.endswith((".wav", ".mp3", ".bin")):
                         self.watcher._handle_file_event("modified", event.src_path)
 
                 def on_deleted(self, event):
-                    if not event.is_directory and event.src_path.endswith(('.wav', '.mp3', '.bin')):
+                    if not event.is_directory and event.src_path.endswith((".wav", ".mp3", ".bin")):
                         self.watcher._handle_file_event("deleted", event.src_path)
 
             self.observer = Observer()
-            self.observer.schedule(VoiceFileHandler(self), str(self.watch_directory), recursive=True)
+            self.observer.schedule(
+                VoiceFileHandler(self), str(self.watch_directory), recursive=True
+            )
             self.observer.start()
             self.watching = True
 
@@ -234,7 +249,7 @@ class FileSystemWatcher:
 
     def stop_watching(self):
         """Stop file system monitoring"""
-        if hasattr(self, 'observer') and self.watching:
+        if hasattr(self, "observer") and self.watching:
             self.observer.stop()
             self.observer.join()
             self.watching = False
@@ -246,7 +261,7 @@ class FileSystemWatcher:
             "timestamp": datetime.now(),
             "event_type": event_type,
             "file_path": file_path,
-            "file_name": Path(file_path).name
+            "file_name": Path(file_path).name,
         }
 
         self.file_events.append(event)
@@ -255,6 +270,7 @@ class FileSystemWatcher:
         # Limit events history
         if len(self.file_events) > 100:
             self.file_events = self.file_events[-50:]
+
 
 def demo_performance_monitoring():
     """Demonstrate performance monitoring"""
@@ -285,10 +301,12 @@ def demo_performance_monitoring():
             # Get current status
             status = monitor.get_current_status()
 
-            logger.info(f"  Iteration {i+1}: Processing time {processing_time:.2f}s")
+            logger.info(f"  Iteration {i + 1}: Processing time {processing_time:.2f}s")
             if status.get("latest_metrics"):
                 metrics = status["latest_metrics"]
-                logger.info(f"    CPU: {metrics.get('cpu_percent', 0):.1f}%, Memory: {metrics.get('process_memory_mb', 0):.1f}MB")
+                logger.info(
+                    f"    CPU: {metrics.get('cpu_percent', 0):.1f}%, Memory: {metrics.get('process_memory_mb', 0):.1f}MB"
+                )
 
             # Clean up memory
             del data
@@ -310,6 +328,7 @@ def demo_performance_monitoring():
         logger.error(f"❌ Performance monitoring demo failed: {e}")
         monitor.stop_monitoring()
         return False
+
 
 def demo_filesystem_monitoring():
     """Demonstrate file system monitoring"""
@@ -334,14 +353,14 @@ def demo_filesystem_monitoring():
             test_files = []
             for i in range(3):
                 file_path = Path(temp_dir) / f"test_voice_{i}.wav"
-                with open(file_path, 'w') as f:
+                with open(file_path, "w") as f:
                     f.write(f"dummy audio data {i}")
                 test_files.append(file_path)
                 time.sleep(1)
 
             # Modify files
             for file_path in test_files:
-                with open(file_path, 'a') as f:
+                with open(file_path, "a") as f:
                     f.write(" - modified")
                 time.sleep(1)
 
@@ -353,7 +372,9 @@ def demo_filesystem_monitoring():
             # Show events
             logger.info("\nFile Events Summary:")
             for event in watcher.file_events:
-                logger.info(f"  {event['timestamp'].strftime('%H:%M:%S')} - {event['event_type']}: {event['file_name']}")
+                logger.info(
+                    f"  {event['timestamp'].strftime('%H:%M:%S')} - {event['event_type']}: {event['file_name']}"
+                )
         else:
             logger.warning("File system monitoring not available")
 
@@ -370,10 +391,12 @@ def demo_filesystem_monitoring():
     finally:
         # Cleanup
         import shutil
+
         try:
             shutil.rmtree(temp_dir)
         except:
             pass
+
 
 def demo_integrated_monitoring():
     """Demonstrate integrated monitoring with Whisper processing"""
@@ -389,10 +412,7 @@ def demo_integrated_monitoring():
         # Test Whisper processing with monitoring
         from backends.whisper_optimized import create_whisper_processor
 
-        processor = create_whisper_processor(
-            model_name="distil-small.en",
-            compute_type="int8"
-        )
+        processor = create_whisper_processor(model_name="distil-small.en", compute_type="int8")
 
         logger.info("Testing Whisper processing with real-time monitoring...")
 
@@ -400,6 +420,7 @@ def demo_integrated_monitoring():
         import tempfile
 
         import numpy as np
+
         try:
             import soundfile as sf
 
@@ -409,7 +430,7 @@ def demo_integrated_monitoring():
             t = np.linspace(0, duration, int(duration * sample_rate))
             audio = 0.5 * np.sin(2 * np.pi * 440 * t)
 
-            temp_file = tempfile.NamedTemporaryFile(suffix='.wav', delete=False)
+            temp_file = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
             sf.write(temp_file.name, audio.astype(np.float32), sample_rate)
 
             # Process with monitoring
@@ -448,6 +469,7 @@ def demo_integrated_monitoring():
         logger.error(f"❌ Integrated monitoring demo failed: {e}")
         monitor.stop_monitoring()
         return False
+
 
 def main():
     """Run all monitoring demos"""
@@ -498,6 +520,7 @@ def main():
         logger.warning(f"⚠️ {total - passed} demos failed. Check the logs above.")
 
     return passed == total
+
 
 if __name__ == "__main__":
     success = main()

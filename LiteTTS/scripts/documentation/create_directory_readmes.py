@@ -7,8 +7,9 @@ import logging
 from pathlib import Path
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 class DirectoryReadmeCreator:
     """Creates comprehensive README files for all directories"""
@@ -28,8 +29,8 @@ class DirectoryReadmeCreator:
                     "- **Text Processing** - NLP pipeline with pronunciation fixes",
                     "- **TTS Engine** - Core synthesis with ONNX runtime",
                     "- **Configuration** - Centralized configuration management",
-                    "- **Models** - Data structures and model definitions"
-                ]
+                    "- **Models** - Data structures and model definitions",
+                ],
             },
             "LiteTTS/audio": {
                 "title": "Audio Processing System",
@@ -40,8 +41,8 @@ class DirectoryReadmeCreator:
                     "- **AudioProcessor** - Main audio processing orchestrator",
                     "- **FormatConverter** - Multi-format audio conversion (WAV, MP3, OGG, FLAC)",
                     "- **AudioStreamer** - Chunked streaming for real-time playback",
-                    "- **TimeStretcher** - Beta time-stretching optimization feature"
-                ]
+                    "- **TimeStretcher** - Beta time-stretching optimization feature",
+                ],
             },
             "LiteTTS/voice": {
                 "title": "Voice Management System",
@@ -51,8 +52,8 @@ class DirectoryReadmeCreator:
                     "- **Dynamic Discovery** - Automatic voice detection and loading",
                     "- **Intelligent Caching** - Memory-efficient voice embedding cache",
                     "- **Voice Blending** - Mix multiple voices with custom weights",
-                    "- **Metadata Management** - Voice statistics and usage tracking"
-                ]
+                    "- **Metadata Management** - Voice statistics and usage tracking",
+                ],
             },
             "LiteTTS/nlp": {
                 "title": "Natural Language Processing Pipeline",
@@ -63,8 +64,8 @@ class DirectoryReadmeCreator:
                     "2. **Phonetic Processing** - RIME AI notation, IPA support",
                     "3. **Pronunciation Fixes** - Contractions, proper names, technical terms",
                     "4. **Prosody Analysis** - Emotion detection and intonation",
-                    "5. **Context Adaptation** - Homograph resolution and context awareness"
-                ]
+                    "5. **Context Adaptation** - Homograph resolution and context awareness",
+                ],
             },
             "LiteTTS/tts": {
                 "title": "TTS Synthesis Engine",
@@ -74,8 +75,8 @@ class DirectoryReadmeCreator:
                     "- **TTSSynthesizer** - Main synthesis orchestrator",
                     "- **KokoroTTSEngine** - ONNX-based TTS engine",
                     "- **ChunkProcessor** - Text chunking for long inputs",
-                    "- **EmotionController** - Emotion and style control"
-                ]
+                    "- **EmotionController** - Emotion and style control",
+                ],
             },
             "LiteTTS/config": {
                 "title": "Configuration Management",
@@ -85,8 +86,8 @@ class DirectoryReadmeCreator:
                     "- **config.json** - Main application configuration",
                     "- **pronunciation_*.json** - Pronunciation rules and overrides",
                     "- **tokenizer*.json** - Tokenizer configuration",
-                    "- **openapi.json** - API specification"
-                ]
+                    "- **openapi.json** - API specification",
+                ],
             },
             "LiteTTS/tests": {
                 "title": "Test Suite",
@@ -97,8 +98,8 @@ class DirectoryReadmeCreator:
                     "- **LiteTTS/scripts/** - Test and debug scripts",
                     "- **Integration Tests** - End-to-end API testing",
                     "- **Performance Tests** - RTF and latency benchmarks",
-                    "- **Pronunciation Tests** - Text processing validation"
-                ]
+                    "- **Pronunciation Tests** - Text processing validation",
+                ],
             },
             "examples": {
                 "title": "Usage Examples and Demos",
@@ -109,8 +110,8 @@ class DirectoryReadmeCreator:
                     "- **Audio Suite** - Comprehensive audio processing demos",
                     "- **Voice Chat** - Real-time voice chat integration",
                     "- **Sample Generator** - Batch voice sample generation",
-                    "- **Pronunciation Validator** - Text processing validation tool"
-                ]
+                    "- **Pronunciation Validator** - Text processing validation tool",
+                ],
             },
             "scripts": {
                 "title": "Utility Scripts",
@@ -120,8 +121,8 @@ class DirectoryReadmeCreator:
                     "- **Deployment** - Production deployment and setup",
                     "- **Performance** - Benchmarking and optimization",
                     "- **Maintenance** - System cleanup and organization",
-                    "- **Development** - Development utilities and helpers"
-                ]
+                    "- **Development** - Development utilities and helpers",
+                ],
             },
             "samples": {
                 "title": "Voice Samples and Audio Examples",
@@ -132,9 +133,9 @@ class DirectoryReadmeCreator:
                     "- **American Male (am_*)** - Various American male voices",
                     "- **British Female/Male (bf_*, bm_*)** - British accents",
                     "- **International (ef_*, em_*, etc.)** - Global voice collection",
-                    "- **Specialized** - Character and unique voices"
-                ]
-            }
+                    "- **Specialized** - Character and unique voices",
+                ],
+            },
         }
 
         logger.info("Directory README creator initialized")
@@ -177,7 +178,7 @@ class DirectoryReadmeCreator:
         content += f"{template['description']}\n\n"
 
         # Add template sections
-        for section in template['sections']:
+        for section in template["sections"]:
             content += f"{section}\n"
 
         content += "\n## Directory Contents\n\n"
@@ -185,7 +186,7 @@ class DirectoryReadmeCreator:
         # List actual files and directories
         items = []
         for item in sorted(directory.iterdir()):
-            if item.name.startswith('.') or item.name == 'README.md':
+            if item.name.startswith(".") or item.name == "README.md":
                 continue
 
             if item.is_file():
@@ -205,7 +206,7 @@ class DirectoryReadmeCreator:
         content += "- [🎵 Voice Samples](../samples/README.md)\n"
         content += "- [💡 Examples](../examples/README.md)\n"
 
-        with open(readme_path, 'w') as f:
+        with open(readme_path, "w") as f:
             f.write(content)
 
         logger.info(f"Created README for {dir_path}")
@@ -215,71 +216,71 @@ class DirectoryReadmeCreator:
         name = file_path.name.lower()
 
         descriptions = {
-            '__init__.py': 'Package initialization',
-            'app.py': 'Main application entry point',
-            'config.py': 'Configuration management',
-            'models.py': 'Data models and structures',
-            'processor.py': 'Main processing logic',
-            'engine.py': 'Core engine implementation',
-            'synthesizer.py': 'TTS synthesis orchestrator',
-            'manager.py': 'Resource management',
-            'controller.py': 'Control logic',
-            'server.py': 'Server implementation',
-            'client.py': 'Client implementation',
-            'utils.py': 'Utility functions',
-            'helpers.py': 'Helper functions',
-            'constants.py': 'Application constants',
-            'exceptions.py': 'Custom exceptions',
-            'validation.py': 'Input validation',
-            'logging_config.py': 'Logging configuration',
-            'startup.py': 'Application startup logic'
+            "__init__.py": "Package initialization",
+            "app.py": "Main application entry point",
+            "config.py": "Configuration management",
+            "models.py": "Data models and structures",
+            "processor.py": "Main processing logic",
+            "engine.py": "Core engine implementation",
+            "synthesizer.py": "TTS synthesis orchestrator",
+            "manager.py": "Resource management",
+            "controller.py": "Control logic",
+            "server.py": "Server implementation",
+            "client.py": "Client implementation",
+            "utils.py": "Utility functions",
+            "helpers.py": "Helper functions",
+            "constants.py": "Application constants",
+            "exceptions.py": "Custom exceptions",
+            "validation.py": "Input validation",
+            "logging_config.py": "Logging configuration",
+            "startup.py": "Application startup logic",
         }
 
         if name in descriptions:
             return descriptions[name]
-        elif name.endswith('.json'):
-            return 'JSON configuration file'
-        elif name.endswith('.py'):
-            return 'Python module'
-        elif name.endswith('.md'):
-            return 'Documentation file'
-        elif name.endswith('.yml') or name.endswith('.yaml'):
-            return 'YAML configuration'
-        elif name.endswith('.txt'):
-            return 'Text file'
+        elif name.endswith(".json"):
+            return "JSON configuration file"
+        elif name.endswith(".py"):
+            return "Python module"
+        elif name.endswith(".md"):
+            return "Documentation file"
+        elif name.endswith(".yml") or name.endswith(".yaml"):
+            return "YAML configuration"
+        elif name.endswith(".txt"):
+            return "Text file"
         else:
-            return 'Project file'
+            return "Project file"
 
     def _get_dir_description(self, dir_path: Path) -> str:
         """Get description for a directory based on its name"""
         name = dir_path.name.lower()
 
         descriptions = {
-            'audio': 'Audio processing components',
-            'voice': 'Voice management system',
-            'nlp': 'Natural language processing',
-            'tts': 'Text-to-speech engine',
-            'config': 'Configuration files',
-            'models': 'Data models and ML models',
-            'tests': 'Test suite',
-            'scripts': 'Utility scripts',
-            'examples': 'Usage examples',
-            'docs': 'Documentation',
-            'samples': 'Audio samples',
-            'cache': 'Cache storage',
-            'logs': 'Log files',
-            'temp': 'Temporary files',
-            'api': 'API components',
-            'utils': 'Utility modules',
-            'core': 'Core functionality',
-            'features': 'Feature implementations',
-            'monitoring': 'Monitoring and metrics',
-            'performance': 'Performance optimization',
-            'benchmarks': 'Benchmark code',
-            'root_tests': 'Root-level test files'
+            "audio": "Audio processing components",
+            "voice": "Voice management system",
+            "nlp": "Natural language processing",
+            "tts": "Text-to-speech engine",
+            "config": "Configuration files",
+            "models": "Data models and ML models",
+            "tests": "Test suite",
+            "scripts": "Utility scripts",
+            "examples": "Usage examples",
+            "docs": "Documentation",
+            "samples": "Audio samples",
+            "cache": "Cache storage",
+            "logs": "Log files",
+            "temp": "Temporary files",
+            "api": "API components",
+            "utils": "Utility modules",
+            "core": "Core functionality",
+            "features": "Feature implementations",
+            "monitoring": "Monitoring and metrics",
+            "performance": "Performance optimization",
+            "benchmarks": "Benchmark code",
+            "root_tests": "Root-level test files",
         }
 
-        return descriptions.get(name, 'Project directory')
+        return descriptions.get(name, "Project directory")
 
     def _create_contributions_file(self):
         """Create CONTRIBUTIONS.md file"""
@@ -386,7 +387,7 @@ By contributing, you agree that your contributions will be licensed under the MI
 Thank you for contributing! 🎉
 """
 
-        with open("CONTRIBUTIONS.md", 'w') as f:
+        with open("CONTRIBUTIONS.md", "w") as f:
             f.write(content)
 
         logger.info("Created CONTRIBUTIONS.md")
@@ -416,7 +417,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-        with open("LICENSE", 'w') as f:
+        with open("LICENSE", "w") as f:
             f.write(content)
 
         logger.info("Created LICENSE file")
@@ -427,7 +428,7 @@ SOFTWARE.
 
         if changelog_path.exists():
             # Read existing changelog
-            with open(changelog_path, 'r') as f:
+            with open(changelog_path, "r") as f:
                 existing_content = f.read()
         else:
             existing_content = "# Changelog\n\nAll notable changes to this project will be documented in this file.\n\n"
@@ -466,15 +467,16 @@ SOFTWARE.
 """
 
         # Insert new entry after the header
-        lines = existing_content.split('\n')
+        lines = existing_content.split("\n")
         header_end = 2  # After "# Changelog" and description
 
-        new_lines = lines[:header_end] + new_entry.split('\n') + lines[header_end:]
+        new_lines = lines[:header_end] + new_entry.split("\n") + lines[header_end:]
 
-        with open(changelog_path, 'w') as f:
-            f.write('\n'.join(new_lines))
+        with open(changelog_path, "w") as f:
+            f.write("\n".join(new_lines))
 
         logger.info("Updated CHANGELOG.md")
+
 
 def main():
     """Main execution"""
@@ -498,6 +500,7 @@ def main():
         return False
 
     return True
+
 
 if __name__ == "__main__":
     success = main()

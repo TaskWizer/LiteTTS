@@ -18,11 +18,7 @@ class TestCPUThresholds:
 
     def test_creation_custom(self):
         """Test creating CPU thresholds with custom values"""
-        thresholds = CPUThresholds(
-            cpu_target=80.0,
-            hysteresis_factor=0.5,
-            monitoring_interval=2.0
-        )
+        thresholds = CPUThresholds(cpu_target=80.0, hysteresis_factor=0.5, monitoring_interval=2.0)
         assert thresholds.cpu_target == 80.0
         assert thresholds.hysteresis_factor == 0.5
 
@@ -39,7 +35,7 @@ class TestCPUAllocation:
             timestamp=1234567890.0,
             inter_op_threads=2,
             intra_op_threads=2,
-            allocation_reason="test"
+            allocation_reason="test",
         )
         assert allocation.total_cores == 8
         assert allocation.allocated_cores == 4

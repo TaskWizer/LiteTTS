@@ -16,19 +16,22 @@ from .parser import BackgroundConfig, BackgroundType
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class NoiseParameters:
     """Parameters for procedural noise generation"""
+
     frequency_range: tuple  # (min_freq, max_freq) in Hz
     amplitude_variation: float  # 0.0 to 1.0
     spectral_shape: str  # 'white', 'pink', 'brown'
     modulation_freq: float | None = None  # For amplitude modulation
     filter_cutoff: float | None = None  # Low-pass filter cutoff
 
+
 class BackgroundGenerator:
     """
     Generates background ambient sounds for TTS enhancement
-    
+
     Supports both procedural generation and custom audio file loading.
     """
 
@@ -40,63 +43,57 @@ class BackgroundGenerator:
             BackgroundType.COFFEE_SHOP: NoiseParameters(
                 frequency_range=(100, 4000),
                 amplitude_variation=0.3,
-                spectral_shape='pink',
+                spectral_shape="pink",
                 modulation_freq=0.1,
-                filter_cutoff=3000
+                filter_cutoff=3000,
             ),
             BackgroundType.OFFICE: NoiseParameters(
                 frequency_range=(200, 2000),
                 amplitude_variation=0.2,
-                spectral_shape='pink',
+                spectral_shape="pink",
                 modulation_freq=0.05,
-                filter_cutoff=1500
+                filter_cutoff=1500,
             ),
             BackgroundType.NATURE: NoiseParameters(
                 frequency_range=(50, 8000),
                 amplitude_variation=0.4,
-                spectral_shape='pink',
+                spectral_shape="pink",
                 modulation_freq=0.2,
-                filter_cutoff=6000
+                filter_cutoff=6000,
             ),
             BackgroundType.RAIN: NoiseParameters(
                 frequency_range=(1000, 12000),
                 amplitude_variation=0.5,
-                spectral_shape='white',
+                spectral_shape="white",
                 modulation_freq=0.3,
-                filter_cutoff=8000
+                filter_cutoff=8000,
             ),
             BackgroundType.WIND: NoiseParameters(
                 frequency_range=(20, 2000),
                 amplitude_variation=0.6,
-                spectral_shape='brown',
+                spectral_shape="brown",
                 modulation_freq=0.15,
-                filter_cutoff=1000
+                filter_cutoff=1000,
             ),
             BackgroundType.WHITE_NOISE: NoiseParameters(
-                frequency_range=(20, 20000),
-                amplitude_variation=0.1,
-                spectral_shape='white'
+                frequency_range=(20, 20000), amplitude_variation=0.1, spectral_shape="white"
             ),
             BackgroundType.PINK_NOISE: NoiseParameters(
-                frequency_range=(20, 20000),
-                amplitude_variation=0.1,
-                spectral_shape='pink'
+                frequency_range=(20, 20000), amplitude_variation=0.1, spectral_shape="pink"
             ),
             BackgroundType.BROWN_NOISE: NoiseParameters(
-                frequency_range=(20, 20000),
-                amplitude_variation=0.1,
-                spectral_shape='brown'
-            )
+                frequency_range=(20, 20000), amplitude_variation=0.1, spectral_shape="brown"
+            ),
         }
 
     def generate_background(self, config: BackgroundConfig, duration: float) -> AudioSegment:
         """
         Generate background audio based on configuration
-        
+
         Args:
             config: Background configuration
             duration: Duration in seconds
-            
+
         Returns:
             AudioSegment with background audio
         """
@@ -111,7 +108,9 @@ class BackgroundGenerator:
             # Return silence as fallback
             return self._generate_silence(duration)
 
-    def _generate_procedural_background(self, config: BackgroundConfig, duration: float) -> AudioSegment:
+    def _generate_procedural_background(
+        self, config: BackgroundConfig, duration: float
+    ) -> AudioSegment:
         """Generate procedural background noise"""
 
         if config.type not in self.noise_profiles:
@@ -124,11 +123,11 @@ class BackgroundGenerator:
         num_samples = int(duration * self.sample_rate)
 
         # Generate base noise
-        if profile.spectral_shape == 'white':
+        if profile.spectral_shape == "white":
             noise = self._generate_white_noise(num_samples)
-        elif profile.spectral_shape == 'pink':
+        elif profile.spectral_shape == "pink":
             noise = self._generate_pink_noise(num_samples)
-        elif profile.spectral_shape == 'brown':
+        elif profile.spectral_shape == "brown":
             noise = self._generate_brown_noise(num_samples)
         else:
             noise = self._generate_white_noise(num_samples)
@@ -152,11 +151,7 @@ class BackgroundGenerator:
         # Apply fade in/out
         noise = self._apply_fades(noise, config.fade_in, config.fade_out)
 
-        return AudioSegment(
-            audio_data=noise,
-            sample_rate=self.sample_rate,
-            format="wav"
-        )
+        return AudioSegment(audio_data=noise, sample_rate=self.sample_rate, format="wav")
 
     def _generate_white_noise(self, num_samples: int) -> np.ndarray:
         """Generate white noise"""
@@ -169,7 +164,7 @@ class BackgroundGenerator:
 
         # Apply 1/f filter in frequency domain
         fft = np.fft.fft(white)
-        freqs = np.fft.fftfreq(num_samples, 1/self.sample_rate)
+        freqs = np.fft.fftfreq(num_samples, 1 / self.sample_rate)
 
         # Avoid division by zero
         freqs[0] = 1
@@ -193,7 +188,7 @@ class BackgroundGenerator:
 
         # Apply 1/f² filter in frequency domain
         fft = np.fft.fft(white)
-        freqs = np.fft.fftfreq(num_samples, 1/self.sample_rate)
+        freqs = np.fft.fftfreq(num_samples, 1 / self.sample_rate)
 
         # Avoid division by zero
         freqs[0] = 1
@@ -219,17 +214,21 @@ class BackgroundGenerator:
         filtered[0] = audio[0]
 
         for i in range(1, len(audio)):
-            filtered[i] = alpha * audio[i] + (1 - alpha) * filtered[i-1]
+            filtered[i] = alpha * audio[i] + (1 - alpha) * filtered[i - 1]
 
         return filtered
 
-    def _apply_amplitude_modulation(self, audio: np.ndarray, mod_freq: float, depth: float) -> np.ndarray:
+    def _apply_amplitude_modulation(
+        self, audio: np.ndarray, mod_freq: float, depth: float
+    ) -> np.ndarray:
         """Apply amplitude modulation for natural variation"""
         t = np.arange(len(audio)) / self.sample_rate
         modulation = 1 + depth * np.sin(2 * np.pi * mod_freq * t)
         return audio * modulation
 
-    def _add_environment_characteristics(self, noise: np.ndarray, bg_type: BackgroundType) -> np.ndarray:
+    def _add_environment_characteristics(
+        self, noise: np.ndarray, bg_type: BackgroundType
+    ) -> np.ndarray:
         """Add environment-specific characteristics"""
 
         if bg_type == BackgroundType.COFFEE_SHOP:
@@ -252,14 +251,16 @@ class BackgroundGenerator:
 
         return noise
 
-    def _add_occasional_impulses(self, noise: np.ndarray, rate: float, amplitude: float) -> np.ndarray:
+    def _add_occasional_impulses(
+        self, noise: np.ndarray, rate: float, amplitude: float
+    ) -> np.ndarray:
         """Add occasional impulse sounds"""
         num_impulses = int(len(noise) / self.sample_rate * rate)
 
         for _ in range(num_impulses):
             pos = np.random.randint(0, len(noise) - 100)
             impulse = amplitude * np.exp(-np.arange(100) / 20) * np.random.normal(0, 1, 100)
-            noise[pos:pos+100] += impulse
+            noise[pos : pos + 100] += impulse
 
         return noise
 
@@ -306,8 +307,7 @@ class BackgroundGenerator:
             # For now, return procedural nature sound as fallback
             logger.warning("Custom background files not yet implemented, using nature sound")
             return self._generate_procedural_background(
-                BackgroundConfig(type=BackgroundType.NATURE, volume=config.volume),
-                duration
+                BackgroundConfig(type=BackgroundType.NATURE, volume=config.volume), duration
             )
         except Exception as e:
             logger.error(f"Failed to load custom background: {e}")
@@ -318,8 +318,4 @@ class BackgroundGenerator:
         num_samples = int(duration * self.sample_rate)
         silence = np.zeros(num_samples, dtype=np.float32)
 
-        return AudioSegment(
-            audio_data=silence,
-            sample_rate=self.sample_rate,
-            format="wav"
-        )
+        return AudioSegment(audio_data=silence, sample_rate=self.sample_rate, format="wav")

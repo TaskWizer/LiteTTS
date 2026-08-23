@@ -13,7 +13,7 @@ try:
     from LiteTTS.utils.platform_emojis import EMOJIS, format_log_message, get_emoji
 except ImportError:
     # Fallback if the utility module is not available
-    def get_emoji(name: str, fallback: str = '[?]') -> str:
+    def get_emoji(name: str, fallback: str = "[?]") -> str:
         return fallback
 
     def format_log_message(emoji_name: str, message: str) -> str:
@@ -21,19 +21,27 @@ except ImportError:
 
     EMOJIS = {}
 
+
 class PerformanceFilter(logging.Filter):
     """Filter for performance-related log messages"""
+
     def filter(self, record):
         message = record.getMessage()
-        return ('RTF:' in message or 'Performance:' in message or
-                'performance' in message.lower() or hasattr(record, 'performance'))
+        return (
+            "RTF:" in message
+            or "Performance:" in message
+            or "performance" in message.lower()
+            or hasattr(record, "performance")
+        )
+
 
 class CacheFilter(logging.Filter):
     """Filter for cache-related log messages"""
+
     def filter(self, record):
         message = record.getMessage()
-        return ('cache' in message.lower() or 'Cache' in message or
-                hasattr(record, 'cache_stats'))
+        return "cache" in message.lower() or "Cache" in message or hasattr(record, "cache_stats")
+
 
 def setup_logging(
     level: str = "INFO",
@@ -42,11 +50,11 @@ def setup_logging(
     max_file_size: int = 10 * 1024 * 1024,  # 10MB
     backup_count: int = 5,
     json_format: bool = False,
-    include_trace_id: bool = True
+    include_trace_id: bool = True,
 ) -> None:
     """
     Set up structured logging for the application with enhanced features
-    
+
     Args:
         level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
         format_string: Custom format string for log messages
@@ -80,6 +88,7 @@ def setup_logging(
     # Console handler with enhanced formatting and Windows encoding support
     # Configure console output stream with proper encoding for Windows
     import platform
+
     if platform.system() == "Windows":
         # Try to configure console for UTF-8 output on Windows
         try:
@@ -91,10 +100,10 @@ def setup_logging(
             console_encoding = sys.stdout.encoding or locale.getpreferredencoding()
 
             # If we're using a problematic encoding, try to use UTF-8 with error handling
-            if console_encoding.lower() in ['cp1252', 'windows-1252']:
+            if console_encoding.lower() in ["cp1252", "windows-1252"]:
                 # Create a UTF-8 writer with error handling for Windows console
-                sys.stdout = codecs.getwriter('utf-8')(sys.stdout.detach(), errors='replace')
-                sys.stderr = codecs.getwriter('utf-8')(sys.stderr.detach(), errors='replace')
+                sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach(), errors="replace")
+                sys.stderr = codecs.getwriter("utf-8")(sys.stderr.detach(), errors="replace")
         except (AttributeError, OSError, ImportError):
             # If reconfiguration fails, we'll rely on the emoji fallback system
             pass
@@ -112,8 +121,8 @@ def setup_logging(
     main_log_path = log_dir / "kokoro_tts.log"
     main_handler = logging.handlers.RotatingFileHandler(
         main_log_path,
-        maxBytes=50*1024*1024,  # 50MB
-        backupCount=10
+        maxBytes=50 * 1024 * 1024,  # 50MB
+        backupCount=10,
     )
     main_handler.setFormatter(logging.Formatter(format_string))
     main_handler.setLevel(getattr(logging, level.upper()))
@@ -123,8 +132,8 @@ def setup_logging(
     performance_log_path = log_dir / "performance.log"
     performance_handler = logging.handlers.RotatingFileHandler(
         performance_log_path,
-        maxBytes=20*1024*1024,  # 20MB
-        backupCount=5
+        maxBytes=20 * 1024 * 1024,  # 20MB
+        backupCount=5,
     )
     performance_handler.setFormatter(logging.Formatter(format_string))
     performance_handler.setLevel(logging.INFO)
@@ -135,8 +144,8 @@ def setup_logging(
     cache_log_path = log_dir / "cache.log"
     cache_handler = logging.handlers.RotatingFileHandler(
         cache_log_path,
-        maxBytes=10*1024*1024,  # 10MB
-        backupCount=3
+        maxBytes=10 * 1024 * 1024,  # 10MB
+        backupCount=3,
     )
     cache_handler.setFormatter(logging.Formatter(format_string))
     cache_handler.setLevel(logging.INFO)
@@ -147,8 +156,8 @@ def setup_logging(
     error_log_path = log_dir / "errors.log"
     error_handler = logging.handlers.RotatingFileHandler(
         error_log_path,
-        maxBytes=20*1024*1024,  # 20MB
-        backupCount=5
+        maxBytes=20 * 1024 * 1024,  # 20MB
+        backupCount=5,
     )
     error_handler.setFormatter(logging.Formatter(format_string))
     error_handler.setLevel(logging.WARNING)
@@ -158,8 +167,8 @@ def setup_logging(
     json_log_path = log_dir / "structured.jsonl"
     json_handler = logging.handlers.RotatingFileHandler(
         json_log_path,
-        maxBytes=30*1024*1024,  # 30MB
-        backupCount=5
+        maxBytes=30 * 1024 * 1024,  # 30MB
+        backupCount=5,
     )
     json_handler.setFormatter(JSONFormatter())
     json_handler.setLevel(logging.INFO)
@@ -174,9 +183,7 @@ def setup_logging(
         file_formatter = JSONFormatter() if json_format else logging.Formatter(format_string)
 
         file_handler = logging.handlers.RotatingFileHandler(
-            file_path,
-            maxBytes=max_file_size,
-            backupCount=backup_count
+            file_path, maxBytes=max_file_size, backupCount=backup_count
         )
         file_handler.setFormatter(file_formatter)
         file_handler.setLevel(getattr(logging, level.upper()))
@@ -191,12 +198,14 @@ def setup_logging(
 
     # Log setup completion
     logger = logging.getLogger("kokoro.logging")
-    logger.info(format_log_message('clipboard', 'Comprehensive logging system initialized'))
-    logger.info(format_log_message('folder', f'Log directory: {log_dir.absolute()}'))
-    logger.info(format_log_message('chart', f'Log level: {level}'))
-    logger.info(format_log_message('memo', 'Log files: main, performance, cache, errors, structured'))
+    logger.info(format_log_message("clipboard", "Comprehensive logging system initialized"))
+    logger.info(format_log_message("folder", f"Log directory: {log_dir.absolute()}"))
+    logger.info(format_log_message("chart", f"Log level: {level}"))
+    logger.info(
+        format_log_message("memo", "Log files: main, performance, cache, errors, structured")
+    )
     if file_path:
-        logger.info(format_log_message('page', f'Custom log file: {file_path}'))
+        logger.info(format_log_message("page", f"Custom log file: {file_path}"))
 
 
 class ColoredFormatter(logging.Formatter):
@@ -204,18 +213,20 @@ class ColoredFormatter(logging.Formatter):
 
     # Color codes
     COLORS = {
-        'DEBUG': '\033[36m',     # Cyan
-        'INFO': '\033[32m',      # Green
-        'WARNING': '\033[33m',   # Yellow
-        'ERROR': '\033[31m',     # Red
-        'CRITICAL': '\033[35m',  # Magenta
-        'RESET': '\033[0m'       # Reset
+        "DEBUG": "\033[36m",  # Cyan
+        "INFO": "\033[32m",  # Green
+        "WARNING": "\033[33m",  # Yellow
+        "ERROR": "\033[31m",  # Red
+        "CRITICAL": "\033[35m",  # Magenta
+        "RESET": "\033[0m",  # Reset
     }
 
     def format(self, record):
         # Add color to level name
         if record.levelname in self.COLORS:
-            record.levelname = f"{self.COLORS[record.levelname]}{record.levelname}{self.COLORS['RESET']}"
+            record.levelname = (
+                f"{self.COLORS[record.levelname]}{record.levelname}{self.COLORS['RESET']}"
+            )
 
         return super().format(record)
 
@@ -234,7 +245,7 @@ class JSONFormatter(logging.Formatter):
             "message": record.getMessage(),
             "module": record.module,
             "function": record.funcName,
-            "line": record.lineno
+            "line": record.lineno,
         }
 
         # Add exception info if present
@@ -243,13 +254,33 @@ class JSONFormatter(logging.Formatter):
 
         # Add extra fields
         for key, value in record.__dict__.items():
-            if key not in ['name', 'msg', 'args', 'levelname', 'levelno', 'pathname',
-                          'filename', 'module', 'lineno', 'funcName', 'created',
-                          'msecs', 'relativeCreated', 'thread', 'threadName',
-                          'processName', 'process', 'getMessage', 'exc_info', 'exc_text', 'stack_info']:
+            if key not in [
+                "name",
+                "msg",
+                "args",
+                "levelname",
+                "levelno",
+                "pathname",
+                "filename",
+                "module",
+                "lineno",
+                "funcName",
+                "created",
+                "msecs",
+                "relativeCreated",
+                "thread",
+                "threadName",
+                "processName",
+                "process",
+                "getMessage",
+                "exc_info",
+                "exc_text",
+                "stack_info",
+            ]:
                 log_entry[key] = value
 
         return json.dumps(log_entry)
+
 
 class RequestLogger:
     """Enhanced context manager for request-specific logging with metrics"""
@@ -263,41 +294,68 @@ class RequestLogger:
 
     def __enter__(self):
         import time
+
         self.start_time = time.time()
         context_str = f" | Context: {self.context}" if self.context else ""
-        self.logger.info(format_log_message('rocket', f'Request {self.request_id} started{context_str}'),
-                        extra={"request_id": self.request_id, "event": "request_start", **self.context})
+        self.logger.info(
+            format_log_message("rocket", f"Request {self.request_id} started{context_str}"),
+            extra={"request_id": self.request_id, "event": "request_start", **self.context},
+        )
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         import time
+
         duration = time.time() - self.start_time if self.start_time else 0
         self.metrics["duration"] = duration
 
         if exc_type is None:
-            self.logger.info(format_log_message('check', f'Request {self.request_id} completed in {duration:.3f}s'),
-                           extra={"request_id": self.request_id, "event": "request_complete",
-                                 "duration": duration, "metrics": self.metrics, **self.context})
+            self.logger.info(
+                format_log_message(
+                    "check", f"Request {self.request_id} completed in {duration:.3f}s"
+                ),
+                extra={
+                    "request_id": self.request_id,
+                    "event": "request_complete",
+                    "duration": duration,
+                    "metrics": self.metrics,
+                    **self.context,
+                },
+            )
         else:
-            self.logger.error(format_log_message('cross', f'Request {self.request_id} failed in {duration:.3f}s: {exc_val}'),
-                            extra={"request_id": self.request_id, "event": "request_error",
-                                  "duration": duration, "error": str(exc_val), "metrics": self.metrics, **self.context})
+            self.logger.error(
+                format_log_message(
+                    "cross", f"Request {self.request_id} failed in {duration:.3f}s: {exc_val}"
+                ),
+                extra={
+                    "request_id": self.request_id,
+                    "event": "request_error",
+                    "duration": duration,
+                    "error": str(exc_val),
+                    "metrics": self.metrics,
+                    **self.context,
+                },
+            )
 
     def info(self, message: str, **kwargs):
-        self.logger.info(f"[{self.request_id}] {message}",
-                        extra={"request_id": self.request_id, **kwargs})
+        self.logger.info(
+            f"[{self.request_id}] {message}", extra={"request_id": self.request_id, **kwargs}
+        )
 
     def error(self, message: str, **kwargs):
-        self.logger.error(f"[{self.request_id}] {message}",
-                         extra={"request_id": self.request_id, **kwargs})
+        self.logger.error(
+            f"[{self.request_id}] {message}", extra={"request_id": self.request_id, **kwargs}
+        )
 
     def warning(self, message: str, **kwargs):
-        self.logger.warning(f"[{self.request_id}] {message}",
-                           extra={"request_id": self.request_id, **kwargs})
+        self.logger.warning(
+            f"[{self.request_id}] {message}", extra={"request_id": self.request_id, **kwargs}
+        )
 
     def debug(self, message: str, **kwargs):
-        self.logger.debug(f"[{self.request_id}] {message}",
-                         extra={"request_id": self.request_id, **kwargs})
+        self.logger.debug(
+            f"[{self.request_id}] {message}", extra={"request_id": self.request_id, **kwargs}
+        )
 
     def add_metric(self, key: str, value: any):
         """Add a metric to be logged with the request"""
@@ -308,8 +366,9 @@ class RequestLogger:
         self.context[key] = value
 
 
-def get_request_logger(request_id: str, logger_name: str = "kokoro.request",
-                      extra_context: dict | None = None) -> RequestLogger:
+def get_request_logger(
+    request_id: str, logger_name: str = "kokoro.request", extra_context: dict | None = None
+) -> RequestLogger:
     """Get a request-specific logger with optional context"""
     logger = logging.getLogger(logger_name)
     return RequestLogger(request_id, logger, extra_context)
@@ -342,6 +401,7 @@ def log_system_info():
     # Check for CUDA availability
     try:
         import torch
+
         cuda_available = torch.cuda.is_available()
         logger.info(f"  CUDA Available: {cuda_available}")
         if cuda_available:

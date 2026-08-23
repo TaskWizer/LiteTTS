@@ -22,9 +22,11 @@ from watchdog.observers import Observer
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class VoiceFileInfo:
     """Information about a voice file"""
+
     name: str
     file_path: str
     file_size: int
@@ -38,9 +40,11 @@ class VoiceFileInfo:
     usage_count: int = 0
     last_used: datetime | None = None
 
+
 @dataclass
 class VoiceSearchFilter:
     """Search and filter criteria for voices"""
+
     name_pattern: str | None = None
     tags: list[str] = field(default_factory=list)
     min_quality: float = 0.0
@@ -49,14 +53,15 @@ class VoiceSearchFilter:
     created_after: datetime | None = None
     created_before: datetime | None = None
     min_size_mb: float = 0.0
-    max_size_mb: float = float('inf')
+    max_size_mb: float = float("inf")
     sort_by: str = "name"  # "name", "created_at", "quality", "usage_count"
     sort_order: str = "asc"  # "asc", "desc"
+
 
 class VoiceFileWatcher(FileSystemEventHandler):
     """File system event handler for voice directory monitoring"""
 
-    def __init__(self, voice_manager: 'VoiceFileSystemManager'):
+    def __init__(self, voice_manager: "VoiceFileSystemManager"):
         self.voice_manager = voice_manager
         self.debounce_time = 1.0  # Debounce events for 1 second
         self.pending_events = {}
@@ -65,29 +70,29 @@ class VoiceFileWatcher(FileSystemEventHandler):
     def on_created(self, event):
         """Handle file creation events"""
         if not event.is_directory and self._is_voice_file(event.src_path):
-            self._debounce_event('created', event.src_path)
+            self._debounce_event("created", event.src_path)
 
     def on_deleted(self, event):
         """Handle file deletion events"""
         if not event.is_directory and self._is_voice_file(event.src_path):
-            self._debounce_event('deleted', event.src_path)
+            self._debounce_event("deleted", event.src_path)
 
     def on_modified(self, event):
         """Handle file modification events"""
         if not event.is_directory and self._is_voice_file(event.src_path):
-            self._debounce_event('modified', event.src_path)
+            self._debounce_event("modified", event.src_path)
 
     def on_moved(self, event):
         """Handle file move/rename events"""
         if not event.is_directory:
             if self._is_voice_file(event.src_path):
-                self._debounce_event('deleted', event.src_path)
+                self._debounce_event("deleted", event.src_path)
             if self._is_voice_file(event.dest_path):
-                self._debounce_event('created', event.dest_path)
+                self._debounce_event("created", event.dest_path)
 
     def _is_voice_file(self, file_path: str) -> bool:
         """Check if file is a voice file"""
-        return Path(file_path).suffix.lower() in ['.bin', '.npz']
+        return Path(file_path).suffix.lower() in [".bin", ".npz"]
 
     def _debounce_event(self, event_type: str, file_path: str):
         """Debounce file system events to avoid duplicate processing"""
@@ -100,9 +105,7 @@ class VoiceFileWatcher(FileSystemEventHandler):
 
             # Create new timer
             timer = threading.Timer(
-                self.debounce_time,
-                self._process_event,
-                args=[event_type, file_path]
+                self.debounce_time, self._process_event, args=[event_type, file_path]
             )
             self.pending_events[key] = timer
             timer.start()
@@ -110,11 +113,11 @@ class VoiceFileWatcher(FileSystemEventHandler):
     def _process_event(self, event_type: str, file_path: str):
         """Process debounced file system event"""
         try:
-            if event_type == 'created':
+            if event_type == "created":
                 self.voice_manager._handle_file_created(file_path)
-            elif event_type == 'deleted':
+            elif event_type == "deleted":
                 self.voice_manager._handle_file_deleted(file_path)
-            elif event_type == 'modified':
+            elif event_type == "modified":
                 self.voice_manager._handle_file_modified(file_path)
 
             # Remove from pending events
@@ -124,6 +127,7 @@ class VoiceFileWatcher(FileSystemEventHandler):
 
         except Exception as e:
             logger.error(f"Error processing file system event {event_type} for {file_path}: {e}")
+
 
 class VoiceDatabase:
     """SQLite database for voice metadata and search"""
@@ -167,26 +171,29 @@ class VoiceDatabase:
     def upsert_voice(self, voice_info: VoiceFileInfo):
         """Insert or update voice information"""
         with sqlite3.connect(self.db_path) as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT OR REPLACE INTO voices (
                     name, file_path, file_size, created_at, modified_at,
                     file_hash, is_custom, metadata, tags, quality_rating,
                     usage_count, last_used
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                voice_info.name,
-                voice_info.file_path,
-                voice_info.file_size,
-                voice_info.created_at.isoformat(),
-                voice_info.modified_at.isoformat(),
-                voice_info.file_hash,
-                voice_info.is_custom,
-                json.dumps(voice_info.metadata),
-                json.dumps(voice_info.tags),
-                voice_info.quality_rating,
-                voice_info.usage_count,
-                voice_info.last_used.isoformat() if voice_info.last_used else None
-            ))
+            """,
+                (
+                    voice_info.name,
+                    voice_info.file_path,
+                    voice_info.file_size,
+                    voice_info.created_at.isoformat(),
+                    voice_info.modified_at.isoformat(),
+                    voice_info.file_hash,
+                    voice_info.is_custom,
+                    json.dumps(voice_info.metadata),
+                    json.dumps(voice_info.tags),
+                    voice_info.quality_rating,
+                    voice_info.usage_count,
+                    voice_info.last_used.isoformat() if voice_info.last_used else None,
+                ),
+            )
 
     def delete_voice(self, voice_name: str):
         """Delete voice from database"""
@@ -242,7 +249,7 @@ class VoiceDatabase:
             query += " AND file_size >= ?"
             params.append(filter_criteria.min_size_mb * 1024 * 1024)
 
-        if filter_criteria.max_size_mb < float('inf'):
+        if filter_criteria.max_size_mb < float("inf"):
             query += " AND file_size <= ?"
             params.append(filter_criteria.max_size_mb * 1024 * 1024)
 
@@ -270,8 +277,9 @@ class VoiceDatabase:
             tags=json.loads(row[8]) if row[8] else [],
             quality_rating=row[9],
             usage_count=row[10],
-            last_used=datetime.fromisoformat(row[11]) if row[11] else None
+            last_used=datetime.fromisoformat(row[11]) if row[11] else None,
         )
+
 
 class VoiceFileSystemManager:
     """Main voice file system manager with real-time monitoring"""
@@ -296,12 +304,34 @@ class VoiceFileSystemManager:
 
         # Standard voice names (not custom)
         self.standard_voices = {
-            'af_heart', 'af_alloy', 'af_aoede', 'af_bella', 'af_jessica',
-            'af_kore', 'af_nicole', 'af_nova', 'af_river', 'af_sarah', 'af_sky',
-            'am_adam', 'am_echo', 'am_eric', 'am_fenrir', 'am_liam',
-            'am_michael', 'am_onyx', 'am_puck', 'am_santa',
-            'bf_alice', 'bf_emma', 'bf_isabella', 'bf_lily',
-            'bm_daniel', 'bm_fable', 'bm_george', 'bm_lewis'
+            "af_heart",
+            "af_alloy",
+            "af_aoede",
+            "af_bella",
+            "af_jessica",
+            "af_kore",
+            "af_nicole",
+            "af_nova",
+            "af_river",
+            "af_sarah",
+            "af_sky",
+            "am_adam",
+            "am_echo",
+            "am_eric",
+            "am_fenrir",
+            "am_liam",
+            "am_michael",
+            "am_onyx",
+            "am_puck",
+            "am_santa",
+            "bf_alice",
+            "bf_emma",
+            "bf_isabella",
+            "bf_lily",
+            "bm_daniel",
+            "bm_fable",
+            "bm_george",
+            "bm_lewis",
         }
 
         logger.info(f"VoiceFileSystemManager initialized for: {self.voices_dir}")
@@ -373,9 +403,9 @@ class VoiceFileSystemManager:
                 modified_at=datetime.fromtimestamp(stat.st_mtime),
                 file_hash=file_hash,
                 is_custom=is_custom,
-                metadata=metadata.get('metadata', {}),
-                tags=metadata.get('tags', []),
-                quality_rating=metadata.get('quality_rating', 0.0)
+                metadata=metadata.get("metadata", {}),
+                tags=metadata.get("tags", []),
+                quality_rating=metadata.get("quality_rating", 0.0),
             )
 
             self.db.upsert_voice(voice_info)
@@ -397,7 +427,7 @@ class VoiceFileSystemManager:
 
         if metadata_file.exists():
             try:
-                with open(metadata_file, 'r') as f:
+                with open(metadata_file, "r") as f:
                     return json.load(f)
             except Exception as e:
                 logger.warning(f"Failed to load metadata for {voice_name}: {e}")
@@ -411,7 +441,7 @@ class VoiceFileSystemManager:
 
         voice_info = self.db.get_voice(path.stem)
         if voice_info:
-            self._notify_callbacks('created', voice_info.name, voice_info)
+            self._notify_callbacks("created", voice_info.name, voice_info)
             logger.info(f"Voice file created: {voice_info.name}")
 
     def _handle_file_deleted(self, file_path: str):
@@ -421,7 +451,7 @@ class VoiceFileSystemManager:
 
         if voice_info:
             self.db.delete_voice(voice_name)
-            self._notify_callbacks('deleted', voice_name, voice_info)
+            self._notify_callbacks("deleted", voice_name, voice_info)
             logger.info(f"Voice file deleted: {voice_name}")
 
     def _handle_file_modified(self, file_path: str):
@@ -431,7 +461,7 @@ class VoiceFileSystemManager:
 
         voice_info = self.db.get_voice(path.stem)
         if voice_info:
-            self._notify_callbacks('modified', voice_info.name, voice_info)
+            self._notify_callbacks("modified", voice_info.name, voice_info)
             logger.info(f"Voice file modified: {voice_info.name}")
 
     def _notify_callbacks(self, event_type: str, voice_name: str, voice_info: VoiceFileInfo):
@@ -468,10 +498,10 @@ class VoiceFileSystemManager:
         total_size_mb = sum(v.file_size for v in all_voices) / (1024 * 1024)
 
         return {
-            'total_voices': len(all_voices),
-            'custom_voices': len(custom_voices),
-            'standard_voices': len(standard_voices),
-            'total_size_mb': total_size_mb,
-            'avg_quality': np.mean([v.quality_rating for v in all_voices]) if all_voices else 0.0,
-            'most_used': max(all_voices, key=lambda v: v.usage_count) if all_voices else None
+            "total_voices": len(all_voices),
+            "custom_voices": len(custom_voices),
+            "standard_voices": len(standard_voices),
+            "total_size_mb": total_size_mb,
+            "avg_quality": np.mean([v.quality_rating for v in all_voices]) if all_voices else 0.0,
+            "most_used": max(all_voices, key=lambda v: v.usage_count) if all_voices else None,
         }

@@ -24,9 +24,11 @@ from LiteTTS.tts.synthesizer import TTSSynthesizer
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class PerformanceMetrics:
     """Performance metrics for a single test"""
+
     test_name: str
     text_length: int
     audio_duration: float
@@ -42,9 +44,11 @@ class PerformanceMetrics:
         if not self.timestamp:
             self.timestamp = datetime.now().isoformat()
 
+
 @dataclass
 class RegressionTestResult:
     """Result of a regression test suite"""
+
     test_suite_name: str
     total_tests: int
     passed_tests: int
@@ -61,6 +65,7 @@ class RegressionTestResult:
     def __post_init__(self):
         if not self.timestamp:
             self.timestamp = datetime.now().isoformat()
+
 
 class PerformanceRegressionTester:
     """Automated performance regression testing framework"""
@@ -86,7 +91,7 @@ class PerformanceRegressionTester:
         """Load baseline performance metrics"""
         if self.baseline_file.exists():
             try:
-                with open(self.baseline_file, 'r') as f:
+                with open(self.baseline_file, "r") as f:
                     return json.load(f)
             except Exception as e:
                 logger.warning(f"Failed to load baseline: {e}")
@@ -96,7 +101,7 @@ class PerformanceRegressionTester:
     def _save_baseline(self, metrics: dict[str, Any]):
         """Save baseline performance metrics"""
         try:
-            with open(self.baseline_file, 'w') as f:
+            with open(self.baseline_file, "w") as f:
                 json.dump(metrics, f, indent=2)
             logger.info(f"Baseline saved to {self.baseline_file}")
         except Exception as e:
@@ -109,16 +114,13 @@ class PerformanceRegressionTester:
             "Hello world",
             "The quick brown fox jumps over the lazy dog.",
             "Testing TTS performance with short text.",
-
             # Medium texts
             "This is a medium-length text designed to test the performance of the TTS system. "
             "It includes various punctuation marks, numbers like 123 and 456, and common words "
             "that should be processed efficiently by the text normalization pipeline.",
-
             "Performance testing requires systematic evaluation of processing speed, memory usage, "
             "and audio quality. The system should maintain consistent performance across different "
             "text lengths, voice models, and synthesis parameters.",
-
             # Long texts
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor "
             "incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud "
@@ -128,17 +130,15 @@ class PerformanceRegressionTester:
             "deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error "
             "sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae "
             "ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.",
-
             # Complex texts with numbers, symbols, and contractions
             "The company's Q3 2023 revenue was $1.2 million, representing a 15% increase from Q2. "
             "Key metrics include: RTF < 0.3, memory usage ≤ 1GB, and 99.9% uptime. "
             "Contact us at support@example.com or visit https://www.example.com for more info. "
             "Don't forget that we're launching at 3:30 PM EST on December 15th, 2023!",
-
             # Pronunciation challenges
             "The pronunciation of words like 'asterisk', 'hedonism', and 'inherently' should be "
             "accurate. Contractions like 'I'll', 'you'll', and 'that's' need proper handling. "
-            "Currency amounts like $123.45 and dates like 2023-10-27 require normalization."
+            "Currency amounts like $123.45 and dates like 2023-10-27 require normalization.",
         ]
 
     def run_performance_test_suite(self, save_as_baseline: bool = False) -> RegressionTestResult:
@@ -154,7 +154,7 @@ class PerformanceRegressionTester:
                 sample_rate=24000,
                 chunk_size=100,
                 device="cpu",  # Use CPU for consistent testing
-                default_voice="af_heart"
+                default_voice="af_heart",
             )
             synthesizer = TTSSynthesizer(config)
         except Exception as e:
@@ -193,7 +193,7 @@ class PerformanceRegressionTester:
 
         # Compare with baseline
         baseline_comparison = self._compare_with_baseline(successful_metrics)
-        performance_degradation = baseline_comparison.get('rtf_change_percent', 0.0)
+        performance_degradation = baseline_comparison.get("rtf_change_percent", 0.0)
 
         result = RegressionTestResult(
             test_suite_name="Performance Regression Test Suite",
@@ -206,7 +206,7 @@ class PerformanceRegressionTester:
             cpu_peak_percent=cpu_peak,
             performance_degradation=performance_degradation,
             test_metrics=test_metrics,
-            baseline_comparison=baseline_comparison
+            baseline_comparison=baseline_comparison,
         )
 
         # Save as baseline if requested
@@ -219,9 +219,9 @@ class PerformanceRegressionTester:
 
         return result
 
-    def _run_single_performance_test(self, synthesizer: TTSSynthesizer,
-                                   text: str, voice: str, speed: float,
-                                   test_name: str) -> PerformanceMetrics:
+    def _run_single_performance_test(
+        self, synthesizer: TTSSynthesizer, text: str, voice: str, speed: float, test_name: str
+    ) -> PerformanceMetrics:
         """Run a single performance test"""
 
         # Monitor system resources
@@ -230,12 +230,7 @@ class PerformanceRegressionTester:
 
         try:
             # Create TTS request
-            request = TTSRequest(
-                input=text,
-                voice=voice,
-                speed=speed,
-                response_format="wav"
-            )
+            request = TTSRequest(input=text, voice=voice, speed=speed, response_format="wav")
 
             # Measure performance
             start_time = time.time()
@@ -250,7 +245,7 @@ class PerformanceRegressionTester:
             # Calculate metrics
             processing_time = end_time - start_time
             audio_duration = audio_segment.duration
-            rtf = processing_time / audio_duration if audio_duration > 0 else float('inf')
+            rtf = processing_time / audio_duration if audio_duration > 0 else float("inf")
 
             final_memory = process.memory_info().rss / 1024 / 1024  # MB
             memory_usage = final_memory - initial_memory
@@ -264,7 +259,7 @@ class PerformanceRegressionTester:
                 rtf=rtf,
                 memory_usage_mb=memory_usage,
                 cpu_usage_percent=cpu_usage,
-                success=True
+                success=True,
             )
 
         except Exception as e:
@@ -274,11 +269,11 @@ class PerformanceRegressionTester:
                 text_length=len(text),
                 audio_duration=0.0,
                 processing_time=0.0,
-                rtf=float('inf'),
+                rtf=float("inf"),
                 memory_usage_mb=0.0,
                 cpu_usage_percent=0.0,
                 success=False,
-                error_message=str(e)
+                error_message=str(e),
             )
 
     def _compare_with_baseline(self, current_metrics: list[PerformanceMetrics]) -> dict[str, float]:
@@ -292,25 +287,33 @@ class PerformanceRegressionTester:
         current_avg_cpu = statistics.mean(m.cpu_usage_percent for m in current_metrics)
 
         # Get baseline averages
-        baseline_rtf = self.baseline_metrics.get('average_rtf', current_avg_rtf)
-        baseline_memory = self.baseline_metrics.get('average_memory_mb', current_avg_memory)
-        baseline_cpu = self.baseline_metrics.get('average_cpu_percent', current_avg_cpu)
+        baseline_rtf = self.baseline_metrics.get("average_rtf", current_avg_rtf)
+        baseline_memory = self.baseline_metrics.get("average_memory_mb", current_avg_memory)
+        baseline_cpu = self.baseline_metrics.get("average_cpu_percent", current_avg_cpu)
 
         # Calculate percentage changes
-        rtf_change = ((current_avg_rtf - baseline_rtf) / baseline_rtf * 100) if baseline_rtf > 0 else 0
-        memory_change = ((current_avg_memory - baseline_memory) / baseline_memory * 100) if baseline_memory > 0 else 0
-        cpu_change = ((current_avg_cpu - baseline_cpu) / baseline_cpu * 100) if baseline_cpu > 0 else 0
+        rtf_change = (
+            ((current_avg_rtf - baseline_rtf) / baseline_rtf * 100) if baseline_rtf > 0 else 0
+        )
+        memory_change = (
+            ((current_avg_memory - baseline_memory) / baseline_memory * 100)
+            if baseline_memory > 0
+            else 0
+        )
+        cpu_change = (
+            ((current_avg_cpu - baseline_cpu) / baseline_cpu * 100) if baseline_cpu > 0 else 0
+        )
 
         return {
-            'baseline_rtf': baseline_rtf,
-            'current_rtf': current_avg_rtf,
-            'rtf_change_percent': rtf_change,
-            'baseline_memory_mb': baseline_memory,
-            'current_memory_mb': current_avg_memory,
-            'memory_change_percent': memory_change,
-            'baseline_cpu_percent': baseline_cpu,
-            'current_cpu_percent': current_avg_cpu,
-            'cpu_change_percent': cpu_change
+            "baseline_rtf": baseline_rtf,
+            "current_rtf": current_avg_rtf,
+            "rtf_change_percent": rtf_change,
+            "baseline_memory_mb": baseline_memory,
+            "current_memory_mb": current_avg_memory,
+            "memory_change_percent": memory_change,
+            "baseline_cpu_percent": baseline_cpu,
+            "current_cpu_percent": current_avg_cpu,
+            "cpu_change_percent": cpu_change,
         }
 
     def _save_current_as_baseline(self, metrics: list[PerformanceMetrics]):
@@ -319,15 +322,17 @@ class PerformanceRegressionTester:
             return
 
         baseline_data = {
-            'timestamp': datetime.now().isoformat(),
-            'total_tests': len(metrics),
-            'average_rtf': statistics.mean(m.rtf for m in metrics),
-            'average_memory_mb': statistics.mean(m.memory_usage_mb for m in metrics),
-            'average_cpu_percent': statistics.mean(m.cpu_usage_percent for m in metrics),
-            'rtf_p95': statistics.quantiles(sorted(m.rtf for m in metrics), n=20)[18],  # 95th percentile
-            'memory_peak_mb': max(m.memory_usage_mb for m in metrics),
-            'cpu_peak_percent': max(m.cpu_usage_percent for m in metrics),
-            'test_details': [asdict(m) for m in metrics]
+            "timestamp": datetime.now().isoformat(),
+            "total_tests": len(metrics),
+            "average_rtf": statistics.mean(m.rtf for m in metrics),
+            "average_memory_mb": statistics.mean(m.memory_usage_mb for m in metrics),
+            "average_cpu_percent": statistics.mean(m.cpu_usage_percent for m in metrics),
+            "rtf_p95": statistics.quantiles(sorted(m.rtf for m in metrics), n=20)[
+                18
+            ],  # 95th percentile
+            "memory_peak_mb": max(m.memory_usage_mb for m in metrics),
+            "cpu_peak_percent": max(m.cpu_usage_percent for m in metrics),
+            "test_details": [asdict(m) for m in metrics],
         }
 
         self._save_baseline(baseline_data)
@@ -339,31 +344,32 @@ class PerformanceRegressionTester:
             total_tests=0,
             passed_tests=0,
             failed_tests=1,
-            average_rtf=float('inf'),
+            average_rtf=float("inf"),
             average_processing_time=0.0,
             memory_peak_mb=0.0,
             cpu_peak_percent=0.0,
             performance_degradation=100.0,
             test_metrics=[],
-            baseline_comparison={'error': error_message}
+            baseline_comparison={"error": error_message},
         )
 
-    def generate_performance_report(self, result: RegressionTestResult,
-                                  output_file: str = "performance_report.json"):
+    def generate_performance_report(
+        self, result: RegressionTestResult, output_file: str = "performance_report.json"
+    ):
         """Generate detailed performance report"""
         report_data = asdict(result)
 
         # Add analysis
-        report_data['analysis'] = {
-            'performance_status': self._analyze_performance_status(result),
-            'recommendations': self._generate_recommendations(result),
-            'regression_detected': result.performance_degradation > self.degradation_threshold,
-            'rtf_acceptable': result.average_rtf < self.rtf_threshold,
-            'memory_acceptable': result.memory_peak_mb < self.memory_threshold_mb
+        report_data["analysis"] = {
+            "performance_status": self._analyze_performance_status(result),
+            "recommendations": self._generate_recommendations(result),
+            "regression_detected": result.performance_degradation > self.degradation_threshold,
+            "rtf_acceptable": result.average_rtf < self.rtf_threshold,
+            "memory_acceptable": result.memory_peak_mb < self.memory_threshold_mb,
         }
 
         # Save report
-        with open(output_file, 'w') as f:
+        with open(output_file, "w") as f:
             json.dump(report_data, f, indent=2)
 
         logger.info(f"Performance report saved to {output_file}")
@@ -387,21 +393,32 @@ class PerformanceRegressionTester:
         recommendations = []
 
         if result.average_rtf > self.rtf_threshold:
-            recommendations.append(f"RTF ({result.average_rtf:.3f}) exceeds threshold ({self.rtf_threshold}). Consider optimizing synthesis pipeline.")
+            recommendations.append(
+                f"RTF ({result.average_rtf:.3f}) exceeds threshold ({self.rtf_threshold}). Consider optimizing synthesis pipeline."
+            )
 
         if result.memory_peak_mb > self.memory_threshold_mb:
-            recommendations.append(f"Memory usage ({result.memory_peak_mb:.1f}MB) exceeds threshold ({self.memory_threshold_mb}MB). Check for memory leaks.")
+            recommendations.append(
+                f"Memory usage ({result.memory_peak_mb:.1f}MB) exceeds threshold ({self.memory_threshold_mb}MB). Check for memory leaks."
+            )
 
         if result.performance_degradation > self.degradation_threshold:
-            recommendations.append(f"Performance degradation ({result.performance_degradation:.1f}%) detected. Review recent changes.")
+            recommendations.append(
+                f"Performance degradation ({result.performance_degradation:.1f}%) detected. Review recent changes."
+            )
 
         if result.failed_tests > 0:
-            recommendations.append(f"{result.failed_tests} tests failed. Check error logs and fix issues.")
+            recommendations.append(
+                f"{result.failed_tests} tests failed. Check error logs and fix issues."
+            )
 
         if not recommendations:
-            recommendations.append("Performance is within acceptable limits. No immediate action required.")
+            recommendations.append(
+                "Performance is within acceptable limits. No immediate action required."
+            )
 
         return recommendations
+
 
 def main():
     """Main performance testing execution"""
@@ -426,9 +443,9 @@ def main():
         print(f"  Memory Peak: {result.memory_peak_mb:.1f}MB")
         print(f"  Performance Status: {report['analysis']['performance_status']}")
 
-        if report['analysis']['recommendations']:
+        if report["analysis"]["recommendations"]:
             print("\nRecommendations:")
-            for rec in report['analysis']['recommendations']:
+            for rec in report["analysis"]["recommendations"]:
                 print(f"  - {rec}")
 
         return result.failed_tests == 0
@@ -437,6 +454,7 @@ def main():
         logger.error(f"Performance testing failed: {e}")
         print(f"\n❌ Testing failed: {e}")
         return False
+
 
 if __name__ == "__main__":
     success = main()

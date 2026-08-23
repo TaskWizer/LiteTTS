@@ -23,8 +23,9 @@ from LiteTTS.models import TTSConfiguration, TTSRequest
 from LiteTTS.tts.synthesizer import TTSSynthesizer
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 class TimeStretchingBenchmark:
     """Benchmark time-stretching optimization feature"""
@@ -36,7 +37,7 @@ class TimeStretchingBenchmark:
         # Test configuration
         self.test_text = "The quick brown fox jumps over the lazy dog. This is a test of the time-stretching optimization feature."
         self.test_rates = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]  # 10% to 100% (2x speed)
-        self.quality_levels = ['low', 'medium', 'high']
+        self.quality_levels = ["low", "medium", "high"]
 
         # Results storage
         self.results = {}
@@ -72,7 +73,9 @@ class TimeStretchingBenchmark:
                         self._save_audio_samples(result, rate, quality)
 
                     except Exception as e:
-                        logger.error(f"Failed to benchmark rate {rate}% with quality {quality}: {e}")
+                        logger.error(
+                            f"Failed to benchmark rate {rate}% with quality {quality}: {e}"
+                        )
                         self.results[quality][rate] = {"error": str(e)}
 
             # Generate summary report
@@ -93,7 +96,7 @@ class TimeStretchingBenchmark:
             sample_rate=24000,
             chunk_size=100,
             device="cpu",  # Use CPU for consistent benchmarking
-            default_voice="af_heart"
+            default_voice="af_heart",
         )
 
     def _generate_baseline_audio(self, synthesizer: TTSSynthesizer) -> AudioSegment:
@@ -101,10 +104,7 @@ class TimeStretchingBenchmark:
         logger.info("Generating baseline audio")
 
         request = TTSRequest(
-            input=self.test_text,
-            voice="af_heart",
-            speed=1.0,
-            response_format="wav"
+            input=self.test_text, voice="af_heart", speed=1.0, response_format="wav"
         )
 
         start_time = time.perf_counter()
@@ -115,18 +115,19 @@ class TimeStretchingBenchmark:
         baseline_path = self.output_dir / "baseline.wav"
         self._save_audio_to_file(audio, baseline_path)
 
-        logger.info(f"Baseline audio generated: {audio.duration:.2f}s, generation time: {generation_time:.3f}s")
+        logger.info(
+            f"Baseline audio generated: {audio.duration:.2f}s, generation time: {generation_time:.3f}s"
+        )
         return audio
 
-    def _benchmark_rate(self, synthesizer: TTSSynthesizer, baseline_audio: AudioSegment,
-                       rate: int, quality: str) -> dict[str, Any]:
+    def _benchmark_rate(
+        self, synthesizer: TTSSynthesizer, baseline_audio: AudioSegment, rate: int, quality: str
+    ) -> dict[str, Any]:
         """Benchmark a specific rate and quality combination"""
 
         # Configure time-stretching
         stretch_config = TimeStretchConfig(
-            enabled=True,
-            compress_playback_rate=rate,
-            correction_quality=StretchQuality(quality)
+            enabled=True, compress_playback_rate=rate, correction_quality=StretchQuality(quality)
         )
 
         time_stretcher = TimeStretcher(stretch_config)
@@ -138,10 +139,7 @@ class TimeStretchingBenchmark:
 
         # Generate audio at faster speed
         request = TTSRequest(
-            input=self.test_text,
-            voice="af_heart",
-            speed=generation_speed,
-            response_format="wav"
+            input=self.test_text, voice="af_heart", speed=generation_speed, response_format="wav"
         )
 
         fast_audio = synthesizer.synthesize(request)
@@ -177,21 +175,23 @@ class TimeStretchingBenchmark:
             "rtf_improvement": rtf_original - rtf_stretched,
             "quality_score": quality_score,
             "fast_audio": fast_audio,
-            "corrected_audio": corrected_audio
+            "corrected_audio": corrected_audio,
         }
 
     def _assess_audio_quality(self, baseline: AudioSegment, corrected: AudioSegment) -> float:
         """Basic audio quality assessment (placeholder for more sophisticated metrics)"""
         try:
             # Simple RMS comparison as a basic quality metric
-            baseline_rms = np.sqrt(np.mean(baseline.audio_data ** 2))
-            corrected_rms = np.sqrt(np.mean(corrected.audio_data ** 2))
+            baseline_rms = np.sqrt(np.mean(baseline.audio_data**2))
+            corrected_rms = np.sqrt(np.mean(corrected.audio_data**2))
 
             # Quality score based on RMS similarity (0-1, higher is better)
             rms_ratio = min(baseline_rms, corrected_rms) / max(baseline_rms, corrected_rms)
 
             # Duration similarity
-            duration_ratio = min(baseline.duration, corrected.duration) / max(baseline.duration, corrected.duration)
+            duration_ratio = min(baseline.duration, corrected.duration) / max(
+                baseline.duration, corrected.duration
+            )
 
             # Combined score
             quality_score = (rms_ratio + duration_ratio) / 2
@@ -221,7 +221,7 @@ class TimeStretchingBenchmark:
         try:
             # Convert to bytes and save
             audio_bytes = audio.to_wav_bytes()
-            with open(path, 'wb') as f:
+            with open(path, "wb") as f:
                 f.write(audio_bytes)
 
         except Exception as e:
@@ -233,10 +233,10 @@ class TimeStretchingBenchmark:
             "test_configuration": {
                 "test_text": self.test_text,
                 "rates_tested": self.test_rates,
-                "quality_levels": self.quality_levels
+                "quality_levels": self.quality_levels,
             },
             "results": self.results,
-            "recommendations": self._generate_recommendations()
+            "recommendations": self._generate_recommendations(),
         }
 
         return summary
@@ -248,7 +248,7 @@ class TimeStretchingBenchmark:
             "optimal_quality": None,
             "rtf_improvement": 0.0,
             "quality_threshold": 0.8,
-            "notes": []
+            "notes": [],
         }
 
         try:
@@ -271,8 +271,10 @@ class TimeStretchingBenchmark:
                     rtf_improvement = result.get("rtf_improvement", 0.0)
                     quality_score = result.get("quality_score", 0.0)
 
-                    if (rtf_improvement > best_improvement and
-                        quality_score >= recommendations["quality_threshold"]):
+                    if (
+                        rtf_improvement > best_improvement
+                        and quality_score >= recommendations["quality_threshold"]
+                    ):
                         best_improvement = rtf_improvement
                         best_config = (rate, quality)
 
@@ -280,7 +282,9 @@ class TimeStretchingBenchmark:
                 recommendations["optimal_rate"] = best_config[0]
                 recommendations["optimal_quality"] = best_config[1]
                 recommendations["rtf_improvement"] = best_improvement
-                recommendations["notes"].append(f"Best configuration: {best_config[0]}% rate with {best_config[1]} quality")
+                recommendations["notes"].append(
+                    f"Best configuration: {best_config[0]}% rate with {best_config[1]} quality"
+                )
             else:
                 recommendations["notes"].append("No configuration met quality threshold")
 
@@ -297,7 +301,7 @@ class TimeStretchingBenchmark:
             clean_summary = self._clean_results_for_json(summary)
 
             results_path = self.output_dir / "benchmark_results.json"
-            with open(results_path, 'w') as f:
+            with open(results_path, "w") as f:
                 json.dump(clean_summary, f, indent=2)
 
             logger.info(f"Results saved to {results_path}")
@@ -319,6 +323,7 @@ class TimeStretchingBenchmark:
         else:
             return data
 
+
 def main():
     """Main benchmark execution"""
     print("Time-Stretching Optimization Benchmark")
@@ -339,6 +344,7 @@ def main():
     except Exception as e:
         logger.error(f"Benchmark failed: {e}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

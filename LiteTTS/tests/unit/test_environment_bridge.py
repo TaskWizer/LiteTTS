@@ -34,7 +34,7 @@ class TestEnvironmentConfig:
             max_memory_mb=8192,
             target_rtf=0.5,
             cpu_target=50.0,
-            aggressive_mode=False
+            aggressive_mode=False,
         )
         assert config.enable_performance_optimization is False
         assert config.max_memory_mb == 8192
@@ -55,64 +55,64 @@ class TestEnvironmentConfigLoader:
     def test_get_bool_env_true(self):
         """Test getting true boolean environment variable"""
         loader = EnvironmentConfigLoader()
-        with patch.dict('os.environ', {'TEST_VAR': 'true'}):
-            result = loader._get_bool_env('TEST_VAR', False)
+        with patch.dict("os.environ", {"TEST_VAR": "true"}):
+            result = loader._get_bool_env("TEST_VAR", False)
             assert result is True
 
     def test_get_bool_env_false(self):
         """Test getting false boolean environment variable"""
         loader = EnvironmentConfigLoader()
-        with patch.dict('os.environ', {'TEST_VAR': 'false'}):
-            result = loader._get_bool_env('TEST_VAR', True)
+        with patch.dict("os.environ", {"TEST_VAR": "false"}):
+            result = loader._get_bool_env("TEST_VAR", True)
             assert result is False
 
     def test_get_bool_env_default(self):
         """Test getting boolean with default"""
         loader = EnvironmentConfigLoader()
-        with patch.dict('os.environ', {}, clear=True):
-            result = loader._get_bool_env('NONEXISTENT_VAR', True)
+        with patch.dict("os.environ", {}, clear=True):
+            result = loader._get_bool_env("NONEXISTENT_VAR", True)
             assert result is True
 
     def test_get_int_env_valid(self):
         """Test getting valid integer environment variable"""
         loader = EnvironmentConfigLoader()
-        with patch.dict('os.environ', {'TEST_INT': '2048'}):
-            result = loader._get_int_env('TEST_INT', 1024)
+        with patch.dict("os.environ", {"TEST_INT": "2048"}):
+            result = loader._get_int_env("TEST_INT", 1024)
             assert result == 2048
 
     def test_get_int_env_invalid(self):
         """Test getting invalid integer environment variable"""
         loader = EnvironmentConfigLoader()
-        with patch.dict('os.environ', {'TEST_INT': 'not_a_number'}):
-            result = loader._get_int_env('TEST_INT', 1024)
+        with patch.dict("os.environ", {"TEST_INT": "not_a_number"}):
+            result = loader._get_int_env("TEST_INT", 1024)
             assert result == 1024
 
     def test_get_int_env_none(self):
         """Test getting non-existent integer environment variable"""
         loader = EnvironmentConfigLoader()
-        with patch.dict('os.environ', {}, clear=True):
-            result = loader._get_int_env('NONEXISTENT_INT', 512)
+        with patch.dict("os.environ", {}, clear=True):
+            result = loader._get_int_env("NONEXISTENT_INT", 512)
             assert result == 512
 
     def test_get_int_env_with_none_default(self):
         """Test getting integer with None default (threading vars)"""
         loader = EnvironmentConfigLoader()
-        with patch.dict('os.environ', {}, clear=True):
-            result = loader._get_int_env('NONEXISTENT_THREADS')
+        with patch.dict("os.environ", {}, clear=True):
+            result = loader._get_int_env("NONEXISTENT_THREADS")
             assert result is None
 
     def test_get_float_env_valid(self):
         """Test getting valid float environment variable"""
         loader = EnvironmentConfigLoader()
-        with patch.dict('os.environ', {'TEST_FLOAT': '0.75'}):
-            result = loader._get_float_env('TEST_FLOAT', 0.5)
+        with patch.dict("os.environ", {"TEST_FLOAT": "0.75"}):
+            result = loader._get_float_env("TEST_FLOAT", 0.5)
             assert result == 0.75
 
     def test_get_float_env_invalid(self):
         """Test getting invalid float environment variable"""
         loader = EnvironmentConfigLoader()
-        with patch.dict('os.environ', {'TEST_FLOAT': 'not_a_float'}):
-            result = loader._get_float_env('TEST_FLOAT', 0.5)
+        with patch.dict("os.environ", {"TEST_FLOAT": "not_a_float"}):
+            result = loader._get_float_env("TEST_FLOAT", 0.5)
             assert result == 0.5
 
     def test_get_dynamic_cpu_allocation_config(self):
@@ -120,58 +120,62 @@ class TestEnvironmentConfigLoader:
         loader = EnvironmentConfigLoader()
         config = loader.get_dynamic_cpu_allocation_config()
         assert isinstance(config, dict)
-        assert 'enabled' in config
-        assert 'cpu_target' in config
-        assert 'aggressive_mode' in config
-        assert 'thermal_protection' in config
-        assert 'onnx_integration' in config
-        assert 'update_environment' in config
+        assert "enabled" in config
+        assert "cpu_target" in config
+        assert "aggressive_mode" in config
+        assert "thermal_protection" in config
+        assert "onnx_integration" in config
+        assert "update_environment" in config
 
     def test_get_performance_config(self):
         """Test getting performance config"""
         loader = EnvironmentConfigLoader()
         config = loader.get_performance_config()
         assert isinstance(config, dict)
-        assert 'memory_optimization' in config
-        assert 'max_memory_mb' in config
-        assert 'target_rtf' in config
-        assert 'dynamic_cpu_allocation' in config
+        assert "memory_optimization" in config
+        assert "max_memory_mb" in config
+        assert "target_rtf" in config
+        assert "dynamic_cpu_allocation" in config
 
     def test_apply_onnx_environment_variables(self):
         """Test applying ONNX environment variables"""
         loader = EnvironmentConfigLoader()
-        with patch.dict('os.environ', {}, clear=True):
+        with patch.dict("os.environ", {}, clear=True):
             loader.apply_onnx_environment_variables()
             # Check that variables were set
             import os
-            assert 'ORT_DISABLE_ALL_OPTIMIZATION' in os.environ
-            assert 'ORT_ENABLE_CPU_FP16_OPS' in os.environ
+
+            assert "ORT_DISABLE_ALL_OPTIMIZATION" in os.environ
+            assert "ORT_ENABLE_CPU_FP16_OPS" in os.environ
 
     def test_apply_memory_allocation_variables(self):
         """Test applying memory allocation variables"""
         loader = EnvironmentConfigLoader()
-        with patch.dict('os.environ', {}, clear=True):
+        with patch.dict("os.environ", {}, clear=True):
             loader.apply_memory_allocation_variables()
             import os
-            assert 'MALLOC_ARENA_MAX' in os.environ
-            assert 'MALLOC_MMAP_THRESHOLD_' in os.environ
+
+            assert "MALLOC_ARENA_MAX" in os.environ
+            assert "MALLOC_MMAP_THRESHOLD_" in os.environ
 
     def test_apply_threading_variables(self):
         """Test applying threading variables"""
         loader = EnvironmentConfigLoader()
         loader.config.omp_num_threads = 4
-        with patch.dict('os.environ', {}, clear=True):
+        with patch.dict("os.environ", {}, clear=True):
             loader.apply_threading_variables()
             import os
-            assert os.environ.get('OMP_NUM_THREADS') == '4'
+
+            assert os.environ.get("OMP_NUM_THREADS") == "4"
 
     def test_apply_all_environment_variables(self):
         """Test applying all environment variables"""
         loader = EnvironmentConfigLoader()
-        with patch.dict('os.environ', {}, clear=True):
+        with patch.dict("os.environ", {}, clear=True):
             loader.apply_all_environment_variables()
             import os
-            assert 'ORT_DISABLE_ALL_OPTIMIZATION' in os.environ
+
+            assert "ORT_DISABLE_ALL_OPTIMIZATION" in os.environ
 
 
 class TestGlobalFunctions:

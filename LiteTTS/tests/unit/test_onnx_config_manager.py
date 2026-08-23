@@ -26,7 +26,7 @@ class TestONNXConfigManager:
         manager = ONNXConfigManager()
         # Just verify the method exists and can be called
         # (actual ONNX session creation requires onnxruntime to be installed)
-        assert hasattr(manager, 'create_session_options')
+        assert hasattr(manager, "create_session_options")
 
     def test_safe_add_config_entry(self):
         """Test safe_add_config_entry method"""
@@ -64,7 +64,9 @@ class TestONNXConfigManager:
         """Test applying memory optimizations"""
         manager = ONNXConfigManager()
         mock_session_options = Mock()
-        manager.apply_memory_optimizations(mock_session_options, "test_session", memory_limit_mb=4096)
+        manager.apply_memory_optimizations(
+            mock_session_options, "test_session", memory_limit_mb=4096
+        )
         # Verify no exception raised
 
     def test_apply_memory_optimizations_no_limit(self):
@@ -79,8 +81,7 @@ class TestONNXConfigManager:
         manager = ONNXConfigManager()
         mock_session_options = Mock()
         manager.apply_performance_optimizations(
-            mock_session_options, "test_session",
-            inter_op_threads=4, intra_op_threads=8
+            mock_session_options, "test_session", inter_op_threads=4, intra_op_threads=8
         )
         # Verify no exception raised
 
@@ -89,8 +90,7 @@ class TestONNXConfigManager:
         manager = ONNXConfigManager()
         mock_session_options = Mock()
         manager.apply_performance_optimizations(
-            mock_session_options, "test_session",
-            inter_op_threads=4
+            mock_session_options, "test_session", inter_op_threads=4
         )
         # Verify no exception raised
 
@@ -115,6 +115,7 @@ class TestGlobalFunctions:
         """Test getting ONNX config manager singleton"""
         # Reset global
         import LiteTTS.utils.onnx_config_manager
+
         LiteTTS.utils.onnx_config_manager._onnx_config_manager = None
 
         manager1 = get_onnx_config_manager()
@@ -125,6 +126,7 @@ class TestGlobalFunctions:
         """Test creating optimized session options"""
         # Reset global
         import LiteTTS.utils.onnx_config_manager
+
         LiteTTS.utils.onnx_config_manager._onnx_config_manager = None
 
         # This will return None since onnxruntime isn't available in test env

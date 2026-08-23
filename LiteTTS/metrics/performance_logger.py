@@ -18,9 +18,11 @@ import psutil
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class PerformanceMetrics:
     """Performance metrics for a single TTS request"""
+
     request_id: str
     timestamp: datetime
 
@@ -59,6 +61,7 @@ class PerformanceMetrics:
     batch_size: int = 1
     concurrent_requests: int = 1
 
+
 class PerformanceLogger:
     """Centralized performance metrics logging and analysis"""
 
@@ -76,24 +79,27 @@ class PerformanceLogger:
         # System monitoring
         self.process = psutil.Process()
 
-    def start_request(self, request_id: str, text: str, voice_name: str = "",
-                     model_name: str = "") -> dict[str, Any]:
+    def start_request(
+        self, request_id: str, text: str, voice_name: str = "", model_name: str = ""
+    ) -> dict[str, Any]:
         """Start tracking a new request"""
         with self.lock:
             start_time = time.time()
             request_data = {
-                'request_id': request_id,
-                'start_time': start_time,
-                'text': text,
-                'text_length': len(text),
-                'voice_name': voice_name,
-                'model_name': model_name,
-                'stages': {},
-                'concurrent_requests': len(self.active_requests) + 1
+                "request_id": request_id,
+                "start_time": start_time,
+                "text": text,
+                "text_length": len(text),
+                "voice_name": voice_name,
+                "model_name": model_name,
+                "stages": {},
+                "concurrent_requests": len(self.active_requests) + 1,
             }
             self.active_requests[request_id] = request_data
 
-            logger.debug(f"Started tracking request {request_id} (concurrent: {request_data['concurrent_requests']})")
+            logger.debug(
+                f"Started tracking request {request_id} (concurrent: {request_data['concurrent_requests']})"
+            )
             return request_data
 
     def log_stage(self, request_id: str, stage_name: str, duration: float = None):
@@ -108,11 +114,11 @@ class PerformanceLogger:
 
             if duration is None:
                 # Calculate duration from last stage or start
-                last_time = request_data.get('last_stage_time', request_data['start_time'])
+                last_time = request_data.get("last_stage_time", request_data["start_time"])
                 duration = current_time - last_time
 
-            request_data['stages'][stage_name] = duration
-            request_data['last_stage_time'] = current_time
+            request_data["stages"][stage_name] = duration
+            request_data["last_stage_time"] = current_time
 
             logger.debug(f"Request {request_id} - {stage_name}: {duration:.3f}s")
 
@@ -120,19 +126,22 @@ class PerformanceLogger:
         """Log token-related metrics"""
         with self.lock:
             if request_id in self.active_requests:
-                self.active_requests[request_id]['token_count'] = token_count
-                self.active_requests[request_id]['time_to_first_token'] = time_to_first_token
-                logger.debug(f"Request {request_id} - Tokens: {token_count}, TTFT: {time_to_first_token:.3f}s")
+                self.active_requests[request_id]["token_count"] = token_count
+                self.active_requests[request_id]["time_to_first_token"] = time_to_first_token
+                logger.debug(
+                    f"Request {request_id} - Tokens: {token_count}, TTFT: {time_to_first_token:.3f}s"
+                )
 
-    def log_audio_metrics(self, request_id: str, duration: float, format_type: str,
-                         size_bytes: int):
+    def log_audio_metrics(
+        self, request_id: str, duration: float, format_type: str, size_bytes: int
+    ):
         """Log audio output metrics"""
         with self.lock:
             if request_id in self.active_requests:
                 request_data = self.active_requests[request_id]
-                request_data['audio_duration'] = duration
-                request_data['audio_format'] = format_type
-                request_data['audio_size_bytes'] = size_bytes
+                request_data["audio_duration"] = duration
+                request_data["audio_format"] = format_type
+                request_data["audio_size_bytes"] = size_bytes
                 logger.debug(f"Request {request_id} - Audio: {duration:.2f}s, {size_bytes} bytes")
 
     def finish_request(self, request_id: str, error_message: str = "") -> PerformanceMetrics | None:
@@ -146,16 +155,16 @@ class PerformanceLogger:
             end_time = time.time()
 
             # Calculate total time
-            total_time = end_time - request_data['start_time']
+            total_time = end_time - request_data["start_time"]
 
             # Extract stage timings
-            stages = request_data.get('stages', {})
-            preprocessing_time = stages.get('preprocessing', 0.0)
-            inference_time = stages.get('inference', 0.0)
-            postprocessing_time = stages.get('postprocessing', 0.0)
+            stages = request_data.get("stages", {})
+            preprocessing_time = stages.get("preprocessing", 0.0)
+            inference_time = stages.get("inference", 0.0)
+            postprocessing_time = stages.get("postprocessing", 0.0)
 
             # Calculate performance ratios
-            audio_duration = request_data.get('audio_duration', 0.0)
+            audio_duration = request_data.get("audio_duration", 0.0)
             real_time_factor = inference_time / audio_duration if audio_duration > 0 else 0.0
             throughput_ratio = audio_duration / total_time if total_time > 0 else 0.0
 
@@ -171,17 +180,17 @@ class PerformanceLogger:
             metrics = PerformanceMetrics(
                 request_id=request_id,
                 timestamp=datetime.now(UTC),
-                text_length=request_data['text_length'],
-                token_count=request_data.get('token_count'),
-                voice_name=request_data.get('voice_name', ''),
+                text_length=request_data["text_length"],
+                token_count=request_data.get("token_count"),
+                voice_name=request_data.get("voice_name", ""),
                 total_time=total_time,
                 preprocessing_time=preprocessing_time,
                 inference_time=inference_time,
                 postprocessing_time=postprocessing_time,
-                time_to_first_token=request_data.get('time_to_first_token', 0.0),
+                time_to_first_token=request_data.get("time_to_first_token", 0.0),
                 audio_duration=audio_duration,
-                audio_format=request_data.get('audio_format', ''),
-                audio_size_bytes=request_data.get('audio_size_bytes', 0),
+                audio_format=request_data.get("audio_format", ""),
+                audio_size_bytes=request_data.get("audio_size_bytes", 0),
                 real_time_factor=real_time_factor,
                 throughput_ratio=throughput_ratio,
                 cpu_usage_percent=cpu_usage,
@@ -189,8 +198,8 @@ class PerformanceLogger:
                 gpu_memory_usage_mb=gpu_memory_mb,
                 error_occurred=bool(error_message),
                 error_message=error_message,
-                model_name=request_data.get('model_name', ''),
-                concurrent_requests=request_data.get('concurrent_requests', 1)
+                model_name=request_data.get("model_name", ""),
+                concurrent_requests=request_data.get("concurrent_requests", 1),
             )
 
             # Store in history
@@ -203,8 +212,10 @@ class PerformanceLogger:
             if self.log_file:
                 self._write_to_file(metrics)
 
-            logger.info(f"Request {request_id} completed - RTF: {real_time_factor:.3f}, "
-                       f"Total: {total_time:.3f}s, Audio: {audio_duration:.2f}s")
+            logger.info(
+                f"Request {request_id} completed - RTF: {real_time_factor:.3f}, "
+                f"Total: {total_time:.3f}s, Audio: {audio_duration:.2f}s"
+            )
 
             return metrics
 
@@ -212,6 +223,7 @@ class PerformanceLogger:
         """Get GPU memory usage if available"""
         try:
             import GPUtil
+
             gpus = GPUtil.getGPUs()
             if gpus:
                 return gpus[0].memoryUsed
@@ -221,8 +233,8 @@ class PerformanceLogger:
 
     def _update_aggregates(self, metrics: PerformanceMetrics):
         """Update hourly and daily aggregates"""
-        hour_key = metrics.timestamp.strftime('%Y-%m-%d-%H')
-        day_key = metrics.timestamp.strftime('%Y-%m-%d')
+        hour_key = metrics.timestamp.strftime("%Y-%m-%d-%H")
+        day_key = metrics.timestamp.strftime("%Y-%m-%d")
 
         self.hourly_stats[hour_key].append(metrics)
         self.daily_stats[day_key].append(metrics)
@@ -230,9 +242,9 @@ class PerformanceLogger:
     def _write_to_file(self, metrics: PerformanceMetrics):
         """Write metrics to log file"""
         try:
-            with open(self.log_file, 'a') as f:
+            with open(self.log_file, "a") as f:
                 json.dump(asdict(metrics), f, default=str)
-                f.write('\n')
+                f.write("\n")
         except Exception as e:
             logger.error(f"Failed to write metrics to file: {e}")
 
@@ -240,10 +252,7 @@ class PerformanceLogger:
         """Get statistics for recent requests"""
         cutoff_time = datetime.now(UTC).timestamp() - (minutes * 60)
 
-        recent_metrics = [
-            m for m in self.metrics_history
-            if m.timestamp.timestamp() > cutoff_time
-        ]
+        recent_metrics = [m for m in self.metrics_history if m.timestamp.timestamp() > cutoff_time]
 
         if not recent_metrics:
             return {"message": "No recent requests"}
@@ -257,20 +266,25 @@ class PerformanceLogger:
             "period_minutes": minutes,
             "total_requests": len(recent_metrics),
             "successful_requests": len([m for m in recent_metrics if not m.error_occurred]),
-            "error_rate": len([m for m in recent_metrics if m.error_occurred]) / len(recent_metrics),
+            "error_rate": len([m for m in recent_metrics if m.error_occurred])
+            / len(recent_metrics),
             "performance": {
                 "avg_rtf": statistics.mean(rtf_values) if rtf_values else 0,
                 "median_rtf": statistics.median(rtf_values) if rtf_values else 0,
                 "avg_total_time": statistics.mean(total_times),
                 "median_total_time": statistics.median(total_times),
                 "avg_ttft": statistics.mean(ttft_values) if ttft_values else 0,
-                "p95_total_time": statistics.quantiles(total_times, n=20)[18] if len(total_times) >= 20 else max(total_times) if total_times else 0
+                "p95_total_time": statistics.quantiles(total_times, n=20)[18]
+                if len(total_times) >= 20
+                else max(total_times)
+                if total_times
+                else 0,
             },
             "system": {
                 "avg_cpu_usage": statistics.mean([m.cpu_usage_percent for m in recent_metrics]),
                 "avg_memory_mb": statistics.mean([m.memory_usage_mb for m in recent_metrics]),
-                "max_concurrent": max([m.concurrent_requests for m in recent_metrics])
-            }
+                "max_concurrent": max([m.concurrent_requests for m in recent_metrics]),
+            },
         }
 
         return stats
@@ -279,13 +293,16 @@ class PerformanceLogger:
         """Export all metrics to file"""
         try:
             if format_type == "json":
-                with open(filename, 'w') as f:
+                with open(filename, "w") as f:
                     json.dump([asdict(m) for m in self.metrics_history], f, default=str, indent=2)
             elif format_type == "csv":
                 import csv
-                with open(filename, 'w', newline='') as f:
+
+                with open(filename, "w", newline="") as f:
                     if self.metrics_history:
-                        writer = csv.DictWriter(f, fieldnames=asdict(self.metrics_history[0]).keys())
+                        writer = csv.DictWriter(
+                            f, fieldnames=asdict(self.metrics_history[0]).keys()
+                        )
                         writer.writeheader()
                         for metrics in self.metrics_history:
                             writer.writerow(asdict(metrics))
@@ -294,6 +311,7 @@ class PerformanceLogger:
 
         except Exception as e:
             logger.error(f"Failed to export metrics: {e}")
+
 
 # Global performance logger instance
 performance_logger = PerformanceLogger()

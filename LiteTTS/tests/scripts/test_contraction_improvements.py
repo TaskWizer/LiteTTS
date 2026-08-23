@@ -30,7 +30,7 @@ def test_configuration_modes():
         "I'm ready",
         "you're right",
         "He&#x27;s here",  # HTML entity case
-        "they're coming and we'll see"
+        "they're coming and we'll see",
     ]
 
     # Test different configuration combinations
@@ -39,20 +39,20 @@ def test_configuration_modes():
             "name": "Preserve Natural Speech (Default)",
             "expand_contractions": False,
             "expand_problematic_contractions_only": True,
-            "preserve_natural_speech": True
+            "preserve_natural_speech": True,
         },
         {
             "name": "Expand All Contractions (Legacy)",
             "expand_contractions": True,
             "expand_problematic_contractions_only": False,
-            "preserve_natural_speech": False
+            "preserve_natural_speech": False,
         },
         {
             "name": "Selective Expansion Only",
             "expand_contractions": False,
             "expand_problematic_contractions_only": True,
-            "preserve_natural_speech": True
-        }
+            "preserve_natural_speech": True,
+        },
     ]
 
     results = {}
@@ -67,7 +67,9 @@ def test_configuration_modes():
         original_preserve = config.performance.preserve_natural_speech
 
         config.performance.expand_contractions = mode["expand_contractions"]
-        config.performance.expand_problematic_contractions_only = mode["expand_problematic_contractions_only"]
+        config.performance.expand_problematic_contractions_only = mode[
+            "expand_problematic_contractions_only"
+        ]
         config.performance.preserve_natural_speech = mode["preserve_natural_speech"]
 
         mode_results = []
@@ -90,12 +92,14 @@ def test_configuration_modes():
 
             print()
 
-            mode_results.append({
-                "input": test_input,
-                "output": result.processed_text,
-                "expanded": len(contraction_changes) > 0,
-                "html_decoded": len(html_changes) > 0
-            })
+            mode_results.append(
+                {
+                    "input": test_input,
+                    "output": result.processed_text,
+                    "expanded": len(contraction_changes) > 0,
+                    "html_decoded": len(html_changes) > 0,
+                }
+            )
 
         results[mode["name"]] = mode_results
 
@@ -105,6 +109,7 @@ def test_configuration_modes():
         config.performance.preserve_natural_speech = original_preserve
 
     return results
+
 
 def analyze_configuration_results(results):
     """Analyze the results from different configuration modes"""
@@ -137,6 +142,7 @@ def analyze_configuration_results(results):
 
     return results
 
+
 def test_api_with_new_behavior():
     """Test API behavior with the new contraction handling"""
 
@@ -149,39 +155,31 @@ def test_api_with_new_behavior():
     test_cases = [
         {
             "text": "he's happy",
-            "expected_behavior": "Should preserve contraction for natural speech"
+            "expected_behavior": "Should preserve contraction for natural speech",
         },
         {
             "text": "He&#x27;s here",
-            "expected_behavior": "Should decode HTML entity and preserve contraction"
+            "expected_behavior": "Should decode HTML entity and preserve contraction",
         },
         {
             "text": "don't worry about it",
-            "expected_behavior": "Should preserve contraction for natural speech"
+            "expected_behavior": "Should preserve contraction for natural speech",
         },
         {
             "text": "I'm ready to go",
-            "expected_behavior": "Should preserve contraction for natural speech"
-        }
+            "expected_behavior": "Should preserve contraction for natural speech",
+        },
     ]
 
     for i, test_case in enumerate(test_cases, 1):
         print(f"\n🔍 Test {i}: {test_case['expected_behavior']}")
         print(f"Input: '{test_case['text']}'")
 
-        payload = {
-            "input": test_case["text"],
-            "voice": "af_heart",
-            "response_format": "mp3"
-        }
+        payload = {"input": test_case["text"], "voice": "af_heart", "response_format": "mp3"}
 
         try:
             start_time = time.time()
-            response = requests.post(
-                f"{base_url}/v1/audio/speech",
-                json=payload,
-                timeout=15
-            )
+            response = requests.post(f"{base_url}/v1/audio/speech", json=payload, timeout=15)
             end_time = time.time()
 
             if response.status_code == 200:
@@ -209,6 +207,7 @@ def test_api_with_new_behavior():
         except Exception as e:
             print(f"❌ Exception: {e}")
 
+
 def test_html_entity_regression():
     """Ensure HTML entity decoding still works correctly"""
 
@@ -219,7 +218,7 @@ def test_html_entity_regression():
         "He&#x27;s here",
         "She&#x27;s coming",
         "Testing &quot;quotes&quot; &amp; symbols",
-        "Price: $100 &amp; &#x27;special&#x27; offer"
+        "Price: $100 &amp; &#x27;special&#x27; offer",
     ]
 
     for test_input in html_test_cases:
@@ -232,12 +231,20 @@ def test_html_entity_regression():
         print(f"HTML:   {html_changes}")
 
         # Verify HTML entities were decoded
-        if "&#x27;" in test_input and "&#x27;" not in result.processed_text or "&quot;" in test_input and "&quot;" not in result.processed_text or "&amp;" in test_input and "&amp;" not in result.processed_text:
+        if (
+            "&#x27;" in test_input
+            and "&#x27;" not in result.processed_text
+            or "&quot;" in test_input
+            and "&quot;" not in result.processed_text
+            or "&amp;" in test_input
+            and "&amp;" not in result.processed_text
+        ):
             print("✅ HTML entities properly decoded")
         else:
             print("⚠️ Check HTML entity decoding")
 
         print()
+
 
 def main():
     """Run comprehensive contraction improvement tests"""
@@ -270,6 +277,7 @@ def main():
     print("✅ Backward compatibility with legacy behavior")
 
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

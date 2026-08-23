@@ -14,9 +14,11 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class VoiceInfo:
     """Information about a discovered voice"""
+
     name: str
     file_path: str
     file_size: int
@@ -28,6 +30,7 @@ class VoiceInfo:
     nationality: str | None = None
     discovered_at: str | None = None
 
+
 class VoiceDiscovery:
     """Discovers and manages individual voice files with caching"""
 
@@ -36,6 +39,7 @@ class VoiceDiscovery:
         if voices_dir is None:
             try:
                 from ..config import config
+
                 voices_dir = config.paths.voices_dir
             except ImportError:
                 voices_dir = "LiteTTS/voices"  # Fallback
@@ -61,7 +65,6 @@ class VoiceDiscovery:
             "af_river": {"language": "en-us", "gender": "female", "nationality": "american"},
             "af_sarah": {"language": "en-us", "gender": "female", "nationality": "american"},
             "af_sky": {"language": "en-us", "gender": "female", "nationality": "american"},
-
             # American Male
             "am_adam": {"language": "en-us", "gender": "male", "nationality": "american"},
             "am_echo": {"language": "en-us", "gender": "male", "nationality": "american"},
@@ -72,19 +75,16 @@ class VoiceDiscovery:
             "am_onyx": {"language": "en-us", "gender": "male", "nationality": "american"},
             "am_puck": {"language": "en-us", "gender": "male", "nationality": "american"},
             "am_santa": {"language": "en-us", "gender": "male", "nationality": "american"},
-
             # British Female
             "bf_alice": {"language": "en-gb", "gender": "female", "nationality": "british"},
             "bf_emma": {"language": "en-gb", "gender": "female", "nationality": "british"},
             "bf_isabella": {"language": "en-gb", "gender": "female", "nationality": "british"},
             "bf_lily": {"language": "en-gb", "gender": "female", "nationality": "british"},
-
             # British Male
             "bm_daniel": {"language": "en-gb", "gender": "male", "nationality": "british"},
             "bm_fable": {"language": "en-gb", "gender": "male", "nationality": "british"},
             "bm_george": {"language": "en-gb", "gender": "male", "nationality": "british"},
             "bm_lewis": {"language": "en-gb", "gender": "male", "nationality": "british"},
-
             # Other languages (partial list for common voices)
             "jf_alpha": {"language": "ja-jp", "gender": "female", "nationality": "japanese"},
             "jm_kumo": {"language": "ja-jp", "gender": "male", "nationality": "japanese"},
@@ -100,13 +100,10 @@ class VoiceDiscovery:
         """Load voice cache from JSON file"""
         if self.cache_file.exists():
             try:
-                with open(self.cache_file, 'r') as f:
+                with open(self.cache_file, "r") as f:
                     cache_data = json.load(f)
 
-                self.voice_cache = {
-                    name: VoiceInfo(**data)
-                    for name, data in cache_data.items()
-                }
+                self.voice_cache = {name: VoiceInfo(**data) for name, data in cache_data.items()}
                 logger.info(f"Loaded voice cache with {len(self.voice_cache)} voices")
             except Exception as e:
                 logger.warning(f"Failed to load voice cache: {e}")
@@ -115,12 +112,9 @@ class VoiceDiscovery:
     def _save_cache(self) -> None:
         """Save voice cache to JSON file"""
         try:
-            cache_data = {
-                name: asdict(info)
-                for name, info in self.voice_cache.items()
-            }
+            cache_data = {name: asdict(info) for name, info in self.voice_cache.items()}
 
-            with open(self.cache_file, 'w') as f:
+            with open(self.cache_file, "w") as f:
                 json.dump(cache_data, f, indent=2)
 
             logger.debug(f"Saved voice cache with {len(self.voice_cache)} voices")
@@ -169,8 +163,7 @@ class VoiceDiscovery:
             # Check if voice is in cache and up to date
             if voice_name in self.voice_cache:
                 cached = self.voice_cache[voice_name]
-                if (cached.file_size == file_size and
-                    cached.last_modified == last_modified):
+                if cached.file_size == file_size and cached.last_modified == last_modified:
                     continue  # Voice is up to date
                 updated += 1
             else:
@@ -197,7 +190,7 @@ class VoiceDiscovery:
                 language=metadata.get("language"),
                 gender=metadata.get("gender"),
                 nationality=metadata.get("nationality"),
-                discovered_at=datetime.now().isoformat()
+                discovered_at=datetime.now().isoformat(),
             )
 
             self.voice_cache[voice_name] = voice_info
@@ -266,7 +259,7 @@ class VoiceDiscovery:
             "by_language": {},
             "by_gender": {},
             "by_nationality": {},
-            "by_source": {}
+            "by_source": {},
         }
 
         for voice_info in self.voice_cache.values():
@@ -288,10 +281,13 @@ class VoiceDiscovery:
 
         return stats
 
-    def filter_voices(self, language: str | None = None,
-                     gender: str | None = None,
-                     nationality: str | None = None,
-                     source: str | None = None) -> list[str]:
+    def filter_voices(
+        self,
+        language: str | None = None,
+        gender: str | None = None,
+        nationality: str | None = None,
+        source: str | None = None,
+    ) -> list[str]:
         """Filter voices by criteria"""
         filtered = []
 

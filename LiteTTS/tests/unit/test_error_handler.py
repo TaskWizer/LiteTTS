@@ -3,7 +3,6 @@
 Unit tests for API error handler
 """
 
-
 import pytest
 
 from LiteTTS.api.error_handler import ErrorHandler
@@ -26,7 +25,7 @@ class TestErrorHandler:
         error = Exception("Synthesis failed")
         result = handler.handle_synthesis_error(error)
         assert result is not None
-        assert hasattr(result, 'status_code')
+        assert hasattr(result, "status_code")
 
     def test_handle_synthesis_error_empty_text(self, handler):
         """Test handling of empty text error"""

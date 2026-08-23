@@ -21,12 +21,14 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class PipelineStage:
     """Pipeline stage configuration"""
+
     stage_name: str
     stage_function: str
     input_queue_size: int
@@ -36,9 +38,11 @@ class PipelineStage:
     priority: int
     timeout_seconds: float
 
+
 @dataclass
 class PipelineMetrics:
     """Pipeline performance metrics"""
+
     stage_name: str
     total_processed: int
     processing_time: float
@@ -48,9 +52,11 @@ class PipelineMetrics:
     throughput_per_second: float
     error_count: int
 
+
 @dataclass
 class PipelineConfiguration:
     """Complete pipeline configuration"""
+
     enable_pipeline_parallelism: bool
     target_cpu_utilization: float
     max_concurrent_pipelines: int
@@ -60,6 +66,7 @@ class PipelineConfiguration:
     queue_monitoring_enabled: bool
     adaptive_worker_scaling: bool
     stages: list[PipelineStage]
+
 
 class TTSPipelineStage:
     """Individual TTS pipeline stage"""
@@ -77,7 +84,7 @@ class TTSPipelineStage:
             cpu_utilization=0.0,
             memory_usage_mb=0.0,
             throughput_per_second=0.0,
-            error_count=0
+            error_count=0,
         )
         self.running = False
         self.start_time = None
@@ -89,14 +96,14 @@ class TTSPipelineStage:
 
         for i in range(self.config.worker_count):
             worker = threading.Thread(
-                target=self._worker_loop,
-                name=f"{self.config.stage_name}_worker_{i}",
-                daemon=True
+                target=self._worker_loop, name=f"{self.config.stage_name}_worker_{i}", daemon=True
             )
             worker.start()
             self.workers.append(worker)
 
-        logger.info(f"Started {self.config.worker_count} workers for stage: {self.config.stage_name}")
+        logger.info(
+            f"Started {self.config.worker_count} workers for stage: {self.config.stage_name}"
+        )
 
     def stop_workers(self):
         """Stop worker threads"""
@@ -167,6 +174,7 @@ class TTSPipelineStage:
 
         return self.metrics
 
+
 class TextPreprocessingStage(TTSPipelineStage):
     """Text preprocessing pipeline stage"""
 
@@ -177,11 +185,8 @@ class TextPreprocessingStage(TTSPipelineStage):
         # Simulate text preprocessing
         processed_text = text.strip().lower()
 
-        return {
-            **item,
-            "processed_text": processed_text,
-            "stage": "text_preprocessing"
-        }
+        return {**item, "processed_text": processed_text, "stage": "text_preprocessing"}
+
 
 class PhonemizationStage(TTSPipelineStage):
     """Phonemization pipeline stage"""
@@ -193,11 +198,8 @@ class PhonemizationStage(TTSPipelineStage):
         # Simulate phonemization
         phonemes = f"/{processed_text.replace(' ', '/')}/".replace("//", "/")
 
-        return {
-            **item,
-            "phonemes": phonemes,
-            "stage": "phonemization"
-        }
+        return {**item, "phonemes": phonemes, "stage": "phonemization"}
+
 
 class AudioGenerationStage(TTSPipelineStage):
     """Audio generation pipeline stage"""
@@ -209,11 +211,8 @@ class AudioGenerationStage(TTSPipelineStage):
         # Simulate audio generation (more CPU intensive)
         time.sleep(0.01)  # Simulate ONNX inference time
 
-        return {
-            **item,
-            "audio_data": f"audio_for_{phonemes}",
-            "stage": "audio_generation"
-        }
+        return {**item, "audio_data": f"audio_for_{phonemes}", "stage": "audio_generation"}
+
 
 class PostProcessingStage(TTSPipelineStage):
     """Post-processing pipeline stage"""
@@ -225,11 +224,8 @@ class PostProcessingStage(TTSPipelineStage):
         # Simulate post-processing
         processed_audio = f"processed_{audio_data}"
 
-        return {
-            **item,
-            "final_audio": processed_audio,
-            "stage": "post_processing"
-        }
+        return {**item, "final_audio": processed_audio, "stage": "post_processing"}
+
 
 class PipelineParallelismManager:
     """Pipeline parallelism manager"""
@@ -268,7 +264,7 @@ class PipelineParallelismManager:
                 worker_count=max(1, total_workers // 8),  # Light CPU usage
                 cpu_affinity=[],
                 priority=1,
-                timeout_seconds=5.0
+                timeout_seconds=5.0,
             ),
             PipelineStage(
                 stage_name="phonemization",
@@ -278,7 +274,7 @@ class PipelineParallelismManager:
                 worker_count=max(1, total_workers // 4),  # Medium CPU usage
                 cpu_affinity=[],
                 priority=2,
-                timeout_seconds=10.0
+                timeout_seconds=10.0,
             ),
             PipelineStage(
                 stage_name="audio_generation",
@@ -288,7 +284,7 @@ class PipelineParallelismManager:
                 worker_count=max(2, total_workers // 2),  # Heavy CPU usage
                 cpu_affinity=[],
                 priority=3,
-                timeout_seconds=30.0
+                timeout_seconds=30.0,
             ),
             PipelineStage(
                 stage_name="post_processing",
@@ -298,8 +294,8 @@ class PipelineParallelismManager:
                 worker_count=max(1, total_workers // 8),  # Light CPU usage
                 cpu_affinity=[],
                 priority=1,
-                timeout_seconds=5.0
-            )
+                timeout_seconds=5.0,
+            ),
         ]
 
         config = PipelineConfiguration(
@@ -311,10 +307,12 @@ class PipelineParallelismManager:
             batch_size=4,
             queue_monitoring_enabled=True,
             adaptive_worker_scaling=True,
-            stages=stage_configs
+            stages=stage_configs,
         )
 
-        logger.info(f"Created pipeline config with {total_workers} total workers across {len(stage_configs)} stages")
+        logger.info(
+            f"Created pipeline config with {total_workers} total workers across {len(stage_configs)} stages"
+        )
         return config
 
     def initialize_pipeline(self, config: PipelineConfiguration):
@@ -328,7 +326,7 @@ class PipelineParallelismManager:
             "text_preprocessing": TextPreprocessingStage,
             "phonemization": PhonemizationStage,
             "audio_generation": AudioGenerationStage,
-            "post_processing": PostProcessingStage
+            "post_processing": PostProcessingStage,
         }
 
         for stage_config in config.stages:
@@ -381,10 +379,7 @@ class PipelineParallelismManager:
             while self.monitoring_active:
                 try:
                     cpu_percent = psutil.cpu_percent(interval=1.0)
-                    self.cpu_history.append({
-                        "timestamp": time.time(),
-                        "cpu_percent": cpu_percent
-                    })
+                    self.cpu_history.append({"timestamp": time.time(), "cpu_percent": cpu_percent})
                 except Exception as e:
                     logger.warning(f"CPU monitoring error: {e}")
 
@@ -408,8 +403,10 @@ class PipelineParallelismManager:
             "max_cpu_utilization": max(cpu_values),
             "min_cpu_utilization": min(cpu_values),
             "target_cpu_utilization": self.target_cpu_utilization * 100,
-            "target_achieved": (sum(cpu_values) / len(cpu_values)) >= (self.target_cpu_utilization * 100 * 0.9),
-            "monitoring_duration": self.cpu_history[-1]["timestamp"] - self.cpu_history[0]["timestamp"]
+            "target_achieved": (sum(cpu_values) / len(cpu_values))
+            >= (self.target_cpu_utilization * 100 * 0.9),
+            "monitoring_duration": self.cpu_history[-1]["timestamp"]
+            - self.cpu_history[0]["timestamp"],
         }
 
         logger.info("CPU monitoring stopped")
@@ -424,12 +421,14 @@ class PipelineParallelismManager:
         # Generate test requests
         test_requests = []
         for i in range(num_requests):
-            test_requests.append({
-                "request_id": f"req_{i}",
-                "text": f"Test text number {i} for pipeline processing",
-                "voice": "af_heart",
-                "timestamp": time.time()
-            })
+            test_requests.append(
+                {
+                    "request_id": f"req_{i}",
+                    "text": f"Test text number {i} for pipeline processing",
+                    "voice": "af_heart",
+                    "timestamp": time.time(),
+                }
+            )
 
         # Process requests through pipeline (simulation)
         processed_requests = []
@@ -462,10 +461,12 @@ class PipelineParallelismManager:
             "processed_requests": len(processed_requests),
             "total_processing_time": total_time,
             "requests_per_second": len(processed_requests) / total_time if total_time > 0 else 0,
-            "avg_request_time": total_time / len(processed_requests) if processed_requests else 0
+            "avg_request_time": total_time / len(processed_requests) if processed_requests else 0,
         }
 
-        logger.info(f"Workload simulation completed: {workload_stats['requests_per_second']:.2f} req/s")
+        logger.info(
+            f"Workload simulation completed: {workload_stats['requests_per_second']:.2f} req/s"
+        )
         return workload_stats
 
     def run_comprehensive_pipeline_test(self, test_duration: int = 60) -> dict[str, Any]:
@@ -505,30 +506,39 @@ class PipelineParallelismManager:
             "workload_statistics": workload_stats,
             "stage_metrics": stage_metrics,
             "cpu_utilization_stats": cpu_stats,
-            "performance_analysis": self._analyze_pipeline_performance(stage_metrics, cpu_stats, workload_stats),
-            "recommendations": self._generate_pipeline_recommendations(config, stage_metrics, cpu_stats)
+            "performance_analysis": self._analyze_pipeline_performance(
+                stage_metrics, cpu_stats, workload_stats
+            ),
+            "recommendations": self._generate_pipeline_recommendations(
+                config, stage_metrics, cpu_stats
+            ),
         }
 
         # Save results
         results_file = self.results_dir / f"pipeline_parallelism_results_{int(time.time())}.json"
-        with open(results_file, 'w') as f:
+        with open(results_file, "w") as f:
             json.dump(results, f, indent=2, default=str)
 
         logger.info(f"Pipeline test completed. Results saved to: {results_file}")
         return results
 
-    def _analyze_pipeline_performance(self, stage_metrics: dict[str, Any],
-                                    cpu_stats: dict[str, float],
-                                    workload_stats: dict[str, Any]) -> dict[str, Any]:
+    def _analyze_pipeline_performance(
+        self,
+        stage_metrics: dict[str, Any],
+        cpu_stats: dict[str, float],
+        workload_stats: dict[str, Any],
+    ) -> dict[str, Any]:
         """Analyze pipeline performance"""
 
         # Calculate overall throughput
         total_processed = sum(metrics["total_processed"] for metrics in stage_metrics.values())
-        total_processing_time = sum(metrics["processing_time"] for metrics in stage_metrics.values())
+        total_processing_time = sum(
+            metrics["processing_time"] for metrics in stage_metrics.values()
+        )
 
         # Identify bottlenecks
         bottleneck_stage = None
-        min_throughput = float('inf')
+        min_throughput = float("inf")
 
         for stage_name, metrics in stage_metrics.items():
             if metrics["throughput_per_second"] < min_throughput:
@@ -541,7 +551,9 @@ class PipelineParallelismManager:
         efficiency_ratio = cpu_efficiency / target_efficiency if target_efficiency > 0 else 0
 
         analysis = {
-            "overall_throughput": total_processed / total_processing_time if total_processing_time > 0 else 0,
+            "overall_throughput": total_processed / total_processing_time
+            if total_processing_time > 0
+            else 0,
             "bottleneck_stage": bottleneck_stage,
             "bottleneck_throughput": min_throughput,
             "cpu_efficiency": cpu_efficiency,
@@ -549,7 +561,9 @@ class PipelineParallelismManager:
             "efficiency_ratio": efficiency_ratio,
             "cpu_target_achieved": cpu_stats.get("target_achieved", False),
             "pipeline_balance": self._calculate_pipeline_balance(stage_metrics),
-            "performance_grade": self._calculate_pipeline_grade(cpu_efficiency, efficiency_ratio, workload_stats)
+            "performance_grade": self._calculate_pipeline_grade(
+                cpu_efficiency, efficiency_ratio, workload_stats
+            ),
         }
 
         return analysis
@@ -564,16 +578,17 @@ class PipelineParallelismManager:
         # Calculate coefficient of variation (lower is better balanced)
         mean_throughput = sum(throughputs) / len(throughputs)
         variance = sum((t - mean_throughput) ** 2 for t in throughputs) / len(throughputs)
-        std_dev = variance ** 0.5
+        std_dev = variance**0.5
 
-        cv = std_dev / mean_throughput if mean_throughput > 0 else float('inf')
+        cv = std_dev / mean_throughput if mean_throughput > 0 else float("inf")
 
         # Convert to balance score (0-1, higher is better)
         balance_score = max(0, 1 - cv)
         return balance_score
 
-    def _calculate_pipeline_grade(self, cpu_efficiency: float, efficiency_ratio: float,
-                                workload_stats: dict[str, Any]) -> str:
+    def _calculate_pipeline_grade(
+        self, cpu_efficiency: float, efficiency_ratio: float, workload_stats: dict[str, Any]
+    ) -> str:
         """Calculate overall pipeline performance grade"""
         score = 0
 
@@ -610,9 +625,12 @@ class PipelineParallelismManager:
         else:
             return "D"
 
-    def _generate_pipeline_recommendations(self, config: PipelineConfiguration,
-                                         stage_metrics: dict[str, Any],
-                                         cpu_stats: dict[str, float]) -> list[str]:
+    def _generate_pipeline_recommendations(
+        self,
+        config: PipelineConfiguration,
+        stage_metrics: dict[str, Any],
+        cpu_stats: dict[str, float],
+    ) -> list[str]:
         """Generate pipeline optimization recommendations"""
         recommendations = []
 
@@ -621,19 +639,27 @@ class PipelineParallelismManager:
         target_cpu = cpu_stats.get("target_cpu_utilization", 90)
 
         if avg_cpu < target_cpu * 0.8:
-            recommendations.append(f"CPU utilization ({avg_cpu:.1f}%) below target ({target_cpu:.1f}%) - increase worker count or workload")
+            recommendations.append(
+                f"CPU utilization ({avg_cpu:.1f}%) below target ({target_cpu:.1f}%) - increase worker count or workload"
+            )
         elif avg_cpu > target_cpu * 1.1:
-            recommendations.append(f"CPU utilization ({avg_cpu:.1f}%) exceeds target ({target_cpu:.1f}%) - reduce worker count or optimize algorithms")
+            recommendations.append(
+                f"CPU utilization ({avg_cpu:.1f}%) exceeds target ({target_cpu:.1f}%) - reduce worker count or optimize algorithms"
+            )
 
         # Stage-specific recommendations
         for stage_name, metrics in stage_metrics.items():
             error_rate = metrics["error_count"] / max(1, metrics["total_processed"])
 
             if error_rate > 0.05:  # > 5% error rate
-                recommendations.append(f"High error rate in {stage_name} stage ({error_rate:.1%}) - investigate queue sizes and timeouts")
+                recommendations.append(
+                    f"High error rate in {stage_name} stage ({error_rate:.1%}) - investigate queue sizes and timeouts"
+                )
 
             if metrics["throughput_per_second"] < 1.0:
-                recommendations.append(f"Low throughput in {stage_name} stage - consider increasing worker count")
+                recommendations.append(
+                    f"Low throughput in {stage_name} stage - consider increasing worker count"
+                )
 
         # Configuration recommendations
         if not config.enable_stage_overlap:
@@ -643,9 +669,12 @@ class PipelineParallelismManager:
             recommendations.append("Enable batch processing for improved throughput")
 
         if config.max_concurrent_pipelines < self.cpu_count // 2:
-            recommendations.append("Consider increasing max concurrent pipelines for better CPU utilization")
+            recommendations.append(
+                "Consider increasing max concurrent pipelines for better CPU utilization"
+            )
 
         return recommendations
+
 
 def main():
     """Main function to run pipeline parallelism test"""
@@ -654,9 +683,9 @@ def main():
     try:
         results = manager.run_comprehensive_pipeline_test(test_duration=30)
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("PIPELINE PARALLELISM SUMMARY")
-        print("="*80)
+        print("=" * 80)
 
         config = results["pipeline_configuration"]
         workload = results["workload_statistics"]
@@ -688,18 +717,22 @@ def main():
 
         print("\nStage Performance:")
         for stage_name, metrics in results["stage_metrics"].items():
-            print(f"  {stage_name}: {metrics['total_processed']} processed, {metrics['throughput_per_second']:.2f} req/s")
+            print(
+                f"  {stage_name}: {metrics['total_processed']} processed, {metrics['throughput_per_second']:.2f} req/s"
+            )
 
         print("\nRecommendations:")
         for i, rec in enumerate(results["recommendations"], 1):
             print(f"  {i}. {rec}")
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
 
     except Exception as e:
         logger.error(f"Pipeline test failed: {e}")
         import traceback
+
         logger.error(f"Full traceback: {traceback.format_exc()}")
+
 
 if __name__ == "__main__":
     main()

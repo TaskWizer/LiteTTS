@@ -10,6 +10,7 @@ import re
 
 logger = logging.getLogger(__name__)
 
+
 class AdvancedSymbolProcessor:
     """Advanced symbol and punctuation processing for natural TTS pronunciation"""
 
@@ -28,196 +29,180 @@ class AdvancedSymbolProcessor:
         """Load symbol-to-word mappings with pronunciation fixes"""
         return {
             # Mathematical and logical symbols
-            '&': ' and ',
-            '+': ' plus ',
-            '=': ' equals ',
-            '%': ' percent',
-            '@': ' at ',
-            '#': ' hash ',
-
+            "&": " and ",
+            "+": " plus ",
+            "=": " equals ",
+            "%": " percent",
+            "@": " at ",
+            "#": " hash ",
             # FIXED: Asterisk pronunciation - ensure it's pronounced correctly
-            '*': ' asterisk ',  # Not "astrisk"
-
+            "*": " asterisk ",  # Not "astrisk"
             # Currency symbols (basic - advanced currency processor handles complex cases)
-            '$': ' dollar ',
-            '€': ' euro ',
-            '£': ' pound ',
-            '¥': ' yen ',
-            '₹': ' rupee ',
-            '₽': ' ruble ',
-            '₩': ' won ',
-            '¢': ' cent ',
-            '₦': ' naira ',
-            '₨': ' rupee ',
-            '₪': ' shekel ',
-            '₫': ' dong ',
-            '₡': ' colon ',
-            '₢': ' cruzeiro ',
-            '₣': ' franc ',
-            '₤': ' lira ',
-            '₥': ' mill ',
-            '₧': ' peseta ',
-            '₨': ' rupee ',
-            '₩': ' won ',
-            '₪': ' shekel ',
-            '₫': ' dong ',
-
+            "$": " dollar ",
+            "€": " euro ",
+            "£": " pound ",
+            "¥": " yen ",
+            "₹": " rupee ",
+            "₽": " ruble ",
+            "₩": " won ",
+            "¢": " cent ",
+            "₦": " naira ",
+            "₨": " rupee ",
+            "₪": " shekel ",
+            "₫": " dong ",
+            "₡": " colon ",
+            "₢": " cruzeiro ",
+            "₣": " franc ",
+            "₤": " lira ",
+            "₥": " mill ",
+            "₧": " peseta ",
+            "₨": " rupee ",
+            "₩": " won ",
+            "₪": " shekel ",
+            "₫": " dong ",
             # Special characters (ENHANCED)
-            '©': ' copyright ',
-            '®': ' registered trademark ',
-            '™': ' trademark ',
-            '°': ' degrees ',
-            '§': ' section ',
-            '¶': ' paragraph ',
-            '†': ' dagger ',
-            '‡': ' double dagger ',
-            '•': ' bullet ',
-            '‰': ' per mille ',
-            '‱': ' per ten thousand ',
-
+            "©": " copyright ",
+            "®": " registered trademark ",
+            "™": " trademark ",
+            "°": " degrees ",
+            "§": " section ",
+            "¶": " paragraph ",
+            "†": " dagger ",
+            "‡": " double dagger ",
+            "•": " bullet ",
+            "‰": " per mille ",
+            "‱": " per ten thousand ",
             # Mathematical symbols (ENHANCED)
-            '±': ' plus or minus ',
-            '×': ' times ',
-            '÷': ' divided by ',
-            '≠': ' not equal to ',
-            '≤': ' less than or equal to ',
-            '≥': ' greater than or equal to ',
-            '≈': ' approximately equal to ',
-            '∞': ' infinity ',
-            '∑': ' sum ',
-            '∏': ' product ',
-            '∫': ' integral ',
-            '∂': ' partial derivative ',
-            '∆': ' delta ',
-            '∇': ' nabla ',
-            '√': ' square root ',
-            '∛': ' cube root ',
-            '∜': ' fourth root ',
-
+            "±": " plus or minus ",
+            "×": " times ",
+            "÷": " divided by ",
+            "≠": " not equal to ",
+            "≤": " less than or equal to ",
+            "≥": " greater than or equal to ",
+            "≈": " approximately equal to ",
+            "∞": " infinity ",
+            "∑": " sum ",
+            "∏": " product ",
+            "∫": " integral ",
+            "∂": " partial derivative ",
+            "∆": " delta ",
+            "∇": " nabla ",
+            "√": " square root ",
+            "∛": " cube root ",
+            "∜": " fourth root ",
             # Other common symbols
-            '~': ' approximately ',
-            '^': ' caret ',
-            '|': ' pipe ',
-            '\\': ' backslash ',
+            "~": " approximately ",
+            "^": " caret ",
+            "|": " pipe ",
+            "\\": " backslash ",
             # REMOVED: '/' -> ' slash ' (slashes should be silent per user request)
-
             # Arrows and directional symbols (ENHANCED)
-            '→': ' right arrow ',
-            '←': ' left arrow ',
-            '↑': ' up arrow ',
-            '↓': ' down arrow ',
-            '↗': ' up right arrow ',
-            '↘': ' down right arrow ',
-            '↙': ' down left arrow ',
-            '↖': ' up left arrow ',
-            '⇒': ' double right arrow ',
-            '⇐': ' double left arrow ',
-            '⇑': ' double up arrow ',
-            '⇓': ' double down arrow ',
-            '↔': ' left right arrow ',
-            '⇔': ' double left right arrow ',
-
+            "→": " right arrow ",
+            "←": " left arrow ",
+            "↑": " up arrow ",
+            "↓": " down arrow ",
+            "↗": " up right arrow ",
+            "↘": " down right arrow ",
+            "↙": " down left arrow ",
+            "↖": " up left arrow ",
+            "⇒": " double right arrow ",
+            "⇐": " double left arrow ",
+            "⇑": " double up arrow ",
+            "⇓": " double down arrow ",
+            "↔": " left right arrow ",
+            "⇔": " double left right arrow ",
             # Mathematical symbols
-            '±': ' plus or minus ',
-            '×': ' times ',
-            '÷': ' divided by ',
-            '≈': ' approximately ',
-            '≠': ' not equal to ',
-            '≤': ' less than or equal to ',
-            '≥': ' greater than or equal to ',
-            '∞': ' infinity ',
+            "±": " plus or minus ",
+            "×": " times ",
+            "÷": " divided by ",
+            "≈": " approximately ",
+            "≠": " not equal to ",
+            "≤": " less than or equal to ",
+            "≥": " greater than or equal to ",
+            "∞": " infinity ",
         }
 
     def _load_quote_patterns(self) -> list[tuple[str, str]]:
         """Load quote handling patterns to prevent 'in quat' issues"""
         return [
             # HTML entities for quotes
-            (r'&quot;', ''),  # Remove HTML quote entities
-            (r'&#34;', ''),   # Remove numeric HTML quote entities
-            (r'&#x22;', ''),  # Remove hex HTML quote entities
-
+            (r"&quot;", ""),  # Remove HTML quote entities
+            (r"&#34;", ""),  # Remove numeric HTML quote entities
+            (r"&#x22;", ""),  # Remove hex HTML quote entities
             # Various quote types - remove them naturally
-            (r'"([^"]*)"', r'\1'),  # Remove double quotes around text
+            (r'"([^"]*)"', r"\1"),  # Remove double quotes around text
             # (r'[''"]([^''"]*)[''"]', r'\1'),  # Remove smart quotes around text - DISABLED due to regex issues
-            (r'`([^`]*)`', r'\1'),  # Remove backticks around text
-
+            (r"`([^`]*)`", r"\1"),  # Remove backticks around text
             # Standalone quotes
-            (r'\s*"\s*', ' '),  # Remove standalone double quotes
+            (r'\s*"\s*', " "),  # Remove standalone double quotes
             # Smart quote patterns disabled due to regex syntax issues
             # (r'\s*'\s*', ' '),  # Remove standalone smart quotes
             # (r'\s*'\s*', ' '),  # Remove standalone smart quotes
-            (r'\s*`\s*', ' '),  # Remove standalone backticks
+            (r"\s*`\s*", " "),  # Remove standalone backticks
         ]
 
     def _load_markdown_symbols(self) -> dict[str, str]:
         """Load markdown symbol handling"""
         return {
             # Markdown formatting - handle based on preserve_markdown setting
-            '**': '',  # Bold markers
-            '__': '',  # Bold markers
-            '*': '',   # Italic markers (single asterisk in markdown context)
-            '_': '',   # Italic markers
-            '~~': '',  # Strikethrough markers
-            '`': '',   # Code markers
-
+            "**": "",  # Bold markers
+            "__": "",  # Bold markers
+            "*": "",  # Italic markers (single asterisk in markdown context)
+            "_": "",  # Italic markers
+            "~~": "",  # Strikethrough markers
+            "`": "",  # Code markers
             # Markdown structural elements
-            '#': '',   # Headers (when at start of line)
-            '-': '',   # List items (when at start of line)
-            '+': '',   # List items (when at start of line)
-            '>': '',   # Blockquotes (when at start of line)
+            "#": "",  # Headers (when at start of line)
+            "-": "",  # List items (when at start of line)
+            "+": "",  # List items (when at start of line)
+            ">": "",  # Blockquotes (when at start of line)
         }
 
     def _load_punctuation_rules(self) -> list[tuple[str, str]]:
         """Load punctuation normalization rules (ENHANCED)"""
         return [
             # Multiple punctuation normalization (ENHANCED)
-            (r'\.{3,}', ' ellipsis '),  # Multiple dots to spoken ellipsis
-            (r'\?{2,}', '?'),    # Multiple question marks to single
-            (r'!{2,}', '!'),     # Multiple exclamation marks to single
-            (r'[.]{2}(?![.])', '..'),  # Two dots to two dots (not ellipsis)
-
+            (r"\.{3,}", " ellipsis "),  # Multiple dots to spoken ellipsis
+            (r"\?{2,}", "?"),  # Multiple question marks to single
+            (r"!{2,}", "!"),  # Multiple exclamation marks to single
+            (r"[.]{2}(?![.])", ".."),  # Two dots to two dots (not ellipsis)
             # Advanced dash and hyphen handling (NEW)
-            (r'—', ' em dash '),  # Em dash
-            (r'–', ' en dash '),  # En dash
-            (r'−', ' minus '),    # Minus sign (different from hyphen)
-            (r'‒', ' figure dash '),  # Figure dash
-            (r'―', ' horizontal bar '),  # Horizontal bar
-
+            (r"—", " em dash "),  # Em dash
+            (r"–", " en dash "),  # En dash
+            (r"−", " minus "),  # Minus sign (different from hyphen)
+            (r"‒", " figure dash "),  # Figure dash
+            (r"―", " horizontal bar "),  # Horizontal bar
             # Advanced quotation marks (ENHANCED) - using escape sequences
-            (r'\u201c', ''),  # Left double quotation mark
-            (r'\u201d', ''),  # Right double quotation mark
-            (r'\u2018', ''),  # Left single quotation mark
-            (r'\u2019', ''),  # Right single quotation mark
-            (r'\u201a', ''),  # Single low-9 quotation mark
-            (r'\u201e', ''),  # Double low-9 quotation mark
-            (r'\u2039', ''),  # Single left-pointing angle quotation mark
-            (r'\u203a', ''),  # Single right-pointing angle quotation mark
-            (r'\u00ab', ''),  # Left-pointing double angle quotation mark
-            (r'\u00bb', ''),  # Right-pointing double angle quotation mark
-
+            (r"\u201c", ""),  # Left double quotation mark
+            (r"\u201d", ""),  # Right double quotation mark
+            (r"\u2018", ""),  # Left single quotation mark
+            (r"\u2019", ""),  # Right single quotation mark
+            (r"\u201a", ""),  # Single low-9 quotation mark
+            (r"\u201e", ""),  # Double low-9 quotation mark
+            (r"\u2039", ""),  # Single left-pointing angle quotation mark
+            (r"\u203a", ""),  # Single right-pointing angle quotation mark
+            (r"\u00ab", ""),  # Left-pointing double angle quotation mark
+            (r"\u00bb", ""),  # Right-pointing double angle quotation mark
             # Spacing around punctuation (ENHANCED)
-            (r'\s*,\s*', ', '),  # Normalize comma spacing
-            (r'\s*;\s*', '; '),  # Normalize semicolon spacing
-            (r'\s*:\s*', ': '),  # Normalize colon spacing
-            (r'\s*\.\s*', '. '), # Normalize period spacing
-
+            (r"\s*,\s*", ", "),  # Normalize comma spacing
+            (r"\s*;\s*", "; "),  # Normalize semicolon spacing
+            (r"\s*:\s*", ": "),  # Normalize colon spacing
+            (r"\s*\.\s*", ". "),  # Normalize period spacing
             # Parentheses and brackets spacing (ENHANCED)
-            (r'\s*\(\s*', ' ('), # Normalize opening parenthesis
-            (r'\s*\)\s*', ') '), # Normalize closing parenthesis
-            (r'\s*\[\s*', ' ['), # Normalize opening bracket
-            (r'\s*\]\s*', '] '), # Normalize closing bracket
-            (r'\s*\{\s*', ' {'), # Normalize opening brace
-            (r'\s*\}\s*', '} '), # Normalize closing brace
-
+            (r"\s*\(\s*", " ("),  # Normalize opening parenthesis
+            (r"\s*\)\s*", ") "),  # Normalize closing parenthesis
+            (r"\s*\[\s*", " ["),  # Normalize opening bracket
+            (r"\s*\]\s*", "] "),  # Normalize closing bracket
+            (r"\s*\{\s*", " {"),  # Normalize opening brace
+            (r"\s*\}\s*", "} "),  # Normalize closing brace
             # Advanced punctuation combinations (NEW)
-            (r'[.]{2,3}[!?]', '.'),  # Ellipsis followed by exclamation/question
-            (r'[!?][.]{2,3}', '.'),  # Exclamation/question followed by ellipsis
-            (r'[!?]{1}[.]{1,}', '.'), # Mixed punctuation cleanup
-
+            (r"[.]{2,3}[!?]", "."),  # Ellipsis followed by exclamation/question
+            (r"[!?][.]{2,3}", "."),  # Exclamation/question followed by ellipsis
+            (r"[!?]{1}[.]{1,}", "."),  # Mixed punctuation cleanup
             # Special spacing rules (NEW)
-            (r'\s{2,}', ' '),    # Multiple spaces to single space
-            (r'^\s+', ''),       # Remove leading whitespace
-            (r'\s+$', ''),       # Remove trailing whitespace
+            (r"\s{2,}", " "),  # Multiple spaces to single space
+            (r"^\s+", ""),  # Remove leading whitespace
+            (r"\s+$", ""),  # Remove trailing whitespace
         ]
 
     def process_symbols(self, text: str) -> str:
@@ -265,30 +250,30 @@ class AdvancedSymbolProcessor:
         # We use \bC#(?!\w) to match C# not followed by a word character
 
         # C# programming language - "C sharp", not "C hash"
-        text = re.sub(r'\bC#(?!\w)', 'C sharp', text)
+        text = re.sub(r"\bC#(?!\w)", "C sharp", text)
 
         # F# programming language
-        text = re.sub(r'\bF#(?!\w)', 'F sharp', text)
+        text = re.sub(r"\bF#(?!\w)", "F sharp", text)
 
         # G# music note
-        text = re.sub(r'\bG#(?!\w)', 'G sharp', text)
+        text = re.sub(r"\bG#(?!\w)", "G sharp", text)
 
         # D# music note
-        text = re.sub(r'\bD#(?!\w)', 'D sharp', text)
+        text = re.sub(r"\bD#(?!\w)", "D sharp", text)
 
         # A# music note
-        text = re.sub(r'\bA#(?!\w)', 'A sharp', text)
+        text = re.sub(r"\bA#(?!\w)", "A sharp", text)
 
         # OAuth authentication
-        text = re.sub(r'\bOAuth\b', 'OAuth', text)
-        text = re.sub(r'\bOAuth\s*2\.0\b', 'OAuth two point zero', text)
+        text = re.sub(r"\bOAuth\b", "OAuth", text)
+        text = re.sub(r"\bOAuth\s*2\.0\b", "OAuth two point zero", text)
 
         # IPv6
-        text = re.sub(r'\bIPv6\b', 'I P V six', text)
+        text = re.sub(r"\bIPv6\b", "I P V six", text)
 
         # SHA-256
-        text = re.sub(r'\bSHA-?256\b', 'SHA two fifty six', text)
-        text = re.sub(r'\bSHA-?(\d+)\b', r'SHA \1', text)
+        text = re.sub(r"\bSHA-?256\b", "SHA two fifty six", text)
+        text = re.sub(r"\bSHA-?(\d+)\b", r"SHA \1", text)
 
         return text
 
@@ -296,16 +281,16 @@ class AdvancedSymbolProcessor:
         """Fix HTML entities that cause pronunciation issues"""
         # Handle specific problematic entities
         html_fixes = {
-            '&#x27;': "'",  # Apostrophe that causes "x 27" pronunciation
-            '&#39;': "'",   # Apostrophe
-            '&apos;': "'",  # Apostrophe
-            '&quot;': '',   # Quote - remove to prevent "in quat"
-            '&#34;': '',    # Quote - remove to prevent "in quat"
-            '&#x22;': '',   # Quote - remove to prevent "in quat"
-            '&amp;': ' and ',  # Ampersand
-            '&lt;': ' less than ',
-            '&gt;': ' greater than ',
-            '&nbsp;': ' ',  # Non-breaking space
+            "&#x27;": "'",  # Apostrophe that causes "x 27" pronunciation
+            "&#39;": "'",  # Apostrophe
+            "&apos;": "'",  # Apostrophe
+            "&quot;": "",  # Quote - remove to prevent "in quat"
+            "&#34;": "",  # Quote - remove to prevent "in quat"
+            "&#x22;": "",  # Quote - remove to prevent "in quat"
+            "&amp;": " and ",  # Ampersand
+            "&lt;": " less than ",
+            "&gt;": " greater than ",
+            "&nbsp;": " ",  # Non-breaking space
         }
 
         for entity, replacement in html_fixes.items():
@@ -331,34 +316,34 @@ class AdvancedSymbolProcessor:
         # For now, implement basic preservation
 
         # Detect if we're in a markdown context
-        has_markdown = any(marker in text for marker in ['**', '__', '*', '_', '`', '#'])
+        has_markdown = any(marker in text for marker in ["**", "__", "*", "_", "`", "#"])
 
         if has_markdown:
             # Handle asterisks in markdown context differently
             # Single asterisk in markdown is italic, double is bold
-            text = re.sub(r'\*\*([^*]+)\*\*', r'\1', text)  # Remove bold markers
-            text = re.sub(r'(?<!\*)\*(?!\*)([^*]+)\*(?!\*)', r'\1', text)  # Remove italic markers
+            text = re.sub(r"\*\*([^*]+)\*\*", r"\1", text)  # Remove bold markers
+            text = re.sub(r"(?<!\*)\*(?!\*)([^*]+)\*(?!\*)", r"\1", text)  # Remove italic markers
 
             # Handle other markdown elements
-            text = re.sub(r'`([^`]+)`', r'\1', text)  # Remove code markers
-            text = re.sub(r'^#+\s*', '', text, flags=re.MULTILINE)  # Remove header markers
+            text = re.sub(r"`([^`]+)`", r"\1", text)  # Remove code markers
+            text = re.sub(r"^#+\s*", "", text, flags=re.MULTILINE)  # Remove header markers
 
         return text
 
     def _remove_markdown_symbols(self, text: str) -> str:
         """Remove markdown symbols when not preserving markdown"""
         for symbol, replacement in self.markdown_symbols.items():
-            if symbol == '*':
+            if symbol == "*":
                 # Special handling for asterisk - check if it's markdown or standalone
                 # If it's surrounded by word characters, it's likely markdown
-                text = re.sub(r'\*([^*\s]+)\*', r'\1', text)  # Remove italic markers
-                text = re.sub(r'\*\*([^*]+)\*\*', r'\1', text)  # Remove bold markers
+                text = re.sub(r"\*([^*\s]+)\*", r"\1", text)  # Remove italic markers
+                text = re.sub(r"\*\*([^*]+)\*\*", r"\1", text)  # Remove bold markers
                 # Standalone asterisks will be handled in regular symbol processing
-            elif symbol == '-':
+            elif symbol == "-":
                 # Special handling for hyphens - preserve ticker symbols like T-S-L-A
                 # Only remove hyphens that are markdown list markers (at start of line)
-                text = re.sub(r'^-\s+', '', text, flags=re.MULTILINE)  # Remove list markers
-                text = re.sub(r'\n-\s+', '\n', text)  # Remove list markers after newlines
+                text = re.sub(r"^-\s+", "", text, flags=re.MULTILINE)  # Remove list markers
+                text = re.sub(r"\n-\s+", "\n", text)  # Remove list markers after newlines
                 # Preserve hyphens in ticker symbols and other contexts
             else:
                 text = text.replace(symbol, replacement)
@@ -368,10 +353,10 @@ class AdvancedSymbolProcessor:
     def _process_regular_symbols(self, text: str) -> str:
         """Process regular symbols using the symbol mappings"""
         for symbol, replacement in self.symbol_mappings.items():
-            if symbol == '*':
+            if symbol == "*":
                 # Special handling for asterisk to ensure correct pronunciation
                 # Only replace standalone asterisks, not those in markdown
-                text = re.sub(r'(?<!\*)\*(?!\*)', replacement, text)
+                text = re.sub(r"(?<!\*)\*(?!\*)", replacement, text)
             else:
                 text = text.replace(symbol, replacement)
 
@@ -385,9 +370,9 @@ class AdvancedSymbolProcessor:
 
         # Find and protect time expressions
         time_patterns = [
-            r'\b(?:ten|eleven|twelve|one|two|three|four|five|six|seven|eight|nine)\s*:\s*(?:thirty|fifteen|forty|oh|zero)\s*(?:five)?\s*(?:a\s*\.\s*m\.|p\s*\.\s*m\.)?\b',
-            r'\b(?:ten|eleven|twelve|one|two|three|four|five|six|seven|eight|nine)\s+(?:thirty|fifteen|forty|oh|zero)\s*(?:five)?\s+(?:a\s+m|p\s+m)\b',
-            r'\b(?:ten|eleven|twelve|one|two|three|four|five|six|seven|eight|nine)\s+o\'?clock\s*(?:a\s*\.\s*m\.|p\s*\.\s*m\.|a\s+m|p\s+m)?\b'
+            r"\b(?:ten|eleven|twelve|one|two|three|four|five|six|seven|eight|nine)\s*:\s*(?:thirty|fifteen|forty|oh|zero)\s*(?:five)?\s*(?:a\s*\.\s*m\.|p\s*\.\s*m\.)?\b",
+            r"\b(?:ten|eleven|twelve|one|two|three|four|five|six|seven|eight|nine)\s+(?:thirty|fifteen|forty|oh|zero)\s*(?:five)?\s+(?:a\s+m|p\s+m)\b",
+            r"\b(?:ten|eleven|twelve|one|two|three|four|five|six|seven|eight|nine)\s+o\'?clock\s*(?:a\s*\.\s*m\.|p\s*\.\s*m\.|a\s+m|p\s+m)?\b",
         ]
 
         for pattern in time_patterns:
@@ -395,13 +380,13 @@ class AdvancedSymbolProcessor:
             for match in reversed(matches):
                 placeholder = f"__TIME_EXPR_{placeholder_counter}__"
                 time_expressions.append((placeholder, match.group(0)))
-                text = text[:match.start()] + placeholder + text[match.end():]
+                text = text[: match.start()] + placeholder + text[match.end() :]
                 placeholder_counter += 1
 
         # Apply safe punctuation rules (excluding colon and period spacing)
         safe_rules = []
         for pattern, replacement in self.punctuation_rules:
-            if pattern not in [r'\s*:\s*', r'\s*\.\s*']:
+            if pattern not in [r"\s*:\s*", r"\s*\.\s*"]:
                 safe_rules.append((pattern, replacement))
 
         for pattern, replacement in safe_rules:
@@ -422,56 +407,63 @@ class AdvancedSymbolProcessor:
     def _clean_whitespace(self, text: str) -> str:
         """Clean up whitespace after symbol processing"""
         # Remove multiple spaces
-        text = re.sub(r'\s+', ' ', text)
+        text = re.sub(r"\s+", " ", text)
 
         # Remove leading/trailing whitespace
         text = text.strip()
 
         # Fix spacing around punctuation
-        text = re.sub(r'\s+([,.!?;:])', r'\1', text)  # Remove space before punctuation
-        text = re.sub(r'([,.!?;:])\s*', r'\1 ', text)  # Ensure space after punctuation
+        text = re.sub(r"\s+([,.!?;:])", r"\1", text)  # Remove space before punctuation
+        text = re.sub(r"([,.!?;:])\s*", r"\1 ", text)  # Ensure space after punctuation
 
         return text
 
     def analyze_symbols(self, text: str) -> dict[str, list[str]]:
         """Analyze symbols in text and return information"""
         info = {
-            'html_entities': [],
-            'quotes': [],
-            'markdown_symbols': [],
-            'regular_symbols': [],
-            'problematic_patterns': []
+            "html_entities": [],
+            "quotes": [],
+            "markdown_symbols": [],
+            "regular_symbols": [],
+            "problematic_patterns": [],
         }
 
         # Find HTML entities
-        html_entities = re.findall(r'&[a-zA-Z]+;|&#\d+;|&#x[0-9a-fA-F]+;', text)
-        info['html_entities'] = html_entities
+        html_entities = re.findall(r"&[a-zA-Z]+;|&#\d+;|&#x[0-9a-fA-F]+;", text)
+        info["html_entities"] = html_entities
 
         # Find quotes
         quotes = re.findall(r'["\'\`]', text)
-        info['quotes'] = quotes
+        info["quotes"] = quotes
 
         # Find markdown symbols
-        markdown_patterns = re.findall(r'\*+|_+|`+|#+', text)
-        info['markdown_symbols'] = markdown_patterns
+        markdown_patterns = re.findall(r"\*+|_+|`+|#+", text)
+        info["markdown_symbols"] = markdown_patterns
 
         # Find regular symbols
-        regular_symbols = re.findall(r'[&+=%@#~^|\\/<>]', text)
-        info['regular_symbols'] = regular_symbols
+        regular_symbols = re.findall(r"[&+=%@#~^|\\/<>]", text)
+        info["regular_symbols"] = regular_symbols
 
         # Find problematic patterns
-        if '&#x27;' in text:
-            info['problematic_patterns'].append('HTML apostrophe entity (causes x 27 pronunciation)')
-        if '&quot;' in text:
-            info['problematic_patterns'].append('HTML quote entity (causes in quat pronunciation)')
-        if re.search(r'\*(?!\*)', text):
-            info['problematic_patterns'].append('Standalone asterisk (may cause astrisk pronunciation)')
+        if "&#x27;" in text:
+            info["problematic_patterns"].append(
+                "HTML apostrophe entity (causes x 27 pronunciation)"
+            )
+        if "&quot;" in text:
+            info["problematic_patterns"].append("HTML quote entity (causes in quat pronunciation)")
+        if re.search(r"\*(?!\*)", text):
+            info["problematic_patterns"].append(
+                "Standalone asterisk (may cause astrisk pronunciation)"
+            )
 
         return info
 
-    def set_configuration(self, preserve_markdown: bool = None,
-                         handle_quotes_naturally: bool = None,
-                         fix_html_entities: bool = None):
+    def set_configuration(
+        self,
+        preserve_markdown: bool = None,
+        handle_quotes_naturally: bool = None,
+        fix_html_entities: bool = None,
+    ):
         """Set configuration options"""
         if preserve_markdown is not None:
             self.preserve_markdown = preserve_markdown
@@ -480,10 +472,12 @@ class AdvancedSymbolProcessor:
         if fix_html_entities is not None:
             self.fix_html_entities = fix_html_entities
 
-        logger.info(f"Symbol processor configuration updated: "
-                   f"preserve_markdown={self.preserve_markdown}, "
-                   f"handle_quotes_naturally={self.handle_quotes_naturally}, "
-                   f"fix_html_entities={self.fix_html_entities}")
+        logger.info(
+            f"Symbol processor configuration updated: "
+            f"preserve_markdown={self.preserve_markdown}, "
+            f"handle_quotes_naturally={self.handle_quotes_naturally}, "
+            f"fix_html_entities={self.fix_html_entities}"
+        )
 
     def process_context_aware_symbols(self, text: str) -> str:
         """Process symbols with context awareness (ENHANCED)"""
@@ -507,13 +501,13 @@ class AdvancedSymbolProcessor:
         """Process symbols in mathematical context"""
         # Detect mathematical expressions
         math_patterns = [
-            (r'(\d+)\s*\+\s*(\d+)', r'\1 plus \2'),  # 2 + 3
-            (r'(\d+)\s*-\s*(\d+)', r'\1 minus \2'),  # 5 - 2
-            (r'(\d+)\s*\*\s*(\d+)', r'\1 times \2'), # 4 * 6
-            (r'(\d+)\s*/\s*(\d+)', r'\1 divided by \2'), # 8 / 2
-            (r'(\d+)\s*=\s*(\d+)', r'\1 equals \2'), # 10 = 10
-            (r'(\d+)\s*%', r'\1 percent'),           # 50%
-            (r'(\d+)°', r'\1 degrees'),              # 90°
+            (r"(\d+)\s*\+\s*(\d+)", r"\1 plus \2"),  # 2 + 3
+            (r"(\d+)\s*-\s*(\d+)", r"\1 minus \2"),  # 5 - 2
+            (r"(\d+)\s*\*\s*(\d+)", r"\1 times \2"),  # 4 * 6
+            (r"(\d+)\s*/\s*(\d+)", r"\1 divided by \2"),  # 8 / 2
+            (r"(\d+)\s*=\s*(\d+)", r"\1 equals \2"),  # 10 = 10
+            (r"(\d+)\s*%", r"\1 percent"),  # 50%
+            (r"(\d+)°", r"\1 degrees"),  # 90°
         ]
 
         for pattern, replacement in math_patterns:
@@ -526,12 +520,17 @@ class AdvancedSymbolProcessor:
         # Detect file paths and handle appropriately
         file_path_patterns = [
             # Windows paths: C:\folder\file.txt
-            (r'([A-Z]):\\([^\\]+\\)*([^\\]+\.[a-zA-Z0-9]+)',
-             lambda m: f"{m.group(1)} drive {m.group(0).replace('\\', ' backslash ').replace('.', ' dot ')}"),
-
+            (
+                r"([A-Z]):\\([^\\]+\\)*([^\\]+\.[a-zA-Z0-9]+)",
+                lambda m: (
+                    f"{m.group(1)} drive {m.group(0).replace('\\', ' backslash ').replace('.', ' dot ')}"
+                ),
+            ),
             # Unix paths: /home/user/file.txt
-            (r'/([^/\s]+/)*([^/\s]+\.[a-zA-Z0-9]+)',
-             lambda m: m.group(0).replace('/', ' slash ').replace('.', ' dot ')),
+            (
+                r"/([^/\s]+/)*([^/\s]+\.[a-zA-Z0-9]+)",
+                lambda m: m.group(0).replace("/", " slash ").replace(".", " dot "),
+            ),
         ]
 
         for pattern, replacement in file_path_patterns:
@@ -547,12 +546,19 @@ class AdvancedSymbolProcessor:
         # Detect URLs and handle appropriately
         url_patterns = [
             # HTTP/HTTPS URLs
-            (r'https?://([^/\s]+)(/[^\s]*)?',
-             lambda m: f"website {m.group(1).replace('.', ' dot ')}{' with path' if m.group(2) else ''}"),
-
+            (
+                r"https?://([^/\s]+)(/[^\s]*)?",
+                lambda m: (
+                    f"website {m.group(1).replace('.', ' dot ')}{' with path' if m.group(2) else ''}"
+                ),
+            ),
             # Email addresses
-            (r'([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})',
-             lambda m: f"{m.group(1).replace('.', ' dot ')} at {m.group(2).replace('.', ' dot ')}"),
+            (
+                r"([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})",
+                lambda m: (
+                    f"{m.group(1).replace('.', ' dot ')} at {m.group(2).replace('.', ' dot ')}"
+                ),
+            ),
         ]
 
         for pattern, replacement in url_patterns:
@@ -565,13 +571,11 @@ class AdvancedSymbolProcessor:
         # Detect programming constructs
         programming_patterns = [
             # Function calls: function()
-            (r'([a-zA-Z_][a-zA-Z0-9_]*)\(\)', r'\1 function'),
-
+            (r"([a-zA-Z_][a-zA-Z0-9_]*)\(\)", r"\1 function"),
             # Array access: array[index]
-            (r'([a-zA-Z_][a-zA-Z0-9_]*)\[([^\]]+)\]', r'\1 array index \2'),
-
+            (r"([a-zA-Z_][a-zA-Z0-9_]*)\[([^\]]+)\]", r"\1 array index \2"),
             # Object properties: object.property
-            (r'([a-zA-Z_][a-zA-Z0-9_]*)\.([a-zA-Z_][a-zA-Z0-9_]*)', r'\1 dot \2'),
+            (r"([a-zA-Z_][a-zA-Z0-9_]*)\.([a-zA-Z_][a-zA-Z0-9_]*)", r"\1 dot \2"),
         ]
 
         for pattern, replacement in programming_patterns:
@@ -582,65 +586,65 @@ class AdvancedSymbolProcessor:
     def analyze_symbol_complexity(self, text: str) -> dict[str, any]:
         """Analyze text for symbol processing complexity (ENHANCED)"""
         analysis = {
-            'symbol_count': 0,
-            'html_entities': [],
-            'special_characters': [],
-            'mathematical_expressions': [],
-            'file_paths': [],
-            'urls': [],
-            'programming_constructs': [],
-            'complexity_score': 0,
-            'processing_recommendations': []
+            "symbol_count": 0,
+            "html_entities": [],
+            "special_characters": [],
+            "mathematical_expressions": [],
+            "file_paths": [],
+            "urls": [],
+            "programming_constructs": [],
+            "complexity_score": 0,
+            "processing_recommendations": [],
         }
 
         # Count symbols
         symbols = set(char for char in text if not char.isalnum() and not char.isspace())
-        analysis['symbol_count'] = len(symbols)
+        analysis["symbol_count"] = len(symbols)
 
         # Detect HTML entities
-        html_entities = re.findall(r'&[a-zA-Z0-9#x]+;', text)
-        analysis['html_entities'] = html_entities
+        html_entities = re.findall(r"&[a-zA-Z0-9#x]+;", text)
+        analysis["html_entities"] = html_entities
 
         # Detect special characters
         special_chars = [char for char in text if ord(char) > 127]
-        analysis['special_characters'] = list(set(special_chars))
+        analysis["special_characters"] = list(set(special_chars))
 
         # Detect mathematical expressions
-        math_patterns = [r'\d+\s*[+\-*/=]\s*\d+', r'\d+%', r'\d+°']
+        math_patterns = [r"\d+\s*[+\-*/=]\s*\d+", r"\d+%", r"\d+°"]
         for pattern in math_patterns:
             matches = re.findall(pattern, text)
-            analysis['mathematical_expressions'].extend(matches)
+            analysis["mathematical_expressions"].extend(matches)
 
         # Detect file paths
-        file_patterns = [r'[A-Z]:\\[^\\]+', r'/[^/\s]+/[^/\s]+']
+        file_patterns = [r"[A-Z]:\\[^\\]+", r"/[^/\s]+/[^/\s]+"]
         for pattern in file_patterns:
             matches = re.findall(pattern, text)
-            analysis['file_paths'].extend(matches)
+            analysis["file_paths"].extend(matches)
 
         # Detect URLs
-        url_patterns = [r'https?://[^\s]+', r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}']
+        url_patterns = [r"https?://[^\s]+", r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"]
         for pattern in url_patterns:
             matches = re.findall(pattern, text)
-            analysis['urls'].extend(matches)
+            analysis["urls"].extend(matches)
 
         # Calculate complexity score
-        analysis['complexity_score'] = (
-            len(analysis['html_entities']) * 3 +
-            len(analysis['special_characters']) * 2 +
-            len(analysis['mathematical_expressions']) * 2 +
-            len(analysis['file_paths']) * 2 +
-            len(analysis['urls']) * 2 +
-            analysis['symbol_count']
+        analysis["complexity_score"] = (
+            len(analysis["html_entities"]) * 3
+            + len(analysis["special_characters"]) * 2
+            + len(analysis["mathematical_expressions"]) * 2
+            + len(analysis["file_paths"]) * 2
+            + len(analysis["urls"]) * 2
+            + analysis["symbol_count"]
         )
 
         # Generate recommendations
-        if analysis['html_entities']:
-            analysis['processing_recommendations'].append('Enable HTML entity processing')
-        if analysis['special_characters']:
-            analysis['processing_recommendations'].append('Use enhanced symbol mappings')
-        if analysis['mathematical_expressions']:
-            analysis['processing_recommendations'].append('Enable mathematical context processing')
-        if analysis['file_paths'] or analysis['urls']:
-            analysis['processing_recommendations'].append('Enable context-aware processing')
+        if analysis["html_entities"]:
+            analysis["processing_recommendations"].append("Enable HTML entity processing")
+        if analysis["special_characters"]:
+            analysis["processing_recommendations"].append("Use enhanced symbol mappings")
+        if analysis["mathematical_expressions"]:
+            analysis["processing_recommendations"].append("Enable mathematical context processing")
+        if analysis["file_paths"] or analysis["urls"]:
+            analysis["processing_recommendations"].append("Enable context-aware processing")
 
         return analysis

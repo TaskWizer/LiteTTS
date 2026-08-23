@@ -14,15 +14,18 @@ import numpy as np
 
 try:
     import cpuinfo
+
     CPUINFO_AVAILABLE = True
 except ImportError:
     CPUINFO_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class SIMDCapabilities:
     """CPU SIMD instruction set capabilities"""
+
     sse: bool = False
     sse2: bool = False
     sse3: bool = False
@@ -41,9 +44,11 @@ class SIMDCapabilities:
     optimal_instruction_set: str = "scalar"
     vector_width: int = 1
 
+
 @dataclass
 class SIMDOptimizationConfig:
     """SIMD optimization configuration"""
+
     enable_vectorization: bool = True
     force_instruction_set: str | None = None
     enable_auto_detection: bool = True
@@ -52,6 +57,7 @@ class SIMDOptimizationConfig:
     enable_mel_spectrogram_acceleration: bool = True
     vector_chunk_size: int = 1024
     alignment_bytes: int = 32
+
 
 class SIMDOptimizer:
     """
@@ -63,8 +69,12 @@ class SIMDOptimizer:
         self.capabilities = self._detect_simd_capabilities()
         self.optimal_config = self._determine_optimal_config()
 
-        logger.info(f"SIMD Optimizer initialized with {self.capabilities.optimal_instruction_set} instruction set")
-        logger.info(f"Vector width: {self.capabilities.vector_width}, Chunk size: {self.config.vector_chunk_size}")
+        logger.info(
+            f"SIMD Optimizer initialized with {self.capabilities.optimal_instruction_set} instruction set"
+        )
+        logger.info(
+            f"Vector width: {self.capabilities.vector_width}, Chunk size: {self.config.vector_chunk_size}"
+        )
 
     def _detect_simd_capabilities(self) -> SIMDCapabilities:
         """Detect CPU SIMD instruction set capabilities"""
@@ -74,27 +84,27 @@ class SIMDOptimizer:
             # Get CPU info using cpuinfo library or fallback
             if CPUINFO_AVAILABLE:
                 cpu_info = cpuinfo.get_cpu_info()
-                flags = cpu_info.get('flags', [])
+                flags = cpu_info.get("flags", [])
             else:
                 # Fallback: try to read from /proc/cpuinfo on Linux
                 flags = self._get_cpu_flags_fallback()
 
             # Check for instruction sets
-            capabilities.sse = 'sse' in flags
-            capabilities.sse2 = 'sse2' in flags
-            capabilities.sse3 = 'sse3' in flags or 'pni' in flags
-            capabilities.ssse3 = 'ssse3' in flags
-            capabilities.sse4_1 = 'sse4_1' in flags
-            capabilities.sse4_2 = 'sse4_2' in flags
-            capabilities.avx = 'avx' in flags
-            capabilities.avx2 = 'avx2' in flags
-            capabilities.avx512f = 'avx512f' in flags
-            capabilities.avx512dq = 'avx512dq' in flags
-            capabilities.avx512cd = 'avx512cd' in flags
-            capabilities.avx512bw = 'avx512bw' in flags
-            capabilities.avx512vl = 'avx512vl' in flags
-            capabilities.fma = 'fma' in flags
-            capabilities.fma3 = 'fma3' in flags
+            capabilities.sse = "sse" in flags
+            capabilities.sse2 = "sse2" in flags
+            capabilities.sse3 = "sse3" in flags or "pni" in flags
+            capabilities.ssse3 = "ssse3" in flags
+            capabilities.sse4_1 = "sse4_1" in flags
+            capabilities.sse4_2 = "sse4_2" in flags
+            capabilities.avx = "avx" in flags
+            capabilities.avx2 = "avx2" in flags
+            capabilities.avx512f = "avx512f" in flags
+            capabilities.avx512dq = "avx512dq" in flags
+            capabilities.avx512cd = "avx512cd" in flags
+            capabilities.avx512bw = "avx512bw" in flags
+            capabilities.avx512vl = "avx512vl" in flags
+            capabilities.fma = "fma" in flags
+            capabilities.fma3 = "fma3" in flags
 
             # Determine optimal instruction set and vector width
             if capabilities.avx512f and capabilities.avx512dq:
@@ -102,16 +112,16 @@ class SIMDOptimizer:
                 capabilities.vector_width = 16  # 512 bits / 32 bits per float
             elif capabilities.avx2:
                 capabilities.optimal_instruction_set = "avx2"
-                capabilities.vector_width = 8   # 256 bits / 32 bits per float
+                capabilities.vector_width = 8  # 256 bits / 32 bits per float
             elif capabilities.avx:
                 capabilities.optimal_instruction_set = "avx"
-                capabilities.vector_width = 8   # 256 bits / 32 bits per float
+                capabilities.vector_width = 8  # 256 bits / 32 bits per float
             elif capabilities.sse4_2:
                 capabilities.optimal_instruction_set = "sse4.2"
-                capabilities.vector_width = 4   # 128 bits / 32 bits per float
+                capabilities.vector_width = 4  # 128 bits / 32 bits per float
             elif capabilities.sse2:
                 capabilities.optimal_instruction_set = "sse2"
-                capabilities.vector_width = 4   # 128 bits / 32 bits per float
+                capabilities.vector_width = 4  # 128 bits / 32 bits per float
             else:
                 capabilities.optimal_instruction_set = "scalar"
                 capabilities.vector_width = 1
@@ -131,19 +141,19 @@ class SIMDOptimizer:
 
         try:
             if platform.system() == "Linux":
-                with open('/proc/cpuinfo', 'r') as f:
+                with open("/proc/cpuinfo", "r") as f:
                     for line in f:
-                        if line.startswith('flags'):
-                            flags = line.split(':')[1].strip().split()
+                        if line.startswith("flags"):
+                            flags = line.split(":")[1].strip().split()
                             break
             elif platform.system() == "Windows":
                 # Basic Windows detection using platform module
-                if 'AMD64' in platform.machine() or 'x86_64' in platform.machine():
+                if "AMD64" in platform.machine() or "x86_64" in platform.machine():
                     # Assume modern x64 CPU has at least SSE2
-                    flags = ['sse', 'sse2']
+                    flags = ["sse", "sse2"]
             else:
                 # Default to basic SSE for unknown platforms
-                flags = ['sse', 'sse2']
+                flags = ["sse", "sse2"]
 
         except Exception as e:
             logger.warning(f"Failed to detect CPU flags: {e}")
@@ -158,13 +168,15 @@ class SIMDOptimizer:
             "vector_width": self.capabilities.vector_width,
             "alignment": 32 if self.capabilities.avx else 16,
             "chunk_size": self.config.vector_chunk_size,
-            "use_fma": self.capabilities.fma or self.capabilities.fma3
+            "use_fma": self.capabilities.fma or self.capabilities.fma3,
         }
 
         # Adjust chunk size based on vector width
         if self.capabilities.vector_width > 1:
             # Ensure chunk size is multiple of vector width
-            config["chunk_size"] = (self.config.vector_chunk_size // self.capabilities.vector_width) * self.capabilities.vector_width
+            config["chunk_size"] = (
+                self.config.vector_chunk_size // self.capabilities.vector_width
+            ) * self.capabilities.vector_width
 
         return config
 
@@ -272,9 +284,9 @@ class SIMDOptimizer:
             # Process in chunks for better cache utilization
             chunk_size = self.optimal_config["chunk_size"]
             for i in range(0, len(audio_data), chunk_size):
-                chunk = audio_data[i:i+chunk_size]
+                chunk = audio_data[i : i + chunk_size]
                 # Apply vectorized operations to chunk
-                audio_data[i:i+chunk_size] = np.tanh(chunk * 0.9)  # Soft clipping
+                audio_data[i : i + chunk_size] = np.tanh(chunk * 0.9)  # Soft clipping
         else:
             audio_data = np.tanh(audio_data * 0.9)
 
@@ -290,8 +302,8 @@ class SIMDOptimizer:
 
         if len(audio_data) > chunk_size:
             for i in range(0, len(audio_data), chunk_size):
-                chunk = audio_data[i:i+chunk_size]
-                audio_data[i:i+chunk_size] = np.tanh(chunk * 0.9)
+                chunk = audio_data[i : i + chunk_size]
+                audio_data[i : i + chunk_size] = np.tanh(chunk * 0.9)
         else:
             audio_data = np.tanh(audio_data * 0.9)
 
@@ -338,12 +350,14 @@ class SIMDOptimizer:
         try:
             # Set NumPy to use optimal BLAS/LAPACK
             if self.capabilities.avx512f:
-                env_vars.update({
-                    "NPY_NUM_BUILD_JOBS": "1",
-                    "OPENBLAS_NUM_THREADS": "1",
-                    "MKL_NUM_THREADS": "1",
-                    "VECLIB_MAXIMUM_THREADS": "1"
-                })
+                env_vars.update(
+                    {
+                        "NPY_NUM_BUILD_JOBS": "1",
+                        "OPENBLAS_NUM_THREADS": "1",
+                        "MKL_NUM_THREADS": "1",
+                        "VECLIB_MAXIMUM_THREADS": "1",
+                    }
+                )
 
             # ONNX Runtime SIMD optimizations
             if self.capabilities.avx512f:
@@ -371,11 +385,13 @@ class SIMDOptimizer:
             "optimal_config": self.optimal_config,
             "vectorization_enabled": self.config.enable_vectorization,
             "instruction_set": self.capabilities.optimal_instruction_set,
-            "vector_width": self.capabilities.vector_width
+            "vector_width": self.capabilities.vector_width,
         }
+
 
 # Global SIMD optimizer instance
 _global_simd_optimizer: SIMDOptimizer | None = None
+
 
 def get_simd_optimizer() -> SIMDOptimizer:
     """Get or create global SIMD optimizer instance"""
@@ -383,6 +399,7 @@ def get_simd_optimizer() -> SIMDOptimizer:
     if _global_simd_optimizer is None:
         _global_simd_optimizer = SIMDOptimizer()
     return _global_simd_optimizer
+
 
 def optimize_audio_with_simd(audio_data: np.ndarray) -> np.ndarray:
     """Convenience function for SIMD-optimized audio processing"""

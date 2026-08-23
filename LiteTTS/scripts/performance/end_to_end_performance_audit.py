@@ -22,12 +22,14 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class ComponentPerformance:
     """Performance metrics for a system component"""
+
     component_name: str
     avg_processing_time_ms: float
     p95_processing_time_ms: float
@@ -37,9 +39,11 @@ class ComponentPerformance:
     error_rate: float
     bottleneck_score: float  # 0-100, higher = more bottleneck
 
+
 @dataclass
 class EndToEndAuditResult:
     """Results from end-to-end performance audit"""
+
     # Overall metrics
     total_rtf: float
     total_memory_mb: float
@@ -65,6 +69,7 @@ class EndToEndAuditResult:
     failed_tests: int
     test_duration_seconds: float
 
+
 class EndToEndPerformanceAuditor:
     """
     Comprehensive end-to-end performance auditor
@@ -84,7 +89,7 @@ class EndToEndPerformanceAuditor:
                 "name": "Short Text Processing",
                 "texts": ["Hello.", "Test.", "Hi there!", "Good morning.", "Thank you."],
                 "expected_rtf": 0.15,
-                "weight": 0.3
+                "weight": 0.3,
             },
             {
                 "name": "Medium Text Processing",
@@ -92,27 +97,27 @@ class EndToEndPerformanceAuditor:
                     "This is a medium length sentence for testing.",
                     "How are you doing today? I hope everything is well.",
                     "The weather is quite nice outside this morning.",
-                    "Please let me know if you need any assistance."
+                    "Please let me know if you need any assistance.",
                 ],
                 "expected_rtf": 0.20,
-                "weight": 0.4
+                "weight": 0.4,
             },
             {
                 "name": "Long Text Processing",
                 "texts": [
                     "This is a longer text that will test the system's ability to handle extended passages with multiple sentences and complex structures.",
-                    "In the heart of the bustling city, where skyscrapers reach toward the clouds and the streets are filled with the constant hum of activity, people from all walks of life come together to create a vibrant tapestry of human experience."
+                    "In the heart of the bustling city, where skyscrapers reach toward the clouds and the streets are filled with the constant hum of activity, people from all walks of life come together to create a vibrant tapestry of human experience.",
                 ],
                 "expected_rtf": 0.25,
-                "weight": 0.2
+                "weight": 0.2,
             },
             {
                 "name": "Concurrent Processing",
                 "texts": ["Concurrent test text"] * 5,
                 "expected_rtf": 0.30,
                 "weight": 0.1,
-                "concurrent": True
-            }
+                "concurrent": True,
+            },
         ]
 
     def audit_text_processing_component(self) -> ComponentPerformance:
@@ -165,7 +170,7 @@ class EndToEndPerformanceAuditor:
             cpu_usage_percent=15.0,  # Estimated
             throughput_ops_per_sec=throughput,
             error_rate=error_rate,
-            bottleneck_score=bottleneck_score
+            bottleneck_score=bottleneck_score,
         )
 
     def audit_audio_generation_component(self) -> ComponentPerformance:
@@ -218,7 +223,7 @@ class EndToEndPerformanceAuditor:
             cpu_usage_percent=60.0,  # Estimated
             throughput_ops_per_sec=throughput,
             error_rate=error_rate,
-            bottleneck_score=bottleneck_score
+            bottleneck_score=bottleneck_score,
         )
 
     def audit_caching_component(self) -> ComponentPerformance:
@@ -257,7 +262,9 @@ class EndToEndPerformanceAuditor:
         avg_time = statistics.mean(processing_times) if processing_times else 0
         p95_time = np.percentile(processing_times, 95) if processing_times else 0
         avg_memory = statistics.mean(memory_usage) if memory_usage else 0
-        hit_rate = cache_hits / (cache_hits + cache_misses) if (cache_hits + cache_misses) > 0 else 0
+        hit_rate = (
+            cache_hits / (cache_hits + cache_misses) if (cache_hits + cache_misses) > 0 else 0
+        )
         throughput = 1000 / avg_time if avg_time > 0 else 0
 
         # Lower bottleneck score for good caching
@@ -271,7 +278,7 @@ class EndToEndPerformanceAuditor:
             cpu_usage_percent=5.0,  # Estimated
             throughput_ops_per_sec=throughput,
             error_rate=0.0,  # Caching rarely fails
-            bottleneck_score=bottleneck_score
+            bottleneck_score=bottleneck_score,
         )
 
     def audit_memory_management_component(self) -> ComponentPerformance:
@@ -300,7 +307,11 @@ class EndToEndPerformanceAuditor:
 
         avg_memory = statistics.mean(memory_measurements) if memory_measurements else 0
         avg_gc_time = statistics.mean(gc_times) if gc_times else 0
-        memory_stability = 1.0 - (np.std(memory_measurements) / np.mean(memory_measurements)) if memory_measurements else 0
+        memory_stability = (
+            1.0 - (np.std(memory_measurements) / np.mean(memory_measurements))
+            if memory_measurements
+            else 0
+        )
 
         # Memory management bottleneck based on stability and GC time
         bottleneck_score = max(0, (avg_gc_time / 2) + ((1 - memory_stability) * 30))
@@ -313,7 +324,7 @@ class EndToEndPerformanceAuditor:
             cpu_usage_percent=10.0,  # Estimated
             throughput_ops_per_sec=100.0,  # High throughput for memory ops
             error_rate=0.0,
-            bottleneck_score=bottleneck_score
+            bottleneck_score=bottleneck_score,
         )
 
     def run_end_to_end_tests(self) -> tuple[float, float, int, int]:
@@ -435,13 +446,17 @@ class EndToEndPerformanceAuditor:
         except Exception:
             return 0.0
 
-    def analyze_bottlenecks(self, components: list[ComponentPerformance]) -> tuple[str, str, list[str]]:
+    def analyze_bottlenecks(
+        self, components: list[ComponentPerformance]
+    ) -> tuple[str, str, list[str]]:
         """Analyze system bottlenecks"""
         # Sort components by bottleneck score
         sorted_components = sorted(components, key=lambda x: x.bottleneck_score, reverse=True)
 
         primary_bottleneck = sorted_components[0].component_name if sorted_components else "Unknown"
-        secondary_bottleneck = sorted_components[1].component_name if len(sorted_components) > 1 else "None"
+        secondary_bottleneck = (
+            sorted_components[1].component_name if len(sorted_components) > 1 else "None"
+        )
 
         recommendations = []
 
@@ -474,14 +489,16 @@ class EndToEndPerformanceAuditor:
             self.audit_text_processing_component(),
             self.audit_audio_generation_component(),
             self.audit_caching_component(),
-            self.audit_memory_management_component()
+            self.audit_memory_management_component(),
         ]
 
         # Run end-to-end tests
         total_rtf, total_memory, successful_tests, failed_tests = self.run_end_to_end_tests()
 
         # Analyze bottlenecks
-        primary_bottleneck, secondary_bottleneck, recommendations = self.analyze_bottlenecks(components)
+        primary_bottleneck, secondary_bottleneck, recommendations = self.analyze_bottlenecks(
+            components
+        )
 
         # Calculate overall CPU usage
         total_cpu = sum(comp.cpu_usage_percent for comp in components)
@@ -518,7 +535,7 @@ class EndToEndPerformanceAuditor:
             total_tests=successful_tests + failed_tests,
             successful_tests=successful_tests,
             failed_tests=failed_tests,
-            test_duration_seconds=60.0  # Estimated
+            test_duration_seconds=60.0,  # Estimated
         )
 
         logger.info("✅ Comprehensive audit completed")
@@ -526,6 +543,7 @@ class EndToEndPerformanceAuditor:
         logger.info(f"Primary Bottleneck: {primary_bottleneck}")
 
         return result
+
 
 def main():
     """Main function"""
@@ -540,9 +558,15 @@ def main():
 
     report.append("## Executive Summary")
     report.append(f"**Performance Grade: {result.performance_grade}**")
-    report.append(f"- RTF: {result.total_rtf:.3f} (target: <0.25) {'✅' if result.rtf_target_met else '❌'}")
-    report.append(f"- Memory: {result.total_memory_mb:.1f}MB (target: <150MB) {'✅' if result.memory_target_met else '❌'}")
-    report.append(f"- Success Rate: {result.successful_tests}/{result.total_tests} ({result.successful_tests/result.total_tests:.1%})")
+    report.append(
+        f"- RTF: {result.total_rtf:.3f} (target: <0.25) {'✅' if result.rtf_target_met else '❌'}"
+    )
+    report.append(
+        f"- Memory: {result.total_memory_mb:.1f}MB (target: <150MB) {'✅' if result.memory_target_met else '❌'}"
+    )
+    report.append(
+        f"- Success Rate: {result.successful_tests}/{result.total_tests} ({result.successful_tests / result.total_tests:.1%})"
+    )
     report.append("")
 
     report.append("## Bottleneck Analysis")
@@ -557,7 +581,9 @@ def main():
     report.append("## Component Performance")
     for comp in result.components:
         report.append(f"### {comp.component_name}")
-        report.append(f"- Processing Time: {comp.avg_processing_time_ms:.1f}ms (P95: {comp.p95_processing_time_ms:.1f}ms)")
+        report.append(
+            f"- Processing Time: {comp.avg_processing_time_ms:.1f}ms (P95: {comp.p95_processing_time_ms:.1f}ms)"
+        )
         report.append(f"- Memory Usage: {comp.memory_usage_mb:.1f}MB")
         report.append(f"- CPU Usage: {comp.cpu_usage_percent:.1f}%")
         report.append(f"- Throughput: {comp.throughput_ops_per_sec:.1f} ops/sec")
@@ -568,15 +594,16 @@ def main():
     report_content = "\n".join(report)
 
     # Save report
-    with open("end_to_end_audit_report.md", 'w') as f:
+    with open("end_to_end_audit_report.md", "w") as f:
         f.write(report_content)
 
     # Save JSON results
-    with open("end_to_end_audit_results.json", 'w') as f:
+    with open("end_to_end_audit_results.json", "w") as f:
         json.dump(asdict(result), f, indent=2)
 
     print(report_content)
     logger.info("📊 Audit report saved to: end_to_end_audit_report.md")
+
 
 if __name__ == "__main__":
     main()

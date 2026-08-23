@@ -11,9 +11,11 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class EnvironmentConfig:
     """Configuration loaded from environment variables"""
+
     # Performance settings
     enable_performance_optimization: bool = True
     max_memory_mb: int = 4096
@@ -48,6 +50,7 @@ class EnvironmentConfig:
     malloc_trim_threshold: int = 131072
     malloc_top_pad: int = 131072
     malloc_mmap_max: int = 65536
+
 
 class EnvironmentConfigLoader:
     """Loads configuration from environment variables"""
@@ -93,15 +96,11 @@ class EnvironmentConfigLoader:
                 "ORT_GRAPH_OPTIMIZATION_LEVEL", "all"
             )
             self.config.ort_execution_mode = os.getenv("ORT_EXECUTION_MODE", "parallel")
-            self.config.ort_enable_mem_pattern = self._get_bool_env(
-                "ORT_ENABLE_MEM_PATTERN", True
-            )
+            self.config.ort_enable_mem_pattern = self._get_bool_env("ORT_ENABLE_MEM_PATTERN", True)
             self.config.ort_enable_cpu_mem_arena = self._get_bool_env(
                 "ORT_ENABLE_CPU_MEM_ARENA", True
             )
-            self.config.ort_enable_mem_reuse = self._get_bool_env(
-                "ORT_ENABLE_MEM_REUSE", True
-            )
+            self.config.ort_enable_mem_reuse = self._get_bool_env("ORT_ENABLE_MEM_REUSE", True)
 
             # Memory allocation settings
             self.config.malloc_arena_max = self._get_int_env("MALLOC_ARENA_MAX", 4)
@@ -111,9 +110,11 @@ class EnvironmentConfigLoader:
             self.config.malloc_mmap_max = self._get_int_env("MALLOC_MMAP_MAX_", 65536)
 
             logger.info("Environment configuration loaded successfully")
-            logger.info(f"CPU target: {self.config.cpu_target}%, "
-                       f"Aggressive mode: {self.config.aggressive_mode}, "
-                       f"Memory limit: {self.config.max_memory_mb}MB")
+            logger.info(
+                f"CPU target: {self.config.cpu_target}%, "
+                f"Aggressive mode: {self.config.aggressive_mode}, "
+                f"Memory limit: {self.config.max_memory_mb}MB"
+            )
 
         except Exception as e:
             logger.error(f"Failed to load environment configuration: {e}")
@@ -151,7 +152,7 @@ class EnvironmentConfigLoader:
             "aggressive_mode": self.config.aggressive_mode,
             "thermal_protection": self.config.thermal_protection,
             "onnx_integration": self.config.onnx_integration,
-            "update_environment": self.config.update_environment
+            "update_environment": self.config.update_environment,
         }
 
     def get_performance_config(self) -> dict[str, Any]:
@@ -160,14 +161,16 @@ class EnvironmentConfigLoader:
             "memory_optimization": self.config.enable_performance_optimization,
             "max_memory_mb": self.config.max_memory_mb,
             "target_rtf": self.config.target_rtf,
-            "dynamic_cpu_allocation": self.get_dynamic_cpu_allocation_config()
+            "dynamic_cpu_allocation": self.get_dynamic_cpu_allocation_config(),
         }
 
     def apply_onnx_environment_variables(self):
         """Apply ONNX Runtime environment variables"""
         try:
             onnx_env_vars = {
-                "ORT_DISABLE_ALL_OPTIMIZATION": "0" if not self.config.ort_disable_all_optimization else "1",
+                "ORT_DISABLE_ALL_OPTIMIZATION": "0"
+                if not self.config.ort_disable_all_optimization
+                else "1",
                 "ORT_ENABLE_CPU_FP16_OPS": "1" if self.config.ort_enable_cpu_fp16_ops else "0",
                 "ORT_GRAPH_OPTIMIZATION_LEVEL": self.config.ort_graph_optimization_level,
                 "ORT_EXECUTION_MODE": self.config.ort_execution_mode,
@@ -224,7 +227,9 @@ class EnvironmentConfigLoader:
                     os.environ[key] = value
 
             if threading_vars:
-                logger.info(f"Applied threading environment variables: {list(threading_vars.keys())}")
+                logger.info(
+                    f"Applied threading environment variables: {list(threading_vars.keys())}"
+                )
 
         except Exception as e:
             logger.error(f"Failed to apply threading variables: {e}")
@@ -235,8 +240,10 @@ class EnvironmentConfigLoader:
         self.apply_memory_allocation_variables()
         self.apply_threading_variables()
 
+
 # Global environment config loader
 _env_config_loader: EnvironmentConfigLoader | None = None
+
 
 def get_environment_config() -> EnvironmentConfigLoader:
     """Get or create global environment config loader"""
@@ -244,6 +251,7 @@ def get_environment_config() -> EnvironmentConfigLoader:
     if _env_config_loader is None:
         _env_config_loader = EnvironmentConfigLoader()
     return _env_config_loader
+
 
 def initialize_environment_config():
     """Initialize environment configuration and apply variables"""

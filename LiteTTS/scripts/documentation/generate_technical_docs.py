@@ -12,8 +12,9 @@ import sys
 from pathlib import Path
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 class TechnicalDocumentationGenerator:
     """Automated documentation generation for the Kokoro ONNX TTS API"""
@@ -21,10 +22,7 @@ class TechnicalDocumentationGenerator:
     def __init__(self, project_root: str = "."):
         self.project_root = Path(project_root)
         self.docs_output = self.project_root / "docs" / "api" / "generated"
-        self.source_dirs = [
-            self.project_root / "kokoro",
-            self.project_root / "examples"
-        ]
+        self.source_dirs = [self.project_root / "kokoro", self.project_root / "examples"]
 
         # Documentation configuration
         self.config = {
@@ -35,7 +33,7 @@ class TechnicalDocumentationGenerator:
             "include_private": False,
             "include_source": True,
             "format": "markdown",
-            "template": "custom"
+            "template": "custom",
         }
 
         logger.info(f"Documentation generator initialized for {self.project_root}")
@@ -81,7 +79,7 @@ class TechnicalDocumentationGenerator:
             self.docs_output / "api",
             self.docs_output / "config",
             self.docs_output / "examples",
-            self.docs_output / "architecture"
+            self.docs_output / "architecture",
         ]
 
         for directory in directories:
@@ -111,10 +109,13 @@ class TechnicalDocumentationGenerator:
                 cmd = [
                     "pdoc",
                     str(source_dir),
-                    "--output-dir", str(output_dir),
-                    "--format", "markdown",
-                    "--docformat", "google",
-                    "--include-undocumented"
+                    "--output-dir",
+                    str(output_dir),
+                    "--format",
+                    "markdown",
+                    "--docformat",
+                    "google",
+                    "--include-undocumented",
                 ]
 
                 if not self.config["include_private"]:
@@ -147,7 +148,7 @@ class TechnicalDocumentationGenerator:
         for py_file in python_files:
             try:
                 # Parse the Python file
-                with open(py_file, 'r', encoding='utf-8') as f:
+                with open(py_file, "r", encoding="utf-8") as f:
                     content = f.read()
 
                 # Extract module docstring and class/function definitions
@@ -161,7 +162,7 @@ class TechnicalDocumentationGenerator:
                 doc_file = output_dir / f"{relative_path.with_suffix('.md')}"
                 doc_file.parent.mkdir(parents=True, exist_ok=True)
 
-                with open(doc_file, 'w', encoding='utf-8') as f:
+                with open(doc_file, "w", encoding="utf-8") as f:
                     f.write(doc_content)
 
                 logger.info(f"Generated manual docs for {py_file}")
@@ -174,9 +175,11 @@ class TechnicalDocumentationGenerator:
         content = f"# {file_path.name}\n\n"
 
         # Module docstring
-        if (isinstance(tree.body[0], ast.Expr) and
-            isinstance(tree.body[0].value, ast.Constant) and
-            isinstance(tree.body[0].value.value, str)):
+        if (
+            isinstance(tree.body[0], ast.Expr)
+            and isinstance(tree.body[0].value, ast.Constant)
+            and isinstance(tree.body[0].value.value, str)
+        ):
             content += f"{tree.body[0].value.value}\n\n"
 
         # Extract classes and functions
@@ -228,7 +231,7 @@ class TechnicalDocumentationGenerator:
                 content += f"### {config_file.name}\n\n"
                 content += self._document_json_config(config_file)
 
-        with open(output_file, 'w') as f:
+        with open(output_file, "w") as f:
             f.write(content)
 
         logger.info(f"Configuration documentation saved to {output_file}")
@@ -236,7 +239,7 @@ class TechnicalDocumentationGenerator:
     def _document_json_config(self, config_file: Path) -> str:
         """Document a JSON configuration file"""
         try:
-            with open(config_file, 'r', encoding='utf-8') as f:
+            with open(config_file, "r", encoding="utf-8") as f:
                 config_data = json.load(f)
 
             content = f"**File:** `{config_file.name}`\n\n"
@@ -264,7 +267,7 @@ class TechnicalDocumentationGenerator:
             "time_stretching": "Time-stretching optimization settings (beta)",
             "cache": "Caching configuration for performance optimization",
             "server": "Server configuration and networking settings",
-            "logging": "Logging configuration and verbosity settings"
+            "logging": "Logging configuration and verbosity settings",
         }
 
         content = "**Configuration Sections:**\n\n"
@@ -284,7 +287,9 @@ class TechnicalDocumentationGenerator:
         output_file = self.docs_output / "examples" / "EXAMPLES_REFERENCE.md"
 
         content = "# Examples Reference\n\n"
-        content += "Interactive examples and demonstrations of Kokoro ONNX TTS API capabilities.\n\n"
+        content += (
+            "Interactive examples and demonstrations of Kokoro ONNX TTS API capabilities.\n\n"
+        )
 
         if examples_dir.exists():
             for example_dir in examples_dir.iterdir():
@@ -294,12 +299,12 @@ class TechnicalDocumentationGenerator:
                     # Look for README or description
                     readme_file = example_dir / "README.md"
                     if readme_file.exists():
-                        with open(readme_file, 'r') as f:
+                        with open(readme_file, "r") as f:
                             content += f.read() + "\n\n"
                     else:
                         content += f"Interactive example located at `static/examples/{example_dir.name}/`\n\n"
 
-        with open(output_file, 'w') as f:
+        with open(output_file, "w") as f:
             f.write(content)
 
         logger.info(f"Examples documentation saved to {output_file}")
@@ -381,7 +386,7 @@ Symbol Handling → Phonetic Rules → Caching → Audio Generation → Streamin
 - **Configuration Security**: Secure configuration management
 """
 
-        with open(output_file, 'w') as f:
+        with open(output_file, "w") as f:
             f.write(content)
 
         logger.info(f"Architecture documentation saved to {output_file}")
@@ -392,11 +397,11 @@ Symbol Handling → Phonetic Rules → Caching → Audio Generation → Streamin
 
         index_file = self.docs_output / "README.md"
 
-        content = f"""# {self.config['project_name']} - Generated Documentation
+        content = f"""# {self.config["project_name"]} - Generated Documentation
 
-{self.config['project_description']}
+{self.config["project_description"]}
 
-**Version:** {self.config['version']}  
+**Version:** {self.config["version"]}  
 **Generated:** {self._get_current_timestamp()}
 
 ## 📚 Documentation Sections
@@ -426,7 +431,7 @@ Symbol Handling → Phonetic Rules → Caching → Audio Generation → Streamin
 *This documentation is automatically generated from source code, configuration files, and examples.*
 """
 
-        with open(index_file, 'w') as f:
+        with open(index_file, "w") as f:
             f.write(content)
 
         logger.info(f"Navigation index saved to {index_file}")
@@ -490,7 +495,7 @@ Symbol Handling → Phonetic Rules → Caching → Audio Generation → Streamin
 *Documentation generated by the Kokoro ONNX TTS API automated documentation system.*
 """
 
-        with open(summary_file, 'w') as f:
+        with open(summary_file, "w") as f:
             f.write(content)
 
         logger.info(f"Summary report saved to {summary_file}")
@@ -498,6 +503,7 @@ Symbol Handling → Phonetic Rules → Caching → Audio Generation → Streamin
     def _get_current_timestamp(self) -> str:
         """Get current timestamp for documentation"""
         from datetime import datetime
+
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     def _fallback_api_documentation(self):
@@ -508,6 +514,7 @@ Symbol Handling → Phonetic Rules → Caching → Audio Generation → Streamin
             if source_dir.exists():
                 output_dir = self.docs_output / "api" / source_dir.name
                 self._manual_doc_extraction(source_dir, output_dir)
+
 
 def main():
     """Main documentation generation execution"""
@@ -533,6 +540,7 @@ def main():
         return False
 
     return True
+
 
 if __name__ == "__main__":
     success = main()

@@ -14,10 +14,7 @@ class TestPerformanceMetrics:
     def test_creation(self):
         """Test creating performance metrics"""
         metrics = PerformanceMetrics(
-            operation_name="test_op",
-            execution_time=0.5,
-            memory_usage_mb=100.0,
-            cpu_percent=25.0
+            operation_name="test_op", execution_time=0.5, memory_usage_mb=100.0, cpu_percent=25.0
         )
         assert metrics.operation_name == "test_op"
         assert metrics.execution_time == 0.5
@@ -25,10 +22,7 @@ class TestPerformanceMetrics:
     def test_creation_with_defaults(self):
         """Test creating metrics with defaults"""
         metrics = PerformanceMetrics(
-            operation_name="test_op",
-            execution_time=0.5,
-            memory_usage_mb=100.0,
-            cpu_percent=25.0
+            operation_name="test_op", execution_time=0.5, memory_usage_mb=100.0, cpu_percent=25.0
         )
         assert metrics.rtf == 0.0
         assert metrics.text_length == 0
@@ -43,7 +37,7 @@ class TestProfilingSession:
             session_id="test_001",
             start_time=time.time(),
             end_time=time.time() + 10.0,
-            total_duration=10.0
+            total_duration=10.0,
         )
         assert session.session_id == "test_001"
         assert session.total_duration == 10.0

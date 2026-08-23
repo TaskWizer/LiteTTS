@@ -20,9 +20,7 @@ class TestColdStartOptimizationConfig:
     def test_creation_custom(self):
         """Test creating config with custom values"""
         config = ColdStartOptimizationConfig(
-            enable_aggressive_preloading=False,
-            cache_size_mb=128,
-            warmup_delay_seconds=2.0
+            enable_aggressive_preloading=False, cache_size_mb=128, warmup_delay_seconds=2.0
         )
         assert config.enable_aggressive_preloading is False
         assert config.cache_size_mb == 128

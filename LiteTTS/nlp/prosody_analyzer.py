@@ -9,13 +9,16 @@ from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class ProsodyMarker:
     """Represents a prosody marker in text"""
+
     position: int
     marker_type: str
     intensity: float = 1.0
     duration: float = 0.5
+
 
 class ProsodyAnalyzer:
     """Analyzes text for prosody control based on punctuation and conversational markers"""
@@ -27,41 +30,46 @@ class ProsodyAnalyzer:
     def _compile_punctuation_patterns(self) -> dict[str, tuple[re.Pattern, float, float]]:
         """Compile punctuation patterns with pause durations and intonation markers"""
         return {
-            'period': (re.compile(r'\.(?!\d)'), 0.8, 0.6),  # Period (not in decimals)
-            'comma': (re.compile(r','), 0.4, 0.3),          # Comma
-            'semicolon': (re.compile(r';'), 0.6, 0.4),      # Semicolon
-            'colon': (re.compile(r':(?!\d)'), 0.5, 0.4),    # Colon (not in time)
-            'question': (re.compile(r'\?'), 0.8, 0.6),      # Question mark - rising intonation
-            'exclamation': (re.compile(r'!'), 0.8, 0.6),    # Exclamation - emphatic tone
-            'ellipsis': (re.compile(r'\.{3,}'), 1.2, 0.8),  # Ellipsis
-            'dash': (re.compile(r'—|--'), 0.6, 0.4),        # Em dash
-            'parentheses': (re.compile(r'[()]'), 0.3, 0.2), # Parentheses
-            'quotes': (re.compile(r'["\']'), 0.2, 0.1)      # Quotes
+            "period": (re.compile(r"\.(?!\d)"), 0.8, 0.6),  # Period (not in decimals)
+            "comma": (re.compile(r","), 0.4, 0.3),  # Comma
+            "semicolon": (re.compile(r";"), 0.6, 0.4),  # Semicolon
+            "colon": (re.compile(r":(?!\d)"), 0.5, 0.4),  # Colon (not in time)
+            "question": (re.compile(r"\?"), 0.8, 0.6),  # Question mark - rising intonation
+            "exclamation": (re.compile(r"!"), 0.8, 0.6),  # Exclamation - emphatic tone
+            "ellipsis": (re.compile(r"\.{3,}"), 1.2, 0.8),  # Ellipsis
+            "dash": (re.compile(r"—|--"), 0.6, 0.4),  # Em dash
+            "parentheses": (re.compile(r"[()]"), 0.3, 0.2),  # Parentheses
+            "quotes": (re.compile(r'["\']'), 0.2, 0.1),  # Quotes
         }
 
     def _compile_conversational_patterns(self) -> dict[str, tuple[re.Pattern, str, float]]:
         """Compile conversational marker patterns"""
         return {
-            'false_start': (
-                re.compile(r'\b(I|we|you|they|he|she|it)\s+(uh|um|er|ah)\s+\1\b', re.IGNORECASE),
-                'false_start', 0.3
+            "false_start": (
+                re.compile(r"\b(I|we|you|they|he|she|it)\s+(uh|um|er|ah)\s+\1\b", re.IGNORECASE),
+                "false_start",
+                0.3,
             ),
-            'filler_words': (
-                re.compile(r'\b(uh|um|er|ah|like|you know|I mean|well|so)\b', re.IGNORECASE),
-                'filler', 0.2
+            "filler_words": (
+                re.compile(r"\b(uh|um|er|ah|like|you know|I mean|well|so)\b", re.IGNORECASE),
+                "filler",
+                0.2,
             ),
-            'breathing': (
-                re.compile(r'\*breathes?\*|\*inhales?\*|\*exhales?\*|\*sighs?\*', re.IGNORECASE),
-                'breathing', 0.8
+            "breathing": (
+                re.compile(r"\*breathes?\*|\*inhales?\*|\*exhales?\*|\*sighs?\*", re.IGNORECASE),
+                "breathing",
+                0.8,
             ),
-            'laughter': (
-                re.compile(r'\*laughs?\*|\*chuckles?\*|\*giggles?\*|haha|hehe|lol', re.IGNORECASE),
-                'laughter', 0.5
+            "laughter": (
+                re.compile(r"\*laughs?\*|\*chuckles?\*|\*giggles?\*|haha|hehe|lol", re.IGNORECASE),
+                "laughter",
+                0.5,
             ),
-            'hesitation': (
-                re.compile(r'\b(well|uh|um|let me see|hmm)\b', re.IGNORECASE),
-                'hesitation', 0.4
-            )
+            "hesitation": (
+                re.compile(r"\b(well|uh|um|let me see|hmm)\b", re.IGNORECASE),
+                "hesitation",
+                0.4,
+            ),
         }
 
     def analyze_prosody(self, text: str) -> list[ProsodyMarker]:
@@ -89,44 +97,54 @@ class ProsodyAnalyzer:
         for punct_type, (pattern, intensity, duration) in self.punctuation_patterns.items():
             for match in pattern.finditer(text):
                 # Enhanced handling for questions and exclamations
-                if punct_type == 'question':
+                if punct_type == "question":
                     # Add rising intonation marker for questions
-                    markers.append(ProsodyMarker(
-                        position=match.start(),
-                        marker_type="intonation_rising",
-                        intensity=1.2,  # Stronger for question intonation
-                        duration=duration
-                    ))
+                    markers.append(
+                        ProsodyMarker(
+                            position=match.start(),
+                            marker_type="intonation_rising",
+                            intensity=1.2,  # Stronger for question intonation
+                            duration=duration,
+                        )
+                    )
                     # Also add pause marker
-                    markers.append(ProsodyMarker(
-                        position=match.start(),
-                        marker_type=f"pause_{punct_type}",
-                        intensity=intensity,
-                        duration=duration
-                    ))
-                elif punct_type == 'exclamation':
+                    markers.append(
+                        ProsodyMarker(
+                            position=match.start(),
+                            marker_type=f"pause_{punct_type}",
+                            intensity=intensity,
+                            duration=duration,
+                        )
+                    )
+                elif punct_type == "exclamation":
                     # Add emphatic tone marker for exclamations
-                    markers.append(ProsodyMarker(
-                        position=match.start(),
-                        marker_type="emphasis_exclamation",
-                        intensity=1.3,  # Strong emphasis for exclamations
-                        duration=duration
-                    ))
+                    markers.append(
+                        ProsodyMarker(
+                            position=match.start(),
+                            marker_type="emphasis_exclamation",
+                            intensity=1.3,  # Strong emphasis for exclamations
+                            duration=duration,
+                        )
+                    )
                     # Also add pause marker
-                    markers.append(ProsodyMarker(
-                        position=match.start(),
-                        marker_type=f"pause_{punct_type}",
-                        intensity=intensity,
-                        duration=duration
-                    ))
+                    markers.append(
+                        ProsodyMarker(
+                            position=match.start(),
+                            marker_type=f"pause_{punct_type}",
+                            intensity=intensity,
+                            duration=duration,
+                        )
+                    )
                 else:
                     # Standard pause marker for other punctuation
-                    markers.append(ProsodyMarker(
-                        position=match.start(),
-                        marker_type=f"pause_{punct_type}",
-                        intensity=intensity,
-                        duration=duration
-                    ))
+                    markers.append(
+                        ProsodyMarker(
+                            position=match.start(),
+                            marker_type=f"pause_{punct_type}",
+                            intensity=intensity,
+                            duration=duration,
+                        )
+                    )
 
         return markers
 
@@ -139,23 +157,25 @@ class ProsodyAnalyzer:
                 # Determine duration based on marker type
                 duration = self._get_marker_duration(marker_name)
 
-                markers.append(ProsodyMarker(
-                    position=match.start(),
-                    marker_type=marker_name,
-                    intensity=intensity,
-                    duration=duration
-                ))
+                markers.append(
+                    ProsodyMarker(
+                        position=match.start(),
+                        marker_type=marker_name,
+                        intensity=intensity,
+                        duration=duration,
+                    )
+                )
 
         return markers
 
     def _get_marker_duration(self, marker_name: str) -> float:
         """Get duration for different marker types"""
         durations = {
-            'false_start': 0.3,
-            'filler': 0.2,
-            'breathing': 0.8,
-            'laughter': 0.5,
-            'hesitation': 0.4
+            "false_start": 0.3,
+            "filler": 0.2,
+            "breathing": 0.8,
+            "laughter": 0.5,
+            "hesitation": 0.4,
         }
         return durations.get(marker_name, 0.3)
 
@@ -179,8 +199,7 @@ class ProsodyAnalyzer:
         """Process false starts for natural speech"""
         # Pattern: "I uh I think" -> "I... uh... I think"
         false_start_pattern = re.compile(
-            r'\b(I|we|you|they|he|she|it)\s+(uh|um|er|ah)\s+\1\b',
-            re.IGNORECASE
+            r"\b(I|we|you|they|he|she|it)\s+(uh|um|er|ah)\s+\1\b", re.IGNORECASE
         )
 
         def replace_false_start(match):
@@ -195,12 +214,11 @@ class ProsodyAnalyzer:
         """Add natural pauses around filler words"""
         # FIXED: Exclude filler processing for pronunciation guides (words with hyphens or mixed case)
         # Skip processing if text looks like a pronunciation guide
-        if re.search(r'[A-Z]-[a-z]|[a-z]-[A-Z]|[A-Z]{2,}', text):
+        if re.search(r"[A-Z]-[a-z]|[a-z]-[A-Z]|[A-Z]{2,}", text):
             return text
 
         filler_pattern = re.compile(
-            r'\b(uh|um|er|ah|like|you know|I mean|well|so)\b',
-            re.IGNORECASE
+            r"\b(uh|um|er|ah|like|you know|I mean|well|so)\b", re.IGNORECASE
         )
 
         def replace_filler(match):
@@ -214,21 +232,17 @@ class ProsodyAnalyzer:
         """Process action tokens like *breathes*, *laughs*"""
         # Breathing tokens
         breathing_pattern = re.compile(
-            r'\*\s*(breathes?|inhales?|exhales?|sighs?)\s*\*',
-            re.IGNORECASE
+            r"\*\s*(breathes?|inhales?|exhales?|sighs?)\s*\*", re.IGNORECASE
         )
-        text = breathing_pattern.sub(r'... \1 ...', text)
+        text = breathing_pattern.sub(r"... \1 ...", text)
 
         # Laughter tokens
-        laughter_pattern = re.compile(
-            r'\*\s*(laughs?|chuckles?|giggles?)\s*\*',
-            re.IGNORECASE
-        )
-        text = laughter_pattern.sub(r'... \1 ...', text)
+        laughter_pattern = re.compile(r"\*\s*(laughs?|chuckles?|giggles?)\s*\*", re.IGNORECASE)
+        text = laughter_pattern.sub(r"... \1 ...", text)
 
         # Generic action tokens
-        action_pattern = re.compile(r'\*([^*]+)\*')
-        text = action_pattern.sub(r'... \1 ...', text)
+        action_pattern = re.compile(r"\*([^*]+)\*")
+        text = action_pattern.sub(r"... \1 ...", text)
 
         return text
 
@@ -236,26 +250,22 @@ class ProsodyAnalyzer:
         """Get detailed prosody information"""
         markers = self.analyze_prosody(text)
 
-        prosody_info = {
-            'pauses': [],
-            'emphasis': [],
-            'intonation': []
-        }
+        prosody_info = {"pauses": [], "emphasis": [], "intonation": []}
 
         for marker in markers:
             marker_info = {
-                'position': marker.position,
-                'type': marker.marker_type,
-                'intensity': marker.intensity,
-                'duration': marker.duration
+                "position": marker.position,
+                "type": marker.marker_type,
+                "intensity": marker.intensity,
+                "duration": marker.duration,
             }
 
-            if 'pause' in marker.marker_type:
-                prosody_info['pauses'].append(marker_info)
-            elif marker.marker_type in ['false_start', 'hesitation']:
-                prosody_info['emphasis'].append(marker_info)
+            if "pause" in marker.marker_type:
+                prosody_info["pauses"].append(marker_info)
+            elif marker.marker_type in ["false_start", "hesitation"]:
+                prosody_info["emphasis"].append(marker_info)
             else:
-                prosody_info['intonation'].append(marker_info)
+                prosody_info["intonation"].append(marker_info)
 
         return prosody_info
 
@@ -265,8 +275,8 @@ class ProsodyAnalyzer:
         # Instead, preserve natural punctuation for TTS engines to handle
 
         # Handle multiple question/exclamation marks by normalizing them
-        text = re.sub(r'\?{2,}', '?', text)  # Multiple questions -> single question mark
-        text = re.sub(r'!{2,}', '!', text)   # Multiple exclamations -> single exclamation mark
+        text = re.sub(r"\?{2,}", "?", text)  # Multiple questions -> single question mark
+        text = re.sub(r"!{2,}", "!", text)  # Multiple exclamations -> single exclamation mark
 
         # Note: Removed visual arrows (↗, ‼) as they were being converted to spoken words
         # TTS engines handle question marks and exclamation marks naturally for intonation

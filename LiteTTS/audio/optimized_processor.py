@@ -12,23 +12,19 @@ class OptimizedAudioProcessor:
 
     def __init__(self):
         self.audio_cache = {}
-        self.processing_stats = {
-            'total_requests': 0,
-            'cache_hits': 0,
-            'avg_processing_time': 0.0
-        }
+        self.processing_stats = {"total_requests": 0, "cache_hits": 0, "avg_processing_time": 0.0}
 
-    def process_audio_optimized(self, audio_data: np.ndarray,
-                              sample_rate: int = 24000,
-                              optimize_for_rtf: bool = True) -> np.ndarray:
+    def process_audio_optimized(
+        self, audio_data: np.ndarray, sample_rate: int = 24000, optimize_for_rtf: bool = True
+    ) -> np.ndarray:
         """
         Process audio with RTF optimizations
-        
+
         Args:
             audio_data: Raw audio data
             sample_rate: Audio sample rate
             optimize_for_rtf: Enable RTF optimizations
-            
+
         Returns:
             Processed audio data
         """
@@ -67,8 +63,9 @@ class OptimizedAudioProcessor:
             return audio / max_val * 0.95
         return audio
 
-    def _efficient_resample(self, audio: np.ndarray,
-                          source_rate: int, target_rate: int) -> np.ndarray:
+    def _efficient_resample(
+        self, audio: np.ndarray, source_rate: int, target_rate: int
+    ) -> np.ndarray:
         """Efficient resampling with minimal quality loss"""
         if source_rate == target_rate:
             return audio
@@ -94,21 +91,23 @@ class OptimizedAudioProcessor:
 
     def _update_processing_stats(self, processing_time: float):
         """Update processing statistics"""
-        self.processing_stats['total_requests'] += 1
+        self.processing_stats["total_requests"] += 1
 
         # Running average of processing time
-        total = self.processing_stats['total_requests']
-        current_avg = self.processing_stats['avg_processing_time']
-        self.processing_stats['avg_processing_time'] = (
-            (current_avg * (total - 1) + processing_time) / total
-        )
+        total = self.processing_stats["total_requests"]
+        current_avg = self.processing_stats["avg_processing_time"]
+        self.processing_stats["avg_processing_time"] = (
+            current_avg * (total - 1) + processing_time
+        ) / total
 
     def get_performance_stats(self) -> dict:
         """Get current performance statistics"""
         return self.processing_stats.copy()
 
+
 # Global instance for reuse
 _audio_processor = OptimizedAudioProcessor()
+
 
 def get_optimized_audio_processor():
     """Get the global optimized audio processor instance"""

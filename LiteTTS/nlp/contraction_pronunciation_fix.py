@@ -9,6 +9,7 @@ import re
 
 logger = logging.getLogger(__name__)
 
+
 class ContractionPronunciationFix:
     """Processor to fix contraction pronunciation issues in TTS"""
 
@@ -26,7 +27,6 @@ class ContractionPronunciationFix:
             "I'd": "I would",
             "I've": "I have",
             "I're": "I are",  # Non-standard but sometimes used
-
             # Alternative phonetic approach for problematic contractions
             "I'm": "I-am",  # Hyphenated to ensure separation
             "you're": "you-are",
@@ -41,7 +41,6 @@ class ContractionPronunciationFix:
             "you've": "you-have",
             "we've": "we-have",
             "they've": "they-have",
-
             # Problematic contractions that lose pronunciation clarity
             "he'll": "he-will",
             "she'll": "she-will",
@@ -52,7 +51,6 @@ class ContractionPronunciationFix:
             "he's": "he-is",
             "she's": "she-is",
             "it's": "it-is",
-
             # Modal contractions
             "won't": "will not",  # Irregular contraction
             "can't": "cannot",
@@ -61,7 +59,6 @@ class ContractionPronunciationFix:
             "wouldn't": "would not",
             "mustn't": "must not",
             "needn't": "need not",
-
             # Negative contractions (keep some natural ones)
             "don't": "don't",  # Keep natural
             "doesn't": "doesn't",  # Keep natural
@@ -86,13 +83,11 @@ class ContractionPronunciationFix:
             "he's": "HE-Z",
             "she's": "SHE-Z",
             "it's": "IT-S",
-
             # Alternative approach: spell out the sounds
             "I'm": "eye-m",
             "you're": "you-r",
             "we're": "we-r",
             "they're": "they-r",
-
             # For very problematic cases, use full expansion
             "I'll": "I will",
             "you'll": "you will",
@@ -111,13 +106,11 @@ class ContractionPronunciationFix:
             (r"\bI'll\b", "I will", "Fix I'll pronunciation"),
             (r"\bI'd\b", "I would", "Fix I'd pronunciation"),
             (r"\bI've\b", "I have", "Fix I've pronunciation"),
-
             # You contractions
             (r"\byou're\b", "you are", "Fix you're pronunciation"),
             (r"\byou'll\b", "you will", "Fix you'll pronunciation"),
             (r"\byou'd\b", "you would", "Fix you'd pronunciation"),
             (r"\byou've\b", "you have", "Fix you've pronunciation"),
-
             # Third person contractions
             (r"\bhe's\b", "he is", "Fix he's pronunciation"),
             (r"\bshe's\b", "she is", "Fix she's pronunciation"),
@@ -125,7 +118,6 @@ class ContractionPronunciationFix:
             (r"\bhe'll\b", "he will", "Fix he'll pronunciation"),
             (r"\bshe'll\b", "she will", "Fix she'll pronunciation"),
             (r"\bit'll\b", "it will", "Fix it'll pronunciation"),
-
             # Plural contractions
             (r"\bwe're\b", "we are", "Fix we're pronunciation"),
             (r"\bthey're\b", "they are", "Fix they're pronunciation"),
@@ -135,7 +127,6 @@ class ContractionPronunciationFix:
             (r"\bthey'd\b", "they would", "Fix they'd pronunciation"),
             (r"\bwe've\b", "we have", "Fix we've pronunciation"),
             (r"\bthey've\b", "they have", "Fix they've pronunciation"),
-
             # Modal contractions
             (r"\bwon't\b", "will not", "Fix won't pronunciation"),
             (r"\bcan't\b", "cannot", "Fix can't pronunciation"),
@@ -149,7 +140,7 @@ class ContractionPronunciationFix:
     def fix_contraction_pronunciation(self, text: str, mode: str = "expand") -> str:
         """
         Fix contraction pronunciation issues
-        
+
         Args:
             text: Input text with contractions
             mode: "expand" (full expansion) or "phonetic" (phonetic spelling)
@@ -185,7 +176,7 @@ class ContractionPronunciationFix:
     def _apply_phonetic_contractions(self, text: str) -> str:
         """Apply phonetic spelling for contractions"""
         for contraction, phonetic in self.phonetic_contractions.items():
-            pattern = r'\b' + re.escape(contraction) + r'\b'
+            pattern = r"\b" + re.escape(contraction) + r"\b"
             if re.search(pattern, text, re.IGNORECASE):
                 text = re.sub(pattern, phonetic, text, flags=re.IGNORECASE)
                 logger.debug(f"Applied phonetic fix: {contraction} → {phonetic}")
@@ -203,11 +194,9 @@ class ContractionPronunciationFix:
         problematic_contractions = [
             # Keep only "wasn't" as it was specifically reported as problematic
             (r"\bwasn't\b", "was not"),
-
             # REMOVED: Most contractions should be preserved for natural speech
             # The original approach of expanding everything removes apostrophe sounds
             # which is worse than minor pronunciation variations
-
             # NOTE: "I'll", "won't", "can't" etc. are REMOVED from this list
             # They should be preserved with their apostrophes for natural pronunciation
         ]
@@ -219,9 +208,20 @@ class ContractionPronunciationFix:
 
         # Keep natural contractions as-is
         natural_contractions = [
-            "don't", "doesn't", "didn't", "isn't", "aren't",
-            "wasn't", "weren't", "hasn't", "haven't", "hadn't",
-            "can't", "couldn't", "shouldn't", "wouldn't"
+            "don't",
+            "doesn't",
+            "didn't",
+            "isn't",
+            "aren't",
+            "wasn't",
+            "weren't",
+            "hasn't",
+            "haven't",
+            "hadn't",
+            "can't",
+            "couldn't",
+            "shouldn't",
+            "wouldn't",
         ]
 
         # These stay unchanged for natural speech
@@ -231,10 +231,10 @@ class ContractionPronunciationFix:
     def analyze_contraction_issues(self, text: str) -> dict[str, list[str]]:
         """Analyze text for contraction pronunciation issues"""
         issues = {
-            'problematic_contractions': [],
-            'natural_contractions': [],
-            'potential_fixes': [],
-            'apostrophe_issues': []
+            "problematic_contractions": [],
+            "natural_contractions": [],
+            "potential_fixes": [],
+            "apostrophe_issues": [],
         }
 
         # Find all contractions
@@ -242,20 +242,22 @@ class ContractionPronunciationFix:
         contractions = re.findall(contraction_pattern, text)
 
         for contraction in contractions:
-            if contraction.lower() in [p[0].replace(r'\b', '').replace(r'\b', '') for p, _, _ in self.problematic_patterns]:
-                issues['problematic_contractions'].append(contraction)
+            if contraction.lower() in [
+                p[0].replace(r"\b", "").replace(r"\b", "") for p, _, _ in self.problematic_patterns
+            ]:
+                issues["problematic_contractions"].append(contraction)
             else:
-                issues['natural_contractions'].append(contraction)
+                issues["natural_contractions"].append(contraction)
 
         # Check for potential fixes
         for contraction, fix in self.contraction_fixes.items():
             if contraction.lower() in text.lower():
-                issues['potential_fixes'].append(f"{contraction} → {fix}")
+                issues["potential_fixes"].append(f"{contraction} → {fix}")
 
         # Check for apostrophe issues
         apostrophe_issues = re.findall(r"\w+&#x27;\w+|\w+&apos;\w+", text)
         if apostrophe_issues:
-            issues['apostrophe_issues'] = apostrophe_issues
+            issues["apostrophe_issues"] = apostrophe_issues
 
         return issues
 
@@ -272,6 +274,7 @@ class ContractionPronunciationFix:
             text = text.replace(variant, "'")
 
         return text
+
 
 # Global instance for easy access
 contraction_pronunciation_fix = ContractionPronunciationFix()

@@ -14,10 +14,10 @@ from LiteTTS.voice.downloader import VoiceDownloader
 
 # Setup logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s | %(levelname)s | %(name)s | %(message)s'
+    level=logging.INFO, format="%(asctime)s | %(levelname)s | %(name)s | %(message)s"
 )
 logger = logging.getLogger(__name__)
+
 
 def test_voice_discovery():
     """Test voice discovery from HuggingFace"""
@@ -39,6 +39,7 @@ def test_voice_discovery():
     except Exception as e:
         print(f"❌ Discovery failed: {e}")
         return False
+
 
 def test_voice_download_and_conversion():
     """Test downloading and converting a single voice"""
@@ -93,8 +94,10 @@ def test_voice_download_and_conversion():
     except Exception as e:
         print(f"❌ Download/conversion failed: {e}")
         import traceback
+
         traceback.print_exc()
         return False
+
 
 def test_voice_validation():
     """Test voice file validation"""
@@ -118,6 +121,7 @@ def test_voice_validation():
     except Exception as e:
         print(f"❌ Validation failed: {e}")
         return False
+
 
 def test_voice_combiner_integration():
     """Test integration with voice combiner"""
@@ -143,7 +147,7 @@ def test_voice_combiner_integration():
             if success:
                 # Check if combined file exists
                 combined_file = combiner.combined_file
-                npz_file = combined_file.with_suffix('.npz')
+                npz_file = combined_file.with_suffix(".npz")
 
                 print(f"Combined file exists: {combined_file.exists()}")
                 print(f"NPZ file exists: {npz_file.exists()}")
@@ -158,8 +162,10 @@ def test_voice_combiner_integration():
     except Exception as e:
         print(f"❌ Voice combiner test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return False
+
 
 def main():
     """Run all voice conversion tests"""
@@ -193,6 +199,7 @@ def main():
         print("\n❌ Some tests failed. Voice conversion system needs fixes.")
 
     return 0 if all_passed else 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

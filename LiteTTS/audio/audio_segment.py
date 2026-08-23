@@ -12,9 +12,11 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class AudioSegment:
     """Enhanced audio data structure with processing capabilities"""
+
     audio_data: np.ndarray
     sample_rate: int
     duration: float = 0.0
@@ -30,14 +32,16 @@ class AudioSegment:
             self.audio_data = self.audio_data.astype(np.float32)
 
     @classmethod
-    def from_bytes(cls, audio_bytes: bytes, sample_rate: int, format: str = "wav") -> 'AudioSegment':
+    def from_bytes(
+        cls, audio_bytes: bytes, sample_rate: int, format: str = "wav"
+    ) -> "AudioSegment":
         """Create AudioSegment from raw audio bytes"""
         # Convert bytes to numpy array (assuming 16-bit PCM)
         audio_data = np.frombuffer(audio_bytes, dtype=np.int16).astype(np.float32) / 32768.0
         return cls(audio_data=audio_data, sample_rate=sample_rate, format=format)
 
     @classmethod
-    def silence(cls, duration: float, sample_rate: int = 24000) -> 'AudioSegment':
+    def silence(cls, duration: float, sample_rate: int = 24000) -> "AudioSegment":
         """Create a silent audio segment"""
         samples = int(duration * sample_rate)
         audio_data = np.zeros(samples, dtype=np.float32)
@@ -49,13 +53,13 @@ class AudioSegment:
             format = self.format
 
         # Convert float32 to int16 for most formats
-        if format.lower() in ['wav', 'mp3', 'ogg']:
+        if format.lower() in ["wav", "mp3", "ogg"]:
             audio_int16 = (self.audio_data * 32767).astype(np.int16)
             return audio_int16.tobytes()
         else:
             return self.audio_data.tobytes()
 
-    def concatenate(self, other: 'AudioSegment') -> 'AudioSegment':
+    def concatenate(self, other: "AudioSegment") -> "AudioSegment":
         """Concatenate with another audio segment"""
         if self.sample_rate != other.sample_rate:
             raise ValueError(f"Sample rates don't match: {self.sample_rate} vs {other.sample_rate}")
@@ -71,10 +75,10 @@ class AudioSegment:
             sample_rate=self.sample_rate,
             duration=combined_duration,
             format=self.format,
-            metadata=combined_metadata
+            metadata=combined_metadata,
         )
 
-    def trim(self, start_time: float = 0.0, end_time: float | None = None) -> 'AudioSegment':
+    def trim(self, start_time: float = 0.0, end_time: float | None = None) -> "AudioSegment":
         """Trim audio segment to specified time range"""
         start_sample = int(start_time * self.sample_rate)
         end_sample = int(end_time * self.sample_rate) if end_time else len(self.audio_data)
@@ -91,10 +95,10 @@ class AudioSegment:
             sample_rate=self.sample_rate,
             duration=trimmed_duration,
             format=self.format,
-            metadata=self.metadata.copy()
+            metadata=self.metadata.copy(),
         )
 
-    def fade_in(self, duration: float) -> 'AudioSegment':
+    def fade_in(self, duration: float) -> "AudioSegment":
         """Apply fade-in effect"""
         fade_samples = int(duration * self.sample_rate)
         fade_samples = min(fade_samples, len(self.audio_data))
@@ -108,10 +112,10 @@ class AudioSegment:
             sample_rate=self.sample_rate,
             duration=self.duration,
             format=self.format,
-            metadata=self.metadata.copy()
+            metadata=self.metadata.copy(),
         )
 
-    def fade_out(self, duration: float) -> 'AudioSegment':
+    def fade_out(self, duration: float) -> "AudioSegment":
         """Apply fade-out effect"""
         fade_samples = int(duration * self.sample_rate)
         fade_samples = min(fade_samples, len(self.audio_data))
@@ -125,10 +129,10 @@ class AudioSegment:
             sample_rate=self.sample_rate,
             duration=self.duration,
             format=self.format,
-            metadata=self.metadata.copy()
+            metadata=self.metadata.copy(),
         )
 
-    def adjust_volume(self, volume_multiplier: float) -> 'AudioSegment':
+    def adjust_volume(self, volume_multiplier: float) -> "AudioSegment":
         """Adjust volume by multiplier"""
         # Clamp volume multiplier to reasonable range
         volume_multiplier = max(0.0, min(5.0, volume_multiplier))
@@ -145,10 +149,10 @@ class AudioSegment:
             sample_rate=self.sample_rate,
             duration=self.duration,
             format=self.format,
-            metadata=self.metadata.copy()
+            metadata=self.metadata.copy(),
         )
 
-    def resample(self, target_sample_rate: int) -> 'AudioSegment':
+    def resample(self, target_sample_rate: int) -> "AudioSegment":
         """Resample audio to target sample rate"""
         if self.sample_rate == target_sample_rate:
             return self
@@ -166,10 +170,10 @@ class AudioSegment:
             sample_rate=target_sample_rate,
             duration=self.duration,  # Duration stays the same
             format=self.format,
-            metadata=self.metadata.copy()
+            metadata=self.metadata.copy(),
         )
 
-    def get_chunks(self, chunk_duration: float) -> Iterator['AudioSegment']:
+    def get_chunks(self, chunk_duration: float) -> Iterator["AudioSegment"]:
         """Split audio into chunks of specified duration"""
         chunk_samples = int(chunk_duration * self.sample_rate)
 
@@ -183,7 +187,7 @@ class AudioSegment:
                 sample_rate=self.sample_rate,
                 duration=chunk_dur,
                 format=self.format,
-                metadata=self.metadata.copy()
+                metadata=self.metadata.copy(),
             )
 
     def validate(self) -> bool:
@@ -214,14 +218,14 @@ class AudioSegment:
     def get_info(self) -> dict[str, Any]:
         """Get audio segment information"""
         return {
-            'duration': self.duration,
-            'sample_rate': self.sample_rate,
-            'samples': len(self.audio_data),
-            'format': self.format,
-            'channels': 1,  # Mono audio
-            'bit_depth': 32,  # float32
-            'size_bytes': self.audio_data.nbytes,
-            'max_amplitude': float(np.max(np.abs(self.audio_data))),
-            'rms_level': float(np.sqrt(np.mean(self.audio_data ** 2))),
-            'metadata': self.metadata
+            "duration": self.duration,
+            "sample_rate": self.sample_rate,
+            "samples": len(self.audio_data),
+            "format": self.format,
+            "channels": 1,  # Mono audio
+            "bit_depth": 32,  # float32
+            "size_bytes": self.audio_data.nbytes,
+            "max_amplitude": float(np.max(np.abs(self.audio_data))),
+            "rms_level": float(np.sqrt(np.mean(self.audio_data**2))),
+            "metadata": self.metadata,
         }

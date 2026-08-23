@@ -10,6 +10,7 @@ import requests
 
 BASE_URL = "http://localhost:8354"
 
+
 def demo_chunked_vs_standard():
     """Demonstrate the difference between chunked and standard generation"""
 
@@ -38,14 +39,10 @@ def demo_chunked_vs_standard():
     try:
         response = requests.post(
             f"{BASE_URL}/v1/audio/stream",
-            json={
-                "input": long_text.strip(),
-                "voice": "af_heart",
-                "response_format": "mp3"
-            },
+            json={"input": long_text.strip(), "voice": "af_heart", "response_format": "mp3"},
             headers={"Content-Type": "application/json"},
             timeout=120,
-            stream=True
+            stream=True,
         )
 
         if response.status_code == 200:
@@ -64,17 +61,21 @@ def demo_chunked_vs_standard():
                     # Show progress every 10 chunks
                     if chunk_count % 10 == 0:
                         elapsed = time.time() - start_time
-                        print(f"   📦 Received {chunk_count} chunks ({total_size:,} bytes) in {elapsed:.2f}s")
+                        print(
+                            f"   📦 Received {chunk_count} chunks ({total_size:,} bytes) in {elapsed:.2f}s"
+                        )
 
             total_time = time.time() - start_time
-            print(f"   ✅ CHUNKED complete: {chunk_count} chunks, {total_size:,} bytes in {total_time:.2f}s")
+            print(
+                f"   ✅ CHUNKED complete: {chunk_count} chunks, {total_size:,} bytes in {total_time:.2f}s"
+            )
             print(f"   🚀 Time to first audio: {first_byte_time:.2f}s")
 
             chunked_stats = {
                 "first_byte_time": first_byte_time,
                 "total_time": total_time,
                 "chunk_count": chunk_count,
-                "total_size": total_size
+                "total_size": total_size,
             }
 
         else:
@@ -94,13 +95,9 @@ def demo_chunked_vs_standard():
     try:
         response = requests.post(
             f"{BASE_URL}/v1/audio/speech",
-            json={
-                "input": long_text.strip(),
-                "voice": "af_heart",
-                "response_format": "mp3"
-            },
+            json={"input": long_text.strip(), "voice": "af_heart", "response_format": "mp3"},
             headers={"Content-Type": "application/json"},
-            timeout=120
+            timeout=120,
         )
 
         if response.status_code == 200:
@@ -113,7 +110,7 @@ def demo_chunked_vs_standard():
             standard_stats = {
                 "first_byte_time": total_time,  # User waits for complete generation
                 "total_time": total_time,
-                "total_size": total_size
+                "total_size": total_size,
             }
 
         else:
@@ -129,8 +126,10 @@ def demo_chunked_vs_standard():
     print("=" * 50)
 
     # Calculate improvements
-    time_improvement = ((standard_stats["first_byte_time"] - chunked_stats["first_byte_time"]) /
-                       standard_stats["first_byte_time"]) * 100
+    time_improvement = (
+        (standard_stats["first_byte_time"] - chunked_stats["first_byte_time"])
+        / standard_stats["first_byte_time"]
+    ) * 100
 
     print("⚡ Time to First Audio:")
     print(f"   Chunked:  {chunked_stats['first_byte_time']:.2f}s")
@@ -145,8 +144,8 @@ def demo_chunked_vs_standard():
     print(f"   Chunked:  {chunked_stats['total_size']:,} bytes")
     print(f"   Standard: {standard_stats['total_size']:,} bytes")
 
-    size_diff = abs(chunked_stats['total_size'] - standard_stats['total_size'])
-    size_diff_percent = (size_diff / standard_stats['total_size']) * 100
+    size_diff = abs(chunked_stats["total_size"] - standard_stats["total_size"])
+    size_diff_percent = (size_diff / standard_stats["total_size"]) * 100
     print(f"   📏 Size difference: {size_diff_percent:.1f}%")
 
     print("\n🎯 User Experience:")
@@ -167,6 +166,7 @@ def demo_chunked_vs_standard():
 
     print("\n🎉 Chunked generation successfully improves user experience!")
 
+
 def main():
     """Main demo function"""
     print("🚀 Starting Chunked Audio Generation Demo")
@@ -186,6 +186,7 @@ def main():
 
     # Run the demo
     demo_chunked_vs_standard()
+
 
 if __name__ == "__main__":
     main()

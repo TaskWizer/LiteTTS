@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import Any
 
 # Add project root to path
-sys.path.insert(0, '.')
+sys.path.insert(0, ".")
 
 # Import LiteTTS components
 try:
@@ -34,10 +34,10 @@ except ImportError as e:
 
 # Setup logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s | %(levelname)-8s | %(name)-25s | %(message)s'
+    level=logging.INFO, format="%(asctime)s | %(levelname)-8s | %(name)-25s | %(message)s"
 )
 logger = logging.getLogger(__name__)
+
 
 class PerformanceBenchmark:
     """Comprehensive performance benchmark suite"""
@@ -50,21 +50,21 @@ class PerformanceBenchmark:
 
         # Test data sets
         self.test_texts = {
-            'short': [
+            "short": [
                 "Hello world!",
                 "How are you?",
                 "Good morning.",
                 "Thank you very much.",
-                "See you later!"
+                "See you later!",
             ],
-            'medium': [
+            "medium": [
                 "The quick brown fox jumps over the lazy dog. This is a standard pangram used for testing.",
                 "In the heart of the bustling city, where skyscrapers touched the clouds and the streets hummed with activity, there lived a young artist named Maya.",
                 "Technology has revolutionized the way we communicate, work, and live our daily lives in the modern world.",
                 "The scientific method involves observation, hypothesis formation, experimentation, and analysis to understand natural phenomena.",
-                "Climate change represents one of the most significant challenges facing humanity in the twenty-first century."
+                "Climate change represents one of the most significant challenges facing humanity in the twenty-first century.",
             ],
-            'long': [
+            "long": [
                 """The Industrial Revolution, which began in the late 18th century, marked a major turning point in human history. 
                 It transformed societies from agrarian and handicraft economies to machine-based manufacturing. This period saw the 
                 development of steam engines, mechanized textile production, and improved transportation systems. The revolution 
@@ -72,33 +72,32 @@ class PerformanceBenchmark:
                 social, economic, and technological changes that continue to influence our world today. The shift from manual labor 
                 to mechanized production increased efficiency and productivity, leading to urbanization as people moved from rural 
                 areas to cities in search of work in factories.""",
-
                 """Artificial intelligence and machine learning have become integral parts of modern technology, influencing 
                 everything from search engines and recommendation systems to autonomous vehicles and medical diagnosis. These 
                 technologies rely on complex algorithms that can process vast amounts of data, identify patterns, and make 
                 predictions or decisions. Natural language processing, a subset of AI, enables computers to understand and 
                 generate human language, making possible applications like chatbots, translation services, and voice assistants. 
                 As these technologies continue to advance, they raise important questions about privacy, ethics, and the future 
-                of work in an increasingly automated world."""
-            ]
+                of work in an increasingly automated world.""",
+            ],
         }
 
         # Performance targets
         self.performance_targets = {
-            'rtf_short': 0.15,      # RTF < 0.15 for short texts
-            'rtf_medium': 0.25,     # RTF < 0.25 for medium texts
-            'rtf_long': 0.35,       # RTF < 0.35 for long texts
-            'cold_start_time': 5.0, # < 5 seconds cold start
-            'voice_switch_time': 1.0, # < 1 second voice switching
-            'memory_usage': 2048,   # < 2GB memory usage
-            'response_time_95th': 2.0 # 95th percentile < 2 seconds
+            "rtf_short": 0.15,  # RTF < 0.15 for short texts
+            "rtf_medium": 0.25,  # RTF < 0.25 for medium texts
+            "rtf_long": 0.35,  # RTF < 0.35 for long texts
+            "cold_start_time": 5.0,  # < 5 seconds cold start
+            "voice_switch_time": 1.0,  # < 1 second voice switching
+            "memory_usage": 2048,  # < 2GB memory usage
+            "response_time_95th": 2.0,  # 95th percentile < 2 seconds
         }
 
         logger.info("Performance benchmark suite initialized")
 
     async def run_comprehensive_benchmark(self) -> dict[str, Any]:
         """Run comprehensive performance benchmark
-        
+
         Returns:
             Complete benchmark results
         """
@@ -109,24 +108,24 @@ class PerformanceBenchmark:
 
         try:
             results = {
-                'session_id': session_id,
-                'timestamp': time.time(),
-                'environment': self._get_environment_info(),
-                'baseline_metrics': await self._measure_baseline_performance(),
-                'rtf_analysis': await self._analyze_rtf_performance(),
-                'memory_analysis': await self._analyze_memory_usage(),
-                'bottleneck_analysis': await self._identify_bottlenecks(),
-                'cold_start_analysis': await self._analyze_cold_start(),
-                'voice_switching_analysis': await self._analyze_voice_switching(),
-                'regression_analysis': await self._check_performance_regression(),
-                'recommendations': []
+                "session_id": session_id,
+                "timestamp": time.time(),
+                "environment": self._get_environment_info(),
+                "baseline_metrics": await self._measure_baseline_performance(),
+                "rtf_analysis": await self._analyze_rtf_performance(),
+                "memory_analysis": await self._analyze_memory_usage(),
+                "bottleneck_analysis": await self._identify_bottlenecks(),
+                "cold_start_analysis": await self._analyze_cold_start(),
+                "voice_switching_analysis": await self._analyze_voice_switching(),
+                "regression_analysis": await self._check_performance_regression(),
+                "recommendations": [],
             }
 
             # Generate recommendations
-            results['recommendations'] = self._generate_recommendations(results)
+            results["recommendations"] = self._generate_recommendations(results)
 
             # Calculate overall performance score
-            results['performance_score'] = self._calculate_performance_score(results)
+            results["performance_score"] = self._calculate_performance_score(results)
 
             return results
 
@@ -143,38 +142,35 @@ class PerformanceBenchmark:
         import psutil
 
         return {
-            'platform': platform.platform(),
-            'python_version': platform.python_version(),
-            'cpu_count': psutil.cpu_count(),
-            'cpu_freq': psutil.cpu_freq()._asdict() if psutil.cpu_freq() else None,
-            'memory_total_gb': psutil.virtual_memory().total / (1024**3),
-            'memory_available_gb': psutil.virtual_memory().available / (1024**3),
-            'disk_usage': psutil.disk_usage('.')._asdict()
+            "platform": platform.platform(),
+            "python_version": platform.python_version(),
+            "cpu_count": psutil.cpu_count(),
+            "cpu_freq": psutil.cpu_freq()._asdict() if psutil.cpu_freq() else None,
+            "memory_total_gb": psutil.virtual_memory().total / (1024**3),
+            "memory_available_gb": psutil.virtual_memory().available / (1024**3),
+            "disk_usage": psutil.disk_usage(".")._asdict(),
         }
 
     async def _measure_baseline_performance(self) -> dict[str, Any]:
         """Measure baseline performance metrics"""
         logger.info("📊 Measuring baseline performance")
 
-        baseline_results = {
-            'text_categories': {},
-            'overall_metrics': {}
-        }
+        baseline_results = {"text_categories": {}, "overall_metrics": {}}
 
         # Test each text category
         for category, texts in self.test_texts.items():
             logger.info(f"Testing {category} texts")
 
             category_results = {
-                'execution_times': [],
-                'memory_usages': [],
-                'rtf_values': [],
-                'text_lengths': [],
-                'audio_durations': []
+                "execution_times": [],
+                "memory_usages": [],
+                "rtf_values": [],
+                "text_lengths": [],
+                "audio_durations": [],
             }
 
             for i, text in enumerate(texts):
-                logger.debug(f"Processing {category} text {i+1}/{len(texts)}")
+                logger.debug(f"Processing {category} text {i + 1}/{len(texts)}")
 
                 # Measure text processing performance
                 with self.profiler.profile_context(f"baseline_{category}_text_{i}"):
@@ -188,40 +184,45 @@ class PerformanceBenchmark:
                     # Calculate metrics
                     text_length = len(text)
                     estimated_audio_duration = text_length * 0.05  # Rough estimate
-                    rtf = execution_time / estimated_audio_duration if estimated_audio_duration > 0 else 0
+                    rtf = (
+                        execution_time / estimated_audio_duration
+                        if estimated_audio_duration > 0
+                        else 0
+                    )
 
-                    category_results['execution_times'].append(execution_time)
-                    category_results['text_lengths'].append(text_length)
-                    category_results['rtf_values'].append(rtf)
-                    category_results['audio_durations'].append(estimated_audio_duration)
+                    category_results["execution_times"].append(execution_time)
+                    category_results["text_lengths"].append(text_length)
+                    category_results["rtf_values"].append(rtf)
+                    category_results["audio_durations"].append(estimated_audio_duration)
 
             # Calculate category statistics
-            baseline_results['text_categories'][category] = {
-                'count': len(texts),
-                'avg_execution_time': statistics.mean(category_results['execution_times']),
-                'min_execution_time': min(category_results['execution_times']),
-                'max_execution_time': max(category_results['execution_times']),
-                'avg_rtf': statistics.mean(category_results['rtf_values']),
-                'min_rtf': min(category_results['rtf_values']),
-                'max_rtf': max(category_results['rtf_values']),
-                'avg_text_length': statistics.mean(category_results['text_lengths']),
-                'target_rtf': self.performance_targets[f'rtf_{category}'],
-                'meets_target': statistics.mean(category_results['rtf_values']) <= self.performance_targets[f'rtf_{category}']
+            baseline_results["text_categories"][category] = {
+                "count": len(texts),
+                "avg_execution_time": statistics.mean(category_results["execution_times"]),
+                "min_execution_time": min(category_results["execution_times"]),
+                "max_execution_time": max(category_results["execution_times"]),
+                "avg_rtf": statistics.mean(category_results["rtf_values"]),
+                "min_rtf": min(category_results["rtf_values"]),
+                "max_rtf": max(category_results["rtf_values"]),
+                "avg_text_length": statistics.mean(category_results["text_lengths"]),
+                "target_rtf": self.performance_targets[f"rtf_{category}"],
+                "meets_target": statistics.mean(category_results["rtf_values"])
+                <= self.performance_targets[f"rtf_{category}"],
             }
 
         # Calculate overall metrics
         all_execution_times = []
         all_rtf_values = []
 
-        for category_data in baseline_results['text_categories'].values():
+        for category_data in baseline_results["text_categories"].values():
             # Note: This is simplified - in real implementation we'd store individual measurements
-            all_execution_times.append(category_data['avg_execution_time'])
-            all_rtf_values.append(category_data['avg_rtf'])
+            all_execution_times.append(category_data["avg_execution_time"])
+            all_rtf_values.append(category_data["avg_rtf"])
 
-        baseline_results['overall_metrics'] = {
-            'avg_execution_time': statistics.mean(all_execution_times),
-            'avg_rtf': statistics.mean(all_rtf_values),
-            'total_tests': sum(len(texts) for texts in self.test_texts.values())
+        baseline_results["overall_metrics"] = {
+            "avg_execution_time": statistics.mean(all_execution_times),
+            "avg_rtf": statistics.mean(all_rtf_values),
+            "total_tests": sum(len(texts) for texts in self.test_texts.values()),
         }
 
         logger.info("✅ Baseline performance measurement complete")
@@ -229,10 +230,10 @@ class PerformanceBenchmark:
 
     async def _process_text_sample(self, text: str) -> str:
         """Process a text sample (placeholder for actual TTS processing)
-        
+
         Args:
             text: Input text to process
-            
+
         Returns:
             Processed text
         """
@@ -248,28 +249,27 @@ class PerformanceBenchmark:
         logger.info("⏱️ Analyzing RTF performance")
 
         rtf_analysis = {
-            'category_performance': {},
-            'target_compliance': {},
-            'performance_distribution': {}
+            "category_performance": {},
+            "target_compliance": {},
+            "performance_distribution": {},
         }
 
         # This would be implemented with actual TTS calls
         # For now, we'll simulate the analysis
         for category in self.test_texts.keys():
-            target_rtf = self.performance_targets[f'rtf_{category}']
+            target_rtf = self.performance_targets[f"rtf_{category}"]
 
             # Simulate RTF measurements
-            simulated_rtf_values = [
-                target_rtf * (0.8 + 0.4 * (i / 10)) for i in range(10)
-            ]
+            simulated_rtf_values = [target_rtf * (0.8 + 0.4 * (i / 10)) for i in range(10)]
 
-            rtf_analysis['category_performance'][category] = {
-                'target_rtf': target_rtf,
-                'measured_rtf_avg': statistics.mean(simulated_rtf_values),
-                'measured_rtf_min': min(simulated_rtf_values),
-                'measured_rtf_max': max(simulated_rtf_values),
-                'meets_target': statistics.mean(simulated_rtf_values) <= target_rtf,
-                'compliance_rate': len([rtf for rtf in simulated_rtf_values if rtf <= target_rtf]) / len(simulated_rtf_values)
+            rtf_analysis["category_performance"][category] = {
+                "target_rtf": target_rtf,
+                "measured_rtf_avg": statistics.mean(simulated_rtf_values),
+                "measured_rtf_min": min(simulated_rtf_values),
+                "measured_rtf_max": max(simulated_rtf_values),
+                "meets_target": statistics.mean(simulated_rtf_values) <= target_rtf,
+                "compliance_rate": len([rtf for rtf in simulated_rtf_values if rtf <= target_rtf])
+                / len(simulated_rtf_values),
             }
 
         logger.info("✅ RTF performance analysis complete")
@@ -282,10 +282,10 @@ class PerformanceBenchmark:
         import psutil
 
         memory_analysis = {
-            'baseline_memory_mb': psutil.virtual_memory().used / (1024**2),
-            'peak_memory_mb': 0,
-            'memory_growth_mb': 0,
-            'memory_efficiency': 'good'  # good/fair/poor
+            "baseline_memory_mb": psutil.virtual_memory().used / (1024**2),
+            "peak_memory_mb": 0,
+            "memory_growth_mb": 0,
+            "memory_efficiency": "good",  # good/fair/poor
         }
 
         # Simulate memory analysis
@@ -299,33 +299,38 @@ class PerformanceBenchmark:
         logger.info("🔍 Identifying performance bottlenecks")
 
         bottleneck_analysis = {
-            'identified_bottlenecks': [
+            "identified_bottlenecks": [
                 {
-                    'component': 'text_processing',
-                    'impact_percent': 25,
-                    'description': 'Text normalization and preprocessing',
-                    'recommendation': 'Optimize regex patterns and caching'
+                    "component": "text_processing",
+                    "impact_percent": 25,
+                    "description": "Text normalization and preprocessing",
+                    "recommendation": "Optimize regex patterns and caching",
                 },
                 {
-                    'component': 'model_inference',
-                    'impact_percent': 45,
-                    'description': 'ONNX model inference time',
-                    'recommendation': 'Optimize ONNX runtime settings'
+                    "component": "model_inference",
+                    "impact_percent": 45,
+                    "description": "ONNX model inference time",
+                    "recommendation": "Optimize ONNX runtime settings",
                 },
                 {
-                    'component': 'audio_processing',
-                    'impact_percent': 20,
-                    'description': 'Audio format conversion and streaming',
-                    'recommendation': 'Implement streaming audio generation'
+                    "component": "audio_processing",
+                    "impact_percent": 20,
+                    "description": "Audio format conversion and streaming",
+                    "recommendation": "Implement streaming audio generation",
                 },
                 {
-                    'component': 'voice_loading',
-                    'impact_percent': 10,
-                    'description': 'Voice model loading and caching',
-                    'recommendation': 'Implement intelligent voice preloading'
-                }
+                    "component": "voice_loading",
+                    "impact_percent": 10,
+                    "description": "Voice model loading and caching",
+                    "recommendation": "Implement intelligent voice preloading",
+                },
             ],
-            'optimization_priority': ['model_inference', 'text_processing', 'audio_processing', 'voice_loading']
+            "optimization_priority": [
+                "model_inference",
+                "text_processing",
+                "audio_processing",
+                "voice_loading",
+            ],
         }
 
         logger.info("✅ Bottleneck identification complete")
@@ -336,14 +341,10 @@ class PerformanceBenchmark:
         logger.info("🥶 Analyzing cold start performance")
 
         cold_start_analysis = {
-            'target_time': self.performance_targets['cold_start_time'],
-            'measured_time': 3.2,  # Simulated
-            'meets_target': True,
-            'components': {
-                'model_loading': 1.5,
-                'voice_loading': 0.8,
-                'initialization': 0.9
-            }
+            "target_time": self.performance_targets["cold_start_time"],
+            "measured_time": 3.2,  # Simulated
+            "meets_target": True,
+            "components": {"model_loading": 1.5, "voice_loading": 0.8, "initialization": 0.9},
         }
 
         logger.info("✅ Cold start analysis complete")
@@ -354,10 +355,10 @@ class PerformanceBenchmark:
         logger.info("🎭 Analyzing voice switching performance")
 
         voice_switching_analysis = {
-            'target_time': self.performance_targets['voice_switch_time'],
-            'measured_time': 0.7,  # Simulated
-            'meets_target': True,
-            'cache_hit_rate': 0.85
+            "target_time": self.performance_targets["voice_switch_time"],
+            "measured_time": 0.7,  # Simulated
+            "meets_target": True,
+            "cache_hit_rate": 0.85,
         }
 
         logger.info("✅ Voice switching analysis complete")
@@ -368,10 +369,10 @@ class PerformanceBenchmark:
         logger.info("📈 Checking performance regression")
 
         regression_analysis = {
-            'baseline_available': False,
-            'regression_detected': False,
-            'performance_change_percent': 0,
-            'recommendation': 'Establish baseline for future regression testing'
+            "baseline_available": False,
+            "regression_detected": False,
+            "performance_change_percent": 0,
+            "recommendation": "Establish baseline for future regression testing",
         }
 
         logger.info("✅ Performance regression check complete")
@@ -382,19 +383,23 @@ class PerformanceBenchmark:
         recommendations = []
 
         # Check RTF performance
-        rtf_analysis = results.get('rtf_analysis', {})
-        for category, data in rtf_analysis.get('category_performance', {}).items():
-            if not data.get('meets_target', True):
-                recommendations.append(f"Optimize {category} text processing to meet RTF target of {data['target_rtf']}")
+        rtf_analysis = results.get("rtf_analysis", {})
+        for category, data in rtf_analysis.get("category_performance", {}).items():
+            if not data.get("meets_target", True):
+                recommendations.append(
+                    f"Optimize {category} text processing to meet RTF target of {data['target_rtf']}"
+                )
 
         # Check bottlenecks
-        bottlenecks = results.get('bottleneck_analysis', {}).get('identified_bottlenecks', [])
+        bottlenecks = results.get("bottleneck_analysis", {}).get("identified_bottlenecks", [])
         for bottleneck in bottlenecks[:3]:  # Top 3 bottlenecks
-            recommendations.append(f"Address {bottleneck['component']} bottleneck: {bottleneck['recommendation']}")
+            recommendations.append(
+                f"Address {bottleneck['component']} bottleneck: {bottleneck['recommendation']}"
+            )
 
         # Check cold start
-        cold_start = results.get('cold_start_analysis', {})
-        if not cold_start.get('meets_target', True):
+        cold_start = results.get("cold_start_analysis", {})
+        if not cold_start.get("meets_target", True):
             recommendations.append("Optimize cold start time through parallel initialization")
 
         return recommendations
@@ -404,19 +409,19 @@ class PerformanceBenchmark:
         score = 100.0
 
         # Deduct points for unmet targets
-        rtf_analysis = results.get('rtf_analysis', {})
-        for category, data in rtf_analysis.get('category_performance', {}).items():
-            if not data.get('meets_target', True):
+        rtf_analysis = results.get("rtf_analysis", {})
+        for category, data in rtf_analysis.get("category_performance", {}).items():
+            if not data.get("meets_target", True):
                 score -= 15  # 15 points per unmet RTF target
 
         # Deduct points for cold start issues
-        cold_start = results.get('cold_start_analysis', {})
-        if not cold_start.get('meets_target', True):
+        cold_start = results.get("cold_start_analysis", {})
+        if not cold_start.get("meets_target", True):
             score -= 10
 
         # Deduct points for voice switching issues
-        voice_switching = results.get('voice_switching_analysis', {})
-        if not voice_switching.get('meets_target', True):
+        voice_switching = results.get("voice_switching_analysis", {})
+        if not voice_switching.get("meets_target", True):
             score -= 5
 
         return max(0.0, score)
@@ -429,11 +434,12 @@ class PerformanceBenchmark:
 
         results_path = self.results_dir / filename
 
-        with open(results_path, 'w', encoding='utf-8') as f:
+        with open(results_path, "w", encoding="utf-8") as f:
             json.dump(results, f, indent=2, ensure_ascii=False)
 
         logger.info(f"Benchmark results saved: {results_path}")
         return results_path
+
 
 async def main():
     """Main benchmark execution"""
@@ -457,9 +463,9 @@ async def main():
         print(f"Results saved to: {results_path}")
 
         # Show recommendations
-        if results['recommendations']:
+        if results["recommendations"]:
             print("\n💡 Recommendations:")
-            for i, rec in enumerate(results['recommendations'], 1):
+            for i, rec in enumerate(results["recommendations"], 1):
                 print(f"  {i}. {rec}")
 
         print("\n✅ Benchmark complete!")
@@ -467,6 +473,7 @@ async def main():
     except Exception as e:
         logger.error(f"Benchmark failed: {e}")
         raise
+
 
 if __name__ == "__main__":
     asyncio.run(main())

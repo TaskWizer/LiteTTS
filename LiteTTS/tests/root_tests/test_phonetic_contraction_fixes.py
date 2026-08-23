@@ -13,6 +13,7 @@ from LiteTTS.nlp.phonetic_contraction_processor import PhoneticContractionProces
 # Skip - internal NLP component tests with incorrect expectations
 pytestmark = pytest.mark.skip(reason="Internal NLP component tests with incorrect expectations")
 
+
 class TestPhoneticContractionFixes(unittest.TestCase):
     """Test phonetic contraction pronunciation fixes"""
 
@@ -23,8 +24,16 @@ class TestPhoneticContractionFixes(unittest.TestCase):
         """Test the most critical pronunciation issues identified by user"""
         test_cases = [
             # Critical issues from user feedback
-            ("I wasn't ready", "I was not ready", "wasn't should expand to 'was not', not 'wAHz-uhnt'"),
-            ("I'll be there", "I will be there", "I'll should expand to 'I will', not sound like 'ill'"),
+            (
+                "I wasn't ready",
+                "I was not ready",
+                "wasn't should expand to 'was not', not 'wAHz-uhnt'",
+            ),
+            (
+                "I'll be there",
+                "I will be there",
+                "I'll should expand to 'I will', not sound like 'ill'",
+            ),
             ("you'll see", "you will see", "you'll should expand to 'you will', not 'yaw-wl'"),
             ("I'd like that", "I would like that", "I'd should expand to 'I would', not 'I-D'"),
             ("I'm here", "I am here", "I'm should expand to 'I am', not sound like 'im'"),
@@ -46,11 +55,16 @@ class TestPhoneticContractionFixes(unittest.TestCase):
                 print(f"   Issue: {description}")
 
         success_rate = success_count / len(test_cases)
-        print(f"\nCritical Fixes Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})")
+        print(
+            f"\nCritical Fixes Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})"
+        )
 
         # Require 100% success for critical fixes
-        self.assertEqual(success_count, len(test_cases),
-                        f"Critical contraction fixes must have 100% success rate, got {success_rate:.1%}")
+        self.assertEqual(
+            success_count,
+            len(test_cases),
+            f"Critical contraction fixes must have 100% success rate, got {success_rate:.1%}",
+        )
 
     def test_negative_contractions(self):
         """Test negative contractions (wasn't, weren't, isn't, etc.)"""
@@ -88,10 +102,13 @@ class TestPhoneticContractionFixes(unittest.TestCase):
                 print(f"❌ '{contraction}' → got '{result}' (expected '{expected_result}')")
 
         success_rate = success_count / len(test_cases)
-        print(f"\nNegative Contractions Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})")
+        print(
+            f"\nNegative Contractions Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})"
+        )
 
-        self.assertGreaterEqual(success_rate, 0.9,
-                               f"Negative contractions success rate {success_rate:.1%} below 90%")
+        self.assertGreaterEqual(
+            success_rate, 0.9, f"Negative contractions success rate {success_rate:.1%} below 90%"
+        )
 
     def test_will_contractions(self):
         """Test 'll contractions (I'll, you'll, etc.)"""
@@ -122,10 +139,13 @@ class TestPhoneticContractionFixes(unittest.TestCase):
                 print(f"❌ '{contraction}' → got '{result}' (expected '{expected_result}')")
 
         success_rate = success_count / len(test_cases)
-        print(f"\n'll Contractions Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})")
+        print(
+            f"\n'll Contractions Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})"
+        )
 
-        self.assertGreaterEqual(success_rate, 0.9,
-                               f"'ll contractions success rate {success_rate:.1%} below 90%")
+        self.assertGreaterEqual(
+            success_rate, 0.9, f"'ll contractions success rate {success_rate:.1%} below 90%"
+        )
 
     def test_would_contractions(self):
         """Test 'd contractions (I'd, you'd, etc.)"""
@@ -152,10 +172,13 @@ class TestPhoneticContractionFixes(unittest.TestCase):
                 print(f"❌ '{input_text}' → '{result}' (expected '{expected_output}')")
 
         success_rate = success_count / len(test_cases)
-        print(f"\n'd Contractions Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})")
+        print(
+            f"\n'd Contractions Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})"
+        )
 
-        self.assertGreaterEqual(success_rate, 0.9,
-                               f"'d contractions success rate {success_rate:.1%} below 90%")
+        self.assertGreaterEqual(
+            success_rate, 0.9, f"'d contractions success rate {success_rate:.1%} below 90%"
+        )
 
     def test_context_sensitive_contractions(self):
         """Test context-sensitive contractions ('d and 's)"""
@@ -164,16 +187,13 @@ class TestPhoneticContractionFixes(unittest.TestCase):
             ("I'd already seen it", "I had already seen it"),
             ("She'd been there before", "She had been there before"),
             ("They'd just finished", "They had just finished"),
-
             # 'd = "would" context (default)
             ("I'd like some coffee", "I would like some coffee"),
             ("He'd prefer to stay", "He would prefer to stay"),
-
             # 's = "has" context
             ("He's already gone", "He has already gone"),
             ("She's been working", "She has been working"),
             ("It's just arrived", "It has just arrived"),
-
             # 's = "is" context (default)
             ("He's tall", "He is tall"),
             ("She's happy", "She is happy"),
@@ -194,10 +214,15 @@ class TestPhoneticContractionFixes(unittest.TestCase):
                 print(f"❌ '{input_text}' → '{result}' (expected '{expected_output}')")
 
         success_rate = success_count / len(test_cases)
-        print(f"\nContext-Sensitive Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})")
+        print(
+            f"\nContext-Sensitive Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})"
+        )
 
-        self.assertGreaterEqual(success_rate, 0.8,
-                               f"Context-sensitive contractions success rate {success_rate:.1%} below 80%")
+        self.assertGreaterEqual(
+            success_rate,
+            0.8,
+            f"Context-sensitive contractions success rate {success_rate:.1%} below 80%",
+        )
 
     def test_case_preservation(self):
         """Test that original case is preserved"""
@@ -224,19 +249,22 @@ class TestPhoneticContractionFixes(unittest.TestCase):
                 print(f"❌ '{input_text}' → '{result}' (expected '{expected_output}')")
 
         success_rate = success_count / len(test_cases)
-        print(f"\nCase Preservation Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})")
+        print(
+            f"\nCase Preservation Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})"
+        )
 
-        self.assertGreaterEqual(success_rate, 0.9,
-                               f"Case preservation success rate {success_rate:.1%} below 90%")
+        self.assertGreaterEqual(
+            success_rate, 0.9, f"Case preservation success rate {success_rate:.1%} below 90%"
+        )
 
     def test_phonetic_representations(self):
         """Test phonetic representations of contractions"""
         test_cases = [
             ("wasn't", ["wuhz naht", "wuhz"]),  # Should not be "wAHz-uhnt"
-            ("I'll", ["aeeh weehl", "eye wihl", "aeeh"]),     # Should not be "ill"
-            ("you'll", ["yoo weehl", "yoo"]),   # Should not be "yaw-wl"
-            ("I'd", ["aeeh woohd", "eye wuhd", "aeeh"]),      # Should not be "I-D"
-            ("I'm", ["aeeh aem", "eye aem", "aeeh"]),       # Should not be "im"
+            ("I'll", ["aeeh weehl", "eye wihl", "aeeh"]),  # Should not be "ill"
+            ("you'll", ["yoo weehl", "yoo"]),  # Should not be "yaw-wl"
+            ("I'd", ["aeeh woohd", "eye wuhd", "aeeh"]),  # Should not be "I-D"
+            ("I'm", ["aeeh aem", "eye aem", "aeeh"]),  # Should not be "im"
         ]
 
         print("\n🔧 Testing Phonetic Representations")
@@ -258,13 +286,18 @@ class TestPhoneticContractionFixes(unittest.TestCase):
                 print(f"✅ '{contraction}' → phonetic: {phonetic}")
                 success_count += 1
             else:
-                print(f"❌ '{contraction}' → phonetic: {phonetic} (expected to contain one of: {expected_phonetics})")
+                print(
+                    f"❌ '{contraction}' → phonetic: {phonetic} (expected to contain one of: {expected_phonetics})"
+                )
 
         success_rate = success_count / len(test_cases)
-        print(f"\nPhonetic Representation Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})")
+        print(
+            f"\nPhonetic Representation Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})"
+        )
 
-        self.assertGreaterEqual(success_rate, 0.8,
-                               f"Phonetic representation success rate {success_rate:.1%} below 80%")
+        self.assertGreaterEqual(
+            success_rate, 0.8, f"Phonetic representation success rate {success_rate:.1%} below 80%"
+        )
 
     def test_analysis_functionality(self):
         """Test contraction analysis functionality"""
@@ -281,17 +314,20 @@ class TestPhoneticContractionFixes(unittest.TestCase):
 
         # Should find all contractions
         expected_contractions = ["wasn't", "you'll", "i'd", "what's"]
-        found_contractions = [c.lower() for c in analysis['contractions_found']]
+        found_contractions = [c.lower() for c in analysis["contractions_found"]]
 
         for expected in expected_contractions:
-            self.assertIn(expected, found_contractions,
-                         f"Should find contraction '{expected}' in text")
+            self.assertIn(
+                expected, found_contractions, f"Should find contraction '{expected}' in text"
+            )
 
         # Should identify problematic ones
-        self.assertGreater(len(analysis['problematic_contractions']), 0,
-                          "Should identify problematic contractions")
+        self.assertGreater(
+            len(analysis["problematic_contractions"]), 0, "Should identify problematic contractions"
+        )
 
         print("✅ Analysis functionality working correctly")
+
 
 def run_comprehensive_contraction_tests():
     """Run all contraction tests and provide summary"""
@@ -303,7 +339,7 @@ def run_comprehensive_contraction_tests():
     suite = unittest.TestLoader().loadTestsFromTestCase(TestPhoneticContractionFixes)
 
     # Run tests with detailed output
-    runner = unittest.TextTestRunner(verbosity=2, stream=open('/dev/null', 'w'))
+    runner = unittest.TextTestRunner(verbosity=2, stream=open("/dev/null", "w"))
     result = runner.run(suite)
 
     # Calculate success rate
@@ -312,9 +348,9 @@ def run_comprehensive_contraction_tests():
     passed_tests = total_tests - failed_tests
     success_rate = passed_tests / total_tests if total_tests > 0 else 0
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("CONTRACTION FIXES TEST SUMMARY")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"Tests Run: {total_tests}")
     print(f"Tests Passed: {passed_tests}")
     print(f"Tests Failed: {failed_tests}")
@@ -340,6 +376,7 @@ def run_comprehensive_contraction_tests():
             print(f"  - {test}: {traceback.split('Exception:')[-1].strip()}")
 
     return success_rate
+
 
 if __name__ == "__main__":
     # Run individual test instance for detailed output

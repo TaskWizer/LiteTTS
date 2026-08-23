@@ -11,6 +11,7 @@ import requests
 # Skip - integration tests that require running server
 pytestmark = pytest.mark.skip(reason="Integration tests that require running TTS server")
 
+
 class TestBackwardCompatibility:
     """Test backward compatibility of API endpoints"""
 
@@ -21,11 +22,7 @@ class TestBackwardCompatibility:
         endpoint = f"{self.BASE_URL}/v1/audio/speech"
 
         # Test basic request format
-        payload = {
-            "model": "kokoro",
-            "input": "Hello, world!",
-            "voice": "af_heart"
-        }
+        payload = {"model": "kokoro", "input": "Hello, world!", "voice": "af_heart"}
 
         # This should not fail in future versions
         response = requests.post(endpoint, json=payload)
@@ -108,6 +105,7 @@ class TestBackwardCompatibility:
         except requests.exceptions.ConnectionError:
             pytest.skip("Service not running")
 
+
 class TestConfigurationCompatibility:
     """Test configuration backward compatibility"""
 
@@ -117,7 +115,7 @@ class TestConfigurationCompatibility:
 
         for config_file in config_files:
             if Path(config_file).exists():
-                with open(config_file, 'r') as f:
+                with open(config_file, "r") as f:
                     config = json.load(f)
 
                 # Basic configuration structure should be maintained
@@ -131,12 +129,7 @@ class TestConfigurationCompatibility:
     def test_environment_variables(self):
         """Test environment variable compatibility"""
         # These environment variables should continue to work
-        env_vars = [
-            "KOKORO_HOST",
-            "KOKORO_PORT",
-            "KOKORO_MODEL_PATH",
-            "KOKORO_VOICE_PATH"
-        ]
+        env_vars = ["KOKORO_HOST", "KOKORO_PORT", "KOKORO_MODEL_PATH", "KOKORO_VOICE_PATH"]
 
         # Test that they can be set without breaking the application
         for var in env_vars:
@@ -148,6 +141,7 @@ class TestConfigurationCompatibility:
             finally:
                 if var in os.environ:
                     del os.environ[var]
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

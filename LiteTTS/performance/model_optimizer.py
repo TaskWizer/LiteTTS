@@ -13,12 +13,16 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class ModelOptimizationConfig:
     """Configuration for model optimizations"""
+
     reduce_mel_bins: bool = True
     target_mel_bins: int = 64  # Reduce from 80 to 64
-    max_phoneme_duration: int | None = 500  # Limit phoneme sequence length (keep under voice vector size of 510)
+    max_phoneme_duration: int | None = (
+        500  # Limit phoneme sequence length (keep under voice vector size of 510)
+    )
     enable_quantization: bool = True
     prefer_q4_model: bool = True
     enable_warm_up: bool = True
@@ -27,6 +31,7 @@ class ModelOptimizationConfig:
     cache_phonemizer: bool = True
     reduce_precision: bool = False  # Keep quality high
     pipeline_parallelism: bool = True
+
 
 class ModelOptimizer:
     """Model-level optimizations for maximum performance"""
@@ -65,6 +70,7 @@ class ModelOptimizer:
 
             try:
                 from LiteTTS.performance.cpu_optimizer import get_cpu_optimizer
+
                 cpu_optimizer = get_cpu_optimizer()
 
                 # Check thermal status for aggressive optimization safety
@@ -78,7 +84,7 @@ class ModelOptimizer:
 
                 cpu_info = {
                     "model_name": cpu_optimizer.cpu_info.model_name,
-                    "supports_avx2": cpu_optimizer.cpu_info.supports_avx2
+                    "supports_avx2": cpu_optimizer.cpu_info.supports_avx2,
                 }
 
             except ImportError:
@@ -90,7 +96,7 @@ class ModelOptimizer:
                 cpu_info=cpu_info,
                 memory_limit_mb=memory_limit_mb,
                 inter_op_threads=inter_op_threads,
-                intra_op_threads=intra_op_threads
+                intra_op_threads=intra_op_threads,
             )
 
             if session_options:
@@ -145,13 +151,16 @@ class ModelOptimizer:
                 for key in keys[:100]:
                     del self.phonemizer_cache[key]
 
-    def optimize_input_preparation(self, tokens: np.ndarray, voice_data: np.ndarray,
-                                 speed: float) -> dict[str, np.ndarray]:
+    def optimize_input_preparation(
+        self, tokens: np.ndarray, voice_data: np.ndarray, speed: float
+    ) -> dict[str, np.ndarray]:
         """Optimize model input preparation"""
         # Limit phoneme sequence length for faster processing
         if self.config.max_phoneme_duration and len(tokens) > self.config.max_phoneme_duration:
-            logger.warning(f"Truncating phonemes from {len(tokens)} to {self.config.max_phoneme_duration}")
-            tokens = tokens[:self.config.max_phoneme_duration]
+            logger.warning(
+                f"Truncating phonemes from {len(tokens)} to {self.config.max_phoneme_duration}"
+            )
+            tokens = tokens[: self.config.max_phoneme_duration]
 
         # Optimize voice vector shape
         if voice_data.shape == (510, 256):
@@ -169,9 +178,9 @@ class ModelOptimizer:
 
         # Prepare optimized inputs
         inputs = {
-            'input_ids': tokens.reshape(1, -1).astype(np.int64),
-            'style': style_vector.astype(np.float32),
-            'speed': np.array([speed], dtype=np.float32)
+            "input_ids": tokens.reshape(1, -1).astype(np.int64),
+            "style": style_vector.astype(np.float32),
+            "speed": np.array([speed], dtype=np.float32),
         }
 
         return inputs
@@ -203,29 +212,35 @@ class ModelOptimizer:
 
         if text_length <= self.config.short_text_threshold:
             # Short text optimizations
-            optimizations.update({
-                "use_fast_path": True,
-                "reduce_precision": self.config.reduce_precision,
-                "skip_advanced_processing": True,
-                "priority_cache": True
-            })
+            optimizations.update(
+                {
+                    "use_fast_path": True,
+                    "reduce_precision": self.config.reduce_precision,
+                    "skip_advanced_processing": True,
+                    "priority_cache": True,
+                }
+            )
         elif text_length <= 100:
             # Medium text optimizations
-            optimizations.update({
-                "use_fast_path": False,
-                "reduce_precision": False,
-                "skip_advanced_processing": False,
-                "priority_cache": True
-            })
+            optimizations.update(
+                {
+                    "use_fast_path": False,
+                    "reduce_precision": False,
+                    "skip_advanced_processing": False,
+                    "priority_cache": True,
+                }
+            )
         else:
             # Long text optimizations
-            optimizations.update({
-                "use_fast_path": False,
-                "reduce_precision": False,
-                "skip_advanced_processing": False,
-                "priority_cache": False,
-                "enable_chunking": True
-            })
+            optimizations.update(
+                {
+                    "use_fast_path": False,
+                    "reduce_precision": False,
+                    "skip_advanced_processing": False,
+                    "priority_cache": False,
+                    "enable_chunking": True,
+                }
+            )
 
         return optimizations
 
@@ -240,12 +255,14 @@ class ModelOptimizer:
                 "target_mel_bins": self.config.target_mel_bins,
                 "max_phoneme_duration": self.config.max_phoneme_duration,
                 "short_text_threshold": self.config.short_text_threshold,
-                "cache_phonemizer": self.config.cache_phonemizer
-            }
+                "cache_phonemizer": self.config.cache_phonemizer,
+            },
         }
+
 
 # Global model optimizer instance
 _model_optimizer = None
+
 
 def get_model_optimizer() -> ModelOptimizer:
     """Get global model optimizer instance"""

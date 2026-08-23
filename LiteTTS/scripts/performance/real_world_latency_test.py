@@ -15,12 +15,14 @@ import aiohttp
 import numpy as np
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class RealWorldLatencyResult:
     """Real-world latency test results"""
+
     test_name: str
     avg_latency_ms: float
     p95_latency_ms: float
@@ -31,6 +33,7 @@ class RealWorldLatencyResult:
     throughput_rps: float
     cold_start_latency_ms: float | None = None
     warm_latency_ms: float | None = None
+
 
 class RealWorldLatencyTester:
     """
@@ -44,7 +47,7 @@ class RealWorldLatencyTester:
             "This is a test.",
             "How are you today?",
             "This is a medium length sentence for testing.",
-            "This is a longer sentence that will help us understand latency characteristics."
+            "This is a longer sentence that will help us understand latency characteristics.",
         ]
 
         logger.info(f"Real-World Latency Tester initialized for {base_url}")
@@ -82,7 +85,7 @@ class RealWorldLatencyTester:
                 min_latency_ms=min(latencies),
                 max_latency_ms=max(latencies),
                 success_rate=successful_requests / total_requests,
-                throughput_rps=successful_requests / (max(latencies) / 1000) if latencies else 0
+                throughput_rps=successful_requests / (max(latencies) / 1000) if latencies else 0,
             )
         else:
             return RealWorldLatencyResult(
@@ -93,7 +96,7 @@ class RealWorldLatencyTester:
                 min_latency_ms=0,
                 max_latency_ms=0,
                 success_rate=0,
-                throughput_rps=0
+                throughput_rps=0,
             )
 
     async def test_tts_endpoint_cold_start(self) -> RealWorldLatencyResult:
@@ -106,7 +109,7 @@ class RealWorldLatencyTester:
         payload = {
             "input": "Hello world, this is a cold start test.",
             "voice": "af_heart",
-            "response_format": "mp3"
+            "response_format": "mp3",
         }
 
         try:
@@ -115,7 +118,7 @@ class RealWorldLatencyTester:
                 async with session.post(
                     f"{self.base_url}/v1/audio/speech",
                     json=payload,
-                    headers={"Content-Type": "application/json"}
+                    headers={"Content-Type": "application/json"},
                 ) as response:
                     await response.read()
                     end_time = time.perf_counter()
@@ -133,8 +136,10 @@ class RealWorldLatencyTester:
                         min_latency_ms=cold_start_latency,
                         max_latency_ms=cold_start_latency,
                         success_rate=1.0 if success else 0.0,
-                        throughput_rps=1.0 / (cold_start_latency / 1000) if cold_start_latency > 0 else 0,
-                        cold_start_latency_ms=cold_start_latency
+                        throughput_rps=1.0 / (cold_start_latency / 1000)
+                        if cold_start_latency > 0
+                        else 0,
+                        cold_start_latency_ms=cold_start_latency,
                     )
 
         except Exception as e:
@@ -148,7 +153,7 @@ class RealWorldLatencyTester:
                 max_latency_ms=0,
                 success_rate=0,
                 throughput_rps=0,
-                cold_start_latency_ms=None
+                cold_start_latency_ms=None,
             )
 
     async def test_tts_endpoint_warm_requests(self) -> RealWorldLatencyResult:
@@ -164,18 +169,14 @@ class RealWorldLatencyTester:
                 if i >= total_requests:
                     break
 
-                payload = {
-                    "input": text,
-                    "voice": "af_heart",
-                    "response_format": "mp3"
-                }
+                payload = {"input": text, "voice": "af_heart", "response_format": "mp3"}
 
                 try:
                     start_time = time.perf_counter()
                     async with session.post(
                         f"{self.base_url}/v1/audio/speech",
                         json=payload,
-                        headers={"Content-Type": "application/json"}
+                        headers={"Content-Type": "application/json"},
                     ) as response:
                         audio_data = await response.read()
                         end_time = time.perf_counter()
@@ -204,7 +205,7 @@ class RealWorldLatencyTester:
                 max_latency_ms=max(latencies),
                 success_rate=successful_requests / total_requests,
                 throughput_rps=successful_requests / (sum(latencies) / 1000) if latencies else 0,
-                warm_latency_ms=statistics.mean(latencies)
+                warm_latency_ms=statistics.mean(latencies),
             )
         else:
             return RealWorldLatencyResult(
@@ -216,7 +217,7 @@ class RealWorldLatencyTester:
                 max_latency_ms=0,
                 success_rate=0,
                 throughput_rps=0,
-                warm_latency_ms=None
+                warm_latency_ms=None,
             )
 
     async def test_concurrent_requests(self) -> RealWorldLatencyResult:
@@ -228,18 +229,14 @@ class RealWorldLatencyTester:
         successful_requests = 0
 
         async def make_request(session, text, request_id):
-            payload = {
-                "input": text,
-                "voice": "af_heart",
-                "response_format": "mp3"
-            }
+            payload = {"input": text, "voice": "af_heart", "response_format": "mp3"}
 
             try:
                 start_time = time.perf_counter()
                 async with session.post(
                     f"{self.base_url}/v1/audio/speech",
                     json=payload,
-                    headers={"Content-Type": "application/json"}
+                    headers={"Content-Type": "application/json"},
                 ) as response:
                     await response.read()
                     end_time = time.perf_counter()
@@ -279,7 +276,7 @@ class RealWorldLatencyTester:
                 min_latency_ms=min(latencies),
                 max_latency_ms=max(latencies),
                 success_rate=successful_requests / concurrent_requests,
-                throughput_rps=successful_requests / (max(latencies) / 1000) if latencies else 0
+                throughput_rps=successful_requests / (max(latencies) / 1000) if latencies else 0,
             )
         else:
             return RealWorldLatencyResult(
@@ -290,14 +287,16 @@ class RealWorldLatencyTester:
                 min_latency_ms=0,
                 max_latency_ms=0,
                 success_rate=0,
-                throughput_rps=0
+                throughput_rps=0,
             )
 
     async def check_server_availability(self) -> bool:
         """Check if the server is available"""
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(f"{self.base_url}/health", timeout=aiohttp.ClientTimeout(total=5)) as response:
+                async with session.get(
+                    f"{self.base_url}/health", timeout=aiohttp.ClientTimeout(total=5)
+                ) as response:
                     return response.status == 200
         except Exception:
             return False
@@ -330,6 +329,7 @@ class RealWorldLatencyTester:
         logger.info("✅ Comprehensive real-world latency test completed")
 
         return results
+
 
 def generate_report(results: dict[str, RealWorldLatencyResult]) -> str:
     """Generate comprehensive latency report"""
@@ -368,9 +368,13 @@ def generate_report(results: dict[str, RealWorldLatencyResult]) -> str:
 
     for test_name, result in results.items():
         if result.avg_latency_ms > 0:
-            report.append(f"| {result.test_name} | {result.avg_latency_ms:.1f}ms | {result.p95_latency_ms:.1f}ms | {result.p99_latency_ms:.1f}ms | {result.min_latency_ms:.1f}ms | {result.max_latency_ms:.1f}ms | {result.success_rate:.1%} | {result.throughput_rps:.2f} RPS |")
+            report.append(
+                f"| {result.test_name} | {result.avg_latency_ms:.1f}ms | {result.p95_latency_ms:.1f}ms | {result.p99_latency_ms:.1f}ms | {result.min_latency_ms:.1f}ms | {result.max_latency_ms:.1f}ms | {result.success_rate:.1%} | {result.throughput_rps:.2f} RPS |"
+            )
         else:
-            report.append(f"| {result.test_name} | Failed | - | - | - | - | {result.success_rate:.1%} | 0 RPS |")
+            report.append(
+                f"| {result.test_name} | Failed | - | - | - | - | {result.success_rate:.1%} | 0 RPS |"
+            )
 
     report.append("")
 
@@ -383,9 +387,13 @@ def generate_report(results: dict[str, RealWorldLatencyResult]) -> str:
             report.append(f"**Cold Start Penalty:** {cold_warm_diff:.1f}ms")
 
             if cold_warm_diff > 1000:
-                report.append("⚠️ **High cold start penalty detected** - model preloading may not be working effectively")
+                report.append(
+                    "⚠️ **High cold start penalty detected** - model preloading may not be working effectively"
+                )
             elif cold_warm_diff > 500:
-                report.append("⚠️ **Moderate cold start penalty** - consider optimizing model loading")
+                report.append(
+                    "⚠️ **Moderate cold start penalty** - consider optimizing model loading"
+                )
             else:
                 report.append("✅ **Low cold start penalty** - model warm-up is working well")
 
@@ -395,9 +403,15 @@ def generate_report(results: dict[str, RealWorldLatencyResult]) -> str:
 
     if warm_requests and warm_requests.warm_latency_ms:
         if warm_requests.warm_latency_ms > 500:
-            report.append("1. **Optimize warm request latency** - current latency exceeds 500ms target")
-            report.append("2. **Profile model inference** - identify bottlenecks in the processing pipeline")
-            report.append("3. **Consider model optimization** - quantization or hardware acceleration")
+            report.append(
+                "1. **Optimize warm request latency** - current latency exceeds 500ms target"
+            )
+            report.append(
+                "2. **Profile model inference** - identify bottlenecks in the processing pipeline"
+            )
+            report.append(
+                "3. **Consider model optimization** - quantization or hardware acceleration"
+            )
         else:
             report.append("1. **Latency performance is good** - meets 500ms target")
 
@@ -411,6 +425,7 @@ def generate_report(results: dict[str, RealWorldLatencyResult]) -> str:
 
     return "\n".join(report)
 
+
 async def main():
     """Main function"""
     tester = RealWorldLatencyTester()
@@ -420,28 +435,32 @@ async def main():
     report = generate_report(results)
 
     # Save report
-    with open("real_world_latency_test_report.md", 'w') as f:
+    with open("real_world_latency_test_report.md", "w") as f:
         f.write(report)
 
     # Save JSON results
-    json_results = {name: {
-        "test_name": result.test_name,
-        "avg_latency_ms": result.avg_latency_ms,
-        "p95_latency_ms": result.p95_latency_ms,
-        "p99_latency_ms": result.p99_latency_ms,
-        "min_latency_ms": result.min_latency_ms,
-        "max_latency_ms": result.max_latency_ms,
-        "success_rate": result.success_rate,
-        "throughput_rps": result.throughput_rps,
-        "cold_start_latency_ms": result.cold_start_latency_ms,
-        "warm_latency_ms": result.warm_latency_ms
-    } for name, result in results.items()}
+    json_results = {
+        name: {
+            "test_name": result.test_name,
+            "avg_latency_ms": result.avg_latency_ms,
+            "p95_latency_ms": result.p95_latency_ms,
+            "p99_latency_ms": result.p99_latency_ms,
+            "min_latency_ms": result.min_latency_ms,
+            "max_latency_ms": result.max_latency_ms,
+            "success_rate": result.success_rate,
+            "throughput_rps": result.throughput_rps,
+            "cold_start_latency_ms": result.cold_start_latency_ms,
+            "warm_latency_ms": result.warm_latency_ms,
+        }
+        for name, result in results.items()
+    }
 
-    with open("real_world_latency_test_results.json", 'w') as f:
+    with open("real_world_latency_test_results.json", "w") as f:
         json.dump(json_results, f, indent=2)
 
     print(report)
     logger.info("📊 Real-world latency test report saved to: real_world_latency_test_report.md")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

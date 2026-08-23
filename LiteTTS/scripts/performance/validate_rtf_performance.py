@@ -14,9 +14,11 @@ import requests
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class RTFTestResult:
     """Results from RTF performance test"""
+
     text: str
     voice: str
     rtf: float
@@ -24,6 +26,7 @@ class RTFTestResult:
     audio_duration_est: float
     success: bool
     error_message: str = ""
+
 
 class RTFPerformanceValidator:
     """Validates RTF performance against targets"""
@@ -36,19 +39,16 @@ class RTFPerformanceValidator:
             "Hello world.",
             "Test.",
             "Hi there!",
-
             # Short text (20-50 chars)
             "This is a short test sentence.",
             "How are you doing today?",
             "The weather is nice outside.",
-
             # Medium text (50-100 chars)
             "This is a medium length sentence that should test the system's performance.",
             "The quick brown fox jumps over the lazy dog in the beautiful garden.",
-
             # Long text (100+ chars)
             "This is a longer text that will test the system's ability to handle more complex synthesis tasks while maintaining good performance metrics.",
-            "In the heart of the bustling city, where skyscrapers touched the clouds and the streets hummed with endless activity, there lived a small community of artists who found inspiration in the urban chaos."
+            "In the heart of the bustling city, where skyscrapers touched the clouds and the streets hummed with endless activity, there lived a small community of artists who found inspiration in the urban chaos.",
         ]
         self.voices_to_test = ["af_heart", "am_puck"]  # Test with different voices
 
@@ -66,12 +66,8 @@ class RTFPerformanceValidator:
 
             response = requests.post(
                 f"{self.base_url}/v1/audio/speech",
-                json={
-                    "input": text,
-                    "voice": voice,
-                    "response_format": "mp3"
-                },
-                timeout=30
+                json={"input": text, "voice": voice, "response_format": "mp3"},
+                timeout=30,
             )
 
             end_time = time.perf_counter()
@@ -87,7 +83,7 @@ class RTFPerformanceValidator:
                     rtf=rtf,
                     latency_ms=latency_ms,
                     audio_duration_est=audio_duration,
-                    success=True
+                    success=True,
                 )
             else:
                 return RTFTestResult(
@@ -97,7 +93,7 @@ class RTFPerformanceValidator:
                     latency_ms=latency_ms,
                     audio_duration_est=0,
                     success=False,
-                    error_message=f"HTTP {response.status_code}: {response.text}"
+                    error_message=f"HTTP {response.status_code}: {response.text}",
                 )
 
         except Exception as e:
@@ -108,7 +104,7 @@ class RTFPerformanceValidator:
                 latency_ms=0,
                 audio_duration_est=0,
                 success=False,
-                error_message=str(e)
+                error_message=str(e),
             )
 
     def run_performance_tests(self) -> dict[str, Any]:
@@ -126,7 +122,9 @@ class RTFPerformanceValidator:
             voice_results = []
 
             for i, text in enumerate(self.test_cases, 1):
-                print(f"  Test {i}/{len(self.test_cases)}: {text[:50]}{'...' if len(text) > 50 else ''}")
+                print(
+                    f"  Test {i}/{len(self.test_cases)}: {text[:50]}{'...' if len(text) > 50 else ''}"
+                )
 
                 result = self.test_single_request(text, voice)
                 voice_results.append(result)
@@ -155,7 +153,7 @@ class RTFPerformanceValidator:
                 "success": False,
                 "error": "All tests failed",
                 "total_tests": len(results),
-                "failed_tests": len(failed_results)
+                "failed_tests": len(failed_results),
             }
 
         rtf_values = [r.rtf for r in successful_results]
@@ -165,7 +163,11 @@ class RTFPerformanceValidator:
         avg_rtf = statistics.mean(rtf_values)
         min_rtf = min(rtf_values)
         max_rtf = max(rtf_values)
-        p95_rtf = sorted(rtf_values)[int(len(rtf_values) * 0.95)] if len(rtf_values) > 1 else rtf_values[0]
+        p95_rtf = (
+            sorted(rtf_values)[int(len(rtf_values) * 0.95)]
+            if len(rtf_values) > 1
+            else rtf_values[0]
+        )
 
         avg_latency = statistics.mean(latency_values)
 
@@ -190,26 +192,26 @@ class RTFPerformanceValidator:
                 "max_rtf": max_rtf,
                 "p95_rtf": p95_rtf,
                 "avg_latency_ms": avg_latency,
-                "target_rtf": self.target_rtf
+                "target_rtf": self.target_rtf,
             },
             "by_text_length": {
                 "ultra_short": {
                     "count": len(ultra_short),
-                    "avg_rtf": statistics.mean([r.rtf for r in ultra_short]) if ultra_short else 0
+                    "avg_rtf": statistics.mean([r.rtf for r in ultra_short]) if ultra_short else 0,
                 },
                 "short": {
                     "count": len(short),
-                    "avg_rtf": statistics.mean([r.rtf for r in short]) if short else 0
+                    "avg_rtf": statistics.mean([r.rtf for r in short]) if short else 0,
                 },
                 "medium": {
                     "count": len(medium),
-                    "avg_rtf": statistics.mean([r.rtf for r in medium]) if medium else 0
+                    "avg_rtf": statistics.mean([r.rtf for r in medium]) if medium else 0,
                 },
                 "long": {
                     "count": len(long),
-                    "avg_rtf": statistics.mean([r.rtf for r in long]) if long else 0
-                }
-            }
+                    "avg_rtf": statistics.mean([r.rtf for r in long]) if long else 0,
+                },
+            },
         }
 
         return analysis
@@ -244,7 +246,10 @@ class RTFPerformanceValidator:
         for category, data in analysis["by_text_length"].items():
             if data["count"] > 0:
                 status = "✅" if data["avg_rtf"] < metrics["target_rtf"] else "❌"
-                print(f"  {category.replace('_', ' ').title()}: {status} {data['avg_rtf']:.3f} RTF ({data['count']} tests)")
+                print(
+                    f"  {category.replace('_', ' ').title()}: {status} {data['avg_rtf']:.3f} RTF ({data['count']} tests)"
+                )
+
 
 def main():
     """Run RTF performance validation"""
@@ -266,6 +271,7 @@ def main():
     # Run tests
     analysis = validator.run_performance_tests()
     validator.print_report(analysis)
+
 
 if __name__ == "__main__":
     main()

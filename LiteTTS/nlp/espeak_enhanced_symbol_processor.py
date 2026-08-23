@@ -11,13 +11,16 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class SymbolProcessingResult:
     """Result of symbol processing"""
+
     processed_text: str
     changes_made: list[str]
     symbols_processed: int
     processing_time: float = 0.0
+
 
 class EspeakEnhancedSymbolProcessor:
     """
@@ -44,7 +47,6 @@ class EspeakEnhancedSymbolProcessor:
             ",": "comma",
             ";": "semicolon",
             ":": "colon",
-
             # Mathematical symbols
             "+": "plus",
             "-": "minus",
@@ -53,13 +55,11 @@ class EspeakEnhancedSymbolProcessor:
             # REMOVED: "/" -> "slash" (slashes should be silent per user request)
             "\\": "backslash",
             "%": "percent",
-
             # Currency symbols
             "$": "dollar",
             "€": "euro",
             "£": "pound",
             "¥": "yen",
-
             # Other symbols
             "&": "and",  # Natural ampersand pronunciation
             "@": "at",
@@ -69,7 +69,6 @@ class EspeakEnhancedSymbolProcessor:
             "|": "pipe",
             "~": "tilde",
             "`": "backtick",
-
             # Brackets and parentheses
             "(": "open parenthesis",
             ")": "close parenthesis",
@@ -79,7 +78,6 @@ class EspeakEnhancedSymbolProcessor:
             "}": "close brace",
             "<": "less than",
             ">": "greater than",
-
             # Quotes (fix "in quat" issues)
             '"': "",  # Remove quotes to prevent pronunciation
             "'": "",  # Remove apostrophes in quote context
@@ -96,12 +94,10 @@ class EspeakEnhancedSymbolProcessor:
             # "?": "question mark",  # REMOVED - question marks should create natural intonation
             # "!": "exclamation mark",  # REMOVED - exclamation marks should create natural emphasis
             ".": "period",
-
             # Clause punctuation (context-dependent)
             ",": "comma",
             ";": "semicolon",
             ":": "colon",
-
             # Grouping punctuation (usually silent)
             "(": "",
             ")": "",
@@ -109,7 +105,6 @@ class EspeakEnhancedSymbolProcessor:
             "]": "",
             "{": "",
             "}": "",
-
             # Quote punctuation (usually silent)
             '"': "",
             "'": "",
@@ -122,36 +117,32 @@ class EspeakEnhancedSymbolProcessor:
             "url": {
                 "pattern": r"https?://[^\s]+",
                 "symbols": {".", "/", ":", "?", "&", "=", "-", "_"},
-                "replacement": ""
+                "replacement": "",
             },
-
             # Email context - don't pronounce symbols
             "email": {
                 "pattern": r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",
                 "symbols": {"@", ".", "-", "_"},
-                "replacement": ""
+                "replacement": "",
             },
-
             # Mathematical context - pronounce symbols
             "math": {
                 "pattern": r"\b\d+\s*[+\-*/=]\s*\d+\b",
                 "symbols": {"+", "-", "*", "/", "="},
-                "replacement": "symbol"  # Use symbol mapping
+                "replacement": "symbol",  # Use symbol mapping
             },
-
             # File path context - minimal pronunciation
             "filepath": {
                 "pattern": r"[A-Za-z]:\\[^\\/:*?\"<>|]+|/[^\\/:*?\"<>|]+",
                 "symbols": {"\\", "/", ".", "-", "_"},
-                "replacement": ""
+                "replacement": "",
             },
-
             # Programming context - selective pronunciation
             "code": {
                 "pattern": r"`[^`]+`|```[^`]+```",
                 "symbols": {"(", ")", "[", "]", "{", "}", ";", ":", "="},
-                "replacement": ""
-            }
+                "replacement": "",
+            },
         }
 
     def process_symbols(self, text: str) -> SymbolProcessingResult:
@@ -165,6 +156,7 @@ class EspeakEnhancedSymbolProcessor:
             SymbolProcessingResult with processed text and metadata
         """
         import time
+
         start_time = time.perf_counter()
 
         original_text = text
@@ -191,13 +183,15 @@ class EspeakEnhancedSymbolProcessor:
         processing_time = time.perf_counter() - start_time
 
         if changes_made:
-            logger.debug(f"Symbol processing applied {len(changes_made)} changes: {', '.join(changes_made[:3])}")
+            logger.debug(
+                f"Symbol processing applied {len(changes_made)} changes: {', '.join(changes_made[:3])}"
+            )
 
         return SymbolProcessingResult(
             processed_text=text,
             changes_made=changes_made,
             symbols_processed=symbols_processed,
-            processing_time=processing_time
+            processing_time=processing_time,
         )
 
     def _process_context_aware_symbols(self, text: str) -> tuple[str, list[str]]:
@@ -221,7 +215,9 @@ class EspeakEnhancedSymbolProcessor:
                     if symbol in processed_text:
                         if replacement == "symbol":
                             # Use symbol mapping
-                            processed_text = processed_text.replace(symbol, f" {self.symbol_mappings.get(symbol, symbol)} ")
+                            processed_text = processed_text.replace(
+                                symbol, f" {self.symbol_mappings.get(symbol, symbol)} "
+                            )
                         elif replacement == "":
                             # Remove symbol
                             processed_text = processed_text.replace(symbol, " ")
@@ -230,10 +226,10 @@ class EspeakEnhancedSymbolProcessor:
                             processed_text = processed_text.replace(symbol, f" {replacement} ")
 
                 # Clean up extra spaces
-                processed_text = re.sub(r'\s+', ' ', processed_text).strip()
+                processed_text = re.sub(r"\s+", " ", processed_text).strip()
 
                 if processed_text != match_text:
-                    text = text[:match.start()] + processed_text + text[match.end():]
+                    text = text[: match.start()] + processed_text + text[match.end() :]
                     changes_made.append(f"context_{context_name}_symbols")
 
         return text, changes_made
@@ -245,16 +241,16 @@ class EspeakEnhancedSymbolProcessor:
         # Critical fixes for known issues - QUESTION MARKS SHOULD NOT BE VOCALIZED
         critical_fixes = {
             # "?": "question mark",  # REMOVED - question marks should create natural intonation, not be vocalized
-            "*": "asterisk",       # Fix "astrisk" pronunciation
+            "*": "asterisk",  # Fix "astrisk" pronunciation
         }
 
         for symbol, replacement in critical_fixes.items():
             if symbol in text:
                 # Only replace standalone symbols, not those in words
-                pattern = rf'\b{re.escape(symbol)}\b|\s{re.escape(symbol)}\s|{re.escape(symbol)}\s|\s{re.escape(symbol)}'
+                pattern = rf"\b{re.escape(symbol)}\b|\s{re.escape(symbol)}\s|{re.escape(symbol)}\s|\s{re.escape(symbol)}"
                 if re.search(pattern, text):
-                    text = re.sub(pattern, f' {replacement} ', text)
-                    text = re.sub(r'\s+', ' ', text).strip()
+                    text = re.sub(pattern, f" {replacement} ", text)
+                    text = re.sub(r"\s+", " ", text).strip()
                     changes_made.append(f"critical_fix_{symbol}")
 
         return text, changes_made
@@ -274,7 +270,9 @@ class EspeakEnhancedSymbolProcessor:
                     changes_made.append(f"removed_{punct}")
         elif punct_mode == "some":
             # Only pronounce important punctuation - QUESTION MARKS SHOULD NOT BE VOCALIZED
-            important_punct = {"!"}  # REMOVED "?" - question marks should create natural intonation, not be vocalized
+            important_punct = {
+                "!"
+            }  # REMOVED "?" - question marks should create natural intonation, not be vocalized
             for punct, replacement in self.punctuation_mappings.items():
                 if punct in text and punct in important_punct and replacement:
                     text = text.replace(punct, f" {replacement} ")
@@ -282,12 +280,14 @@ class EspeakEnhancedSymbolProcessor:
         elif punct_mode == "all":
             # Pronounce all punctuation except periods (natural pause handling)
             for punct, replacement in self.punctuation_mappings.items():
-                if punct in text and replacement and punct != ".":  # Exclude periods from vocalization
+                if (
+                    punct in text and replacement and punct != "."
+                ):  # Exclude periods from vocalization
                     text = text.replace(punct, f" {replacement} ")
                     changes_made.append(f"pronounced_{punct}")
 
         # Clean up extra spaces
-        text = re.sub(r'\s+', ' ', text).strip()
+        text = re.sub(r"\s+", " ", text).strip()
 
         return text, changes_made
 
@@ -310,7 +310,7 @@ class EspeakEnhancedSymbolProcessor:
                 changes_made.append(f"cleaned_quotes_{quote}")
 
         # Clean up extra spaces
-        text = re.sub(r'\s+', ' ', text).strip()
+        text = re.sub(r"\s+", " ", text).strip()
 
         return text, changes_made
 
@@ -332,17 +332,20 @@ class EspeakEnhancedSymbolProcessor:
 
         for i, test_case in enumerate(test_cases):
             result = self.process_symbols(test_case)
-            results[f"test_{i+1}"] = {
+            results[f"test_{i + 1}"] = {
                 "input": test_case,
                 "output": result.processed_text,
                 "changes": result.changes_made,
                 "symbols_processed": result.symbols_processed,
-                "processing_time": result.processing_time
+                "processing_time": result.processing_time,
             }
 
         return results
 
+
 # Factory function for easy integration
-def create_espeak_enhanced_symbol_processor(config: dict[str, Any] | None = None) -> EspeakEnhancedSymbolProcessor:
+def create_espeak_enhanced_symbol_processor(
+    config: dict[str, Any] | None = None,
+) -> EspeakEnhancedSymbolProcessor:
     """Create eSpeak-enhanced symbol processor"""
     return EspeakEnhancedSymbolProcessor(config)

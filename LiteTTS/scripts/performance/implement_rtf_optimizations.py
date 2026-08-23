@@ -25,10 +25,10 @@ class RTFOptimizer:
         print("=" * 40)
 
         results = {
-            'optimizations_applied': [],
-            'files_modified': [],
-            'performance_improvements': {},
-            'status': 'success'
+            "optimizations_applied": [],
+            "files_modified": [],
+            "performance_improvements": {},
+            "status": "success",
         }
 
         try:
@@ -56,13 +56,13 @@ class RTFOptimizer:
             print("\n🎯 6. Adding Adaptive Quality Settings")
             self.add_adaptive_quality()
 
-            results['optimizations_applied'] = self.optimizations_applied
-            results['status'] = 'success'
+            results["optimizations_applied"] = self.optimizations_applied
+            results["status"] = "success"
 
         except Exception as e:
             print(f"❌ Error during optimization: {e}")
-            results['status'] = 'error'
-            results['error'] = str(e)
+            results["status"] = "error"
+            results["error"] = str(e)
 
         return results
 
@@ -191,7 +191,7 @@ def get_optimized_audio_processor():
         audio_opt_path = self.project_root / "kokoro" / "audio" / "optimized_processor.py"
         audio_opt_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(audio_opt_path, 'w') as f:
+        with open(audio_opt_path, "w") as f:
             f.write(audio_optimizer_code)
 
         self.optimizations_applied.append("Audio Pipeline Optimization")
@@ -358,7 +358,7 @@ def get_intelligent_cache():
         cache_path = self.project_root / "kokoro" / "cache" / "intelligent_cache.py"
         cache_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(cache_path, 'w') as f:
+        with open(cache_path, "w") as f:
             f.write(cache_optimizer_code)
 
         self.optimizations_applied.append("Intelligent Caching System")
@@ -372,16 +372,16 @@ def get_intelligent_cache():
 
         if text_processor_path.exists():
             # Read current processor
-            with open(text_processor_path, 'r') as f:
+            with open(text_processor_path, "r") as f:
                 content = f.read()
 
             # Add optimization imports at the top
-            optimization_imports = '''
+            optimization_imports = """
 # RTF Optimization imports
 import re
 from functools import lru_cache
 import unicodedata
-'''
+"""
 
             # Add optimized preprocessing methods
             optimization_methods = '''
@@ -416,19 +416,17 @@ import unicodedata
             # Insert optimizations if not already present
             if "_cached_normalize_text" not in content:
                 # Find class definition and add methods
-                class_match = re.search(r'class\s+\w+.*?:', content)
+                class_match = re.search(r"class\s+\w+.*?:", content)
                 if class_match:
-                    insert_pos = content.find('\n', class_match.end())
-                    content = (content[:insert_pos] +
-                             optimization_methods +
-                             content[insert_pos:])
+                    insert_pos = content.find("\n", class_match.end())
+                    content = content[:insert_pos] + optimization_methods + content[insert_pos:]
 
                 # Add imports at the top
                 if "from functools import lru_cache" not in content:
                     content = optimization_imports + content
 
                 # Write back optimized version
-                with open(text_processor_path, 'w') as f:
+                with open(text_processor_path, "w") as f:
                     f.write(content)
 
                 self.optimizations_applied.append("Text Preprocessing Optimization")
@@ -584,7 +582,7 @@ def get_performance_monitor():
         monitor_path = self.project_root / "kokoro" / "monitoring" / "rtf_monitor.py"
         monitor_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(monitor_path, 'w') as f:
+        with open(monitor_path, "w") as f:
             f.write(monitoring_code)
 
         self.optimizations_applied.append("Enhanced Performance Monitoring")
@@ -657,10 +655,11 @@ Successfully implemented {len(self.optimizations_applied)} RTF optimizations:
 - `LiteTTS/cache/intelligent_cache.py`
 - `LiteTTS/monitoring/rtf_monitor.py`
 
-Generated on: {time.strftime('%Y-%m-%d %H:%M:%S')}
+Generated on: {time.strftime("%Y-%m-%d %H:%M:%S")}
 """
 
         return report
+
 
 def main():
     """Run RTF optimization implementation"""
@@ -673,13 +672,14 @@ def main():
     report_path = Path("docs/rtf_optimization_implementation.md")
     report_path.parent.mkdir(parents=True, exist_ok=True)
 
-    with open(report_path, 'w') as f:
+    with open(report_path, "w") as f:
         f.write(report)
 
     print(f"\n📄 Optimization report saved: {report_path}")
     print(f"✅ Applied {len(optimizer.optimizations_applied)} optimizations")
 
     return results
+
 
 if __name__ == "__main__":
     main()

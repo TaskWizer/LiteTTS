@@ -20,7 +20,7 @@ def validate_voice_cache_file():
         return False
 
     try:
-        with open(cache_file, 'r') as f:
+        with open(cache_file, "r") as f:
             cache_data = json.load(f)
 
         print("   ✅ Cache file loaded successfully")
@@ -28,8 +28,13 @@ def validate_voice_cache_file():
 
         # Validate cache structure
         required_fields = [
-            "name", "file_path", "file_size", "checksum",
-            "last_modified", "source", "discovered_at"
+            "name",
+            "file_path",
+            "file_size",
+            "checksum",
+            "last_modified",
+            "source",
+            "discovered_at",
         ]
 
         valid_entries = 0
@@ -61,6 +66,7 @@ def validate_voice_cache_file():
         print(f"   ❌ Error reading cache: {e}")
         return False
 
+
 def validate_voice_files():
     """Validate that cached voice files exist and match checksums"""
     print("\n🔍 Validating Voice Files")
@@ -73,7 +79,7 @@ def validate_voice_files():
         return False
 
     try:
-        with open(cache_file, 'r') as f:
+        with open(cache_file, "r") as f:
             cache_data = json.load(f)
 
         existing_files = 0
@@ -98,7 +104,9 @@ def validate_voice_files():
                     print(f"   ✅ {voice_name}: File exists, size matches ({actual_size} bytes)")
                     checksum_matches += 1
                 else:
-                    print(f"   ⚠️ {voice_name}: Size mismatch (actual: {actual_size}, cached: {cached_size})")
+                    print(
+                        f"   ⚠️ {voice_name}: Size mismatch (actual: {actual_size}, cached: {cached_size})"
+                    )
                     checksum_mismatches.append(voice_name)
             else:
                 missing_files.append(voice_name)
@@ -119,6 +127,7 @@ def validate_voice_files():
         print(f"   ❌ Error validating files: {e}")
         return False
 
+
 def test_cache_performance():
     """Test cache performance with API calls"""
     print("\n⚡ Testing Cache Performance")
@@ -130,7 +139,7 @@ def test_cache_performance():
     test_cases = [
         ("af_heart", "Cache hit test"),
         ("am_puck", "Cache hit test 2"),
-        ("af_bella", "Cache hit test 3")
+        ("af_bella", "Cache hit test 3"),
     ]
 
     cache_hit_times = []
@@ -143,13 +152,8 @@ def test_cache_performance():
             start_time = time.time()
             response = requests.post(
                 "http://localhost:8354/v1/audio/speech",
-                json={
-                    "model": "kokoro",
-                    "input": text,
-                    "voice": voice,
-                    "response_format": "mp3"
-                },
-                timeout=15
+                json={"model": "kokoro", "input": text, "voice": voice, "response_format": "mp3"},
+                timeout=15,
             )
             first_time = time.time() - start_time
 
@@ -164,9 +168,9 @@ def test_cache_performance():
                         "model": "kokoro",
                         "input": text,
                         "voice": voice,
-                        "response_format": "mp3"
+                        "response_format": "mp3",
                     },
-                    timeout=15
+                    timeout=15,
                 )
                 second_time = time.time() - start_time
 
@@ -176,7 +180,9 @@ def test_cache_performance():
 
                     # Check if second call was faster (indicating cache hit)
                     if second_time < first_time * 0.8:  # 20% faster
-                        print(f"      ✅ Cache hit detected (speedup: {first_time/second_time:.1f}x)")
+                        print(
+                            f"      ✅ Cache hit detected (speedup: {first_time / second_time:.1f}x)"
+                        )
                     else:
                         print("      ⚠️ No significant speedup detected")
                 else:
@@ -198,6 +204,7 @@ def test_cache_performance():
         else:
             print("   ❌ Cache performance needs improvement (> 2s)")
 
+
 def validate_cache_metadata():
     """Validate cache metadata consistency"""
     print("\n🏷️ Validating Cache Metadata")
@@ -210,7 +217,7 @@ def validate_cache_metadata():
         return False
 
     try:
-        with open(cache_file, 'r') as f:
+        with open(cache_file, "r") as f:
             cache_data = json.load(f)
 
         # Analyze metadata patterns
@@ -266,14 +273,17 @@ def validate_cache_metadata():
         print(f"   ❌ Error analyzing metadata: {e}")
         return False
 
+
 def test_server_status():
     """Check if server is running"""
     try:
         import requests
+
         response = requests.get("http://localhost:8354/health", timeout=5)
         return response.status_code == 200
     except:
         return False
+
 
 if __name__ == "__main__":
     print("🚀 Starting Voice Cache Validation")

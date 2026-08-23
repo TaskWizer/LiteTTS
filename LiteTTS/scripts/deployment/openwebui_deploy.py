@@ -14,11 +14,9 @@ import sys
 from pathlib import Path
 
 # Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 class OpenWebUIDeployer:
     """OpenWebUI deployment utility"""
@@ -30,12 +28,7 @@ class OpenWebUIDeployer:
         self.jwt_secret = secrets.token_hex(32)
 
         # API keys (to be set by user)
-        self.api_keys = {
-            "openrouter": "",
-            "google_ai_studio": "",
-            "huggingface": "",
-            "groq": ""
-        }
+        self.api_keys = {"openrouter": "", "google_ai_studio": "", "huggingface": "", "groq": ""}
 
         # Directories
         self.data_dir = Path("data")
@@ -72,16 +65,18 @@ class OpenWebUIDeployer:
             "DISABLE_SIGNUP=false",
             "ENABLE_SIGNUP=false",
             "WEBUI_AUTH=login",
-            f"WEBUI_JWT_SECRET={self.jwt_secret}"
+            f"WEBUI_JWT_SECRET={self.jwt_secret}",
         ]
 
         # Add HTTPS configuration if enabled
         if use_https:
-            env_vars.extend([
-                "WEBUI_HTTPS=true",
-                "WEBUI_CERT_FILE=/app/backend/certs/fullchain.pem",
-                "WEBUI_KEY_FILE=/app/backend/certs/privkey.pem"
-            ])
+            env_vars.extend(
+                [
+                    "WEBUI_HTTPS=true",
+                    "WEBUI_CERT_FILE=/app/backend/certs/fullchain.pem",
+                    "WEBUI_KEY_FILE=/app/backend/certs/privkey.pem",
+                ]
+            )
         else:
             env_vars.append("WEBUI_HTTPS=false")
 
@@ -96,7 +91,7 @@ services:
     container_name: openwebui
     restart: unless-stopped
     ports:
-      - "{'443' if use_https else '80'}:8080"
+      - "{"443" if use_https else "80"}:8080"
     volumes:
       - ./data:/app/backend/data
       - ./certs:/app/backend/certs
@@ -143,11 +138,16 @@ networks:
 
             # Generate certificates
             cmd = [
-                "sudo", "certbot", "certonly", "--standalone",
-                "-d", self.domain,
+                "sudo",
+                "certbot",
+                "certonly",
+                "--standalone",
+                "-d",
+                self.domain,
                 "--non-interactive",
                 "--agree-tos",
-                "-m", self.email
+                "-m",
+                self.email,
             ]
 
             result = subprocess.run(cmd, capture_output=True, text=True)
@@ -164,7 +164,9 @@ networks:
 
             # Fix permissions
             user = os.getenv("USER", "root")
-            subprocess.run(["sudo", "chown", "-R", f"{user}:{user}", str(self.certs_dir)], check=True)
+            subprocess.run(
+                ["sudo", "chown", "-R", f"{user}:{user}", str(self.certs_dir)], check=True
+            )
 
             logger.info("✅ Let's Encrypt certificates configured")
             return True
@@ -206,7 +208,9 @@ networks:
         # Handle certificates
         use_https = True
 
-        if cert_choice == "letsencrypt" or (cert_choice == "auto" and not self.check_certificates()):
+        if cert_choice == "letsencrypt" or (
+            cert_choice == "auto" and not self.check_certificates()
+        ):
             if not self.setup_letsencrypt():
                 logger.warning("⚠️  Certificate setup failed, continuing without HTTPS")
                 use_https = False
@@ -241,61 +245,34 @@ networks:
 
         return True
 
+
 def main():
     """Main function with argument parsing"""
     parser = argparse.ArgumentParser(
         description="Deploy OpenWebUI with TLS and multiple API providers",
-        formatter_class=argparse.RawDescriptionHelpFormatter
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
-    parser.add_argument(
-        "--domain",
-        type=str,
-        required=True,
-        help="Domain name for the deployment"
-    )
+    parser.add_argument("--domain", type=str, required=True, help="Domain name for the deployment")
 
     parser.add_argument(
-        "--email",
-        type=str,
-        required=True,
-        help="Email for Let's Encrypt notifications"
+        "--email", type=str, required=True, help="Email for Let's Encrypt notifications"
     )
 
     parser.add_argument(
         "--cert-method",
         choices=["auto", "letsencrypt", "existing", "none"],
         default="auto",
-        help="Certificate method (default: auto)"
+        help="Certificate method (default: auto)",
     )
 
-    parser.add_argument(
-        "--openrouter-key",
-        type=str,
-        default="",
-        help="OpenRouter API key"
-    )
+    parser.add_argument("--openrouter-key", type=str, default="", help="OpenRouter API key")
 
-    parser.add_argument(
-        "--google-key",
-        type=str,
-        default="",
-        help="Google AI Studio API key"
-    )
+    parser.add_argument("--google-key", type=str, default="", help="Google AI Studio API key")
 
-    parser.add_argument(
-        "--huggingface-key",
-        type=str,
-        default="",
-        help="HuggingFace API key"
-    )
+    parser.add_argument("--huggingface-key", type=str, default="", help="HuggingFace API key")
 
-    parser.add_argument(
-        "--groq-key",
-        type=str,
-        default="",
-        help="Groq API key"
-    )
+    parser.add_argument("--groq-key", type=str, default="", help="Groq API key")
 
     args = parser.parse_args()
 
@@ -307,7 +284,7 @@ def main():
         "openrouter": args.openrouter_key,
         "google_ai_studio": args.google_key,
         "huggingface": args.huggingface_key,
-        "groq": args.groq_key
+        "groq": args.groq_key,
     }
     deployer.set_api_keys(api_keys)
 
@@ -315,6 +292,7 @@ def main():
     success = deployer.deploy(args.cert_method)
 
     return 0 if success else 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -14,17 +14,18 @@ from typing import Any
 import requests
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 BASE_URL = "http://localhost:8354"
+
 
 class SystemAuditor:
     """Comprehensive system auditor"""
 
     def __init__(self):
         self.results = {
-            "timestamp": time.strftime('%Y-%m-%d %H:%M:%S'),
+            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
             "server_status": {},
             "api_endpoints": {},
             "openwebui_integration": {},
@@ -32,7 +33,7 @@ class SystemAuditor:
             "code_quality": {},
             "configuration": {},
             "security": {},
-            "overall_score": 0
+            "overall_score": 0,
         }
         self.total_checks = 0
         self.passed_checks = 0
@@ -46,7 +47,7 @@ class SystemAuditor:
             "health_endpoint": False,
             "response_time": 0.0,
             "memory_usage": "unknown",
-            "cpu_usage": "unknown"
+            "cpu_usage": "unknown",
         }
 
         try:
@@ -71,9 +72,12 @@ class SystemAuditor:
         # Try to get system metrics
         try:
             import psutil
+
             process = None
-            for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
-                if 'python' in proc.info['name'] and any('app.py' in arg for arg in proc.info['cmdline']):
+            for proc in psutil.process_iter(["pid", "name", "cmdline"]):
+                if "python" in proc.info["name"] and any(
+                    "app.py" in arg for arg in proc.info["cmdline"]
+                ):
                     process = proc
                     break
 
@@ -99,40 +103,30 @@ class SystemAuditor:
         logger.info("🔍 Auditing API endpoints...")
 
         endpoints_to_test = [
-            {
-                "name": "Health Check",
-                "method": "GET",
-                "url": "/health",
-                "expected_status": 200
-            },
-            {
-                "name": "Voice List",
-                "method": "GET",
-                "url": "/v1/voices",
-                "expected_status": 200
-            },
+            {"name": "Health Check", "method": "GET", "url": "/health", "expected_status": 200},
+            {"name": "Voice List", "method": "GET", "url": "/v1/voices", "expected_status": 200},
             {
                 "name": "TTS Speech",
                 "method": "POST",
                 "url": "/v1/audio/speech",
                 "payload": {"input": "Test", "voice": "af_heart"},
                 "expected_status": 200,
-                "expected_content_type": "audio/mp3"
+                "expected_content_type": "audio/mp3",
             },
             {
                 "name": "TTS Stream",
                 "method": "POST",
                 "url": "/v1/audio/stream",
                 "payload": {"input": "Test stream", "voice": "af_heart"},
-                "expected_status": 200
+                "expected_status": 200,
             },
             {
                 "name": "OpenWebUI Compatibility",
                 "method": "POST",
                 "url": "/v1/audio/stream/audio/speech",
                 "payload": {"input": "Test compat", "voice": "af_heart"},
-                "expected_status": 200
-            }
+                "expected_status": 200,
+            },
         ]
 
         results = {}
@@ -150,7 +144,7 @@ class SystemAuditor:
                         f"{BASE_URL}{endpoint['url']}",
                         json=endpoint.get("payload"),
                         headers={"Content-Type": "application/json"},
-                        timeout=30
+                        timeout=30,
                     )
 
                 response_time = time.time() - start_time
@@ -160,12 +154,14 @@ class SystemAuditor:
                     "response_time": response_time,
                     "content_type": response.headers.get("content-type", ""),
                     "content_length": len(response.content),
-                    "success": response.status_code == endpoint["expected_status"]
+                    "success": response.status_code == endpoint["expected_status"],
                 }
 
                 # Additional checks
                 if "expected_content_type" in endpoint:
-                    result["content_type_match"] = endpoint["expected_content_type"] in result["content_type"]
+                    result["content_type_match"] = (
+                        endpoint["expected_content_type"] in result["content_type"]
+                    )
                     result["success"] = result["success"] and result["content_type_match"]
 
                 results[endpoint["name"]] = result
@@ -174,16 +170,15 @@ class SystemAuditor:
                     logger.info(f"      ✅ SUCCESS: {response.status_code} in {response_time:.3f}s")
                     self.passed_checks += 1
                 else:
-                    logger.warning(f"      ❌ FAILED: {response.status_code} (expected {endpoint['expected_status']})")
+                    logger.warning(
+                        f"      ❌ FAILED: {response.status_code} (expected {endpoint['expected_status']})"
+                    )
 
                 self.total_checks += 1
 
             except Exception as e:
                 logger.error(f"      ❌ EXCEPTION: {e}")
-                results[endpoint["name"]] = {
-                    "error": str(e),
-                    "success": False
-                }
+                results[endpoint["name"]] = {"error": str(e), "success": False}
                 self.total_checks += 1
 
         return results
@@ -197,14 +192,14 @@ class SystemAuditor:
             "OpenWebUI/1.0",
             "Mozilla/5.0 OpenWebUI",
             "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15",
-            "Mozilla/5.0 (Android 12; Mobile; rv:109.0) Gecko/109.0 Firefox/109.0"
+            "Mozilla/5.0 (Android 12; Mobile; rv:109.0) Gecko/109.0 Firefox/109.0",
         ]
 
         results = {
             "user_agent_compatibility": {},
             "mobile_support": True,
             "streaming_support": True,
-            "compatibility_routes": {}
+            "compatibility_routes": {},
         }
 
         # Test each user agent
@@ -213,17 +208,14 @@ class SystemAuditor:
                 response = requests.post(
                     f"{BASE_URL}/v1/audio/speech",
                     json={"input": "OpenWebUI test", "voice": "af_heart"},
-                    headers={
-                        "Content-Type": "application/json",
-                        "User-Agent": ua
-                    },
-                    timeout=30
+                    headers={"Content-Type": "application/json", "User-Agent": ua},
+                    timeout=30,
                 )
 
                 results["user_agent_compatibility"][ua] = {
                     "status": response.status_code,
                     "success": response.status_code == 200,
-                    "content_length": len(response.content)
+                    "content_length": len(response.content),
                 }
 
                 if response.status_code == 200:
@@ -232,34 +224,25 @@ class SystemAuditor:
                 self.total_checks += 1
 
             except Exception as e:
-                results["user_agent_compatibility"][ua] = {
-                    "error": str(e),
-                    "success": False
-                }
+                results["user_agent_compatibility"][ua] = {"error": str(e), "success": False}
                 self.total_checks += 1
 
         # Test compatibility routes
-        compat_routes = [
-            "/v1/audio/stream/audio/speech",
-            "/v1/audio/speech/audio/speech"
-        ]
+        compat_routes = ["/v1/audio/stream/audio/speech", "/v1/audio/speech/audio/speech"]
 
         for route in compat_routes:
             try:
                 response = requests.post(
                     f"{BASE_URL}{route}",
                     json={"input": "Compatibility test", "voice": "af_heart"},
-                    headers={
-                        "Content-Type": "application/json",
-                        "User-Agent": "OpenWebUI/1.0"
-                    },
-                    timeout=30
+                    headers={"Content-Type": "application/json", "User-Agent": "OpenWebUI/1.0"},
+                    timeout=30,
                 )
 
                 results["compatibility_routes"][route] = {
                     "status": response.status_code,
                     "success": response.status_code == 200,
-                    "content_length": len(response.content)
+                    "content_length": len(response.content),
                 }
 
                 if response.status_code == 200:
@@ -268,10 +251,7 @@ class SystemAuditor:
                 self.total_checks += 1
 
             except Exception as e:
-                results["compatibility_routes"][route] = {
-                    "error": str(e),
-                    "success": False
-                }
+                results["compatibility_routes"][route] = {"error": str(e), "success": False}
                 self.total_checks += 1
 
         return results
@@ -287,10 +267,10 @@ class SystemAuditor:
                 f"{BASE_URL}/v1/audio/speech",
                 json={
                     "input": "This is a performance test to measure the real-time factor of the TTS system.",
-                    "voice": "af_heart"
+                    "voice": "af_heart",
                 },
                 headers={"Content-Type": "application/json"},
-                timeout=60
+                timeout=60,
             )
 
             synthesis_time = time.time() - start_time
@@ -298,9 +278,17 @@ class SystemAuditor:
             if response.status_code == 200:
                 # Estimate audio duration (rough calculation)
                 audio_duration = len(response.content) / 24000.0 * 8  # Rough estimate
-                rtf = synthesis_time / audio_duration if audio_duration > 0 else float('inf')
+                rtf = synthesis_time / audio_duration if audio_duration > 0 else float("inf")
 
-                performance_rating = "excellent" if rtf < 0.3 else "good" if rtf < 0.5 else "acceptable" if rtf < 1.0 else "poor"
+                performance_rating = (
+                    "excellent"
+                    if rtf < 0.3
+                    else "good"
+                    if rtf < 0.5
+                    else "acceptable"
+                    if rtf < 1.0
+                    else "poor"
+                )
 
                 results = {
                     "rtf": rtf,
@@ -308,25 +296,19 @@ class SystemAuditor:
                     "estimated_audio_duration": audio_duration,
                     "performance_rating": performance_rating,
                     "response_size": len(response.content),
-                    "success": True
+                    "success": True,
                 }
 
                 if rtf < 1.0:  # RTF < 1.0 is real-time
                     self.passed_checks += 1
 
             else:
-                results = {
-                    "error": f"HTTP {response.status_code}",
-                    "success": False
-                }
+                results = {"error": f"HTTP {response.status_code}", "success": False}
 
             self.total_checks += 1
 
         except Exception as e:
-            results = {
-                "error": str(e),
-                "success": False
-            }
+            results = {"error": str(e), "success": False}
             self.total_checks += 1
 
         return results
@@ -335,28 +317,21 @@ class SystemAuditor:
         """Audit system configuration"""
         logger.info("🔍 Auditing configuration...")
 
-        results = {
-            "config_files": {},
-            "environment_variables": {},
-            "model_files": {}
-        }
+        results = {"config_files": {}, "environment_variables": {}, "model_files": {}}
 
         # Check configuration files
-        config_files = [
-            "config.json",
-            "override.json"
-        ]
+        config_files = ["config.json", "override.json"]
 
         for config_file in config_files:
             if os.path.exists(config_file):
                 try:
-                    with open(config_file, 'r') as f:
+                    with open(config_file, "r") as f:
                         config_data = json.load(f)
 
                     results["config_files"][config_file] = {
                         "exists": True,
                         "valid_json": True,
-                        "size": os.path.getsize(config_file)
+                        "size": os.path.getsize(config_file),
                     }
                     self.passed_checks += 1
 
@@ -364,29 +339,20 @@ class SystemAuditor:
                     results["config_files"][config_file] = {
                         "exists": True,
                         "valid_json": False,
-                        "error": str(e)
+                        "error": str(e),
                     }
 
             else:
-                results["config_files"][config_file] = {
-                    "exists": False
-                }
+                results["config_files"][config_file] = {"exists": False}
 
             self.total_checks += 1
 
         # Check important environment variables
-        env_vars = [
-            "OMP_NUM_THREADS",
-            "ONNX_DISABLE_SPARSE_TENSORS",
-            "ENVIRONMENT"
-        ]
+        env_vars = ["OMP_NUM_THREADS", "ONNX_DISABLE_SPARSE_TENSORS", "ENVIRONMENT"]
 
         for var in env_vars:
             value = os.environ.get(var)
-            results["environment_variables"][var] = {
-                "set": value is not None,
-                "value": value
-            }
+            results["environment_variables"][var] = {"set": value is not None, "value": value}
 
             if value is not None:
                 self.passed_checks += 1
@@ -394,22 +360,17 @@ class SystemAuditor:
             self.total_checks += 1
 
         # Check model files
-        model_paths = [
-            "LiteTTS/models/model_q4.onnx",
-            "LiteTTS/voices/combined_voices.npz"
-        ]
+        model_paths = ["LiteTTS/models/model_q4.onnx", "LiteTTS/voices/combined_voices.npz"]
 
         for model_path in model_paths:
             if os.path.exists(model_path):
                 results["model_files"][model_path] = {
                     "exists": True,
-                    "size": os.path.getsize(model_path)
+                    "size": os.path.getsize(model_path),
                 }
                 self.passed_checks += 1
             else:
-                results["model_files"][model_path] = {
-                    "exists": False
-                }
+                results["model_files"][model_path] = {"exists": False}
 
             self.total_checks += 1
 
@@ -422,8 +383,8 @@ class SystemAuditor:
 
         report = f"""
 🔍 KOKORO TTS SYSTEM AUDIT REPORT
-{'=' * 50}
-Timestamp: {self.results['timestamp']}
+{"=" * 50}
+Timestamp: {self.results["timestamp"]}
 Overall Score: {score:.1f}% ({self.passed_checks}/{self.total_checks} checks passed)
 
 📊 SUMMARY:
@@ -456,6 +417,7 @@ Overall Score: {score:.1f}% ({self.passed_checks}/{self.total_checks} checks pas
 
         return self.results
 
+
 def main():
     """Main audit function"""
     auditor = SystemAuditor()
@@ -472,6 +434,7 @@ def main():
         sys.exit(0)
     else:
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

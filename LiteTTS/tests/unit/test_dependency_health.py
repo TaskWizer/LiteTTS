@@ -51,4 +51,4 @@ class TestDependencyHealthEdgeCases:
     def test_get_health_summary_keys(self, health):
         """Test health summary contains expected keys"""
         result = health.get_health_summary()
-        assert 'total' in result or 'dependencies' in result or isinstance(result, dict)
+        assert "total" in result or "dependencies" in result or isinstance(result, dict)

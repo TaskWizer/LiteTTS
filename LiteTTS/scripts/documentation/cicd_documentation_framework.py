@@ -19,12 +19,14 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class DocumentationCoverage:
     """Documentation coverage metrics"""
+
     total_modules: int
     documented_modules: int
     total_functions: int
@@ -34,9 +36,11 @@ class DocumentationCoverage:
     coverage_percentage: float
     missing_docstrings: list[str]
 
+
 @dataclass
 class CICDConfiguration:
     """CI/CD configuration settings"""
+
     enable_github_actions: bool
     enable_gitlab_ci: bool
     enable_docker_build: bool
@@ -48,6 +52,7 @@ class CICDConfiguration:
     min_documentation_coverage: float
     python_versions: list[str]
     deployment_environments: list[str]
+
 
 class CICDDocumentationManager:
     """CI/CD and documentation coverage manager"""
@@ -61,9 +66,9 @@ class CICDDocumentationManager:
 
         # Documentation patterns
         self.docstring_patterns = {
-            'function': re.compile(r'def\s+(\w+)\s*\('),
-            'class': re.compile(r'class\s+(\w+)\s*[\(:]'),
-            'module': re.compile(r'^""".*?"""', re.MULTILINE | re.DOTALL)
+            "function": re.compile(r"def\s+(\w+)\s*\("),
+            "class": re.compile(r"class\s+(\w+)\s*[\(:]"),
+            "module": re.compile(r'^""".*?"""', re.MULTILINE | re.DOTALL),
         }
 
     def _create_default_config(self) -> CICDConfiguration:
@@ -79,7 +84,7 @@ class CICDDocumentationManager:
             min_test_coverage=80.0,
             min_documentation_coverage=83.7,  # User's target
             python_versions=["3.8", "3.9", "3.10", "3.11"],
-            deployment_environments=["development", "staging", "production"]
+            deployment_environments=["development", "staging", "production"],
         )
 
     def analyze_documentation_coverage(self) -> DocumentationCoverage:
@@ -105,26 +110,26 @@ class CICDDocumentationManager:
 
         for file_path in filtered_files:
             try:
-                with open(file_path, 'r', encoding='utf-8') as f:
+                with open(file_path, "r", encoding="utf-8") as f:
                     content = f.read()
 
                 # Check module docstring
                 total_modules += 1
-                if self.docstring_patterns['module'].search(content):
+                if self.docstring_patterns["module"].search(content):
                     documented_modules += 1
                 else:
                     missing_docstrings.append(f"Module: {file_path}")
 
                 # Check function docstrings
-                functions = self.docstring_patterns['function'].findall(content)
+                functions = self.docstring_patterns["function"].findall(content)
                 for func_name in functions:
-                    if not func_name.startswith('_'):  # Skip private functions
+                    if not func_name.startswith("_"):  # Skip private functions
                         total_functions += 1
 
                         # Look for docstring after function definition
                         func_pattern = re.compile(
                             rf'def\s+{re.escape(func_name)}\s*\([^)]*\):\s*""".*?"""',
-                            re.MULTILINE | re.DOTALL
+                            re.MULTILINE | re.DOTALL,
                         )
 
                         if func_pattern.search(content):
@@ -133,15 +138,15 @@ class CICDDocumentationManager:
                             missing_docstrings.append(f"Function: {file_path}:{func_name}")
 
                 # Check class docstrings
-                classes = self.docstring_patterns['class'].findall(content)
+                classes = self.docstring_patterns["class"].findall(content)
                 for class_name in classes:
-                    if not class_name.startswith('_'):  # Skip private classes
+                    if not class_name.startswith("_"):  # Skip private classes
                         total_classes += 1
 
                         # Look for docstring after class definition
                         class_pattern = re.compile(
                             rf'class\s+{re.escape(class_name)}\s*[\(:].*?:\s*""".*?"""',
-                            re.MULTILINE | re.DOTALL
+                            re.MULTILINE | re.DOTALL,
                         )
 
                         if class_pattern.search(content):
@@ -165,14 +170,14 @@ class CICDDocumentationManager:
             total_classes=total_classes,
             documented_classes=documented_classes,
             coverage_percentage=coverage_percentage,
-            missing_docstrings=missing_docstrings[:20]  # Limit to first 20
+            missing_docstrings=missing_docstrings[:20],  # Limit to first 20
         )
 
     def generate_github_actions_workflow(self) -> str:
         """Generate GitHub Actions workflow"""
         logger.info("Generating GitHub Actions workflow...")
 
-        workflow_content = f'''name: Kokoro TTS CI/CD Pipeline
+        workflow_content = f"""name: Kokoro TTS CI/CD Pipeline
 
 on:
   push:
@@ -295,14 +300,14 @@ jobs:
       run: |
         echo "Deploying to production environment..."
         # Add production deployment commands here
-'''
+"""
 
         # Save workflow file
         workflow_dir = Path(".github/workflows")
         workflow_dir.mkdir(parents=True, exist_ok=True)
         workflow_file = workflow_dir / "ci-cd.yml"
 
-        with open(workflow_file, 'w') as f:
+        with open(workflow_file, "w") as f:
             f.write(workflow_content)
 
         logger.info(f"GitHub Actions workflow saved: {workflow_file}")
@@ -312,7 +317,7 @@ jobs:
         """Generate GitLab CI configuration"""
         logger.info("Generating GitLab CI configuration...")
 
-        gitlab_ci_content = f'''# LiteTTS GitLab CI/CD Pipeline
+        gitlab_ci_content = f"""# LiteTTS GitLab CI/CD Pipeline
 
 stages:
   - test
@@ -408,11 +413,11 @@ deploy_production:
   when: manual
   only:
     - main
-'''
+"""
 
         # Save GitLab CI file
         gitlab_ci_file = Path(".gitlab-ci.yml")
-        with open(gitlab_ci_file, 'w') as f:
+        with open(gitlab_ci_file, "w") as f:
             f.write(gitlab_ci_content)
 
         logger.info(f"GitLab CI configuration saved: {gitlab_ci_file}")
@@ -422,7 +427,7 @@ deploy_production:
         """Generate documentation coverage check script"""
         logger.info("Generating documentation check script...")
 
-        doc_check_script = f'''#!/bin/bash
+        doc_check_script = f"""#!/bin/bash
 # Documentation Coverage Check Script
 # Generated automatically - do not edit manually
 
@@ -453,11 +458,11 @@ else:
 "
 
 echo "Documentation check completed successfully!"
-'''
+"""
 
         # Save documentation check script
         doc_script_file = self.results_dir / "check_documentation.sh"
-        with open(doc_script_file, 'w') as f:
+        with open(doc_script_file, "w") as f:
             f.write(doc_check_script)
         os.chmod(doc_script_file, 0o755)
 
@@ -625,7 +630,7 @@ if __name__ == "__main__":
         compat_test_file = Path("tests/test_backward_compatibility.py")
         compat_test_file.parent.mkdir(exist_ok=True)
 
-        with open(compat_test_file, 'w') as f:
+        with open(compat_test_file, "w") as f:
             f.write(compat_test_content)
 
         logger.info(f"Backward compatibility tests saved: {compat_test_file}")
@@ -787,7 +792,7 @@ if __name__ == "__main__":
         benchmark_file = Path("tests/test_performance_benchmarks.py")
         benchmark_file.parent.mkdir(exist_ok=True)
 
-        with open(benchmark_file, 'w') as f:
+        with open(benchmark_file, "w") as f:
             f.write(benchmark_content)
 
         logger.info(f"Performance benchmarks saved: {benchmark_file}")
@@ -819,15 +824,15 @@ if __name__ == "__main__":
                 "gitlab_ci": ".gitlab-ci.yml",
                 "doc_check_script": "test_results/cicd_documentation/check_documentation.sh",
                 "backward_compatibility_tests": "tests/test_backward_compatibility.py",
-                "performance_benchmarks": "tests/test_performance_benchmarks.py"
+                "performance_benchmarks": "tests/test_performance_benchmarks.py",
             },
             "setup_summary": self._generate_cicd_summary(doc_coverage),
-            "next_steps": self._generate_cicd_next_steps(doc_coverage)
+            "next_steps": self._generate_cicd_next_steps(doc_coverage),
         }
 
         # Save complete results
         results_file = self.results_dir / f"cicd_setup_results_{int(time.time())}.json"
-        with open(results_file, 'w') as f:
+        with open(results_file, "w") as f:
             json.dump(results, f, indent=2, default=str)
 
         logger.info(f"CI/CD and documentation setup completed. Results saved to: {results_file}")
@@ -843,13 +848,17 @@ if __name__ == "__main__":
                 "current_percentage": round(doc_coverage.coverage_percentage, 1),
                 "target_percentage": self.config.min_documentation_coverage,
                 "target_met": doc_target_met,
-                "total_items": (doc_coverage.total_modules +
-                              doc_coverage.total_functions +
-                              doc_coverage.total_classes),
-                "documented_items": (doc_coverage.documented_modules +
-                                   doc_coverage.documented_functions +
-                                   doc_coverage.documented_classes),
-                "missing_count": len(doc_coverage.missing_docstrings)
+                "total_items": (
+                    doc_coverage.total_modules
+                    + doc_coverage.total_functions
+                    + doc_coverage.total_classes
+                ),
+                "documented_items": (
+                    doc_coverage.documented_modules
+                    + doc_coverage.documented_functions
+                    + doc_coverage.documented_classes
+                ),
+                "missing_count": len(doc_coverage.missing_docstrings),
             },
             "cicd_features": {
                 "github_actions": self.config.enable_github_actions,
@@ -857,16 +866,19 @@ if __name__ == "__main__":
                 "docker_build": self.config.enable_docker_build,
                 "automated_testing": self.config.enable_automated_testing,
                 "security_scanning": self.config.enable_security_scanning,
-                "performance_testing": self.config.enable_performance_testing
+                "performance_testing": self.config.enable_performance_testing,
             },
             "test_coverage_target": self.config.min_test_coverage,
             "python_versions_supported": len(self.config.python_versions),
             "deployment_environments": len(self.config.deployment_environments),
-            "production_ready": doc_target_met and all([
-                self.config.enable_automated_testing,
-                self.config.enable_security_scanning,
-                self.config.enable_documentation_check
-            ])
+            "production_ready": doc_target_met
+            and all(
+                [
+                    self.config.enable_automated_testing,
+                    self.config.enable_security_scanning,
+                    self.config.enable_documentation_check,
+                ]
+            ),
         }
 
         return summary
@@ -883,7 +895,7 @@ if __name__ == "__main__":
             "Set up staging environment for testing",
             "Configure production deployment approvals",
             "Set up performance monitoring in production",
-            "Document CI/CD procedures for team"
+            "Document CI/CD procedures for team",
         ]
 
         # Add specific recommendations based on documentation coverage
@@ -901,13 +913,15 @@ if __name__ == "__main__":
 
         return next_steps
 
+
 def main():
     """Main function to run CI/CD and documentation setup"""
     import argparse
 
     parser = argparse.ArgumentParser(description="CI/CD and Documentation Framework")
-    parser.add_argument("--check-docs", action="store_true",
-                       help="Check documentation coverage only")
+    parser.add_argument(
+        "--check-docs", action="store_true", help="Check documentation coverage only"
+    )
     args = parser.parse_args()
 
     manager = CICDDocumentationManager()
@@ -933,18 +947,20 @@ def main():
         # Run comprehensive CI/CD setup
         results = manager.run_comprehensive_cicd_setup()
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("CI/CD AND DOCUMENTATION FRAMEWORK SUMMARY")
-        print("="*80)
+        print("=" * 80)
 
         summary = results["setup_summary"]
         doc_summary = summary["documentation_coverage"]
 
-        print(f"Documentation Coverage: {doc_summary['current_percentage']}% (Target: {doc_summary['target_percentage']}%)")
+        print(
+            f"Documentation Coverage: {doc_summary['current_percentage']}% (Target: {doc_summary['target_percentage']}%)"
+        )
         print(f"Target Met: {'✅' if doc_summary['target_met'] else '❌'}")
         print(f"Documented Items: {doc_summary['documented_items']}/{doc_summary['total_items']}")
 
-        if doc_summary['missing_count'] > 0:
+        if doc_summary["missing_count"] > 0:
             print(f"Missing Docstrings: {doc_summary['missing_count']}")
 
         print("\nCI/CD Features:")
@@ -974,12 +990,14 @@ def main():
         if len(results["next_steps"]) > 5:
             print(f"  ... and {len(results['next_steps']) - 5} more steps")
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
 
     except Exception as e:
         logger.error(f"CI/CD setup failed: {e}")
         import traceback
+
         logger.error(f"Full traceback: {traceback.format_exc()}")
+
 
 if __name__ == "__main__":
     main()

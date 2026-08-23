@@ -19,12 +19,14 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class EspeakTestResult:
     """Result of eSpeak integration test"""
+
     test_name: str
     input_text: str
     expected_output: str
@@ -33,15 +35,18 @@ class EspeakTestResult:
     processing_time: float
     error_message: str = ""
 
+
 @dataclass
 class EspeakOptimizationResult:
     """Result of eSpeak optimization"""
+
     optimization_name: str
     before_performance: dict[str, Any]
     after_performance: dict[str, Any]
     improvement_percentage: float
     success: bool
     notes: str = ""
+
 
 class EspeakIntegrationEnhancer:
     """Enhanced eSpeak integration optimizer"""
@@ -56,44 +61,44 @@ class EspeakIntegrationEnhancer:
                 "name": "question_mark_basic",
                 "input": "What is your name?",
                 "expected": "question mark",
-                "category": "punctuation"
+                "category": "punctuation",
             },
             {
                 "name": "asterisk_symbol",
                 "input": "Use the * symbol here",
                 "expected": "asterisk",
-                "category": "symbols"
+                "category": "symbols",
             },
             {
                 "name": "ampersand_symbol",
                 "input": "Johnson & Johnson",
                 "expected": "and",
-                "category": "symbols"
+                "category": "symbols",
             },
             {
                 "name": "at_symbol",
                 "input": "Email me at user@domain.com",
                 "expected": "at",
-                "category": "symbols"
+                "category": "symbols",
             },
             {
                 "name": "hash_symbol",
                 "input": "Use hashtag #example",
                 "expected": "hash",
-                "category": "symbols"
+                "category": "symbols",
             },
             {
                 "name": "dollar_symbol",
                 "input": "It costs $50",
                 "expected": "dollar",
-                "category": "currency"
+                "category": "currency",
             },
             {
                 "name": "percent_symbol",
                 "input": "50% complete",
                 "expected": "percent",
-                "category": "symbols"
-            }
+                "category": "symbols",
+            },
         ]
 
         # Interjection test cases
@@ -102,14 +107,14 @@ class EspeakIntegrationEnhancer:
                 "name": "hmm_basic",
                 "input": "Hmm, that's interesting",
                 "expected": "hmm",
-                "category": "interjections"
+                "category": "interjections",
             },
             {
                 "name": "hmm_variations",
                 "input": "Hmmm, let me think",
                 "expected": "hmm",
-                "category": "interjections"
-            }
+                "category": "interjections",
+            },
         ]
 
         # Contraction test cases
@@ -118,14 +123,14 @@ class EspeakIntegrationEnhancer:
                 "name": "im_contraction",
                 "input": "I'm going home",
                 "expected": "I am",
-                "category": "contractions"
+                "category": "contractions",
             },
             {
                 "name": "youre_contraction",
                 "input": "You're welcome",
                 "expected": "you are",
-                "category": "contractions"
-            }
+                "category": "contractions",
+            },
         ]
 
     def check_espeak_installation(self) -> tuple[bool, str, dict[str, Any]]:
@@ -140,19 +145,21 @@ class EspeakIntegrationEnhancer:
 
         try:
             # Get version information
-            result = subprocess.run([espeak_path, "--version"],
-                                  capture_output=True, text=True, timeout=5)
+            result = subprocess.run(
+                [espeak_path, "--version"], capture_output=True, text=True, timeout=5
+            )
 
             if result.returncode == 0:
                 version_info = {
                     "path": espeak_path,
                     "version": result.stdout.strip(),
-                    "available": True
+                    "available": True,
                 }
 
                 # Test basic functionality
-                test_result = subprocess.run([espeak_path, "-q", "-x", "hello"],
-                                           capture_output=True, text=True, timeout=5)
+                test_result = subprocess.run(
+                    [espeak_path, "-q", "-x", "hello"], capture_output=True, text=True, timeout=5
+                )
 
                 if test_result.returncode == 0:
                     version_info["phoneme_output"] = test_result.stdout.strip()
@@ -202,9 +209,12 @@ class EspeakIntegrationEnhancer:
                 start_time = time.perf_counter()
 
                 # Test ASCII phonemes
-                result = subprocess.run([
-                    espeak_path, "-q", "-x", "-v", "en-us", test_case["input"]
-                ], capture_output=True, text=True, timeout=10)
+                result = subprocess.run(
+                    [espeak_path, "-q", "-x", "-v", "en-us", test_case["input"]],
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                )
 
                 processing_time = time.perf_counter() - start_time
 
@@ -214,35 +224,41 @@ class EspeakIntegrationEnhancer:
                     # Check if expected output is present
                     success = test_case["expected"].lower() in test_case["input"].lower()
 
-                    results.append(EspeakTestResult(
-                        test_name=test_case["name"],
-                        input_text=test_case["input"],
-                        expected_output=test_case["expected"],
-                        actual_output=phonemes,
-                        success=success,
-                        processing_time=processing_time
-                    ))
+                    results.append(
+                        EspeakTestResult(
+                            test_name=test_case["name"],
+                            input_text=test_case["input"],
+                            expected_output=test_case["expected"],
+                            actual_output=phonemes,
+                            success=success,
+                            processing_time=processing_time,
+                        )
+                    )
                 else:
-                    results.append(EspeakTestResult(
+                    results.append(
+                        EspeakTestResult(
+                            test_name=test_case["name"],
+                            input_text=test_case["input"],
+                            expected_output=test_case["expected"],
+                            actual_output="",
+                            success=False,
+                            processing_time=processing_time,
+                            error_message=result.stderr,
+                        )
+                    )
+
+            except Exception as e:
+                results.append(
+                    EspeakTestResult(
                         test_name=test_case["name"],
                         input_text=test_case["input"],
                         expected_output=test_case["expected"],
                         actual_output="",
                         success=False,
-                        processing_time=processing_time,
-                        error_message=result.stderr
-                    ))
-
-            except Exception as e:
-                results.append(EspeakTestResult(
-                    test_name=test_case["name"],
-                    input_text=test_case["input"],
-                    expected_output=test_case["expected"],
-                    actual_output="",
-                    success=False,
-                    processing_time=0.0,
-                    error_message=str(e)
-                ))
+                        processing_time=0.0,
+                        error_message=str(e),
+                    )
+                )
 
         return results
 
@@ -253,7 +269,7 @@ class EspeakIntegrationEnhancer:
         # Load current configuration
         config_path = Path("config.json")
         if config_path.exists():
-            with open(config_path, 'r') as f:
+            with open(config_path, "r") as f:
                 config = json.load(f)
         else:
             config = {}
@@ -273,8 +289,8 @@ class EspeakIntegrationEnhancer:
                 "use_fast_voice_switching": True,
                 "enable_symbol_preprocessing": True,
                 "cache_phoneme_patterns": True,
-                "batch_processing": True
-            }
+                "batch_processing": True,
+            },
         }
 
         # Enhanced symbol processing configuration
@@ -296,8 +312,8 @@ class EspeakIntegrationEnhancer:
                 "context_aware_processing": True,
                 "punctuation_mode": "some",
                 "symbol_mapping_optimization": True,
-                "performance_mode": "balanced"
-            }
+                "performance_mode": "balanced",
+            },
         }
 
         # Update configuration
@@ -306,7 +322,7 @@ class EspeakIntegrationEnhancer:
 
         # Save optimized configuration
         optimized_config_path = self.results_dir / "optimized_config.json"
-        with open(optimized_config_path, 'w') as f:
+        with open(optimized_config_path, "w") as f:
             json.dump(config, f, indent=2)
 
         logger.info(f"Optimized configuration saved to: {optimized_config_path}")
@@ -314,7 +330,7 @@ class EspeakIntegrationEnhancer:
         return {
             "espeak_config": optimized_espeak_config,
             "symbol_config": optimized_symbol_config,
-            "config_file": str(optimized_config_path)
+            "config_file": str(optimized_config_path),
         }
 
     def create_enhanced_symbol_mappings(self) -> dict[str, str]:
@@ -329,7 +345,6 @@ class EspeakIntegrationEnhancer:
             ",": "comma",
             ";": "semicolon",
             ":": "colon",
-
             # Mathematical symbols
             "*": "asterisk",
             "+": "plus",
@@ -338,13 +353,11 @@ class EspeakIntegrationEnhancer:
             "/": "slash",
             "\\": "backslash",
             "%": "percent",
-
             # Currency symbols
             "$": "dollar",
             "€": "euro",
             "£": "pound",
             "¥": "yen",
-
             # Other symbols
             "&": "and",
             "@": "at",
@@ -354,7 +367,6 @@ class EspeakIntegrationEnhancer:
             "|": "pipe",
             "~": "tilde",
             "`": "backtick",
-
             # Brackets
             "(": "open parenthesis",
             ")": "close parenthesis",
@@ -364,19 +376,18 @@ class EspeakIntegrationEnhancer:
             "}": "close brace",
             "<": "less than",
             ">": "greater than",
-
             # Quotes
             '"': "",  # Remove quotes to prevent pronunciation issues
             "'": "",  # Remove apostrophes in quotes
             """: "",  # Smart quotes
             """: "",
             "'": "",
-            "'": ""
+            "'": "",
         }
 
         # Save enhanced mappings
         mappings_file = self.results_dir / "enhanced_symbol_mappings.json"
-        with open(mappings_file, 'w') as f:
+        with open(mappings_file, "w") as f:
             json.dump(enhanced_mappings, f, indent=2)
 
         logger.info(f"Enhanced symbol mappings saved to: {mappings_file}")
@@ -397,44 +408,56 @@ class EspeakIntegrationEnhancer:
             "The quick brown fox jumps over the lazy dog.",
             "I'm going to the store to buy some groceries.",
             "Use the * symbol and the @ sign in your email.",
-            "This is a longer text that contains multiple sentences. It should test the performance of eSpeak with more complex input. The goal is to measure processing time and accuracy."
+            "This is a longer text that contains multiple sentences. It should test the performance of eSpeak with more complex input. The goal is to measure processing time and accuracy.",
         ]
 
         benchmark_results = {
             "ascii_phonemes": [],
             "ipa_phonemes": [],
             "with_punctuation": [],
-            "without_punctuation": []
+            "without_punctuation": [],
         }
 
         for text in test_texts:
             # Test ASCII phonemes
             start_time = time.perf_counter()
-            result = subprocess.run([espeak_path, "-q", "-x", "-v", "en-us", text],
-                                  capture_output=True, text=True, timeout=10)
+            result = subprocess.run(
+                [espeak_path, "-q", "-x", "-v", "en-us", text],
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
             ascii_time = time.perf_counter() - start_time
 
             if result.returncode == 0:
-                benchmark_results["ascii_phonemes"].append({
-                    "text": text[:30] + "..." if len(text) > 30 else text,
-                    "processing_time": ascii_time,
-                    "output_length": len(result.stdout.strip()),
-                    "success": True
-                })
+                benchmark_results["ascii_phonemes"].append(
+                    {
+                        "text": text[:30] + "..." if len(text) > 30 else text,
+                        "processing_time": ascii_time,
+                        "output_length": len(result.stdout.strip()),
+                        "success": True,
+                    }
+                )
 
             # Test IPA phonemes
             start_time = time.perf_counter()
-            result = subprocess.run([espeak_path, "-q", "--ipa", "-v", "en-us", text],
-                                  capture_output=True, text=True, timeout=10)
+            result = subprocess.run(
+                [espeak_path, "-q", "--ipa", "-v", "en-us", text],
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
             ipa_time = time.perf_counter() - start_time
 
             if result.returncode == 0:
-                benchmark_results["ipa_phonemes"].append({
-                    "text": text[:30] + "..." if len(text) > 30 else text,
-                    "processing_time": ipa_time,
-                    "output_length": len(result.stdout.strip()),
-                    "success": True
-                })
+                benchmark_results["ipa_phonemes"].append(
+                    {
+                        "text": text[:30] + "..." if len(text) > 30 else text,
+                        "processing_time": ipa_time,
+                        "output_length": len(result.stdout.strip()),
+                        "success": True,
+                    }
+                )
 
         # Calculate averages
         for category, results in benchmark_results.items():
@@ -454,7 +477,7 @@ class EspeakIntegrationEnhancer:
             "optimization_results": {},
             "test_results": {},
             "performance_benchmarks": {},
-            "recommendations": []
+            "recommendations": [],
         }
 
         # Step 1: Check eSpeak availability
@@ -471,7 +494,7 @@ class EspeakIntegrationEnhancer:
             "available": available,
             "path": path_or_error if available else None,
             "info": info,
-            "error": path_or_error if not available else None
+            "error": path_or_error if not available else None,
         }
 
         if not available:
@@ -491,17 +514,20 @@ class EspeakIntegrationEnhancer:
         # Step 4: Test symbol pronunciation (if eSpeak available)
         if available:
             logger.info("Step 4: Testing symbol pronunciation...")
-            all_test_cases = (self.symbol_test_cases +
-                             self.interjection_test_cases +
-                             self.contraction_test_cases)
+            all_test_cases = (
+                self.symbol_test_cases + self.interjection_test_cases + self.contraction_test_cases
+            )
 
             test_results = self.test_espeak_phonemization(all_test_cases)
             enhancement_results["test_results"] = {
                 "total_tests": len(test_results),
                 "successful_tests": sum(1 for r in test_results if r.success),
                 "failed_tests": sum(1 for r in test_results if not r.success),
-                "average_processing_time": sum(r.processing_time for r in test_results) / len(test_results) if test_results else 0,
-                "detailed_results": [asdict(r) for r in test_results]
+                "average_processing_time": sum(r.processing_time for r in test_results)
+                / len(test_results)
+                if test_results
+                else 0,
+                "detailed_results": [asdict(r) for r in test_results],
             }
 
             # Step 5: Performance benchmarking
@@ -516,7 +542,7 @@ class EspeakIntegrationEnhancer:
                 "failed_tests": 0,
                 "average_processing_time": 0,
                 "detailed_results": [],
-                "skipped_reason": "eSpeak not available"
+                "skipped_reason": "eSpeak not available",
             }
             enhancement_results["performance_benchmarks"] = {
                 "skipped_reason": "eSpeak not available"
@@ -529,7 +555,7 @@ class EspeakIntegrationEnhancer:
 
         # Save results
         results_file = self.results_dir / f"espeak_enhancement_{int(time.time())}.json"
-        with open(results_file, 'w') as f:
+        with open(results_file, "w") as f:
             json.dump(enhancement_results, f, indent=2, default=str)
 
         logger.info(f"Enhancement completed. Results saved to: {results_file}")
@@ -553,7 +579,9 @@ class EspeakIntegrationEnhancer:
             recommendations.append("Optimize eSpeak processing for better performance")
 
         # Configuration recommendations
-        success_rate = test_results.get("successful_tests", 0) / max(1, test_results.get("total_tests", 1))
+        success_rate = test_results.get("successful_tests", 0) / max(
+            1, test_results.get("total_tests", 1)
+        )
         if success_rate < 0.8:
             recommendations.append("Improve eSpeak configuration for better accuracy")
 
@@ -564,6 +592,7 @@ class EspeakIntegrationEnhancer:
 
         return recommendations
 
+
 def main():
     """Main function to run eSpeak integration enhancement"""
     enhancer = EspeakIntegrationEnhancer()
@@ -571,9 +600,9 @@ def main():
     try:
         results = enhancer.run_comprehensive_enhancement()
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("ESPEAK INTEGRATION ENHANCEMENT SUMMARY")
-        print("="*80)
+        print("=" * 80)
 
         # Installation status
         install_check = results["installation_check"]
@@ -588,7 +617,9 @@ def main():
         print(f"  Total Tests: {test_results['total_tests']}")
         print(f"  Successful: {test_results['successful_tests']}")
         print(f"  Failed: {test_results['failed_tests']}")
-        print(f"  Success Rate: {test_results['successful_tests']/max(1,test_results['total_tests'])*100:.1f}%")
+        print(
+            f"  Success Rate: {test_results['successful_tests'] / max(1, test_results['total_tests']) * 100:.1f}%"
+        )
         print(f"  Avg Processing Time: {test_results['average_processing_time']:.4f}s")
 
         # Performance benchmarks
@@ -604,12 +635,14 @@ def main():
         for i, rec in enumerate(results["recommendations"], 1):
             print(f"  {i}. {rec}")
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
 
     except Exception as e:
         logger.error(f"Enhancement failed: {e}")
         import traceback
+
         logger.error(f"Full traceback: {traceback.format_exc()}")
+
 
 if __name__ == "__main__":
     main()

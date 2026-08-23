@@ -3,7 +3,6 @@
 Unit tests for chunk processor module
 """
 
-
 import pytest
 
 from LiteTTS.tts.chunk_processor import ChunkProcessor, TextChunk
@@ -20,7 +19,7 @@ class TestTextChunk:
             total_chunks=1,
             is_sentence_boundary=True,
             is_paragraph_boundary=True,
-            pause_after=0.5
+            pause_after=0.5,
         )
         assert chunk.text == "Hello world"
         assert chunk.chunk_index == 0
@@ -31,11 +30,7 @@ class TestTextChunk:
 
     def test_creation_defaults(self):
         """Test creating text chunk with defaults"""
-        chunk = TextChunk(
-            text="Hello",
-            chunk_index=0,
-            total_chunks=1
-        )
+        chunk = TextChunk(text="Hello", chunk_index=0, total_chunks=1)
         assert chunk.is_sentence_boundary is False
         assert chunk.is_paragraph_boundary is False
         assert chunk.pause_after == 0.0
@@ -178,7 +173,7 @@ class TestChunkProcessor:
         processor = ChunkProcessor()
         chunks = [
             TextChunk(text="Hello world", chunk_index=0, total_chunks=1, pause_after=0.2),
-            TextChunk(text="Test text", chunk_index=1, total_chunks=1, pause_after=0.5)
+            TextChunk(text="Test text", chunk_index=1, total_chunks=1, pause_after=0.5),
         ]
         time_estimate = processor.estimate_processing_time(chunks)
         assert time_estimate > 0
@@ -193,16 +188,26 @@ class TestChunkProcessor:
         """Test getting chunk statistics"""
         processor = ChunkProcessor()
         chunks = [
-            TextChunk(text="Hello world", chunk_index=0, total_chunks=1,
-                     is_sentence_boundary=True, pause_after=0.2),
-            TextChunk(text="Test text", chunk_index=1, total_chunks=1,
-                     is_paragraph_boundary=True, pause_after=0.5)
+            TextChunk(
+                text="Hello world",
+                chunk_index=0,
+                total_chunks=1,
+                is_sentence_boundary=True,
+                pause_after=0.2,
+            ),
+            TextChunk(
+                text="Test text",
+                chunk_index=1,
+                total_chunks=1,
+                is_paragraph_boundary=True,
+                pause_after=0.5,
+            ),
         ]
         stats = processor.get_chunk_statistics(chunks)
-        assert stats['total_chunks'] == 2
-        assert stats['total_characters'] == 20  # len("Hello world") + len("Test text")
-        assert stats['sentence_boundaries'] == 1
-        assert stats['paragraph_boundaries'] == 1
+        assert stats["total_chunks"] == 2
+        assert stats["total_characters"] == 20  # len("Hello world") + len("Test text")
+        assert stats["sentence_boundaries"] == 1
+        assert stats["paragraph_boundaries"] == 1
 
     def test_get_chunk_statistics_empty(self):
         """Test getting stats for empty chunks"""
@@ -215,7 +220,7 @@ class TestChunkProcessor:
         processor = ChunkProcessor()
         chunks = [
             TextChunk(text="Hello world", chunk_index=0, total_chunks=1),
-            TextChunk(text="Test text", chunk_index=1, total_chunks=1)
+            TextChunk(text="Test text", chunk_index=1, total_chunks=1),
         ]
         duration = processor._estimate_audio_duration(chunks)
         assert duration > 0
@@ -259,8 +264,14 @@ class TestChunkProcessorOptimize:
         """Test optimizing chunks"""
         processor = ChunkProcessor()
         chunks = [
-            TextChunk(text="Hello   world", chunk_index=0, total_chunks=1,
-                     is_sentence_boundary=True, is_paragraph_boundary=True, pause_after=0.5),
+            TextChunk(
+                text="Hello   world",
+                chunk_index=0,
+                total_chunks=1,
+                is_sentence_boundary=True,
+                is_paragraph_boundary=True,
+                pause_after=0.5,
+            ),
         ]
         result = processor.optimize_chunks(chunks)
         assert len(result) == 1
@@ -296,8 +307,11 @@ class TestChunkProcessorValidate:
         """Test validating chunks that are too long"""
         processor = ChunkProcessor(max_chunk_length=10)
         chunks = [
-            TextChunk(text="This is a very long chunk that exceeds the limit",
-                     chunk_index=0, total_chunks=1),
+            TextChunk(
+                text="This is a very long chunk that exceeds the limit",
+                chunk_index=0,
+                total_chunks=1,
+            ),
         ]
         issues = processor.validate_chunks(chunks)
         assert any("too long" in issue for issue in issues)
@@ -333,8 +347,14 @@ class TestChunkProcessorValidate:
         """Test validating valid chunks"""
         processor = ChunkProcessor()
         chunks = [
-            TextChunk(text="Hello world", chunk_index=0, total_chunks=1,
-                     is_sentence_boundary=True, is_paragraph_boundary=True, pause_after=0.5),
+            TextChunk(
+                text="Hello world",
+                chunk_index=0,
+                total_chunks=1,
+                is_sentence_boundary=True,
+                is_paragraph_boundary=True,
+                pause_after=0.5,
+            ),
         ]
         issues = processor.validate_chunks(chunks)
         assert issues == []
@@ -374,10 +394,22 @@ class TestChunkProcessorMerge:
         """Test that merge preserves paragraph boundaries"""
         processor = ChunkProcessor(max_chunk_length=200)
         chunks = [
-            TextChunk(text="Short", chunk_index=0, total_chunks=2,
-                     is_sentence_boundary=False, is_paragraph_boundary=True, pause_after=0.0),
-            TextChunk(text="Text", chunk_index=1, total_chunks=2,
-                     is_sentence_boundary=True, is_paragraph_boundary=True, pause_after=0.0),
+            TextChunk(
+                text="Short",
+                chunk_index=0,
+                total_chunks=2,
+                is_sentence_boundary=False,
+                is_paragraph_boundary=True,
+                pause_after=0.0,
+            ),
+            TextChunk(
+                text="Text",
+                chunk_index=1,
+                total_chunks=2,
+                is_sentence_boundary=True,
+                is_paragraph_boundary=True,
+                pause_after=0.0,
+            ),
         ]
         result = processor.merge_small_chunks(chunks, min_chunk_length=3)
         # Last chunk should preserve paragraph boundary

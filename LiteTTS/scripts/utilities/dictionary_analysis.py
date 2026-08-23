@@ -18,12 +18,14 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class DictionaryStats:
     """Statistics for a pronunciation dictionary"""
+
     name: str
     total_entries: int
     unique_words: int
@@ -35,14 +37,17 @@ class DictionaryStats:
     missing_critical_words: list[str]
     optimization_opportunities: list[str]
 
+
 @dataclass
 class CoverageAnalysis:
     """Analysis of dictionary coverage for specific word categories"""
+
     category: str
     total_words: int
     covered_words: int
     missing_words: list[str]
     coverage_percentage: float
+
 
 class DictionaryAnalyzer:
     """Comprehensive pronunciation dictionary analyzer"""
@@ -54,14 +59,42 @@ class DictionaryAnalyzer:
 
         # Define critical word categories for testing
         self.critical_word_categories = {
-            "contractions": ["I'm", "you're", "we're", "they're", "won't", "can't", "don't", "isn't", "aren't"],
+            "contractions": [
+                "I'm",
+                "you're",
+                "we're",
+                "they're",
+                "won't",
+                "can't",
+                "don't",
+                "isn't",
+                "aren't",
+            ],
             "interjections": ["hmm", "hmmm", "uh", "um", "ah", "oh", "wow", "hey"],
             "symbols": ["question", "asterisk", "ampersand", "at", "hash", "dollar", "percent"],
-            "common_mispronunciations": ["well", "joy", "prices", "hedonism", "acquisition", "resume"],
+            "common_mispronunciations": [
+                "well",
+                "joy",
+                "prices",
+                "hedonism",
+                "acquisition",
+                "resume",
+            ],
             "technical_terms": ["api", "tts", "onnx", "neural", "synthesis", "github", "python"],
             "proper_nouns": ["elon", "tesla", "google", "microsoft", "amazon"],
             "currency": ["dollar", "dollars", "cent", "cents", "euro", "pound", "yen"],
-            "numbers": ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
+            "numbers": [
+                "zero",
+                "one",
+                "two",
+                "three",
+                "four",
+                "five",
+                "six",
+                "seven",
+                "eight",
+                "nine",
+            ],
         }
 
     def analyze_cmu_dictionary(self) -> DictionaryStats:
@@ -77,21 +110,21 @@ class DictionaryAnalyzer:
         problematic_entries = []
 
         try:
-            with open(cmu_path, 'r', encoding='utf-8') as f:
+            with open(cmu_path, "r", encoding="utf-8") as f:
                 for line_num, line in enumerate(f, 1):
                     line = line.strip()
-                    if not line or line.startswith(';;;'):
+                    if not line or line.startswith(";;;"):
                         continue
 
                     try:
                         # Parse CMU format: WORD PHONEMES
-                        parts = line.split(' ', 1)
+                        parts = line.split(" ", 1)
                         if len(parts) >= 2:
                             word = parts[0].lower()
                             phonemes = parts[1]
 
                             # Remove variant markers like (2), (3)
-                            word = re.sub(r'\(\d+\)$', '', word)
+                            word = re.sub(r"\(\d+\)$", "", word)
 
                             entries[word] = phonemes
                         else:
@@ -120,7 +153,7 @@ class DictionaryAnalyzer:
             quality_score=quality_score,
             problematic_entries=problematic_entries[:10],  # Limit to first 10
             missing_critical_words=missing_words,
-            optimization_opportunities=optimization_opportunities
+            optimization_opportunities=optimization_opportunities,
         )
 
     def analyze_ipa_dictionary(self) -> DictionaryStats:
@@ -133,7 +166,7 @@ class DictionaryAnalyzer:
             return DictionaryStats("IPA", 0, 0, "IPA", 0.0, 0.0, 0.0, [], [], [])
 
         try:
-            with open(ipa_path, 'r', encoding='utf-8') as f:
+            with open(ipa_path, "r", encoding="utf-8") as f:
                 ipa_data = json.load(f)
         except Exception as e:
             logger.error(f"Error reading IPA dictionary: {e}")
@@ -144,8 +177,8 @@ class DictionaryAnalyzer:
 
         for word, data in ipa_data.items():
             try:
-                if isinstance(data, dict) and 'phonetic' in data:
-                    entries[word.lower()] = data['phonetic']
+                if isinstance(data, dict) and "phonetic" in data:
+                    entries[word.lower()] = data["phonetic"]
                 else:
                     problematic_entries.append(f"Invalid entry format for '{word}'")
             except Exception as e:
@@ -168,7 +201,7 @@ class DictionaryAnalyzer:
             quality_score=quality_score,
             problematic_entries=problematic_entries[:10],
             missing_critical_words=missing_words,
-            optimization_opportunities=optimization_opportunities
+            optimization_opportunities=optimization_opportunities,
         )
 
     def analyze_custom_dictionary(self) -> DictionaryStats:
@@ -181,7 +214,7 @@ class DictionaryAnalyzer:
             return DictionaryStats("Custom", 0, 0, "Custom", 0.0, 0.0, 0.0, [], [], [])
 
         try:
-            with open(custom_path, 'r', encoding='utf-8') as f:
+            with open(custom_path, "r", encoding="utf-8") as f:
                 custom_data = json.load(f)
         except Exception as e:
             logger.error(f"Error reading custom dictionary: {e}")
@@ -192,8 +225,8 @@ class DictionaryAnalyzer:
 
         for word, data in custom_data.items():
             try:
-                if isinstance(data, dict) and 'phonetic' in data:
-                    entries[word.lower()] = data['phonetic']
+                if isinstance(data, dict) and "phonetic" in data:
+                    entries[word.lower()] = data["phonetic"]
                 else:
                     problematic_entries.append(f"Invalid entry format for '{word}'")
             except Exception as e:
@@ -216,7 +249,7 @@ class DictionaryAnalyzer:
             quality_score=quality_score,
             problematic_entries=problematic_entries[:10],
             missing_critical_words=missing_words,
-            optimization_opportunities=optimization_opportunities
+            optimization_opportunities=optimization_opportunities,
         )
 
     def _calculate_coverage_score(self, entries: dict[str, str], dict_type: str) -> float:
@@ -241,7 +274,7 @@ class DictionaryAnalyzer:
             "hmm": ["hm", "hmm", "h m m"],  # Should not be "hum"
             "well": ["wel", "wɛl"],  # Should not sound like "oral"
             "i'm": ["aɪm", "aɪ m"],  # Should not be "im"
-            "question": ["kwɛstʃən", "K W EH S CH AH N"]  # For question mark
+            "question": ["kwɛstʃən", "K W EH S CH AH N"],  # For question mark
         }
 
         for word, acceptable_phonetics in problematic_words.items():
@@ -271,7 +304,9 @@ class DictionaryAnalyzer:
 
         return missing_words
 
-    def _identify_optimization_opportunities(self, entries: dict[str, str], dict_type: str) -> list[str]:
+    def _identify_optimization_opportunities(
+        self, entries: dict[str, str], dict_type: str
+    ) -> list[str]:
         """Identify optimization opportunities for the dictionary"""
         opportunities = []
 
@@ -288,7 +323,9 @@ class DictionaryAnalyzer:
             opportunities.append(f"Found {len(duplicates)} duplicate phonetic entries")
 
         # Check for empty or invalid entries
-        empty_entries = [word for word, phonetic in entries.items() if not phonetic or not phonetic.strip()]
+        empty_entries = [
+            word for word, phonetic in entries.items() if not phonetic or not phonetic.strip()
+        ]
         if empty_entries:
             opportunities.append(f"Found {len(empty_entries)} empty phonetic entries")
 
@@ -304,7 +341,9 @@ class DictionaryAnalyzer:
 
         return opportunities
 
-    def analyze_coverage_by_category(self, all_dictionaries: dict[str, dict[str, str]]) -> list[CoverageAnalysis]:
+    def analyze_coverage_by_category(
+        self, all_dictionaries: dict[str, dict[str, str]]
+    ) -> list[CoverageAnalysis]:
         """Analyze coverage by word category across all dictionaries"""
         coverage_analyses = []
 
@@ -315,7 +354,9 @@ class DictionaryAnalyzer:
 
             for word in words:
                 word_lower = word.lower()
-                found_in_any = any(word_lower in dict_entries for dict_entries in all_dictionaries.values())
+                found_in_any = any(
+                    word_lower in dict_entries for dict_entries in all_dictionaries.values()
+                )
 
                 if found_in_any:
                     covered_words += 1
@@ -324,13 +365,15 @@ class DictionaryAnalyzer:
 
             coverage_percentage = (covered_words / total_words) * 100 if total_words > 0 else 0.0
 
-            coverage_analyses.append(CoverageAnalysis(
-                category=category,
-                total_words=total_words,
-                covered_words=covered_words,
-                missing_words=missing_words,
-                coverage_percentage=coverage_percentage
-            ))
+            coverage_analyses.append(
+                CoverageAnalysis(
+                    category=category,
+                    total_words=total_words,
+                    covered_words=covered_words,
+                    missing_words=missing_words,
+                    coverage_percentage=coverage_percentage,
+                )
+            )
 
         return coverage_analyses
 
@@ -350,76 +393,109 @@ class DictionaryAnalyzer:
         cmu_path = self.dictionaries_dir / "cmudict.dict"
         if cmu_path.exists():
             cmu_entries = {}
-            with open(cmu_path, 'r', encoding='utf-8') as f:
+            with open(cmu_path, "r", encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
-                    if line and not line.startswith(';;;'):
-                        parts = line.split(' ', 1)
+                    if line and not line.startswith(";;;"):
+                        parts = line.split(" ", 1)
                         if len(parts) >= 2:
-                            word = re.sub(r'\(\d+\)$', '', parts[0].lower())
+                            word = re.sub(r"\(\d+\)$", "", parts[0].lower())
                             cmu_entries[word] = parts[1]
-            all_dictionaries['cmu'] = cmu_entries
+            all_dictionaries["cmu"] = cmu_entries
 
         # Load IPA entries
         ipa_path = self.dictionaries_dir / "ipa_dict.json"
         if ipa_path.exists():
             try:
-                with open(ipa_path, 'r', encoding='utf-8') as f:
+                with open(ipa_path, "r", encoding="utf-8") as f:
                     ipa_data = json.load(f)
-                ipa_entries = {word.lower(): data.get('phonetic', '') for word, data in ipa_data.items() if isinstance(data, dict)}
-                all_dictionaries['ipa'] = ipa_entries
+                ipa_entries = {
+                    word.lower(): data.get("phonetic", "")
+                    for word, data in ipa_data.items()
+                    if isinstance(data, dict)
+                }
+                all_dictionaries["ipa"] = ipa_entries
             except:
-                all_dictionaries['ipa'] = {}
+                all_dictionaries["ipa"] = {}
 
         # Load custom entries
         custom_path = self.dictionaries_dir / "custom_phonetic.json"
         if custom_path.exists():
             try:
-                with open(custom_path, 'r', encoding='utf-8') as f:
+                with open(custom_path, "r", encoding="utf-8") as f:
                     custom_data = json.load(f)
-                custom_entries = {word.lower(): data.get('phonetic', '') for word, data in custom_data.items() if isinstance(data, dict)}
-                all_dictionaries['custom'] = custom_entries
+                custom_entries = {
+                    word.lower(): data.get("phonetic", "")
+                    for word, data in custom_data.items()
+                    if isinstance(data, dict)
+                }
+                all_dictionaries["custom"] = custom_entries
             except:
-                all_dictionaries['custom'] = {}
+                all_dictionaries["custom"] = {}
 
         # Analyze coverage by category
         coverage_analyses = self.analyze_coverage_by_category(all_dictionaries)
 
         # Generate summary
         summary = {
-            'analysis_timestamp': time.time(),
-            'dictionaries': {
-                'cmu': asdict(cmu_stats),
-                'ipa': asdict(ipa_stats),
-                'custom': asdict(custom_stats)
+            "analysis_timestamp": time.time(),
+            "dictionaries": {
+                "cmu": asdict(cmu_stats),
+                "ipa": asdict(ipa_stats),
+                "custom": asdict(custom_stats),
             },
-            'coverage_by_category': [asdict(analysis) for analysis in coverage_analyses],
-            'overall_statistics': {
-                'total_unique_words': len(set().union(*[entries.keys() for entries in all_dictionaries.values()])),
-                'average_coverage_score': sum([cmu_stats.coverage_score, ipa_stats.coverage_score, custom_stats.coverage_score]) / 3,
-                'average_quality_score': sum([cmu_stats.quality_score, ipa_stats.quality_score, custom_stats.quality_score]) / 3,
-                'total_file_size_mb': cmu_stats.file_size_mb + ipa_stats.file_size_mb + custom_stats.file_size_mb
+            "coverage_by_category": [asdict(analysis) for analysis in coverage_analyses],
+            "overall_statistics": {
+                "total_unique_words": len(
+                    set().union(*[entries.keys() for entries in all_dictionaries.values()])
+                ),
+                "average_coverage_score": sum(
+                    [
+                        cmu_stats.coverage_score,
+                        ipa_stats.coverage_score,
+                        custom_stats.coverage_score,
+                    ]
+                )
+                / 3,
+                "average_quality_score": sum(
+                    [cmu_stats.quality_score, ipa_stats.quality_score, custom_stats.quality_score]
+                )
+                / 3,
+                "total_file_size_mb": cmu_stats.file_size_mb
+                + ipa_stats.file_size_mb
+                + custom_stats.file_size_mb,
             },
-            'recommendations': self._generate_recommendations(cmu_stats, ipa_stats, custom_stats, coverage_analyses)
+            "recommendations": self._generate_recommendations(
+                cmu_stats, ipa_stats, custom_stats, coverage_analyses
+            ),
         }
 
         # Save results
         results_file = self.results_dir / f"dictionary_analysis_{int(time.time())}.json"
-        with open(results_file, 'w') as f:
+        with open(results_file, "w") as f:
             json.dump(summary, f, indent=2, default=str)
 
         logger.info(f"Analysis completed. Results saved to: {results_file}")
         return summary
 
-    def _generate_recommendations(self, cmu_stats: DictionaryStats, ipa_stats: DictionaryStats,
-                                custom_stats: DictionaryStats, coverage_analyses: list[CoverageAnalysis]) -> list[str]:
+    def _generate_recommendations(
+        self,
+        cmu_stats: DictionaryStats,
+        ipa_stats: DictionaryStats,
+        custom_stats: DictionaryStats,
+        coverage_analyses: list[CoverageAnalysis],
+    ) -> list[str]:
         """Generate optimization recommendations"""
         recommendations = []
 
         # Coverage recommendations
-        poor_coverage_categories = [analysis.category for analysis in coverage_analyses if analysis.coverage_percentage < 50]
+        poor_coverage_categories = [
+            analysis.category for analysis in coverage_analyses if analysis.coverage_percentage < 50
+        ]
         if poor_coverage_categories:
-            recommendations.append(f"Improve coverage in categories: {', '.join(poor_coverage_categories)}")
+            recommendations.append(
+                f"Improve coverage in categories: {', '.join(poor_coverage_categories)}"
+            )
 
         # Dictionary-specific recommendations
         if cmu_stats.coverage_score < 70:
@@ -432,7 +508,9 @@ class DictionaryAnalyzer:
             recommendations.append("Custom dictionary should include more pronunciation fixes")
 
         # Quality recommendations
-        avg_quality = (cmu_stats.quality_score + ipa_stats.quality_score + custom_stats.quality_score) / 3
+        avg_quality = (
+            cmu_stats.quality_score + ipa_stats.quality_score + custom_stats.quality_score
+        ) / 3
         if avg_quality < 80:
             recommendations.append("Overall dictionary quality needs improvement")
 
@@ -443,6 +521,7 @@ class DictionaryAnalyzer:
 
         return recommendations
 
+
 def main():
     """Main function to run dictionary analysis"""
     analyzer = DictionaryAnalyzer()
@@ -450,11 +529,11 @@ def main():
     try:
         summary = analyzer.run_comprehensive_analysis()
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("DICTIONARY ANALYSIS SUMMARY")
-        print("="*80)
+        print("=" * 80)
 
-        for dict_name, stats in summary['dictionaries'].items():
+        for dict_name, stats in summary["dictionaries"].items():
             print(f"\n{dict_name.upper()} Dictionary:")
             print(f"  Total Entries: {stats['total_entries']:,}")
             print(f"  Coverage Score: {stats['coverage_score']:.1f}%")
@@ -463,24 +542,28 @@ def main():
             print(f"  Missing Critical Words: {len(stats['missing_critical_words'])}")
 
         print("\nOverall Statistics:")
-        overall = summary['overall_statistics']
+        overall = summary["overall_statistics"]
         print(f"  Total Unique Words: {overall['total_unique_words']:,}")
         print(f"  Average Coverage: {overall['average_coverage_score']:.1f}%")
         print(f"  Average Quality: {overall['average_quality_score']:.1f}%")
         print(f"  Total Size: {overall['total_file_size_mb']:.2f} MB")
 
         print("\nCoverage by Category:")
-        for analysis in summary['coverage_by_category']:
-            print(f"  {analysis['category']}: {analysis['coverage_percentage']:.1f}% ({analysis['covered_words']}/{analysis['total_words']})")
+        for analysis in summary["coverage_by_category"]:
+            print(
+                f"  {analysis['category']}: {analysis['coverage_percentage']:.1f}% ({analysis['covered_words']}/{analysis['total_words']})"
+            )
 
         print("\nRecommendations:")
-        for i, rec in enumerate(summary['recommendations'], 1):
+        for i, rec in enumerate(summary["recommendations"], 1):
             print(f"  {i}. {rec}")
 
     except Exception as e:
         logger.error(f"Analysis failed: {e}")
         import traceback
+
         logger.error(f"Full traceback: {traceback.format_exc()}")
+
 
 if __name__ == "__main__":
     main()

@@ -20,12 +20,14 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class ModelBenchmarkResult:
     """Results from model benchmarking"""
+
     model_name: str
     model_path: str
     model_size_mb: float
@@ -70,6 +72,7 @@ class ModelBenchmarkResult:
     warmup_time_ms: float
     throughput_chars_per_sec: float
 
+
 class ComprehensiveModelBenchmark:
     """
     Comprehensive model benchmarking system
@@ -85,27 +88,21 @@ class ComprehensiveModelBenchmark:
     def _get_test_texts(self) -> dict[str, list[str]]:
         """Get test texts categorized by length"""
         return {
-            "short": [
-                "Hello.",
-                "Test.",
-                "Hi there!",
-                "Good morning.",
-                "Thank you."
-            ],
+            "short": ["Hello.", "Test.", "Hi there!", "Good morning.", "Thank you."],
             "medium": [
                 "This is a medium length sentence for testing.",
                 "How are you doing today? I hope everything is well.",
                 "The weather is quite nice outside this morning.",
                 "Please let me know if you need any assistance.",
-                "This sentence should test medium-length processing."
+                "This sentence should test medium-length processing.",
             ],
             "long": [
                 "This is a longer text that will test the system's ability to handle extended passages with multiple sentences and complex structures.",
                 "In the heart of the bustling city, where skyscrapers reach toward the clouds and the streets are filled with the constant hum of activity, people from all walks of life come together to create a vibrant tapestry of human experience.",
                 "The quick brown fox jumps over the lazy dog, demonstrating agility and speed while the canine remains in a state of peaceful rest, unbothered by the commotion above.",
                 "Technology has revolutionized the way we communicate, work, and live our daily lives, bringing both tremendous opportunities and significant challenges that we must navigate with wisdom and care.",
-                "As the sun sets behind the mountains, painting the sky in brilliant shades of orange and purple, the world seems to pause for a moment in quiet appreciation of nature's magnificent display."
-            ]
+                "As the sun sets behind the mountains, painting the sky in brilliant shades of orange and purple, the world seems to pause for a moment in quiet appreciation of nature's magnificent display.",
+            ],
         }
 
     def discover_models(self) -> list[tuple[str, Path]]:
@@ -181,7 +178,11 @@ class ComprehensiveModelBenchmark:
                             # Calculate metrics
                             generation_time = end_time - start_time
                             audio_duration = len(audio_data) / 22050  # Assuming 22050 Hz
-                            rtf = generation_time / audio_duration if audio_duration > 0 else float('inf')
+                            rtf = (
+                                generation_time / audio_duration
+                                if audio_duration > 0
+                                else float("inf")
+                            )
                             latency_ms = generation_time * 1000
 
                             rtf_results.append(rtf)
@@ -193,7 +194,9 @@ class ComprehensiveModelBenchmark:
                             total_time += generation_time
                             successful_tests += 1
 
-                            logger.debug(f"  '{text[:30]}...' - RTF: {rtf:.3f}, Latency: {latency_ms:.1f}ms")
+                            logger.debug(
+                                f"  '{text[:30]}...' - RTF: {rtf:.3f}, Latency: {latency_ms:.1f}ms"
+                            )
                         else:
                             failed_tests += 1
                             logger.warning(f"Failed to generate audio for: {text[:30]}...")
@@ -268,7 +271,7 @@ class ComprehensiveModelBenchmark:
                 long_text_rtf=long_rtf,
                 initialization_time_ms=init_time_ms,
                 warmup_time_ms=warmup_time_ms,
-                throughput_chars_per_sec=throughput
+                throughput_chars_per_sec=throughput,
             )
 
             logger.info(f"✅ Model {model_name} benchmarked successfully")
@@ -373,9 +376,11 @@ class ComprehensiveModelBenchmark:
             rtf_status = "✅" if result.avg_rtf < 0.25 else "❌"
             memory_status = "✅" if result.peak_memory_mb < 150 else "❌"
 
-            report.append(f"| {result.model_name} | {rtf_status} {result.avg_rtf:.3f} | "
-                         f"{memory_status} {result.peak_memory_mb:.1f} | "
-                         f"{result.audio_quality_score:.1f} | {result.success_rate:.1%} |")
+            report.append(
+                f"| {result.model_name} | {rtf_status} {result.avg_rtf:.3f} | "
+                f"{memory_status} {result.peak_memory_mb:.1f} | "
+                f"{result.audio_quality_score:.1f} | {result.success_rate:.1%} |"
+            )
 
         report.append("")
 
@@ -424,11 +429,12 @@ class ComprehensiveModelBenchmark:
         report_content = "\n".join(report)
 
         # Save report
-        with open(output_file, 'w') as f:
+        with open(output_file, "w") as f:
             f.write(report_content)
 
         logger.info(f"📊 Report saved to: {output_file}")
         return report_content
+
 
 def main():
     """Main function"""
@@ -441,12 +447,13 @@ def main():
 
         # Save JSON results
         json_results = [asdict(result) for result in results]
-        with open("model_benchmark_results.json", 'w') as f:
+        with open("model_benchmark_results.json", "w") as f:
             json.dump(json_results, f, indent=2)
 
         logger.info("📊 JSON results saved to: model_benchmark_results.json")
     else:
         logger.error("No benchmark results to report")
+
 
 if __name__ == "__main__":
     main()

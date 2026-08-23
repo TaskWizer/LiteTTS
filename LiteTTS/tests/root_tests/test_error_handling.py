@@ -33,10 +33,7 @@ class TestInputValidationErrors:
 
     def test_empty_input_text(self):
         """Test empty input text handling"""
-        response = self.client.post(
-            self.base_endpoint,
-            json={"input": "", "voice": "af_heart"}
-        )
+        response = self.client.post(self.base_endpoint, json={"input": "", "voice": "af_heart"})
         assert response.status_code == 400
         data = response.json()
         # Response is nested: {"detail": {"error": "message", "type": "..."}}
@@ -45,25 +42,18 @@ class TestInputValidationErrors:
 
     def test_none_input_text(self):
         """Test None input text handling"""
-        response = self.client.post(
-            self.base_endpoint,
-            json={"input": None, "voice": "af_heart"}
-        )
+        response = self.client.post(self.base_endpoint, json={"input": None, "voice": "af_heart"})
         assert response.status_code == 422  # Pydantic validation error
 
     def test_missing_input_field(self):
         """Test missing input field"""
-        response = self.client.post(
-            self.base_endpoint,
-            json={"voice": "af_heart"}
-        )
+        response = self.client.post(self.base_endpoint, json={"voice": "af_heart"})
         assert response.status_code == 422
 
     def test_invalid_voice_name(self):
         """Test invalid voice name"""
         response = self.client.post(
-            self.base_endpoint,
-            json={"input": "Test text", "voice": "nonexistent_voice"}
+            self.base_endpoint, json={"input": "Test text", "voice": "nonexistent_voice"}
         )
         assert response.status_code == 400
         data = response.json()
@@ -75,11 +65,7 @@ class TestInputValidationErrors:
         """Test invalid response format"""
         response = self.client.post(
             self.base_endpoint,
-            json={
-                "input": "Test text",
-                "voice": "af_heart",
-                "response_format": "invalid_format"
-            }
+            json={"input": "Test text", "voice": "af_heart", "response_format": "invalid_format"},
         )
         assert response.status_code == 400
         data = response.json()
@@ -94,12 +80,7 @@ class TestInputValidationErrors:
 
         for speed in invalid_speeds:
             response = self.client.post(
-                self.base_endpoint,
-                json={
-                    "input": "Test text",
-                    "voice": "af_heart",
-                    "speed": speed
-                }
+                self.base_endpoint, json={"input": "Test text", "voice": "af_heart", "speed": speed}
             )
             assert response.status_code in [400, 422], f"Speed {speed} should be invalid"
 
@@ -107,8 +88,7 @@ class TestInputValidationErrors:
         """Test extremely long text input"""
         long_text = "A" * 10000  # 10k characters
         response = self.client.post(
-            self.base_endpoint,
-            json={"input": long_text, "voice": "af_heart"}
+            self.base_endpoint, json={"input": long_text, "voice": "af_heart"}
         )
         # Should either succeed or fail gracefully with proper error
         assert response.status_code in [200, 400, 413]
@@ -123,7 +103,7 @@ class TestInputValidationErrors:
         response = self.client.post(
             self.base_endpoint,
             data='{"input": "test", "voice": "af_heart"',  # Missing closing brace
-            headers={"Content-Type": "application/json"}
+            headers={"Content-Type": "application/json"},
         )
         assert response.status_code == 422
 
@@ -132,7 +112,7 @@ class TestInputValidationErrors:
         response = self.client.post(
             self.base_endpoint,
             data="input=test&voice=af_heart",
-            headers={"Content-Type": "application/x-www-form-urlencoded"}
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
         assert response.status_code == 422
 
@@ -157,8 +137,7 @@ class TestSpecialCharacterHandling:
 
         for text in unicode_texts:
             response = self.client.post(
-                self.base_endpoint,
-                json={"input": text, "voice": "af_heart"}
+                self.base_endpoint, json={"input": text, "voice": "af_heart"}
             )
             # Should either succeed or fail gracefully
             assert response.status_code in [200, 400]
@@ -171,16 +150,15 @@ class TestSpecialCharacterHandling:
         """Test control character handling"""
         control_chars = [
             "Hello\x00World",  # Null character
-            "Hello\x1FWorld",  # Unit separator
-            "Hello\x7FWorld",  # Delete character
+            "Hello\x1fWorld",  # Unit separator
+            "Hello\x7fWorld",  # Delete character
             "Hello\r\nWorld",  # CRLF
-            "Hello\tWorld",    # Tab
+            "Hello\tWorld",  # Tab
         ]
 
         for text in control_chars:
             response = self.client.post(
-                self.base_endpoint,
-                json={"input": text, "voice": "af_heart"}
+                self.base_endpoint, json={"input": text, "voice": "af_heart"}
             )
             # Should handle gracefully
             assert response.status_code in [200, 400]
@@ -195,8 +173,7 @@ class TestSpecialCharacterHandling:
 
         for text in html_texts:
             response = self.client.post(
-                self.base_endpoint,
-                json={"input": text, "voice": "af_heart"}
+                self.base_endpoint, json={"input": text, "voice": "af_heart"}
             )
             assert response.status_code in [200, 400]
 
@@ -213,15 +190,14 @@ class TestConcurrencyAndRaceConditions:
     def _make_request(self, text, voice="af_heart"):
         """Helper method to make a request"""
         try:
-            response = self.client.post(
-                self.base_endpoint,
-                json={"input": text, "voice": voice}
+            response = self.client.post(self.base_endpoint, json={"input": text, "voice": voice})
+            self.results.append(
+                {
+                    "status_code": response.status_code,
+                    "success": response.status_code == 200,
+                    "text": text,
+                }
             )
-            self.results.append({
-                "status_code": response.status_code,
-                "success": response.status_code == 200,
-                "text": text
-            })
         except Exception as e:
             self.errors.append(str(e))
 
@@ -287,13 +263,12 @@ class TestResourceLimits:
         large_texts = [
             "This is a very long text. " * 100,  # ~2.7KB
             "Another large text block. " * 200,  # ~5.4KB
-            "Yet another big text. " * 300,      # ~8.1KB
+            "Yet another big text. " * 300,  # ~8.1KB
         ]
 
         for text in large_texts:
             response = self.client.post(
-                self.base_endpoint,
-                json={"input": text, "voice": "af_heart"}
+                self.base_endpoint, json={"input": text, "voice": "af_heart"}
             )
             # Should handle gracefully
             assert response.status_code in [200, 400, 413, 500]
@@ -304,8 +279,7 @@ class TestResourceLimits:
 
         for i in range(20):
             response = self.client.post(
-                self.base_endpoint,
-                json={"input": f"Rapid request {i}", "voice": "af_heart"}
+                self.base_endpoint, json={"input": f"Rapid request {i}", "voice": "af_heart"}
             )
             results.append(response.status_code)
 
@@ -373,7 +347,7 @@ class TestNetworkAndTimeouts:
     def setup_method(self):
         self.client = TestClient(app)
 
-    @patch('requests.post')
+    @patch("requests.post")
     def test_external_service_timeout(self, mock_post):
         """Test handling of external service timeouts"""
         mock_post.side_effect = requests.exceptions.Timeout("Request timed out")
@@ -383,7 +357,7 @@ class TestNetworkAndTimeouts:
         with pytest.raises(requests.exceptions.Timeout):
             requests.post("http://example.com", timeout=1)
 
-    @patch('requests.get')
+    @patch("requests.get")
     def test_external_service_connection_error(self, mock_get):
         """Test handling of connection errors"""
         mock_get.side_effect = requests.exceptions.ConnectionError("Connection failed")

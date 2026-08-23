@@ -19,7 +19,7 @@ try:
     from perth import DummyWatermarker
 
     # Check if PerthImplicitWatermarker is available (may be None in some versions)
-    PerthImplicitWatermarker = getattr(perth, 'PerthImplicitWatermarker', None)
+    PerthImplicitWatermarker = getattr(perth, "PerthImplicitWatermarker", None)
 
     _PERTH_AVAILABLE = True
     _PERTH_IMPLICIT_AVAILABLE = PerthImplicitWatermarker is not None
@@ -32,15 +32,19 @@ try:
 except ImportError:
     _PERTH_AVAILABLE = False
     _PERTH_IMPLICIT_AVAILABLE = False
-    logger.warning("Perth watermarking library not available. Install with: pip install resemble-perth")
+    logger.warning(
+        "Perth watermarking library not available. Install with: pip install resemble-perth"
+    )
 
     # Watermarking not available - functionality disabled
     DummyWatermarker = None
     PerthImplicitWatermarker = None
 
+
 @dataclass
 class WatermarkResult:
     """Result of watermarking operation"""
+
     success: bool
     watermarked_audio: np.ndarray | None
     original_audio: np.ndarray | None
@@ -49,9 +53,11 @@ class WatermarkResult:
     quality_metrics: dict[str, float] | None
     error_message: str | None = None
 
+
 @dataclass
 class WatermarkDetectionResult:
     """Result of watermark detection operation"""
+
     success: bool
     watermark_detected: bool
     watermark_id: str | None
@@ -59,10 +65,11 @@ class WatermarkDetectionResult:
     processing_time_ms: float
     error_message: str | None = None
 
+
 class AudioWatermarker:
     """
     Responsible AI audio watermarking system using Perth library
-    
+
     Provides automatic watermarking of all generated TTS audio for:
     - Ethical AI compliance
     - Content authenticity verification
@@ -71,11 +78,11 @@ class AudioWatermarker:
 
     def __init__(self, config=None):
         self.config = config
-        self.enabled = self._get_config_value('watermarking_enabled', True)
-        self.strength = self._get_config_value('watermark_strength', 1.0)
-        self.detection_enabled = self._get_config_value('watermark_detection_enabled', True)
-        self.device = self._get_config_value('device', 'cpu')
-        self.use_dummy = self._get_config_value('use_dummy_watermarker', False)
+        self.enabled = self._get_config_value("watermarking_enabled", True)
+        self.strength = self._get_config_value("watermark_strength", 1.0)
+        self.detection_enabled = self._get_config_value("watermark_detection_enabled", True)
+        self.device = self._get_config_value("device", "cpu")
+        self.use_dummy = self._get_config_value("use_dummy_watermarker", False)
 
         # Initialize watermarker
         self.watermarker = None
@@ -86,20 +93,22 @@ class AudioWatermarker:
 
         # Statistics
         self.stats = {
-            'total_watermarked': 0,
-            'total_detected': 0,
-            'successful_watermarks': 0,
-            'successful_detections': 0,
-            'average_processing_time_ms': 0.0,
-            'total_processing_time_ms': 0.0
+            "total_watermarked": 0,
+            "total_detected": 0,
+            "successful_watermarks": 0,
+            "successful_detections": 0,
+            "average_processing_time_ms": 0.0,
+            "total_processing_time_ms": 0.0,
         }
 
-        logger.info(f"AudioWatermarker initialized: enabled={self.enabled}, "
-                   f"type={self.watermarker_type}, device={self.device}")
+        logger.info(
+            f"AudioWatermarker initialized: enabled={self.enabled}, "
+            f"type={self.watermarker_type}, device={self.device}"
+        )
 
     def _get_config_value(self, key: str, default: Any) -> Any:
         """Get configuration value with fallback"""
-        if self.config and hasattr(self.config, 'audio'):
+        if self.config and hasattr(self.config, "audio"):
             return getattr(self.config.audio, key, default)
         return default
 
@@ -144,18 +153,17 @@ class AudioWatermarker:
                 logger.error(f"Failed to initialize fallback watermarker: {e2}")
                 self.enabled = False
 
-    def apply_watermark(self,
-                       audio: np.ndarray,
-                       sample_rate: int,
-                       watermark_id: str | None = None) -> WatermarkResult:
+    def apply_watermark(
+        self, audio: np.ndarray, sample_rate: int, watermark_id: str | None = None
+    ) -> WatermarkResult:
         """
         Apply watermark to audio
-        
+
         Args:
             audio: Audio data as numpy array
             sample_rate: Sample rate of the audio
             watermark_id: Optional custom watermark identifier
-            
+
         Returns:
             WatermarkResult with watermarked audio and metadata
         """
@@ -169,7 +177,7 @@ class AudioWatermarker:
                 watermark_id=None,
                 processing_time_ms=0.0,
                 quality_metrics=None,
-                error_message="Watermarking disabled or not available"
+                error_message="Watermarking disabled or not available",
             )
 
         try:
@@ -184,9 +192,7 @@ class AudioWatermarker:
             else:
                 # Perth implicit watermarker
                 watermarked_audio = self.watermarker.apply_watermark(
-                    audio,
-                    watermark=watermark_id,
-                    sample_rate=sample_rate
+                    audio, watermark=watermark_id, sample_rate=sample_rate
                 )
 
             # Calculate processing time
@@ -196,11 +202,11 @@ class AudioWatermarker:
             quality_metrics = self._calculate_quality_metrics(audio, watermarked_audio)
 
             # Update statistics
-            self.stats['total_watermarked'] += 1
-            self.stats['successful_watermarks'] += 1
-            self.stats['total_processing_time_ms'] += processing_time
-            self.stats['average_processing_time_ms'] = (
-                self.stats['total_processing_time_ms'] / self.stats['total_watermarked']
+            self.stats["total_watermarked"] += 1
+            self.stats["successful_watermarks"] += 1
+            self.stats["total_processing_time_ms"] += processing_time
+            self.stats["average_processing_time_ms"] = (
+                self.stats["total_processing_time_ms"] / self.stats["total_watermarked"]
             )
 
             logger.debug(f"Applied watermark {watermark_id} in {processing_time:.2f}ms")
@@ -211,12 +217,12 @@ class AudioWatermarker:
                 original_audio=audio,
                 watermark_id=watermark_id,
                 processing_time_ms=processing_time,
-                quality_metrics=quality_metrics
+                quality_metrics=quality_metrics,
             )
 
         except Exception as e:
             processing_time = (time.perf_counter() - start_time) * 1000
-            self.stats['total_watermarked'] += 1
+            self.stats["total_watermarked"] += 1
 
             logger.error(f"Failed to apply watermark: {e}")
 
@@ -227,19 +233,17 @@ class AudioWatermarker:
                 watermark_id=watermark_id,
                 processing_time_ms=processing_time,
                 quality_metrics=None,
-                error_message=str(e)
+                error_message=str(e),
             )
 
-    def detect_watermark(self,
-                        audio: np.ndarray,
-                        sample_rate: int) -> WatermarkDetectionResult:
+    def detect_watermark(self, audio: np.ndarray, sample_rate: int) -> WatermarkDetectionResult:
         """
         Detect watermark in audio
-        
+
         Args:
             audio: Audio data as numpy array
             sample_rate: Sample rate of the audio
-            
+
         Returns:
             WatermarkDetectionResult with detection information
         """
@@ -252,7 +256,7 @@ class AudioWatermarker:
                 watermark_id=None,
                 confidence_score=0.0,
                 processing_time_ms=0.0,
-                error_message="Watermark detection disabled or not available"
+                error_message="Watermark detection disabled or not available",
             )
 
         try:
@@ -272,24 +276,26 @@ class AudioWatermarker:
             processing_time = (time.perf_counter() - start_time) * 1000
 
             # Update statistics
-            self.stats['total_detected'] += 1
+            self.stats["total_detected"] += 1
             if watermark_detected:
-                self.stats['successful_detections'] += 1
+                self.stats["successful_detections"] += 1
 
-            logger.debug(f"Watermark detection completed in {processing_time:.2f}ms: "
-                        f"detected={watermark_detected}, id={watermark_id}")
+            logger.debug(
+                f"Watermark detection completed in {processing_time:.2f}ms: "
+                f"detected={watermark_detected}, id={watermark_id}"
+            )
 
             return WatermarkDetectionResult(
                 success=True,
                 watermark_detected=watermark_detected,
                 watermark_id=watermark_id,
                 confidence_score=confidence_score,
-                processing_time_ms=processing_time
+                processing_time_ms=processing_time,
             )
 
         except Exception as e:
             processing_time = (time.perf_counter() - start_time) * 1000
-            self.stats['total_detected'] += 1
+            self.stats["total_detected"] += 1
 
             logger.error(f"Failed to detect watermark: {e}")
 
@@ -299,7 +305,7 @@ class AudioWatermarker:
                 watermark_id=None,
                 confidence_score=0.0,
                 processing_time_ms=processing_time,
-                error_message=str(e)
+                error_message=str(e),
             )
 
     def _generate_watermark_id(self) -> str:
@@ -316,35 +322,35 @@ class AudioWatermarker:
         watermark_id = hashlib.md5(unique_string.encode()).hexdigest()[:16]
         return f"kokoro_{watermark_id}"
 
-    def _calculate_quality_metrics(self,
-                                  original: np.ndarray,
-                                  watermarked: np.ndarray) -> dict[str, float]:
+    def _calculate_quality_metrics(
+        self, original: np.ndarray, watermarked: np.ndarray
+    ) -> dict[str, float]:
         """Calculate audio quality metrics"""
         try:
             # Signal-to-Noise Ratio (SNR)
-            signal_power = np.mean(original ** 2)
+            signal_power = np.mean(original**2)
             noise_power = np.mean((watermarked - original) ** 2)
 
             if noise_power > 0:
                 snr = 10 * np.log10(signal_power / noise_power)
             else:
-                snr = float('inf')
+                snr = float("inf")
 
             # Peak Signal-to-Noise Ratio (PSNR)
             max_signal = np.max(np.abs(original))
             if noise_power > 0 and max_signal > 0:
                 psnr = 20 * np.log10(max_signal / np.sqrt(noise_power))
             else:
-                psnr = float('inf')
+                psnr = float("inf")
 
             # Mean Squared Error (MSE)
             mse = np.mean((watermarked - original) ** 2)
 
             return {
-                'snr_db': float(snr),
-                'psnr_db': float(psnr),
-                'mse': float(mse),
-                'max_difference': float(np.max(np.abs(watermarked - original)))
+                "snr_db": float(snr),
+                "psnr_db": float(psnr),
+                "mse": float(mse),
+                "max_difference": float(np.max(np.abs(watermarked - original))),
             }
 
         except Exception as e:
@@ -356,38 +362,44 @@ class AudioWatermarker:
         stats = self.stats.copy()
 
         # Calculate success rates
-        if stats['total_watermarked'] > 0:
-            stats['watermark_success_rate'] = stats['successful_watermarks'] / stats['total_watermarked']
+        if stats["total_watermarked"] > 0:
+            stats["watermark_success_rate"] = (
+                stats["successful_watermarks"] / stats["total_watermarked"]
+            )
         else:
-            stats['watermark_success_rate'] = 0.0
+            stats["watermark_success_rate"] = 0.0
 
-        if stats['total_detected'] > 0:
-            stats['detection_success_rate'] = stats['successful_detections'] / stats['total_detected']
+        if stats["total_detected"] > 0:
+            stats["detection_success_rate"] = (
+                stats["successful_detections"] / stats["total_detected"]
+            )
         else:
-            stats['detection_success_rate'] = 0.0
+            stats["detection_success_rate"] = 0.0
 
         # Add configuration info
-        stats['watermarker_type'] = self.watermarker_type
-        stats['enabled'] = self.enabled
-        stats['detection_enabled'] = self.detection_enabled
-        stats['device'] = self.device
+        stats["watermarker_type"] = self.watermarker_type
+        stats["enabled"] = self.enabled
+        stats["detection_enabled"] = self.detection_enabled
+        stats["device"] = self.device
 
         return stats
 
     def reset_statistics(self):
         """Reset watermarking statistics"""
         self.stats = {
-            'total_watermarked': 0,
-            'total_detected': 0,
-            'successful_watermarks': 0,
-            'successful_detections': 0,
-            'average_processing_time_ms': 0.0,
-            'total_processing_time_ms': 0.0
+            "total_watermarked": 0,
+            "total_detected": 0,
+            "successful_watermarks": 0,
+            "successful_detections": 0,
+            "average_processing_time_ms": 0.0,
+            "total_processing_time_ms": 0.0,
         }
         logger.info("Watermarking statistics reset")
 
+
 # Global watermarker instance
 _audio_watermarker: AudioWatermarker | None = None
+
 
 def get_audio_watermarker(config=None) -> AudioWatermarker:
     """Get or create the global audio watermarker instance"""

@@ -20,12 +20,14 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class TLSCertificate:
     """TLS certificate information"""
+
     cert_path: str
     key_path: str
     ca_cert_path: str
@@ -37,9 +39,11 @@ class TLSCertificate:
     algorithm: str
     fingerprint: str
 
+
 @dataclass
 class TLSConfiguration:
     """TLS configuration settings"""
+
     enable_https: bool
     force_https_redirect: bool
     cert_directory: str
@@ -54,6 +58,7 @@ class TLSConfiguration:
     protocols: list[str]
     hsts_enabled: bool
     hsts_max_age: int
+
 
 class TLSCertificateManager:
     """TLS certificate generation and management system"""
@@ -86,18 +91,19 @@ class TLSCertificateManager:
                 "ECDHE-RSA-AES256-GCM-SHA384",
                 "ECDHE-RSA-AES128-GCM-SHA256",
                 "ECDHE-RSA-AES256-SHA384",
-                "ECDHE-RSA-AES128-SHA256"
+                "ECDHE-RSA-AES128-SHA256",
             ],
             protocols=["TLSv1.2", "TLSv1.3"],
             hsts_enabled=True,
-            hsts_max_age=31536000  # 1 year
+            hsts_max_age=31536000,  # 1 year
         )
 
     def check_openssl_availability(self) -> bool:
         """Check if OpenSSL is available"""
         try:
-            result = subprocess.run(['openssl', 'version'],
-                                  capture_output=True, text=True, timeout=10)
+            result = subprocess.run(
+                ["openssl", "version"], capture_output=True, text=True, timeout=10
+            )
             if result.returncode == 0:
                 logger.info(f"OpenSSL available: {result.stdout.strip()}")
                 return True
@@ -155,11 +161,7 @@ class TLSCertificateManager:
 
         try:
             # Generate CA private key
-            ca_key_cmd = [
-                'openssl', 'genrsa',
-                '-out', str(ca_key_path),
-                str(config.key_size)
-            ]
+            ca_key_cmd = ["openssl", "genrsa", "-out", str(ca_key_path), str(config.key_size)]
 
             result = subprocess.run(ca_key_cmd, capture_output=True, text=True, timeout=30)
             if result.returncode != 0:
@@ -167,11 +169,18 @@ class TLSCertificateManager:
 
             # Generate CA certificate
             ca_cert_cmd = [
-                'openssl', 'req', '-new', '-x509',
-                '-key', str(ca_key_path),
-                '-out', str(ca_cert_path),
-                '-days', str(config.cert_validity_days),
-                '-subj', '/C=US/ST=Local/L=Local/O=Kokoro TTS/OU=Development/CN=Kokoro TTS CA'
+                "openssl",
+                "req",
+                "-new",
+                "-x509",
+                "-key",
+                str(ca_key_path),
+                "-out",
+                str(ca_cert_path),
+                "-days",
+                str(config.cert_validity_days),
+                "-subj",
+                "/C=US/ST=Local/L=Local/O=Kokoro TTS/OU=Development/CN=Kokoro TTS CA",
             ]
 
             result = subprocess.run(ca_cert_cmd, capture_output=True, text=True, timeout=30)
@@ -188,8 +197,9 @@ class TLSCertificateManager:
         except Exception as e:
             return False, f"CA generation error: {e!s}"
 
-    def generate_server_certificate(self, config: TLSConfiguration,
-                                  common_name: str = "localhost") -> tuple[bool, TLSCertificate]:
+    def generate_server_certificate(
+        self, config: TLSConfiguration, common_name: str = "localhost"
+    ) -> tuple[bool, TLSCertificate]:
         """Generate server certificate signed by CA"""
         logger.info(f"Generating server certificate for {common_name}...")
 
@@ -206,11 +216,7 @@ class TLSCertificateManager:
                 san_list.insert(0, common_name)
 
             # Generate server private key
-            key_cmd = [
-                'openssl', 'genrsa',
-                '-out', str(key_path),
-                str(config.key_size)
-            ]
+            key_cmd = ["openssl", "genrsa", "-out", str(key_path), str(config.key_size)]
 
             result = subprocess.run(key_cmd, capture_output=True, text=True, timeout=30)
             if result.returncode != 0:
@@ -218,10 +224,15 @@ class TLSCertificateManager:
 
             # Create certificate signing request
             csr_cmd = [
-                'openssl', 'req', '-new',
-                '-key', str(key_path),
-                '-out', str(csr_path),
-                '-subj', f'/C=US/ST=Local/L=Local/O=Kokoro TTS/OU=Server/CN={common_name}'
+                "openssl",
+                "req",
+                "-new",
+                "-key",
+                str(key_path),
+                "-out",
+                str(csr_path),
+                "-subj",
+                f"/C=US/ST=Local/L=Local/O=Kokoro TTS/OU=Server/CN={common_name}",
             ]
 
             result = subprocess.run(csr_cmd, capture_output=True, text=True, timeout=30)
@@ -232,10 +243,10 @@ class TLSCertificateManager:
             san_ext_path = Path(config.cert_directory) / "san.ext"
             san_entries = []
             for i, hostname in enumerate(san_list):
-                if hostname.replace('.', '').replace(':', '').isdigit() or ':' in hostname:
-                    san_entries.append(f"IP.{i+1}={hostname}")
+                if hostname.replace(".", "").replace(":", "").isdigit() or ":" in hostname:
+                    san_entries.append(f"IP.{i + 1}={hostname}")
                 else:
-                    san_entries.append(f"DNS.{i+1}={hostname}")
+                    san_entries.append(f"DNS.{i + 1}={hostname}")
 
             san_config = f"""[req]
 distinguished_name = req_distinguished_name
@@ -252,20 +263,29 @@ subjectAltName = @alt_names
 {chr(10).join(san_entries)}
 """
 
-            with open(san_ext_path, 'w') as f:
+            with open(san_ext_path, "w") as f:
                 f.write(san_config)
 
             # Sign certificate with CA
             sign_cmd = [
-                'openssl', 'x509', '-req',
-                '-in', str(csr_path),
-                '-CA', str(ca_cert_path),
-                '-CAkey', str(ca_key_path),
-                '-CAcreateserial',
-                '-out', str(cert_path),
-                '-days', str(config.cert_validity_days),
-                '-extensions', 'v3_req',
-                '-extfile', str(san_ext_path)
+                "openssl",
+                "x509",
+                "-req",
+                "-in",
+                str(csr_path),
+                "-CA",
+                str(ca_cert_path),
+                "-CAkey",
+                str(ca_key_path),
+                "-CAcreateserial",
+                "-out",
+                str(cert_path),
+                "-days",
+                str(config.cert_validity_days),
+                "-extensions",
+                "v3_req",
+                "-extfile",
+                str(san_ext_path),
             ]
 
             result = subprocess.run(sign_cmd, capture_output=True, text=True, timeout=30)
@@ -293,7 +313,7 @@ subjectAltName = @alt_names
                 valid_until=cert_info.get("valid_until", ""),
                 key_size=config.key_size,
                 algorithm="RSA",
-                fingerprint=cert_info.get("fingerprint", "")
+                fingerprint=cert_info.get("fingerprint", ""),
             )
 
             logger.info(f"Server certificate generated: {cert_path}")
@@ -309,24 +329,32 @@ subjectAltName = @alt_names
 
         try:
             # Get certificate dates
-            dates_cmd = ['openssl', 'x509', '-in', str(cert_path), '-noout', '-dates']
+            dates_cmd = ["openssl", "x509", "-in", str(cert_path), "-noout", "-dates"]
             result = subprocess.run(dates_cmd, capture_output=True, text=True, timeout=10)
 
             if result.returncode == 0:
-                for line in result.stdout.strip().split('\n'):
-                    if line.startswith('notBefore='):
-                        info['valid_from'] = line.split('=', 1)[1]
-                    elif line.startswith('notAfter='):
-                        info['valid_until'] = line.split('=', 1)[1]
+                for line in result.stdout.strip().split("\n"):
+                    if line.startswith("notBefore="):
+                        info["valid_from"] = line.split("=", 1)[1]
+                    elif line.startswith("notAfter="):
+                        info["valid_until"] = line.split("=", 1)[1]
 
             # Get certificate fingerprint
-            fingerprint_cmd = ['openssl', 'x509', '-in', str(cert_path), '-noout', '-fingerprint', '-sha256']
+            fingerprint_cmd = [
+                "openssl",
+                "x509",
+                "-in",
+                str(cert_path),
+                "-noout",
+                "-fingerprint",
+                "-sha256",
+            ]
             result = subprocess.run(fingerprint_cmd, capture_output=True, text=True, timeout=10)
 
             if result.returncode == 0:
                 fingerprint_line = result.stdout.strip()
-                if '=' in fingerprint_line:
-                    info['fingerprint'] = fingerprint_line.split('=', 1)[1]
+                if "=" in fingerprint_line:
+                    info["fingerprint"] = fingerprint_line.split("=", 1)[1]
 
         except Exception as e:
             logger.warning(f"Could not get certificate info: {e}")
@@ -346,7 +374,7 @@ subjectAltName = @alt_names
             "san_configured": False,
             "expiry_check": False,
             "permissions_correct": False,
-            "issues": []
+            "issues": [],
         }
 
         try:
@@ -370,7 +398,7 @@ subjectAltName = @alt_names
 
             # Verify certificate validity
             if cert_path.exists():
-                verify_cmd = ['openssl', 'x509', '-in', str(cert_path), '-noout', '-text']
+                verify_cmd = ["openssl", "x509", "-in", str(cert_path), "-noout", "-text"]
                 result = subprocess.run(verify_cmd, capture_output=True, text=True, timeout=10)
                 verification_results["certificate_valid"] = result.returncode == 0
 
@@ -379,32 +407,52 @@ subjectAltName = @alt_names
 
             # Check key-certificate match
             if cert_path.exists() and key_path.exists():
-                cert_modulus_cmd = ['openssl', 'x509', '-in', str(cert_path), '-noout', '-modulus']
-                key_modulus_cmd = ['openssl', 'rsa', '-in', str(key_path), '-noout', '-modulus']
+                cert_modulus_cmd = ["openssl", "x509", "-in", str(cert_path), "-noout", "-modulus"]
+                key_modulus_cmd = ["openssl", "rsa", "-in", str(key_path), "-noout", "-modulus"]
 
-                cert_result = subprocess.run(cert_modulus_cmd, capture_output=True, text=True, timeout=10)
-                key_result = subprocess.run(key_modulus_cmd, capture_output=True, text=True, timeout=10)
+                cert_result = subprocess.run(
+                    cert_modulus_cmd, capture_output=True, text=True, timeout=10
+                )
+                key_result = subprocess.run(
+                    key_modulus_cmd, capture_output=True, text=True, timeout=10
+                )
 
                 if cert_result.returncode == 0 and key_result.returncode == 0:
-                    verification_results["key_matches_cert"] = cert_result.stdout == key_result.stdout
+                    verification_results["key_matches_cert"] = (
+                        cert_result.stdout == key_result.stdout
+                    )
 
                     if not verification_results["key_matches_cert"]:
-                        verification_results["issues"].append("Private key does not match certificate")
+                        verification_results["issues"].append(
+                            "Private key does not match certificate"
+                        )
 
             # Check SAN configuration
             if cert_path.exists():
-                san_cmd = ['openssl', 'x509', '-in', str(cert_path), '-noout', '-text']
+                san_cmd = ["openssl", "x509", "-in", str(cert_path), "-noout", "-text"]
                 result = subprocess.run(san_cmd, capture_output=True, text=True, timeout=10)
 
                 if result.returncode == 0:
-                    verification_results["san_configured"] = "Subject Alternative Name" in result.stdout
+                    verification_results["san_configured"] = (
+                        "Subject Alternative Name" in result.stdout
+                    )
 
                     if not verification_results["san_configured"]:
-                        verification_results["issues"].append("Subject Alternative Names not configured")
+                        verification_results["issues"].append(
+                            "Subject Alternative Names not configured"
+                        )
 
             # Check expiry
             if cert_path.exists():
-                expiry_cmd = ['openssl', 'x509', '-in', str(cert_path), '-noout', '-checkend', '2592000']  # 30 days
+                expiry_cmd = [
+                    "openssl",
+                    "x509",
+                    "-in",
+                    str(cert_path),
+                    "-noout",
+                    "-checkend",
+                    "2592000",
+                ]  # 30 days
                 result = subprocess.run(expiry_cmd, capture_output=True, text=True, timeout=10)
                 verification_results["expiry_check"] = result.returncode == 0
 
@@ -419,24 +467,30 @@ subjectAltName = @alt_names
                 cert_perms = oct(cert_stat.st_mode)[-3:]
                 key_perms = oct(key_stat.st_mode)[-3:]
 
-                verification_results["permissions_correct"] = (cert_perms == "644" and key_perms == "600")
+                verification_results["permissions_correct"] = (
+                    cert_perms == "644" and key_perms == "600"
+                )
 
                 if not verification_results["permissions_correct"]:
-                    verification_results["issues"].append(f"Incorrect permissions: cert={cert_perms}, key={key_perms}")
+                    verification_results["issues"].append(
+                        f"Incorrect permissions: cert={cert_perms}, key={key_perms}"
+                    )
 
         except Exception as e:
             verification_results["issues"].append(f"Verification error: {e!s}")
 
         return verification_results
 
-    def generate_nginx_ssl_config(self, config: TLSConfiguration, certificate: TLSCertificate) -> str:
+    def generate_nginx_ssl_config(
+        self, config: TLSConfiguration, certificate: TLSCertificate
+    ) -> str:
         """Generate Nginx SSL configuration"""
         logger.info("Generating Nginx SSL configuration...")
 
         nginx_config = f"""# Kokoro TTS HTTPS Configuration
 server {{
     listen {config.https_port} ssl http2;
-    server_name {' '.join(certificate.subject_alt_names[:5])};  # First 5 SANs
+    server_name {" ".join(certificate.subject_alt_names[:5])};  # First 5 SANs
 
     # SSL Certificate Configuration
     ssl_certificate {certificate.cert_path};
@@ -444,8 +498,8 @@ server {{
     ssl_trusted_certificate {certificate.ca_cert_path};
 
     # SSL Security Configuration
-    ssl_protocols {' '.join(config.protocols)};
-    ssl_ciphers '{':'.join(config.cipher_suites)}';
+    ssl_protocols {" ".join(config.protocols)};
+    ssl_ciphers '{":".join(config.cipher_suites)}';
     ssl_prefer_server_ciphers on;
     ssl_session_cache shared:SSL:10m;
     ssl_session_timeout 10m;
@@ -483,20 +537,22 @@ server {{
 # HTTP to HTTPS redirect
 server {{
     listen {config.http_port};
-    server_name {' '.join(certificate.subject_alt_names[:5])};
+    server_name {" ".join(certificate.subject_alt_names[:5])};
     return 301 https://$host:{config.https_port}$request_uri;
 }}
 """
 
         # Save configuration
         nginx_config_file = self.results_dir / "nginx_ssl.conf"
-        with open(nginx_config_file, 'w') as f:
+        with open(nginx_config_file, "w") as f:
             f.write(nginx_config)
 
         logger.info(f"Nginx SSL configuration saved: {nginx_config_file}")
         return nginx_config
 
-    def generate_docker_ssl_config(self, config: TLSConfiguration, certificate: TLSCertificate) -> str:
+    def generate_docker_ssl_config(
+        self, config: TLSConfiguration, certificate: TLSCertificate
+    ) -> str:
         """Generate Docker Compose SSL configuration"""
         logger.info("Generating Docker SSL configuration...")
 
@@ -560,13 +616,15 @@ networks:
 
         # Save configuration
         docker_config_file = self.results_dir / "docker-compose-ssl.yml"
-        with open(docker_config_file, 'w') as f:
+        with open(docker_config_file, "w") as f:
             f.write(docker_config)
 
         logger.info(f"Docker SSL configuration saved: {docker_config_file}")
         return docker_config
 
-    def generate_ssl_test_script(self, config: TLSConfiguration, certificate: TLSCertificate) -> str:
+    def generate_ssl_test_script(
+        self, config: TLSConfiguration, certificate: TLSCertificate
+    ) -> str:
         """Generate SSL testing script"""
         logger.info("Generating SSL test script...")
 
@@ -651,7 +709,7 @@ echo "SSL/TLS tests completed!"
 
         # Save test script
         test_script_file = self.results_dir / "test_ssl.sh"
-        with open(test_script_file, 'w') as f:
+        with open(test_script_file, "w") as f:
             f.write(test_script)
         os.chmod(test_script_file, 0o755)
 
@@ -667,7 +725,7 @@ echo "SSL/TLS tests completed!"
             return {
                 "success": False,
                 "error": "OpenSSL not available",
-                "setup_timestamp": time.time()
+                "setup_timestamp": time.time(),
             }
 
         config = self.default_config
@@ -678,7 +736,7 @@ echo "SSL/TLS tests completed!"
             return {
                 "success": False,
                 "error": f"CA generation failed: {ca_result}",
-                "setup_timestamp": time.time()
+                "setup_timestamp": time.time(),
             }
 
         # Generate server certificate
@@ -687,7 +745,7 @@ echo "SSL/TLS tests completed!"
             return {
                 "success": False,
                 "error": "Server certificate generation failed",
-                "setup_timestamp": time.time()
+                "setup_timestamp": time.time(),
             }
 
         # Verify certificate
@@ -708,26 +766,27 @@ echo "SSL/TLS tests completed!"
             "generated_files": {
                 "nginx_config": "nginx_ssl.conf",
                 "docker_config": "docker-compose-ssl.yml",
-                "test_script": "test_ssl.sh"
+                "test_script": "test_ssl.sh",
             },
             "setup_summary": self._generate_tls_summary(config, certificate, verification_results),
-            "next_steps": self._generate_tls_next_steps(config, certificate)
+            "next_steps": self._generate_tls_next_steps(config, certificate),
         }
 
         # Save complete configuration
         config_file = self.results_dir / f"tls_setup_results_{int(time.time())}.json"
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             json.dump(setup_results, f, indent=2, default=str)
 
         logger.info(f"TLS setup completed. Results saved to: {config_file}")
         return setup_results
 
-    def _generate_tls_summary(self, config: TLSConfiguration,
-                             certificate: TLSCertificate,
-                             verification: dict[str, Any]) -> dict[str, Any]:
+    def _generate_tls_summary(
+        self, config: TLSConfiguration, certificate: TLSCertificate, verification: dict[str, Any]
+    ) -> dict[str, Any]:
         """Generate TLS setup summary"""
-        verification_score = sum(1 for key, value in verification.items()
-                               if key != "issues" and value is True)
+        verification_score = sum(
+            1 for key, value in verification.items() if key != "issues" and value is True
+        )
         total_checks = len([key for key in verification if key != "issues"])
 
         summary = {
@@ -736,20 +795,23 @@ echo "SSL/TLS tests completed!"
             "certificate_validity_days": config.cert_validity_days,
             "subject_alt_names_count": len(certificate.subject_alt_names),
             "verification_score": f"{verification_score}/{total_checks}",
-            "verification_percentage": (verification_score / total_checks * 100) if total_checks > 0 else 0,
+            "verification_percentage": (verification_score / total_checks * 100)
+            if total_checks > 0
+            else 0,
             "issues_found": len(verification["issues"]),
             "security_features": {
                 "hsts_enabled": config.hsts_enabled,
                 "force_https_redirect": config.force_https_redirect,
                 "modern_ciphers": len(config.cipher_suites) > 0,
-                "tls_1_3_support": "TLSv1.3" in config.protocols
-            }
+                "tls_1_3_support": "TLSv1.3" in config.protocols,
+            },
         }
 
         return summary
 
-    def _generate_tls_next_steps(self, config: TLSConfiguration,
-                                certificate: TLSCertificate) -> list[str]:
+    def _generate_tls_next_steps(
+        self, config: TLSConfiguration, certificate: TLSCertificate
+    ) -> list[str]:
         """Generate next steps for TLS deployment"""
         next_steps = [
             "Review generated SSL certificates and configuration files",
@@ -761,7 +823,7 @@ echo "SSL/TLS tests completed!"
             "Configure firewall rules for HTTPS traffic",
             "Update DNS records to point to HTTPS endpoints",
             "Test SSL/TLS security with online tools (SSL Labs)",
-            "Document SSL certificate management procedures"
+            "Document SSL certificate management procedures",
         ]
 
         # Add specific recommendations
@@ -772,9 +834,12 @@ echo "SSL/TLS tests completed!"
             next_steps.append("Test HSTS header configuration in browsers")
 
         if len(certificate.subject_alt_names) > 5:
-            next_steps.append("Consider reducing Subject Alternative Names for better compatibility")
+            next_steps.append(
+                "Consider reducing Subject Alternative Names for better compatibility"
+            )
 
         return next_steps
+
 
 def main():
     """Main function to run TLS certificate setup"""
@@ -784,9 +849,9 @@ def main():
         # Run comprehensive TLS setup
         results = manager.run_comprehensive_tls_setup()
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("TLS CERTIFICATE SETUP SUMMARY")
-        print("="*80)
+        print("=" * 80)
 
         if not results["success"]:
             print(f"❌ Setup failed: {results.get('error', 'Unknown error')}")
@@ -804,7 +869,9 @@ def main():
         print(f"Subject Alt Names: {len(cert_info['subject_alt_names'])}")
 
         print("\nVerification Results:")
-        print(f"  Score: {summary['verification_score']} ({summary['verification_percentage']:.1f}%)")
+        print(
+            f"  Score: {summary['verification_score']} ({summary['verification_percentage']:.1f}%)"
+        )
         print(f"  Issues Found: {summary['issues_found']}")
 
         if verification["issues"]:
@@ -830,12 +897,14 @@ def main():
         if len(results["next_steps"]) > 5:
             print(f"  ... and {len(results['next_steps']) - 5} more steps")
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
 
     except Exception as e:
         logger.error(f"TLS setup failed: {e}")
         import traceback
+
         logger.error(f"Full traceback: {traceback.format_exc()}")
+
 
 if __name__ == "__main__":
     main()

@@ -46,6 +46,6 @@ class TestIntelligentCache:
     def test_stats_initialization(self, cache):
         """Test performance stats are initialized"""
         stats = cache.performance_stats
-        assert stats['cache_hits'] == 0
-        assert stats['cache_misses'] == 0
-        assert stats['hit_rate'] == 0.0
+        assert stats["cache_hits"] == 0
+        assert stats["cache_misses"] == 0
+        assert stats["hit_rate"] == 0.0

@@ -17,6 +17,7 @@ from LiteTTS.nlp.enhanced_datetime_processor import EnhancedDateTimeProcessor
 # Skip - test expectations don't match implementation output format
 pytestmark = pytest.mark.skip(reason="Test expectations don't match implementation output")
 
+
 class TestEnhancedDateTimeProcessor(unittest.TestCase):
     """Test cases for Enhanced DateTime Processor"""
 
@@ -113,9 +114,18 @@ class TestEnhancedDateTimeProcessor(unittest.TestCase):
     def test_mixed_content(self):
         """Test mixed date and time content"""
         test_cases = [
-            ("Meeting on 2023-05-12 at 14:30", "Meeting on May twelfth, twenty twenty-three at half past two PM"),
-            ("Event: January 1st, 2024 from 9:00-17:00", "Event: January first, twenty twenty-four from nine o'clock AM to five o'clock PM"),
-            ("Deadline: March 15th, 2024 by 23:59", "Deadline: March fifteenth, twenty twenty-four by eleven fifty-nine PM"),
+            (
+                "Meeting on 2023-05-12 at 14:30",
+                "Meeting on May twelfth, twenty twenty-three at half past two PM",
+            ),
+            (
+                "Event: January 1st, 2024 from 9:00-17:00",
+                "Event: January first, twenty twenty-four from nine o'clock AM to five o'clock PM",
+            ),
+            (
+                "Deadline: March 15th, 2024 by 23:59",
+                "Deadline: March fifteenth, twenty twenty-four by eleven fifty-nine PM",
+            ),
         ]
 
         for input_text, expected in test_cases:
@@ -167,6 +177,7 @@ class TestEnhancedDateTimeProcessor(unittest.TestCase):
                 result = self.processor.process_dates_and_times(input_text)
                 self.assertEqual(result, expected)
 
+
 def run_comprehensive_test():
     """Run comprehensive test with detailed output"""
     print("🧪 Enhanced DateTime Processor Comprehensive Test")
@@ -179,23 +190,25 @@ def run_comprehensive_test():
         # Critical ISO date fixes
         ("2023-05-12", "May twelfth, twenty twenty-three"),
         ("2024-01-01", "January first, twenty twenty-four"),
-
         # Ordinal date processing (major improvement)
         ("January 1st, 2024", "January first, twenty twenty-four"),
         ("March 22nd, 2023", "March twenty-second, twenty twenty-three"),
-
         # Enhanced time range processing
         ("9:00-17:00", "nine o'clock AM to five o'clock PM"),
         ("14:30-16:45", "half past two PM to quarter to five PM"),
-
         # 24-hour time conversion
         ("14:30", "half past two PM"),
         ("09:00", "nine o'clock AM"),
         ("23:45", "quarter to twelve PM"),
-
         # Mixed content
-        ("Meeting on 2023-05-12 at 14:30", "Meeting on May twelfth, twenty twenty-three at half past two PM"),
-        ("Deadline: March 15th, 2024 by 23:59", "Deadline: March fifteenth, twenty twenty-four by eleven fifty-nine PM"),
+        (
+            "Meeting on 2023-05-12 at 14:30",
+            "Meeting on May twelfth, twenty twenty-three at half past two PM",
+        ),
+        (
+            "Deadline: March 15th, 2024 by 23:59",
+            "Deadline: March fifteenth, twenty twenty-four by eleven fifty-nine PM",
+        ),
     ]
 
     passed = 0
@@ -221,9 +234,10 @@ def run_comprehensive_test():
 
     print("\n" + "=" * 60)
     print(f"📊 Test Results: {passed} passed, {failed} failed")
-    print(f"Success rate: {passed/(passed+failed)*100:.1f}%")
+    print(f"Success rate: {passed / (passed + failed) * 100:.1f}%")
 
     return failed == 0
+
 
 if __name__ == "__main__":
     # Run comprehensive test

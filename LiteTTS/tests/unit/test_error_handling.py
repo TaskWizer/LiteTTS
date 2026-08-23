@@ -45,10 +45,7 @@ class TestErrorContext:
     def test_creation_with_params(self):
         """Test creating error context with parameters"""
         context = ErrorContext(
-            operation="synthesis",
-            user_input="Hello",
-            voice="af_heart",
-            format="mp3"
+            operation="synthesis", user_input="Hello", voice="af_heart", format="mp3"
         )
         assert context.voice == "af_heart"
 
@@ -278,6 +275,7 @@ class TestErrorHandlerDecorator:
 
     def test_error_handler_sync_wrapper_success(self):
         """Test error_handler decorator with sync function that succeeds"""
+
         @error_handler(operation="test_sync")
         def successful_func():
             return "success"
@@ -287,6 +285,7 @@ class TestErrorHandlerDecorator:
 
     def test_error_handler_sync_wrapper_raises_tts_error(self):
         """Test error_handler decorator with sync function that raises"""
+
         @error_handler(operation="test_sync_error")
         def failing_func():
             raise ValueError("Test error")
@@ -299,6 +298,7 @@ class TestErrorHandlerDecorator:
 
     def test_error_handler_sync_wrapper_preserves_return_value(self):
         """Test that sync_wrapper returns the function's return value on success"""
+
         @error_handler(operation="test_preserve")
         def func_with_return():
             return 42
@@ -308,6 +308,7 @@ class TestErrorHandlerDecorator:
 
     def test_error_handler_sync_wrapper_handles_keyboard_interrupt(self):
         """Test error_handler decorator re-raises KeyboardInterrupt"""
+
         @error_handler(operation="test_interrupt")
         def interrupt_func():
             raise KeyboardInterrupt()
@@ -318,6 +319,7 @@ class TestErrorHandlerDecorator:
     @pytest.mark.asyncio
     async def test_error_handler_async_wrapper_success(self):
         """Test error_handler decorator with async function that succeeds"""
+
         @error_handler(operation="test_async")
         async def successful_async_func():
             return "async success"
@@ -505,7 +507,7 @@ class TestGracefulDegradation:
         text = "First sentence. Second sentence. Third sentence. Fourth sentence. Fifth sentence."
         result = GracefulDegradation.simplify_text(text)
         # Should be limited to 3 sentences
-        assert result.count('.') <= 3
+        assert result.count(".") <= 3
 
     def test_simplify_text_very_long(self):
         """Test simplify_text returns fallback for very long text"""

@@ -26,27 +26,28 @@ def test_real_audio_generation():
         ("hello", "Should be pronounced naturally"),
         ("The API is working correctly", "Full sentence test"),
         ("TSLA stock price is rising", "Full sentence with ticker"),
-        ("I have a question about pronunciation", "Full sentence with problematic words")
+        ("I have a question about pronunciation", "Full sentence with problematic words"),
     ]
 
     results = []
 
     for i, (text, expectation) in enumerate(test_cases):
-        print(f"\n--- Test {i+1}: {text} ---")
+        print(f"\n--- Test {i + 1}: {text} ---")
         print(f"Expected: {expectation}")
 
         try:
             start_time = time.time()
 
-            response = requests.post(api_url,
-                headers={'Content-Type': 'application/json'},
+            response = requests.post(
+                api_url,
+                headers={"Content-Type": "application/json"},
                 json={
-                    'model': 'kokoro',
-                    'input': text,
-                    'voice': 'af_heart',
-                    'response_format': 'mp3'
+                    "model": "kokoro",
+                    "input": text,
+                    "voice": "af_heart",
+                    "response_format": "mp3",
                 },
-                timeout=30
+                timeout=30,
             )
 
             end_time = time.time()
@@ -54,8 +55,8 @@ def test_real_audio_generation():
 
             if response.status_code == 200:
                 # Save the audio file
-                filename = f'real_test_{i+1}_{text.replace(" ", "_").replace(".", "")[:20]}.mp3'
-                with open(filename, 'wb') as f:
+                filename = f"real_test_{i + 1}_{text.replace(' ', '_').replace('.', '')[:20]}.mp3"
+                with open(filename, "wb") as f:
                     f.write(response.content)
 
                 audio_size = len(response.content)
@@ -63,45 +64,45 @@ def test_real_audio_generation():
                 print(f"   Audio size: {audio_size} bytes")
                 print(f"   Response time: {response_time:.3f}s")
 
-                results.append({
-                    'text': text,
-                    'filename': filename,
-                    'success': True,
-                    'audio_size': audio_size,
-                    'response_time': response_time
-                })
+                results.append(
+                    {
+                        "text": text,
+                        "filename": filename,
+                        "success": True,
+                        "audio_size": audio_size,
+                        "response_time": response_time,
+                    }
+                )
 
             else:
                 print(f"❌ FAILED: HTTP {response.status_code}")
                 print(f"   Response: {response.text}")
 
-                results.append({
-                    'text': text,
-                    'success': False,
-                    'error': f"HTTP {response.status_code}: {response.text}"
-                })
+                results.append(
+                    {
+                        "text": text,
+                        "success": False,
+                        "error": f"HTTP {response.status_code}: {response.text}",
+                    }
+                )
 
         except Exception as e:
             print(f"❌ EXCEPTION: {e}")
-            results.append({
-                'text': text,
-                'success': False,
-                'error': str(e)
-            })
+            results.append({"text": text, "success": False, "error": str(e)})
 
     # Summary
     print("\n" + "=" * 60)
     print("📊 REAL AUDIO TEST SUMMARY")
     print("=" * 60)
 
-    successful = sum(1 for r in results if r['success'])
+    successful = sum(1 for r in results if r["success"])
     total = len(results)
 
-    print(f"Success Rate: {successful}/{total} ({successful/total*100:.1f}%)")
+    print(f"Success Rate: {successful}/{total} ({successful / total * 100:.1f}%)")
 
     print("\n📁 Generated Audio Files:")
     for result in results:
-        if result['success']:
+        if result["success"]:
             print(f"  ✅ {result['filename']} - {result['text']}")
         else:
             print(f"  ❌ FAILED - {result['text']}: {result['error']}")
@@ -120,6 +121,7 @@ def test_real_audio_generation():
 
     return results
 
+
 def test_server_health():
     """Test if the server is responding"""
     try:
@@ -133,6 +135,7 @@ def test_server_health():
     except Exception as e:
         print(f"❌ Server is not responding: {e}")
         return False
+
 
 def main():
     """Main test function"""
@@ -154,6 +157,7 @@ def main():
     print("This test generated REAL audio files that you can listen to.")
     print("Compare these with your previous audio to verify the fixes work.")
     print("The proof is in the audio - listen and verify!")
+
 
 if __name__ == "__main__":
     main()

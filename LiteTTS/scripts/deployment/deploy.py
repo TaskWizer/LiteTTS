@@ -16,11 +16,9 @@ from pathlib import Path
 import requests
 
 # Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 class DeploymentManager:
     """Manages deployment of Kokoro ONNX TTS API"""
@@ -53,7 +51,7 @@ class DeploymentManager:
             issues.append(f"Configuration file not found: {self.config_file}")
         else:
             try:
-                with open(self.config_file, 'r') as f:
+                with open(self.config_file, "r") as f:
                     config = json.load(f)
                 logger.info("✅ Configuration file valid")
             except Exception as e:
@@ -62,10 +60,13 @@ class DeploymentManager:
         # Check disk space (need at least 1GB for models)
         try:
             import shutil
+
             free_space = shutil.disk_usage(self.project_root).free
             free_gb = free_space / (1024**3)
             if free_gb < 1:
-                issues.append(f"Insufficient disk space: {free_gb:.1f}GB available, need at least 1GB")
+                issues.append(
+                    f"Insufficient disk space: {free_gb:.1f}GB available, need at least 1GB"
+                )
             else:
                 logger.info(f"✅ Disk space OK: {free_gb:.1f}GB available")
         except Exception as e:
@@ -93,11 +94,7 @@ class DeploymentManager:
                 logger.info("Using pip for dependency installation")
 
             result = subprocess.run(
-                cmd,
-                cwd=self.project_root,
-                capture_output=True,
-                text=True,
-                check=True
+                cmd, cwd=self.project_root, capture_output=True, text=True, check=True
             )
 
             logger.info("✅ Dependencies installed successfully")
@@ -216,7 +213,7 @@ class DeploymentManager:
         tests = [
             ("Health Check", f"{base_url}/v1/health"),
             ("Voices List", f"{base_url}/v1/voices"),
-            ("Root Endpoint", f"{base_url}/")
+            ("Root Endpoint", f"{base_url}/"),
         ]
 
         for test_name, url in tests:
@@ -235,14 +232,10 @@ class DeploymentManager:
             tts_payload = {
                 "input": "Hello, deployment test!",
                 "voice": "af_heart",
-                "response_format": "mp3"
+                "response_format": "mp3",
             }
 
-            response = requests.post(
-                f"{base_url}/v1/audio/speech",
-                json=tts_payload,
-                timeout=30
-            )
+            response = requests.post(f"{base_url}/v1/audio/speech", json=tts_payload, timeout=30)
 
             if response.status_code == 200 and len(response.content) > 0:
                 logger.info("✅ TTS Endpoint: OK")
@@ -300,7 +293,7 @@ WantedBy=multi-user.target
 
         service_file = Path("/tmp/kokoro-tts.service")
         try:
-            with open(service_file, 'w') as f:
+            with open(service_file, "w") as f:
                 f.write(service_content)
 
             logger.info(f"✅ Service file created: {service_file}")
@@ -315,6 +308,7 @@ WantedBy=multi-user.target
         except Exception as e:
             logger.error(f"❌ Failed to create service file: {e}")
             return False
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -333,10 +327,12 @@ Examples:
 
   # Create systemd service
   python LiteTTS/scripts/deploy.py --systemd --port 9001
-        """
+        """,
     )
 
-    parser.add_argument("--full", action="store_true", help="Full deployment (models, voices, dependencies)")
+    parser.add_argument(
+        "--full", action="store_true", help="Full deployment (models, voices, dependencies)"
+    )
     parser.add_argument("--models", action="store_true", help="Download model files")
     parser.add_argument("--voices", action="store_true", help="Download voice files")
     parser.add_argument("--deps", action="store_true", help="Install dependencies")
@@ -399,6 +395,7 @@ Examples:
     else:
         logger.error("❌ Deployment completed with errors")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

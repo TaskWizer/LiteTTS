@@ -19,12 +19,14 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class LatencyBreakdown:
     """Detailed latency breakdown for each component"""
+
     component_name: str
     avg_latency_ms: float
     p95_latency_ms: float
@@ -35,9 +37,11 @@ class LatencyBreakdown:
     optimization_applied: bool
     bottleneck_severity: str  # "Low", "Medium", "High", "Critical"
 
+
 @dataclass
 class LatencyAuditResult:
     """Complete latency audit results"""
+
     total_latency_ms: float
     target_latency_ms: float
     latency_target_met: bool
@@ -62,6 +66,7 @@ class LatencyAuditResult:
     recommendations: list[str]
     estimated_improvement_ms: float
 
+
 class DetailedLatencyAuditor:
     """
     Comprehensive latency auditor for identifying bottlenecks
@@ -80,10 +85,12 @@ class DetailedLatencyAuditor:
             "This is a test sentence.",  # Short
             "This is a medium length sentence for testing latency performance.",  # Medium
             "This is a longer text that will help us understand how latency scales with input length and identify potential bottlenecks in the processing pipeline.",  # Long
-            "Quick test."  # Another short for consistency
+            "Quick test.",  # Another short for consistency
         ]
 
-    def measure_component_latency(self, component_name: str, operation_func, *args, **kwargs) -> dict[str, float]:
+    def measure_component_latency(
+        self, component_name: str, operation_func, *args, **kwargs
+    ) -> dict[str, float]:
         """Measure latency for a specific component"""
         latencies = []
 
@@ -102,14 +109,14 @@ class DetailedLatencyAuditor:
 
         if latencies:
             return {
-                'avg': statistics.mean(latencies),
-                'p95': np.percentile(latencies, 95),
-                'p99': np.percentile(latencies, 99),
-                'min': min(latencies),
-                'max': max(latencies)
+                "avg": statistics.mean(latencies),
+                "p95": np.percentile(latencies, 95),
+                "p99": np.percentile(latencies, 99),
+                "min": min(latencies),
+                "max": max(latencies),
             }
         else:
-            return {'avg': 0, 'p95': 0, 'p99': 0, 'min': 0, 'max': 0}
+            return {"avg": 0, "p95": 0, "p99": 0, "min": 0, "max": 0}
 
     def audit_application_startup(self) -> LatencyBreakdown:
         """Audit application startup latency"""
@@ -126,25 +133,25 @@ class DetailedLatencyAuditor:
         optimization_applied = True  # Assume warm-up is enabled
 
         # Classify bottleneck severity
-        if metrics['avg'] > 1000:
+        if metrics["avg"] > 1000:
             severity = "Critical"
-        elif metrics['avg'] > 500:
+        elif metrics["avg"] > 500:
             severity = "High"
-        elif metrics['avg'] > 200:
+        elif metrics["avg"] > 200:
             severity = "Medium"
         else:
             severity = "Low"
 
         return LatencyBreakdown(
             component_name="Application Startup",
-            avg_latency_ms=metrics['avg'],
-            p95_latency_ms=metrics['p95'],
-            p99_latency_ms=metrics['p99'],
-            min_latency_ms=metrics['min'],
-            max_latency_ms=metrics['max'],
+            avg_latency_ms=metrics["avg"],
+            p95_latency_ms=metrics["p95"],
+            p99_latency_ms=metrics["p99"],
+            min_latency_ms=metrics["min"],
+            max_latency_ms=metrics["max"],
             percentage_of_total=0.0,  # Will be calculated later
             optimization_applied=optimization_applied,
-            bottleneck_severity=severity
+            bottleneck_severity=severity,
         )
 
     def audit_model_loading(self) -> LatencyBreakdown:
@@ -162,25 +169,25 @@ class DetailedLatencyAuditor:
         optimization_applied = self._check_model_preloading_status()
 
         # Model loading is typically a major bottleneck if not optimized
-        if not optimization_applied and metrics['avg'] > 1000:
+        if not optimization_applied and metrics["avg"] > 1000:
             severity = "Critical"
-        elif metrics['avg'] > 500:
+        elif metrics["avg"] > 500:
             severity = "High"
-        elif metrics['avg'] > 100:
+        elif metrics["avg"] > 100:
             severity = "Medium"
         else:
             severity = "Low"
 
         return LatencyBreakdown(
             component_name="Model Loading",
-            avg_latency_ms=metrics['avg'],
-            p95_latency_ms=metrics['p95'],
-            p99_latency_ms=metrics['p99'],
-            min_latency_ms=metrics['min'],
-            max_latency_ms=metrics['max'],
+            avg_latency_ms=metrics["avg"],
+            p95_latency_ms=metrics["p95"],
+            p99_latency_ms=metrics["p99"],
+            min_latency_ms=metrics["min"],
+            max_latency_ms=metrics["max"],
             percentage_of_total=0.0,
             optimization_applied=optimization_applied,
-            bottleneck_severity=severity
+            bottleneck_severity=severity,
         )
 
     def audit_text_processing(self) -> LatencyBreakdown:
@@ -196,8 +203,10 @@ class DetailedLatencyAuditor:
         # Test with different text lengths
         all_latencies = []
         for text in self.test_texts:
-            metrics = self.measure_component_latency("Text Processing", text_processing_operation, text)
-            all_latencies.extend([metrics['avg']] * 10)  # Weight by iterations
+            metrics = self.measure_component_latency(
+                "Text Processing", text_processing_operation, text
+            )
+            all_latencies.extend([metrics["avg"]] * 10)  # Weight by iterations
 
         avg_latency = statistics.mean(all_latencies)
         p95_latency = np.percentile(all_latencies, 95)
@@ -224,7 +233,7 @@ class DetailedLatencyAuditor:
             max_latency_ms=max_latency,
             percentage_of_total=0.0,
             optimization_applied=optimization_applied,
-            bottleneck_severity=severity
+            bottleneck_severity=severity,
         )
 
     def audit_model_inference(self) -> LatencyBreakdown:
@@ -240,8 +249,10 @@ class DetailedLatencyAuditor:
         # Test with different text lengths
         all_latencies = []
         for text in self.test_texts:
-            metrics = self.measure_component_latency("Model Inference", model_inference_operation, text)
-            all_latencies.extend([metrics['avg']] * 10)
+            metrics = self.measure_component_latency(
+                "Model Inference", model_inference_operation, text
+            )
+            all_latencies.extend([metrics["avg"]] * 10)
 
         avg_latency = statistics.mean(all_latencies)
         p95_latency = np.percentile(all_latencies, 95)
@@ -271,7 +282,7 @@ class DetailedLatencyAuditor:
             max_latency_ms=max_latency,
             percentage_of_total=0.0,
             optimization_applied=optimization_applied,
-            bottleneck_severity=severity
+            bottleneck_severity=severity,
         )
 
     def audit_audio_postprocessing(self) -> LatencyBreakdown:
@@ -286,28 +297,30 @@ class DetailedLatencyAuditor:
 
         # Test with simulated audio data
         test_audio = np.random.randn(22050)  # 1 second of audio
-        metrics = self.measure_component_latency("Audio Post-processing", audio_postprocessing_operation, test_audio)
+        metrics = self.measure_component_latency(
+            "Audio Post-processing", audio_postprocessing_operation, test_audio
+        )
 
         # Check if audio processing optimizations are active
         optimization_applied = self._check_audio_optimizations()
 
-        if metrics['avg'] > 100:
+        if metrics["avg"] > 100:
             severity = "High"
-        elif metrics['avg'] > 50:
+        elif metrics["avg"] > 50:
             severity = "Medium"
         else:
             severity = "Low"
 
         return LatencyBreakdown(
             component_name="Audio Post-processing",
-            avg_latency_ms=metrics['avg'],
-            p95_latency_ms=metrics['p95'],
-            p99_latency_ms=metrics['p99'],
-            min_latency_ms=metrics['min'],
-            max_latency_ms=metrics['max'],
+            avg_latency_ms=metrics["avg"],
+            p95_latency_ms=metrics["p95"],
+            p99_latency_ms=metrics["p99"],
+            min_latency_ms=metrics["min"],
+            max_latency_ms=metrics["max"],
             percentage_of_total=0.0,
             optimization_applied=optimization_applied,
-            bottleneck_severity=severity
+            bottleneck_severity=severity,
         )
 
     def audit_io_operations(self) -> LatencyBreakdown:
@@ -324,23 +337,23 @@ class DetailedLatencyAuditor:
         # Check if caching optimizations are active
         optimization_applied = self._check_caching_optimizations()
 
-        if metrics['avg'] > 100:
+        if metrics["avg"] > 100:
             severity = "High"
-        elif metrics['avg'] > 50:
+        elif metrics["avg"] > 50:
             severity = "Medium"
         else:
             severity = "Low"
 
         return LatencyBreakdown(
             component_name="I/O Operations",
-            avg_latency_ms=metrics['avg'],
-            p95_latency_ms=metrics['p95'],
-            p99_latency_ms=metrics['p99'],
-            min_latency_ms=metrics['min'],
-            max_latency_ms=metrics['max'],
+            avg_latency_ms=metrics["avg"],
+            p95_latency_ms=metrics["p95"],
+            p99_latency_ms=metrics["p99"],
+            min_latency_ms=metrics["min"],
+            max_latency_ms=metrics["max"],
             percentage_of_total=0.0,
             optimization_applied=optimization_applied,
-            bottleneck_severity=severity
+            bottleneck_severity=severity,
         )
 
     def _check_model_preloading_status(self) -> bool:
@@ -458,13 +471,15 @@ class DetailedLatencyAuditor:
             self.audit_text_processing(),
             self.audit_model_inference(),
             self.audit_audio_postprocessing(),
-            self.audit_io_operations()
+            self.audit_io_operations(),
         ]
 
         # Calculate total latency and percentages
         total_latency = sum(comp.avg_latency_ms for comp in components)
         for comp in components:
-            comp.percentage_of_total = (comp.avg_latency_ms / total_latency) * 100 if total_latency > 0 else 0
+            comp.percentage_of_total = (
+                (comp.avg_latency_ms / total_latency) * 100 if total_latency > 0 else 0
+            )
 
         # Run end-to-end test
         e2e_latency, rtf, memory_usage = self.run_end_to_end_latency_test()
@@ -472,7 +487,9 @@ class DetailedLatencyAuditor:
         # Identify bottlenecks
         sorted_components = sorted(components, key=lambda x: x.avg_latency_ms, reverse=True)
         primary_bottleneck = sorted_components[0].component_name if sorted_components else "Unknown"
-        secondary_bottleneck = sorted_components[1].component_name if len(sorted_components) > 1 else "None"
+        secondary_bottleneck = (
+            sorted_components[1].component_name if len(sorted_components) > 1 else "None"
+        )
 
         # Check optimization status
         model_warmup_active = self._check_model_preloading_status()
@@ -508,7 +525,7 @@ class DetailedLatencyAuditor:
             memory_usage_mb=memory_usage,
             throughput_requests_per_sec=throughput,
             recommendations=recommendations,
-            estimated_improvement_ms=estimated_improvement
+            estimated_improvement_ms=estimated_improvement,
         )
 
         logger.info("✅ Comprehensive latency audit completed")
@@ -517,19 +534,27 @@ class DetailedLatencyAuditor:
 
         return result
 
-    def _generate_recommendations(self, components: list[LatencyBreakdown], primary_bottleneck: str) -> list[str]:
+    def _generate_recommendations(
+        self, components: list[LatencyBreakdown], primary_bottleneck: str
+    ) -> list[str]:
         """Generate optimization recommendations"""
         recommendations = []
 
         for comp in components:
             if comp.bottleneck_severity in ["Critical", "High"]:
                 if comp.component_name == "Model Loading" and not comp.optimization_applied:
-                    recommendations.append("Enable model preloading and warm-up to eliminate cold start latency")
+                    recommendations.append(
+                        "Enable model preloading and warm-up to eliminate cold start latency"
+                    )
                 elif comp.component_name == "Model Inference":
                     if not comp.optimization_applied:
-                        recommendations.append("Enable SIMD optimizations and batch processing for model inference")
+                        recommendations.append(
+                            "Enable SIMD optimizations and batch processing for model inference"
+                        )
                     else:
-                        recommendations.append("Consider model quantization or hardware acceleration for inference")
+                        recommendations.append(
+                            "Consider model quantization or hardware acceleration for inference"
+                        )
                 elif comp.component_name == "Text Processing":
                     recommendations.append("Implement text processing caching and optimization")
                 elif comp.component_name == "I/O Operations":
@@ -554,6 +579,7 @@ class DetailedLatencyAuditor:
 
         return total_improvement
 
+
 def main():
     """Main function"""
     auditor = DetailedLatencyAuditor()
@@ -568,7 +594,9 @@ def main():
     # Executive Summary
     report.append("## Executive Summary")
     status = "✅ MEETS TARGET" if result.latency_target_met else "❌ EXCEEDS TARGET"
-    report.append(f"**Total Latency: {result.total_latency_ms:.1f}ms** (target: {result.target_latency_ms}ms) {status}")
+    report.append(
+        f"**Total Latency: {result.total_latency_ms:.1f}ms** (target: {result.target_latency_ms}ms) {status}"
+    )
     report.append(f"**Primary Bottleneck:** {result.primary_bottleneck}")
     report.append(f"**RTF Performance:** {result.rtf:.3f}")
     report.append(f"**Memory Usage:** {result.memory_usage_mb:.1f}MB")
@@ -576,9 +604,15 @@ def main():
 
     # Optimization Status
     report.append("## Optimization Status")
-    report.append(f"- Model Warm-up: {'✅ Active' if result.model_warmup_active else '❌ Inactive'}")
-    report.append(f"- SIMD Optimization: {'✅ Active' if result.simd_optimization_active else '❌ Inactive'}")
-    report.append(f"- Batch Processing: {'✅ Active' if result.batch_processing_active else '❌ Inactive'}")
+    report.append(
+        f"- Model Warm-up: {'✅ Active' if result.model_warmup_active else '❌ Inactive'}"
+    )
+    report.append(
+        f"- SIMD Optimization: {'✅ Active' if result.simd_optimization_active else '❌ Inactive'}"
+    )
+    report.append(
+        f"- Batch Processing: {'✅ Active' if result.batch_processing_active else '❌ Inactive'}"
+    )
     report.append(f"- Caching: {'✅ Active' if result.caching_active else '❌ Inactive'}")
     report.append("")
 
@@ -589,9 +623,13 @@ def main():
 
     for comp in sorted(result.components, key=lambda x: x.avg_latency_ms, reverse=True):
         optimized = "✅" if comp.optimization_applied else "❌"
-        severity_icon = {"Critical": "🔴", "High": "🟠", "Medium": "🟡", "Low": "🟢"}.get(comp.bottleneck_severity, "⚪")
+        severity_icon = {"Critical": "🔴", "High": "🟠", "Medium": "🟡", "Low": "🟢"}.get(
+            comp.bottleneck_severity, "⚪"
+        )
 
-        report.append(f"| {comp.component_name} | {comp.avg_latency_ms:.1f}ms | {comp.p95_latency_ms:.1f}ms | {comp.percentage_of_total:.1f}% | {severity_icon} {comp.bottleneck_severity} | {optimized} |")
+        report.append(
+            f"| {comp.component_name} | {comp.avg_latency_ms:.1f}ms | {comp.p95_latency_ms:.1f}ms | {comp.percentage_of_total:.1f}% | {severity_icon} {comp.bottleneck_severity} | {optimized} |"
+        )
 
     report.append("")
 
@@ -601,21 +639,25 @@ def main():
         report.append(f"{i}. {rec}")
 
     if result.estimated_improvement_ms > 0:
-        report.append(f"\n**Estimated Improvement Potential:** {result.estimated_improvement_ms:.1f}ms reduction")
+        report.append(
+            f"\n**Estimated Improvement Potential:** {result.estimated_improvement_ms:.1f}ms reduction"
+        )
 
     report_content = "\n".join(report)
 
     # Save report
-    with open("detailed_latency_audit_report.md", 'w') as f:
+    with open("detailed_latency_audit_report.md", "w") as f:
         f.write(report_content)
 
     # Save JSON results
-    with open("detailed_latency_audit_results.json", 'w') as f:
+    with open("detailed_latency_audit_results.json", "w") as f:
         import json
+
         json.dump(asdict(result), f, indent=2)
 
     print(report_content)
     logger.info("📊 Detailed latency audit report saved to: detailed_latency_audit_report.md")
+
 
 if __name__ == "__main__":
     main()

@@ -19,12 +19,14 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class StorageVolume:
     """Storage volume configuration"""
+
     name: str
     internal_path: str
     external_path: str
@@ -35,15 +37,18 @@ class StorageVolume:
     permissions: str
     description: str
 
+
 @dataclass
 class StorageConfiguration:
     """Complete storage configuration"""
+
     base_storage_path: str
     enable_external_storage: bool
     volumes: list[StorageVolume]
     backup_configuration: dict[str, Any]
     monitoring_configuration: dict[str, Any]
     migration_strategy: dict[str, Any]
+
 
 class ExternalStorageConfigurator:
     """External storage configuration system"""
@@ -63,10 +68,12 @@ class ExternalStorageConfigurator:
             "logs": "logs",
             "config": "config",
             "test_results": "test_results",
-            "dictionaries": "docs/dictionaries"
+            "dictionaries": "docs/dictionaries",
         }
 
-    def create_optimal_storage_configuration(self, base_path: str | None = None) -> StorageConfiguration:
+    def create_optimal_storage_configuration(
+        self, base_path: str | None = None
+    ) -> StorageConfiguration:
         """Create optimal external storage configuration"""
         logger.info("Creating optimal external storage configuration...")
 
@@ -86,7 +93,7 @@ class ExternalStorageConfigurator:
                 backup_priority="critical",
                 mount_options=["ro"],  # Read-only for models
                 permissions="755",
-                description="ONNX model files for TTS inference"
+                description="ONNX model files for TTS inference",
             ),
             StorageVolume(
                 name="voices",
@@ -97,7 +104,7 @@ class ExternalStorageConfigurator:
                 backup_priority="critical",
                 mount_options=["ro"],  # Read-only for voices
                 permissions="755",
-                description="Voice embeddings and configuration files"
+                description="Voice embeddings and configuration files",
             ),
             StorageVolume(
                 name="cache",
@@ -108,7 +115,7 @@ class ExternalStorageConfigurator:
                 backup_priority="low",
                 mount_options=["rw"],  # Read-write for cache
                 permissions="755",
-                description="Audio generation cache and temporary files"
+                description="Audio generation cache and temporary files",
             ),
             StorageVolume(
                 name="logs",
@@ -119,7 +126,7 @@ class ExternalStorageConfigurator:
                 backup_priority="medium",
                 mount_options=["rw"],  # Read-write for logs
                 permissions="755",
-                description="Application logs and monitoring data"
+                description="Application logs and monitoring data",
             ),
             StorageVolume(
                 name="config",
@@ -130,7 +137,7 @@ class ExternalStorageConfigurator:
                 backup_priority="critical",
                 mount_options=["rw"],  # Read-write for config
                 permissions="644",
-                description="Configuration files and overrides"
+                description="Configuration files and overrides",
             ),
             StorageVolume(
                 name="dictionaries",
@@ -141,7 +148,7 @@ class ExternalStorageConfigurator:
                 backup_priority="high",
                 mount_options=["ro"],  # Read-only for dictionaries
                 permissions="644",
-                description="Pronunciation dictionaries and phonetic data"
+                description="Pronunciation dictionaries and phonetic data",
             ),
             StorageVolume(
                 name="test_results",
@@ -152,8 +159,8 @@ class ExternalStorageConfigurator:
                 backup_priority="medium",
                 mount_options=["rw"],  # Read-write for test results
                 permissions="755",
-                description="Test results, benchmarks, and analysis data"
-            )
+                description="Test results, benchmarks, and analysis data",
+            ),
         ]
 
         # Backup configuration
@@ -163,17 +170,17 @@ class ExternalStorageConfigurator:
                 "critical": "daily",
                 "high": "weekly",
                 "medium": "monthly",
-                "low": "never"
+                "low": "never",
             },
             "retention": {
                 "critical": "30 days",
                 "high": "14 days",
                 "medium": "7 days",
-                "low": "3 days"
+                "low": "3 days",
             },
             "backup_location": str(base_storage_path / "backups"),
             "compression": True,
-            "encryption": False  # Can be enabled for sensitive data
+            "encryption": False,  # Can be enabled for sensitive data
         }
 
         # Monitoring configuration
@@ -182,11 +189,7 @@ class ExternalStorageConfigurator:
             "disk_usage_threshold": 85,  # Alert at 85% usage
             "free_space_minimum_gb": 5,  # Alert if less than 5GB free
             "check_interval_minutes": 15,
-            "alerts": {
-                "email": False,
-                "webhook": False,
-                "log": True
-            }
+            "alerts": {"email": False, "webhook": False, "log": True},
         }
 
         # Migration strategy
@@ -197,7 +200,7 @@ class ExternalStorageConfigurator:
             "rollback_on_failure": True,
             "migration_batch_size": "1GB",
             "preserve_permissions": True,
-            "create_symlinks": True  # Create symlinks for backward compatibility
+            "create_symlinks": True,  # Create symlinks for backward compatibility
         }
 
         config = StorageConfiguration(
@@ -206,10 +209,12 @@ class ExternalStorageConfigurator:
             volumes=volumes,
             backup_configuration=backup_config,
             monitoring_configuration=monitoring_config,
-            migration_strategy=migration_config
+            migration_strategy=migration_config,
         )
 
-        logger.info(f"Created storage configuration with {len(volumes)} volumes, total estimated size: {sum(v.size_estimate_gb for v in volumes):.1f}GB")
+        logger.info(
+            f"Created storage configuration with {len(volumes)} volumes, total estimated size: {sum(v.size_estimate_gb for v in volumes):.1f}GB"
+        )
         return config
 
     def create_storage_directories(self, config: StorageConfiguration) -> dict[str, bool]:
@@ -258,7 +263,7 @@ class ExternalStorageConfigurator:
             "failed_migrations": [],
             "skipped_migrations": [],
             "total_size_migrated_gb": 0.0,
-            "migration_time_seconds": 0.0
+            "migration_time_seconds": 0.0,
         }
 
         start_time = time.time()
@@ -269,10 +274,9 @@ class ExternalStorageConfigurator:
 
             try:
                 if not internal_path.exists():
-                    migration_results["skipped_migrations"].append({
-                        "volume": volume.name,
-                        "reason": "Internal path does not exist"
-                    })
+                    migration_results["skipped_migrations"].append(
+                        {"volume": volume.name, "reason": "Internal path does not exist"}
+                    )
                     continue
 
                 if config.migration_strategy["backup_before_migration"]:
@@ -305,27 +309,33 @@ class ExternalStorageConfigurator:
                         internal_path.symlink_to(external_path)
                         logger.info(f"Created symlink: {internal_path} -> {external_path}")
 
-                migration_results["successful_migrations"].append({
-                    "volume": volume.name,
-                    "size_gb": size_gb,
-                    "internal_path": str(internal_path),
-                    "external_path": str(external_path)
-                })
+                migration_results["successful_migrations"].append(
+                    {
+                        "volume": volume.name,
+                        "size_gb": size_gb,
+                        "internal_path": str(internal_path),
+                        "external_path": str(external_path),
+                    }
+                )
 
                 migration_results["total_size_migrated_gb"] += size_gb
                 logger.info(f"Successfully migrated {volume.name}: {size_gb:.2f}GB")
 
             except Exception as e:
-                migration_results["failed_migrations"].append({
-                    "volume": volume.name,
-                    "error": str(e),
-                    "internal_path": str(internal_path),
-                    "external_path": str(external_path)
-                })
+                migration_results["failed_migrations"].append(
+                    {
+                        "volume": volume.name,
+                        "error": str(e),
+                        "internal_path": str(internal_path),
+                        "external_path": str(external_path),
+                    }
+                )
                 logger.error(f"Failed to migrate {volume.name}: {e}")
 
         migration_results["migration_time_seconds"] = time.time() - start_time
-        logger.info(f"Migration completed in {migration_results['migration_time_seconds']:.1f} seconds")
+        logger.info(
+            f"Migration completed in {migration_results['migration_time_seconds']:.1f} seconds"
+        )
 
         return migration_results
 
@@ -385,7 +395,9 @@ class ExternalStorageConfigurator:
 
             # Add to service volumes
             mount_option = "ro" if "ro" in volume.mount_options else "rw"
-            services_volumes.append(f"      - {volume.name}:/app/{volume.internal_path}:{mount_option}")
+            services_volumes.append(
+                f"      - {volume.name}:/app/{volume.internal_path}:{mount_option}"
+            )
 
         # Complete docker-compose section
         compose_config = f"""version: '3.8'
@@ -427,7 +439,7 @@ networks:
 
         # Save configuration
         compose_file = self.results_dir / "docker-compose-external-storage.yml"
-        with open(compose_file, 'w') as f:
+        with open(compose_file, "w") as f:
             f.write(compose_config)
 
         logger.info(f"Docker Compose configuration saved to: {compose_file}")
@@ -457,14 +469,16 @@ networks:
         # Save scripts
         for script_name, script_content in scripts.items():
             script_file = self.results_dir / script_name
-            with open(script_file, 'w') as f:
+            with open(script_file, "w") as f:
                 f.write(script_content)
             os.chmod(script_file, 0o755)  # Make executable
             logger.info(f"Backup script saved: {script_file}")
 
         return scripts
 
-    def _create_backup_script(self, volumes: list[StorageVolume], config: StorageConfiguration, priority: str) -> str:
+    def _create_backup_script(
+        self, volumes: list[StorageVolume], config: StorageConfiguration, priority: str
+    ) -> str:
         """Create backup script for specific priority volumes"""
         backup_location = config.backup_configuration["backup_location"]
         compression = config.backup_configuration["compression"]
@@ -574,7 +588,7 @@ echo "$(date): Storage monitoring check completed" >> "$LOG_FILE"
 
         # Save monitoring script
         script_file = self.results_dir / "storage_monitor.sh"
-        with open(script_file, 'w') as f:
+        with open(script_file, "w") as f:
             f.write(monitoring_script)
         os.chmod(script_file, 0o755)
 
@@ -613,21 +627,26 @@ echo "$(date): Storage monitoring check completed" >> "$LOG_FILE"
             "backup_scripts_generated": list(backup_scripts.keys()),
             "monitoring_script_generated": True,
             "total_estimated_storage_gb": sum(v.size_estimate_gb for v in config.volumes),
-            "setup_summary": self._generate_setup_summary(config, directory_results, migration_results),
-            "next_steps": self._generate_next_steps(config)
+            "setup_summary": self._generate_setup_summary(
+                config, directory_results, migration_results
+            ),
+            "next_steps": self._generate_next_steps(config),
         }
 
         # Save complete configuration
         config_file = self.results_dir / f"external_storage_setup_{int(time.time())}.json"
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             json.dump(setup_results, f, indent=2, default=str)
 
         logger.info(f"External storage setup completed. Results saved to: {config_file}")
         return setup_results
 
-    def _generate_setup_summary(self, config: StorageConfiguration,
-                               directory_results: dict[str, bool],
-                               migration_results: dict[str, Any]) -> dict[str, Any]:
+    def _generate_setup_summary(
+        self,
+        config: StorageConfiguration,
+        directory_results: dict[str, bool],
+        migration_results: dict[str, Any],
+    ) -> dict[str, Any]:
         """Generate setup summary"""
         successful_dirs = sum(1 for success in directory_results.values() if success)
         successful_migrations = len(migration_results["successful_migrations"])
@@ -641,7 +660,10 @@ echo "$(date): Storage monitoring check completed" >> "$LOG_FILE"
             "failed_migrations": failed_migrations,
             "total_data_migrated_gb": migration_results["total_size_migrated_gb"],
             "migration_time_seconds": migration_results["migration_time_seconds"],
-            "setup_success_rate": (successful_dirs + successful_migrations) / (len(directory_results) + len(config.volumes)) if config.volumes else 0
+            "setup_success_rate": (successful_dirs + successful_migrations)
+            / (len(directory_results) + len(config.volumes))
+            if config.volumes
+            else 0,
         }
 
         return summary
@@ -658,7 +680,7 @@ echo "$(date): Storage monitoring check completed" >> "$LOG_FILE"
             "Implement log rotation for external log volumes",
             "Set up automated backup verification",
             "Configure storage alerts and notifications",
-            "Document storage maintenance procedures"
+            "Document storage maintenance procedures",
         ]
 
         # Add specific recommendations based on configuration
@@ -674,6 +696,7 @@ echo "$(date): Storage monitoring check completed" >> "$LOG_FILE"
 
         return next_steps
 
+
 def main():
     """Main function to run external storage configuration"""
     configurator = ExternalStorageConfigurator()
@@ -682,9 +705,9 @@ def main():
         # Run comprehensive storage setup
         results = configurator.run_comprehensive_storage_setup()
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("EXTERNAL STORAGE CONFIGURATION SUMMARY")
-        print("="*80)
+        print("=" * 80)
 
         config = results["storage_configuration"]
         summary = results["setup_summary"]
@@ -694,7 +717,9 @@ def main():
         print(f"Total Estimated Storage: {results['total_estimated_storage_gb']:.1f}GB")
 
         print("\nSetup Results:")
-        print(f"  Directories Created: {summary['directories_created_successfully']}/{summary['total_volumes_configured']}")
+        print(
+            f"  Directories Created: {summary['directories_created_successfully']}/{summary['total_volumes_configured']}"
+        )
         print(f"  Successful Migrations: {summary['successful_migrations']}")
         print(f"  Failed Migrations: {summary['failed_migrations']}")
         print(f"  Data Migrated: {summary['total_data_migrated_gb']:.2f}GB")
@@ -703,7 +728,9 @@ def main():
 
         print("\nVolume Configuration:")
         for volume in config["volumes"]:
-            print(f"  {volume['name']}: {volume['external_path']} ({volume['size_estimate_gb']:.1f}GB, {volume['backup_priority']} priority)")
+            print(
+                f"  {volume['name']}: {volume['external_path']} ({volume['size_estimate_gb']:.1f}GB, {volume['backup_priority']} priority)"
+            )
 
         print("\nGenerated Files:")
         print("  Docker Compose: docker-compose-external-storage.yml")
@@ -717,12 +744,14 @@ def main():
         if len(results["next_steps"]) > 5:
             print(f"  ... and {len(results['next_steps']) - 5} more steps")
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
 
     except Exception as e:
         logger.error(f"External storage configuration failed: {e}")
         import traceback
+
         logger.error(f"Full traceback: {traceback.format_exc()}")
+
 
 if __name__ == "__main__":
     main()

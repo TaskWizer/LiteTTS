@@ -3,7 +3,6 @@
 Unit tests for progressive audio generator
 """
 
-
 import pytest
 
 from LiteTTS.audio.progressive_generator import (
@@ -49,7 +48,7 @@ class TestProgressiveGenerationConfig:
             mode=GenerationMode.STREAMING,
             max_concurrent_chunks=5,
             chunk_timeout=60.0,
-            streaming_delay=0.05
+            streaming_delay=0.05,
         )
         assert config.mode == GenerationMode.STREAMING
         assert config.max_concurrent_chunks == 5
@@ -68,7 +67,7 @@ class TestChunkResult:
             duration=1.5,
             generation_time=0.1,
             chunk_text="Hello world",
-            is_final=False
+            is_final=False,
         )
         assert result.chunk_id == 0
         assert result.audio_data == b"test_audio"
@@ -80,11 +79,7 @@ class TestChunkResult:
     def test_chunk_result_defaults(self):
         """Test ChunkResult default values"""
         result = ChunkResult(
-            chunk_id=0,
-            audio_data=b"test",
-            duration=1.0,
-            generation_time=0.1,
-            chunk_text="test"
+            chunk_id=0, audio_data=b"test", duration=1.0, generation_time=0.1, chunk_text="test"
         )
         assert result.is_final is False
         assert result.metadata is None
@@ -102,14 +97,10 @@ class TestProgressiveAudioGenerator:
     def config(self):
         """Create test configuration"""
         chunking_config = ChunkingConfig(
-            max_chunk_size=100,
-            min_chunk_size=20,
-            strategy=ChunkingStrategy.SENTENCE
+            max_chunk_size=100, min_chunk_size=20, strategy=ChunkingStrategy.SENTENCE
         )
         return ProgressiveGenerationConfig(
-            mode=GenerationMode.CHUNKED,
-            chunking_config=chunking_config,
-            max_concurrent_chunks=2
+            mode=GenerationMode.CHUNKED, chunking_config=chunking_config, max_concurrent_chunks=2
         )
 
     @pytest.fixture
@@ -133,7 +124,10 @@ class TestProgressiveAudioGenerator:
 
     def test_should_use_chunking_long_text(self, generator):
         """Test that long text uses chunking"""
-        text = "This is a longer piece of text that should definitely be chunked for better processing. " * 10
+        text = (
+            "This is a longer piece of text that should definitely be chunked for better processing. "
+            * 10
+        )
         result = generator._should_use_chunking(text)
         # With chunking enabled and long text, should return boolean
         assert isinstance(result, bool)
@@ -150,7 +144,7 @@ class TestProgressiveAudioGenerator:
             end_position=11,
             is_sentence_boundary=True,
             is_paragraph_boundary=False,
-            overlap_text=""
+            overlap_text="",
         )
         result = generator._prepare_chunk_text(chunk)
         assert result == "Hello world"
@@ -166,7 +160,7 @@ class TestProgressiveAudioGenerator:
             end_position=11,
             is_sentence_boundary=True,
             is_paragraph_boundary=False,
-            overlap_text="Hello"
+            overlap_text="Hello",
         )
         result = generator._prepare_chunk_text(chunk)
         assert "Hello" in result
@@ -208,9 +202,7 @@ class TestProgressiveGeneratorEdgeCases:
     @pytest.fixture
     def generator(self):
         mock_engine = MockTTSEngine()
-        config = ProgressiveGenerationConfig(
-            chunking_config=ChunkingConfig(max_chunk_size=50)
-        )
+        config = ProgressiveGenerationConfig(chunking_config=ChunkingConfig(max_chunk_size=50))
         return ProgressiveAudioGenerator(mock_engine, config)
 
     def test_chunking_disabled(self, generator):
@@ -232,7 +224,7 @@ class TestProgressiveGeneratorEdgeCases:
             end_position=11,
             is_sentence_boundary=True,
             is_paragraph_boundary=False,
-            overlap_text="Hello"
+            overlap_text="Hello",
         )
         result = generator._prepare_chunk_text(chunk)
         # Should not include overlap when disabled

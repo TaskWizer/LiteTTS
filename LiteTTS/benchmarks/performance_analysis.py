@@ -32,7 +32,7 @@ def test_clean_performance():
         "I am doing well",
         "See you later",
         "Have a great day",
-        "Welcome to the system"
+        "Welcome to the system",
     ]
 
     rtf_values = []
@@ -41,19 +41,11 @@ def test_clean_performance():
     for i, text in enumerate(test_cases, 1):
         print(f"Test {i}: '{text}'")
 
-        payload = {
-            "input": text,
-            "voice": "af_heart",
-            "response_format": "mp3"
-        }
+        payload = {"input": text, "voice": "af_heart", "response_format": "mp3"}
 
         try:
             start_time = time.time()
-            response = requests.post(
-                f"{base_url}/v1/audio/speech",
-                json=payload,
-                timeout=15
-            )
+            response = requests.post(f"{base_url}/v1/audio/speech", json=payload, timeout=15)
             end_time = time.time()
 
             if response.status_code == 200:
@@ -100,6 +92,7 @@ def test_clean_performance():
 
     return rtf_values
 
+
 def test_cache_performance():
     """Test cache performance specifically"""
 
@@ -109,11 +102,7 @@ def test_cache_performance():
     base_url = "http://localhost:8354"
     test_text = "Cache performance test sentence"
 
-    payload = {
-        "input": test_text,
-        "voice": "af_heart",
-        "response_format": "mp3"
-    }
+    payload = {"input": test_text, "voice": "af_heart", "response_format": "mp3"}
 
     # First request (cache miss)
     print("Testing cache miss...")
@@ -146,6 +135,7 @@ def test_cache_performance():
     else:
         print(f"   ❌ Cache miss failed: HTTP {response1.status_code}")
 
+
 def test_different_text_lengths():
     """Test performance with different text lengths"""
 
@@ -157,17 +147,18 @@ def test_different_text_lengths():
     test_cases = [
         ("Short", "Hello"),
         ("Medium", "This is a medium length sentence for testing"),
-        ("Long", "This is a much longer sentence that contains more words and should take longer to process but we want to see how the RTF scales with length"),
+        (
+            "Long",
+            "This is a much longer sentence that contains more words and should take longer to process but we want to see how the RTF scales with length",
+        ),
     ]
 
     for length_type, text in test_cases:
-        print(f"\n{length_type} text ({len(text)} chars): '{text[:50]}{'...' if len(text) > 50 else ''}'")
+        print(
+            f"\n{length_type} text ({len(text)} chars): '{text[:50]}{'...' if len(text) > 50 else ''}'"
+        )
 
-        payload = {
-            "input": text,
-            "voice": "af_heart",
-            "response_format": "mp3"
-        }
+        payload = {"input": text, "voice": "af_heart", "response_format": "mp3"}
 
         try:
             start_time = time.time()
@@ -186,6 +177,7 @@ def test_different_text_lengths():
 
         except Exception as e:
             print(f"   ❌ Error: {e}")
+
 
 def main():
     """Run focused performance analysis"""
@@ -230,6 +222,7 @@ def main():
     except Exception as e:
         print(f"\n❌ Analysis failed: {e}")
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

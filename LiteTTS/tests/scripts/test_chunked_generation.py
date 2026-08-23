@@ -12,10 +12,11 @@ import time
 import requests
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 BASE_URL = "http://localhost:8354"
+
 
 class ChunkedGenerationTester:
     """Comprehensive tester for chunked audio generation"""
@@ -59,23 +60,24 @@ class ChunkedGenerationTester:
             {
                 "name": "Short text",
                 "text": "Hello world!",
-                "expected_chunks": 1  # Should not be chunked
+                "expected_chunks": 1,  # Should not be chunked
             },
             {
                 "name": "Medium text",
                 "text": "This is a medium length text that should test the chunking system. It contains multiple sentences. Each sentence should be processed appropriately.",
-                "expected_chunks": 2  # Should be chunked
+                "expected_chunks": 2,  # Should be chunked
             },
             {
                 "name": "Long text with dialogue",
                 "text": "Once upon a time, there was a brave knight. 'I must save the kingdom!' he declared. The dragon roared in response. 'You shall not pass!' it bellowed. The battle was fierce and long.",
-                "expected_chunks": 3  # Should be chunked with dialogue awareness
+                "expected_chunks": 3,  # Should be chunked with dialogue awareness
             },
             {
                 "name": "Very long text",
-                "text": "This is a very long text that will definitely require chunking. " * 20 + "It should be broken down into multiple logical chunks while maintaining voice consistency and prosody continuity across all segments.",
-                "expected_chunks": 5  # Should be heavily chunked
-            }
+                "text": "This is a very long text that will definitely require chunking. " * 20
+                + "It should be broken down into multiple logical chunks while maintaining voice consistency and prosody continuity across all segments.",
+                "expected_chunks": 5,  # Should be heavily chunked
+            },
         ]
 
         results = []
@@ -92,11 +94,11 @@ class ChunkedGenerationTester:
                     json={
                         "input": test_case["text"],
                         "voice": "af_heart",
-                        "response_format": "mp3"
+                        "response_format": "mp3",
                     },
                     headers={"Content-Type": "application/json"},
                     timeout=60,
-                    stream=True
+                    stream=True,
                 )
 
                 if response.status_code == 200:
@@ -117,27 +119,25 @@ class ChunkedGenerationTester:
                         "chunks_received": chunks_received,
                         "total_size": total_size,
                         "duration": duration,
-                        "success": True
+                        "success": True,
                     }
 
-                    logger.info(f"      ✅ SUCCESS: {chunks_received} chunks, {total_size} bytes in {duration:.2f}s")
+                    logger.info(
+                        f"      ✅ SUCCESS: {chunks_received} chunks, {total_size} bytes in {duration:.2f}s"
+                    )
 
                 else:
                     result = {
                         "name": test_case["name"],
                         "error": f"HTTP {response.status_code}",
-                        "success": False
+                        "success": False,
                     }
                     logger.error(f"      ❌ FAILED: HTTP {response.status_code}")
 
                 results.append(result)
 
             except Exception as e:
-                result = {
-                    "name": test_case["name"],
-                    "error": str(e),
-                    "success": False
-                }
+                result = {"name": test_case["name"], "error": str(e), "success": False}
                 results.append(result)
                 logger.error(f"      ❌ EXCEPTION: {e}")
 
@@ -151,21 +151,19 @@ class ChunkedGenerationTester:
         logger.info("⚡ Testing streaming performance...")
 
         performance_tests = [
-            {
-                "name": "Short response time",
-                "text": "Quick test.",
-                "max_time_to_first_byte": 2.0
-            },
+            {"name": "Short response time", "text": "Quick test.", "max_time_to_first_byte": 2.0},
             {
                 "name": "Medium response time",
                 "text": "This is a medium length text that should demonstrate the benefits of chunked generation for user experience.",
-                "max_time_to_first_byte": 3.0
+                "max_time_to_first_byte": 3.0,
             },
             {
                 "name": "Long response time",
-                "text": "This is a much longer text that will really test the chunked generation system. " * 10 + "The user should start hearing audio much sooner than with traditional generation.",
-                "max_time_to_first_byte": 5.0
-            }
+                "text": "This is a much longer text that will really test the chunked generation system. "
+                * 10
+                + "The user should start hearing audio much sooner than with traditional generation.",
+                "max_time_to_first_byte": 5.0,
+            },
         ]
 
         results = []
@@ -182,11 +180,11 @@ class ChunkedGenerationTester:
                     json={
                         "input": test_case["text"],
                         "voice": "af_heart",
-                        "response_format": "mp3"
+                        "response_format": "mp3",
                     },
                     headers={"Content-Type": "application/json"},
                     timeout=60,
-                    stream=True
+                    stream=True,
                 )
 
                 if response.status_code == 200:
@@ -211,35 +209,35 @@ class ChunkedGenerationTester:
                         "total_time": total_time,
                         "max_allowed": test_case["max_time_to_first_byte"],
                         "meets_requirement": meets_requirement,
-                        "success": True
+                        "success": True,
                     }
 
                     status = "✅" if meets_requirement else "⚠️"
-                    logger.info(f"      {status} Time to first byte: {first_byte_time:.2f}s (max: {test_case['max_time_to_first_byte']}s)")
+                    logger.info(
+                        f"      {status} Time to first byte: {first_byte_time:.2f}s (max: {test_case['max_time_to_first_byte']}s)"
+                    )
 
                 else:
                     result = {
                         "name": test_case["name"],
                         "error": f"HTTP {response.status_code}",
-                        "success": False
+                        "success": False,
                     }
                     logger.error(f"      ❌ FAILED: HTTP {response.status_code}")
 
                 results.append(result)
 
             except Exception as e:
-                result = {
-                    "name": test_case["name"],
-                    "error": str(e),
-                    "success": False
-                }
+                result = {"name": test_case["name"], "error": str(e), "success": False}
                 results.append(result)
                 logger.error(f"      ❌ EXCEPTION: {e}")
 
         success_count = sum(1 for r in results if r.get("success", False))
         performance_count = sum(1 for r in results if r.get("meets_requirement", False))
 
-        logger.info(f"📊 Performance test results: {success_count}/{len(results)} successful, {performance_count}/{len(results)} met performance requirements")
+        logger.info(
+            f"📊 Performance test results: {success_count}/{len(results)} successful, {performance_count}/{len(results)} met performance requirements"
+        )
 
         return results
 
@@ -258,14 +256,10 @@ class ChunkedGenerationTester:
             try:
                 response = requests.post(
                     f"{self.base_url}/v1/audio/stream",
-                    json={
-                        "input": test_text,
-                        "voice": voice,
-                        "response_format": "mp3"
-                    },
+                    json={"input": test_text, "voice": voice, "response_format": "mp3"},
                     headers={"Content-Type": "application/json"},
                     timeout=60,
-                    stream=True
+                    stream=True,
                 )
 
                 if response.status_code == 200:
@@ -281,7 +275,7 @@ class ChunkedGenerationTester:
                         "voice": voice,
                         "chunks_received": len(audio_chunks),
                         "total_size": total_size,
-                        "success": True
+                        "success": True,
                     }
 
                     logger.info(f"      ✅ SUCCESS: {len(audio_chunks)} chunks, {total_size} bytes")
@@ -290,18 +284,14 @@ class ChunkedGenerationTester:
                     result = {
                         "voice": voice,
                         "error": f"HTTP {response.status_code}",
-                        "success": False
+                        "success": False,
                     }
                     logger.error(f"      ❌ FAILED: HTTP {response.status_code}")
 
                 results.append(result)
 
             except Exception as e:
-                result = {
-                    "voice": voice,
-                    "error": str(e),
-                    "success": False
-                }
+                result = {"voice": voice, "error": str(e), "success": False}
                 results.append(result)
                 logger.error(f"      ❌ EXCEPTION: {e}")
 
@@ -322,14 +312,10 @@ class ChunkedGenerationTester:
 
             response = requests.post(
                 f"{self.base_url}/v1/audio/stream",
-                json={
-                    "input": short_text,
-                    "voice": "af_heart",
-                    "response_format": "mp3"
-                },
+                json={"input": short_text, "voice": "af_heart", "response_format": "mp3"},
                 headers={"Content-Type": "application/json"},
                 timeout=30,
-                stream=True
+                stream=True,
             )
 
             if response.status_code == 200:
@@ -352,7 +338,7 @@ class ChunkedGenerationTester:
                     "success": True,
                     "generation_mode": generation_mode,
                     "audio_size": len(audio_data),
-                    "duration": duration
+                    "duration": duration,
                 }
             else:
                 logger.error(f"   ❌ Fallback test failed: HTTP {response.status_code}")
@@ -404,21 +390,35 @@ class ChunkedGenerationTester:
         chunking_results = test_results["chunking"]
         chunking_passed = sum(1 for r in chunking_results if r.get("success", False))
         chunking_total = len(chunking_results)
-        chunking_status = "✅ PASS" if chunking_passed == chunking_total else f"⚠️ PARTIAL ({chunking_passed}/{chunking_total})"
+        chunking_status = (
+            "✅ PASS"
+            if chunking_passed == chunking_total
+            else f"⚠️ PARTIAL ({chunking_passed}/{chunking_total})"
+        )
         logger.info(f"Text Chunking: {chunking_status}")
 
         # Performance tests
         performance_results = test_results["performance"]
-        performance_passed = sum(1 for r in performance_results if r.get("meets_requirement", False))
+        performance_passed = sum(
+            1 for r in performance_results if r.get("meets_requirement", False)
+        )
         performance_total = len(performance_results)
-        performance_status = "✅ PASS" if performance_passed == performance_total else f"⚠️ PARTIAL ({performance_passed}/{performance_total})"
+        performance_status = (
+            "✅ PASS"
+            if performance_passed == performance_total
+            else f"⚠️ PARTIAL ({performance_passed}/{performance_total})"
+        )
         logger.info(f"Streaming Performance: {performance_status}")
 
         # Voice consistency tests
         voice_results = test_results["voice_consistency"]
         voice_passed = sum(1 for r in voice_results if r.get("success", False))
         voice_total = len(voice_results)
-        voice_status = "✅ PASS" if voice_passed == voice_total else f"⚠️ PARTIAL ({voice_passed}/{voice_total})"
+        voice_status = (
+            "✅ PASS"
+            if voice_passed == voice_total
+            else f"⚠️ PARTIAL ({voice_passed}/{voice_total})"
+        )
         logger.info(f"Voice Consistency: {voice_status}")
 
         # Fallback test
@@ -427,10 +427,10 @@ class ChunkedGenerationTester:
 
         # Overall assessment
         all_critical_passed = (
-            test_results["configuration"] and
-            chunking_passed > 0 and
-            performance_passed > 0 and
-            test_results["fallback"]["success"]
+            test_results["configuration"]
+            and chunking_passed > 0
+            and performance_passed > 0
+            and test_results["fallback"]["success"]
         )
 
         overall_status = "🎉 OVERALL: PASS" if all_critical_passed else "❌ OVERALL: FAIL"
@@ -443,6 +443,7 @@ class ChunkedGenerationTester:
             logger.info("⚠️ Some tests failed. Review the results above for details.")
 
         logger.info("=" * 70)
+
 
 def main():
     """Main test function"""
@@ -460,6 +461,7 @@ def main():
         sys.exit(0)
     else:
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

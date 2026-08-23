@@ -9,8 +9,9 @@ import shutil
 from pathlib import Path
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 class DocumentationCleanup:
     """Handles systematic documentation cleanup and consolidation"""
@@ -20,15 +21,13 @@ class DocumentationCleanup:
         self.backup_dir = Path("docs_backup")
 
         # Define cleanup rules
-        self.directories_to_remove = {
-            "logs", "memories", "tasks", "prompts", "tests"
-        }
+        self.directories_to_remove = {"logs", "memories", "tasks", "prompts", "tests"}
 
         self.directories_to_consolidate = {
             "assessments": "analysis",
             "audit_reports": "analysis",
             "improvements": "analysis",
-            "reports": "analysis"
+            "reports": "analysis",
         }
 
         self.files_to_remove = {
@@ -38,7 +37,7 @@ class DocumentationCleanup:
             "comprehensive_optimization_summary.md",  # Consolidate
             "configuration_optimization_analysis.md",  # Consolidate
             "feature_implementation_analysis.md",  # Consolidate
-            "performance_analysis_results.md"  # Consolidate
+            "performance_analysis_results.md",  # Consolidate
         }
 
         self.files_to_move_to_usage = {
@@ -50,7 +49,7 @@ class DocumentationCleanup:
             "DOCKER_DEPLOYMENT.md",
             "troubleshooting_guide.md",
             "ssml_guide.md",
-            "performance_guide.md"
+            "performance_guide.md",
         }
 
         logger.info(f"Documentation cleanup initialized for {self.docs_dir}")
@@ -104,12 +103,7 @@ class DocumentationCleanup:
         """Create new documentation directory structure"""
         logger.info("Creating new documentation structure")
 
-        new_dirs = [
-            "usage",
-            "analysis",
-            "api",
-            "development"
-        ]
+        new_dirs = ["usage", "analysis", "api", "development"]
 
         for dir_name in new_dirs:
             dir_path = self.docs_dir / dir_name
@@ -148,7 +142,7 @@ class DocumentationCleanup:
             "comprehensive_optimization_summary.md",
             "configuration_optimization_analysis.md",
             "feature_implementation_analysis.md",
-            "performance_analysis_results.md"
+            "performance_analysis_results.md",
         ]
 
         for filename in analysis_files:
@@ -231,8 +225,8 @@ class DocumentationCleanup:
                     "Quick start guides and setup instructions",
                     "Deployment and configuration guides",
                     "API usage examples and tutorials",
-                    "Troubleshooting and performance guides"
-                ]
+                    "Troubleshooting and performance guides",
+                ],
             },
             "analysis": {
                 "title": "System Analysis",
@@ -241,8 +235,8 @@ class DocumentationCleanup:
                     "Performance analysis and benchmarks",
                     "Code quality audits and improvements",
                     "Feature implementation analysis",
-                    "System optimization reports"
-                ]
+                    "System optimization reports",
+                ],
             },
             "api": {
                 "title": "API Documentation",
@@ -251,8 +245,8 @@ class DocumentationCleanup:
                     "API endpoint reference",
                     "Request/response schemas",
                     "Integration examples",
-                    "Authentication and configuration"
-                ]
+                    "Authentication and configuration",
+                ],
             },
             "development": {
                 "title": "Development Documentation",
@@ -261,9 +255,9 @@ class DocumentationCleanup:
                     "Architecture and design documents",
                     "Development setup and guidelines",
                     "Testing and quality assurance",
-                    "Contributing guidelines"
-                ]
-            }
+                    "Contributing guidelines",
+                ],
+            },
         }
 
         for dir_name, info in readme_content.items():
@@ -275,7 +269,7 @@ class DocumentationCleanup:
                 content += f"{info['description']}\n\n"
                 content += "## Contents\n\n"
 
-                for item in info['contents']:
+                for item in info["contents"]:
                     content += f"- {item}\n"
 
                 content += "\n## Files in this Directory\n\n"
@@ -290,7 +284,7 @@ class DocumentationCleanup:
                     if subdir.is_dir():
                         content += f"- [{subdir.name}/](./{subdir.name}/)\n"
 
-                with open(readme_path, 'w') as f:
+                with open(readme_path, "w") as f:
                     f.write(content)
 
                 logger.info(f"Created README for {dir_name}/")
@@ -308,18 +302,18 @@ class DocumentationCleanup:
                 "Consolidated analysis documents to docs/analysis/",
                 "Moved voice samples to samples/ (removed 'sample' prefix)",
                 "Removed unnecessary directories and files",
-                "Created README files for each directory"
+                "Created README files for each directory",
             ],
             "new_structure": {
                 "docs/usage/": "User guides and tutorials",
                 "docs/analysis/": "Technical analysis and reports",
                 "docs/api/": "API reference documentation",
                 "docs/development/": "Developer documentation",
-                "samples/": "Voice samples and audio examples"
+                "samples/": "Voice samples and audio examples",
             },
             "files_removed": list(self.files_to_remove),
             "directories_removed": list(self.directories_to_remove),
-            "backup_location": str(self.backup_dir)
+            "backup_location": str(self.backup_dir),
         }
 
         summary_path = self.docs_dir / "CLEANUP_SUMMARY.md"
@@ -328,21 +322,22 @@ class DocumentationCleanup:
         content += f"**Date:** {summary['cleanup_date']}\n\n"
         content += "## Actions Performed\n\n"
 
-        for action in summary['actions_performed']:
+        for action in summary["actions_performed"]:
             content += f"- {action}\n"
 
         content += "\n## New Directory Structure\n\n"
 
-        for path, description in summary['new_structure'].items():
+        for path, description in summary["new_structure"].items():
             content += f"- **{path}** - {description}\n"
 
         content += "\n## Backup Location\n\n"
         content += f"Original documentation backed up to: `{summary['backup_location']}`\n"
 
-        with open(summary_path, 'w') as f:
+        with open(summary_path, "w") as f:
             f.write(content)
 
         logger.info(f"Cleanup summary saved to {summary_path}")
+
 
 def main():
     """Main cleanup execution"""
@@ -368,6 +363,7 @@ def main():
         return False
 
     return True
+
 
 if __name__ == "__main__":
     success = main()

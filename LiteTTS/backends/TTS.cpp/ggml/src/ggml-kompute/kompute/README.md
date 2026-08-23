@@ -165,8 +165,8 @@ int main() {
 The [Python package](https://kompute.cc/overview/python-package.html) provides a [high level interactive interface](https://kompute.cc/overview/python-reference.html) that enables for experimentation whilst ensuring high performance and fast development workflows.
 
 ```python
+from .utils import compile_source  # using util function from python/test/utils
 
-from .utils import compile_source # using util function from python/test/utils
 
 def kompute(shader):
     # 1. Create Kompute Manager with default settings (device 0, first queue and no extensions)
@@ -195,12 +195,14 @@ def kompute(shader):
     algo = mgr.algorithm(params, spirv, workgroup, spec_consts, push_consts_a)
 
     # 4. Run operation synchronously using sequence
-    (mgr.sequence()
+    (
+        mgr.sequence()
         .record(kp.OpTensorSyncDevice(params))
-        .record(kp.OpAlgoDispatch(algo)) # Binds default push consts provided
-        .eval() # evaluates the two recorded ops
-        .record(kp.OpAlgoDispatch(algo, push_consts_b)) # Overrides push consts
-        .eval()) # evaluates only the last recorded op
+        .record(kp.OpAlgoDispatch(algo))  # Binds default push consts provided
+        .eval()  # evaluates the two recorded ops
+        .record(kp.OpAlgoDispatch(algo, push_consts_b))  # Overrides push consts
+        .eval()
+    )  # evaluates only the last recorded op
 
     # 5. Sync results from the GPU asynchronously
     sq = mgr.sequence()
@@ -215,8 +217,8 @@ def kompute(shader):
     # Prints the first output which is: { 10, 10, 10 }
     print(tensor_out_b)
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     # Define a raw string shader (or use the Kompute tools to compile to SPIRV / C++ header
     # files). This shader shows some of the main components including constants, buffers, etc
     shader = """
@@ -246,7 +248,6 @@ if __name__ == "__main__":
     """
 
     kompute(shader)
-
 ```
 
 ### Interactive Notebooks & Hands on Videos

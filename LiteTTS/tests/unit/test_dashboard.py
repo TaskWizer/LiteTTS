@@ -31,17 +31,13 @@ class TestDashboardAnalytics:
             status_code=200,
             response_time=0.5,
             client_ip="127.0.0.1",
-            user_agent="test"
+            user_agent="test",
         )
         assert len(dashboard.request_metrics) == 1
 
     def test_update_concurrency(self, dashboard):
         """Test updating concurrency metrics"""
-        dashboard.update_concurrency(
-            active_connections=5,
-            queue_size=2,
-            processing_requests=3
-        )
+        dashboard.update_concurrency(active_connections=5, queue_size=2, processing_requests=3)
         assert dashboard.active_connections == 5
 
     def test_get_requests_per_minute(self, dashboard):
@@ -87,7 +83,7 @@ class TestRequestMetric:
             status_code=200,
             response_time=0.5,
             client_ip="127.0.0.1",
-            user_agent="test"
+            user_agent="test",
         )
         assert metric.method == "POST"
         assert metric.status_code == 200
@@ -99,9 +95,6 @@ class TestConcurrencyMetric:
     def test_creation(self):
         """Test creating concurrency metric"""
         metric = ConcurrencyMetric(
-            timestamp=datetime.now(),
-            active_connections=5,
-            queue_size=2,
-            processing_requests=3
+            timestamp=datetime.now(), active_connections=5, queue_size=2, processing_requests=3
         )
         assert metric.active_connections == 5

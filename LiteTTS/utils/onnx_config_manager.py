@@ -10,6 +10,7 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+
 class ONNXConfigManager:
     """Centralized ONNX Runtime configuration manager to prevent duplicate entries"""
 
@@ -43,7 +44,9 @@ class ONNXConfigManager:
 
             # Advanced configurations (check for duplicates)
             self._safe_add_config_entry(session_options, applied, "session.use_env_allocators", "1")
-            self._safe_add_config_entry(session_options, applied, "session.use_deterministic_compute", "0")
+            self._safe_add_config_entry(
+                session_options, applied, "session.use_deterministic_compute", "0"
+            )
             self._safe_add_config_entry(session_options, applied, "session.disable_prepacking", "0")
 
             logger.debug(f"Created ONNX session options for session '{session_id}'")
@@ -60,8 +63,9 @@ class ONNXConfigManager:
                 logger.debug(f"Failed to add ONNX config {key}={value}: {e}")
                 applied.add(key)  # Mark as attempted to avoid retries
 
-    def apply_cpu_optimizations(self, session_options: Any, session_id: str = "default",
-                               cpu_info: dict | None = None):
+    def apply_cpu_optimizations(
+        self, session_options: Any, session_id: str = "default", cpu_info: dict | None = None
+    ):
         """Apply CPU-specific optimizations"""
         with self._lock:
             if session_id not in self._applied_configs:
@@ -71,13 +75,16 @@ class ONNXConfigManager:
 
             # Intel-specific optimizations
             if cpu_info and "Intel" in cpu_info.get("model_name", ""):
-                self._safe_add_config_entry(session_options, applied, "session.use_intel_optimizations", "1")
+                self._safe_add_config_entry(
+                    session_options, applied, "session.use_intel_optimizations", "1"
+                )
 
                 if cpu_info.get("supports_avx2", False):
                     self._safe_add_config_entry(session_options, applied, "session.use_avx2", "1")
 
-    def apply_memory_optimizations(self, session_options: Any, session_id: str = "default",
-                                  memory_limit_mb: int | None = None):
+    def apply_memory_optimizations(
+        self, session_options: Any, session_id: str = "default", memory_limit_mb: int | None = None
+    ):
         """Apply memory-specific optimizations"""
         with self._lock:
             if session_id not in self._applied_configs:
@@ -86,15 +93,25 @@ class ONNXConfigManager:
             applied = self._applied_configs[session_id]
 
             if memory_limit_mb:
-                self._safe_add_config_entry(session_options, applied, "session.memory_limit_mb", str(memory_limit_mb))
+                self._safe_add_config_entry(
+                    session_options, applied, "session.memory_limit_mb", str(memory_limit_mb)
+                )
 
             # Memory arena optimizations
-            self._safe_add_config_entry(session_options, applied, "session.enable_memory_arena", "1")
-            self._safe_add_config_entry(session_options, applied, "session.arena_extend_strategy", "kSameAsRequested")
+            self._safe_add_config_entry(
+                session_options, applied, "session.enable_memory_arena", "1"
+            )
+            self._safe_add_config_entry(
+                session_options, applied, "session.arena_extend_strategy", "kSameAsRequested"
+            )
 
-    def apply_performance_optimizations(self, session_options: Any, session_id: str = "default",
-                                      inter_op_threads: int | None = None,
-                                      intra_op_threads: int | None = None):
+    def apply_performance_optimizations(
+        self,
+        session_options: Any,
+        session_id: str = "default",
+        inter_op_threads: int | None = None,
+        intra_op_threads: int | None = None,
+    ):
         """Apply performance-specific optimizations"""
         if inter_op_threads:
             session_options.inter_op_num_threads = inter_op_threads
@@ -102,7 +119,9 @@ class ONNXConfigManager:
         if intra_op_threads:
             session_options.intra_op_num_threads = intra_op_threads
 
-        logger.debug(f"Applied performance optimizations: inter_op={inter_op_threads}, intra_op={intra_op_threads}")
+        logger.debug(
+            f"Applied performance optimizations: inter_op={inter_op_threads}, intra_op={intra_op_threads}"
+        )
 
     def clear_session_config(self, session_id: str):
         """Clear configuration tracking for a session"""
@@ -111,9 +130,11 @@ class ONNXConfigManager:
                 del self._applied_configs[session_id]
                 logger.debug(f"Cleared ONNX config tracking for session '{session_id}'")
 
+
 # Global instance
 _onnx_config_manager = None
 _manager_lock = threading.Lock()
+
 
 def get_onnx_config_manager() -> ONNXConfigManager:
     """Get the global ONNX configuration manager instance"""
@@ -126,11 +147,14 @@ def get_onnx_config_manager() -> ONNXConfigManager:
 
     return _onnx_config_manager
 
-def create_optimized_session_options(session_id: str = "default",
-                                   cpu_info: dict | None = None,
-                                   memory_limit_mb: int | None = None,
-                                   inter_op_threads: int | None = None,
-                                   intra_op_threads: int | None = None) -> Any:
+
+def create_optimized_session_options(
+    session_id: str = "default",
+    cpu_info: dict | None = None,
+    memory_limit_mb: int | None = None,
+    inter_op_threads: int | None = None,
+    intra_op_threads: int | None = None,
+) -> Any:
     """Create fully optimized ONNX session options"""
     manager = get_onnx_config_manager()
     session_options = manager.create_session_options(session_id)
@@ -146,6 +170,8 @@ def create_optimized_session_options(session_id: str = "default",
         manager.apply_memory_optimizations(session_options, session_id, memory_limit_mb)
 
     if inter_op_threads or intra_op_threads:
-        manager.apply_performance_optimizations(session_options, session_id, inter_op_threads, intra_op_threads)
+        manager.apply_performance_optimizations(
+            session_options, session_id, inter_op_threads, intra_op_threads
+        )
 
     return session_options

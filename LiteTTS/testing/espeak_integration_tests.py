@@ -53,9 +53,8 @@ class EspeakIntegrationTestSuite:
                 priority="critical",
                 expected_symbols=["?"],
                 expected_pronunciations={"?": "question mark"},
-                min_pronunciation_accuracy=0.95
+                min_pronunciation_accuracy=0.95,
             ),
-
             AudioTestCase(
                 test_id="espeak_question_mark_multiple",
                 input_text="What time is it? Are you ready? Let's go?",
@@ -65,9 +64,8 @@ class EspeakIntegrationTestSuite:
                 priority="critical",
                 expected_symbols=["?"],
                 expected_pronunciations={"?": "question mark"},
-                min_pronunciation_accuracy=0.95
+                min_pronunciation_accuracy=0.95,
             ),
-
             # Asterisk pronunciation fix
             AudioTestCase(
                 test_id="espeak_asterisk_basic",
@@ -78,9 +76,8 @@ class EspeakIntegrationTestSuite:
                 priority="critical",
                 expected_symbols=["*"],
                 expected_pronunciations={"*": "asterisk"},
-                min_pronunciation_accuracy=0.95
+                min_pronunciation_accuracy=0.95,
             ),
-
             AudioTestCase(
                 test_id="espeak_asterisk_math",
                 input_text="Calculate 5 * 3 = 15",
@@ -90,9 +87,8 @@ class EspeakIntegrationTestSuite:
                 priority="high",
                 expected_symbols=["*"],
                 expected_pronunciations={"*": "asterisk"},
-                min_pronunciation_accuracy=0.9
+                min_pronunciation_accuracy=0.9,
             ),
-
             # Combined symbol tests
             AudioTestCase(
                 test_id="espeak_combined_symbols",
@@ -105,11 +101,10 @@ class EspeakIntegrationTestSuite:
                 expected_pronunciations={
                     "*": "asterisk",
                     "?": "question mark",
-                    "!": "exclamation mark"
+                    "!": "exclamation mark",
                 },
-                min_pronunciation_accuracy=0.9
+                min_pronunciation_accuracy=0.9,
             ),
-
             # Quote handling test
             AudioTestCase(
                 test_id="espeak_quote_handling",
@@ -118,9 +113,8 @@ class EspeakIntegrationTestSuite:
                 test_category="espeak_symbols",
                 description="Quote character handling test",
                 priority="normal",
-                min_pronunciation_accuracy=0.9
+                min_pronunciation_accuracy=0.9,
             ),
-
             # Ampersand test
             AudioTestCase(
                 test_id="espeak_ampersand",
@@ -131,8 +125,8 @@ class EspeakIntegrationTestSuite:
                 priority="normal",
                 expected_symbols=["&"],
                 expected_pronunciations={"&": "and"},
-                min_pronunciation_accuracy=0.9
-            )
+                min_pronunciation_accuracy=0.9,
+            ),
         ]
 
     def _create_currency_datetime_tests(self) -> list[AudioTestCase]:
@@ -147,9 +141,8 @@ class EspeakIntegrationTestSuite:
                 test_category="espeak_currency",
                 description="Basic currency processing test",
                 priority="high",
-                min_pronunciation_accuracy=0.9
+                min_pronunciation_accuracy=0.9,
             ),
-
             AudioTestCase(
                 test_id="espeak_currency_large",
                 input_text="The price is $1,234.56",
@@ -157,9 +150,8 @@ class EspeakIntegrationTestSuite:
                 test_category="espeak_currency",
                 description="Large currency amount test",
                 priority="normal",
-                min_pronunciation_accuracy=0.85
+                min_pronunciation_accuracy=0.85,
             ),
-
             AudioTestCase(
                 test_id="espeak_percentage",
                 input_text="The tax rate is 8.5%",
@@ -169,9 +161,8 @@ class EspeakIntegrationTestSuite:
                 priority="normal",
                 expected_symbols=["%"],
                 expected_pronunciations={"%": "percent"},
-                min_pronunciation_accuracy=0.9
+                min_pronunciation_accuracy=0.9,
             ),
-
             AudioTestCase(
                 test_id="espeak_datetime_basic",
                 input_text="The meeting is at 3:30 PM",
@@ -179,8 +170,8 @@ class EspeakIntegrationTestSuite:
                 test_category="espeak_datetime",
                 description="Basic time processing test",
                 priority="normal",
-                min_pronunciation_accuracy=0.85
-            )
+                min_pronunciation_accuracy=0.85,
+            ),
         ]
 
     def _create_context_aware_tests(self) -> list[AudioTestCase]:
@@ -195,9 +186,8 @@ class EspeakIntegrationTestSuite:
                 test_category="espeak_context",
                 description="URL context processing test",
                 priority="normal",
-                min_pronunciation_accuracy=0.8
+                min_pronunciation_accuracy=0.8,
             ),
-
             AudioTestCase(
                 test_id="espeak_email_context",
                 input_text="Email me at test@example.com",
@@ -205,9 +195,8 @@ class EspeakIntegrationTestSuite:
                 test_category="espeak_context",
                 description="Email context processing test",
                 priority="normal",
-                min_pronunciation_accuracy=0.8
+                min_pronunciation_accuracy=0.8,
             ),
-
             AudioTestCase(
                 test_id="espeak_filepath_context",
                 input_text="The file is at C:\\Users\\test.txt",
@@ -215,9 +204,8 @@ class EspeakIntegrationTestSuite:
                 test_category="espeak_context",
                 description="File path context processing test",
                 priority="low",
-                min_pronunciation_accuracy=0.7
+                min_pronunciation_accuracy=0.7,
             ),
-
             AudioTestCase(
                 test_id="espeak_math_expression",
                 input_text="Solve x + y = z * 2",
@@ -226,13 +214,9 @@ class EspeakIntegrationTestSuite:
                 description="Mathematical expression test",
                 priority="normal",
                 expected_symbols=["*", "+", "="],
-                expected_pronunciations={
-                    "*": "asterisk",
-                    "+": "plus",
-                    "=": "equals"
-                },
-                min_pronunciation_accuracy=0.85
-            )
+                expected_pronunciations={"*": "asterisk", "+": "plus", "=": "equals"},
+                min_pronunciation_accuracy=0.85,
+            ),
         ]
 
     def _create_edge_case_tests(self) -> list[AudioTestCase]:
@@ -253,11 +237,10 @@ class EspeakIntegrationTestSuite:
                     "*": "asterisk",
                     "&": "and",
                     "@": "at",
-                    "%": "percent"
+                    "%": "percent",
                 },
-                min_pronunciation_accuracy=0.9
+                min_pronunciation_accuracy=0.9,
             ),
-
             AudioTestCase(
                 test_id="espeak_edge_long_text",
                 input_text="This is a longer text with multiple symbols: What time is it? The cost is $25.99. Use the * symbol. Email test@example.com for more info!",
@@ -266,9 +249,8 @@ class EspeakIntegrationTestSuite:
                 description="Long text with multiple symbols",
                 priority="normal",
                 min_pronunciation_accuracy=0.8,
-                max_rtf=0.3  # Allow slightly higher RTF for longer text
+                max_rtf=0.3,  # Allow slightly higher RTF for longer text
             ),
-
             AudioTestCase(
                 test_id="espeak_regression_basic",
                 input_text="Hello world",
@@ -277,9 +259,8 @@ class EspeakIntegrationTestSuite:
                 description="Basic regression test",
                 priority="critical",
                 min_pronunciation_accuracy=0.95,
-                min_mos_score=4.0
+                min_mos_score=4.0,
             ),
-
             AudioTestCase(
                 test_id="espeak_regression_no_symbols",
                 input_text="The quick brown fox jumps over the lazy dog",
@@ -288,8 +269,8 @@ class EspeakIntegrationTestSuite:
                 description="No symbols regression test",
                 priority="high",
                 min_pronunciation_accuracy=0.95,
-                min_mos_score=4.0
-            )
+                min_mos_score=4.0,
+            ),
         ]
 
     def get_test_cases(self, category: str = None, priority: str = None) -> list[AudioTestCase]:

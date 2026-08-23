@@ -13,37 +13,44 @@ from .manager import EnhancedCacheManager
 
 logger = logging.getLogger(__name__)
 
+
 class AudioCache:
     """Specialized cache for TTS generated audio"""
 
-    def __init__(self, cache_dir: str = "LiteTTS/cache/audio",
-                 max_memory_size: int = None,  # Will use config default
-                 max_disk_size: int = None,    # Will use config default
-                 config=None):
+    def __init__(
+        self,
+        cache_dir: str = "LiteTTS/cache/audio",
+        max_memory_size: int = None,  # Will use config default
+        max_disk_size: int = None,  # Will use config default
+        config=None,
+    ):
 
         # Use config values or fallback to defaults
-        if config and hasattr(config, 'cache'):
+        if config and hasattr(config, "cache"):
             memory_size = max_memory_size or (config.cache.audio_memory_cache_mb * 1024 * 1024)
             disk_size = max_disk_size or (config.cache.audio_disk_cache_mb * 1024 * 1024)
             self.default_ttl = config.cache.ttl
         else:
             # Fallback defaults
-            memory_size = max_memory_size or (50 * 1024 * 1024)   # 50MB
-            disk_size = max_disk_size or (500 * 1024 * 1024)     # 500MB
+            memory_size = max_memory_size or (50 * 1024 * 1024)  # 50MB
+            disk_size = max_disk_size or (500 * 1024 * 1024)  # 500MB
             self.default_ttl = 3600  # 1 hour
 
         self.cache_manager = EnhancedCacheManager(
-            cache_dir=cache_dir,
-            max_memory_size=memory_size,
-            max_disk_size=disk_size,
-            config=config
+            cache_dir=cache_dir, max_memory_size=memory_size, max_disk_size=disk_size, config=config
         )
 
         logger.info("Audio cache initialized")
 
-    def get_cached_audio(self, text: str, voice: str, speed: float = 1.0,
-                        format: str = "wav", emotion: str = None,
-                        emotion_strength: float = 1.0) -> AudioSegment | None:
+    def get_cached_audio(
+        self,
+        text: str,
+        voice: str,
+        speed: float = 1.0,
+        format: str = "wav",
+        emotion: str = None,
+        emotion_strength: float = 1.0,
+    ) -> AudioSegment | None:
         """Get cached audio segment"""
         cache_key = self._generate_audio_cache_key(
             text, voice, speed, format, emotion, emotion_strength
@@ -59,9 +66,17 @@ class AudioCache:
         cache_metrics.record_miss("audio")
         return None
 
-    def cache_audio(self, audio_segment: AudioSegment, text: str, voice: str,
-                   speed: float = 1.0, format: str = "wav", emotion: str = None,
-                   emotion_strength: float = 1.0, ttl: int = None) -> bool:
+    def cache_audio(
+        self,
+        audio_segment: AudioSegment,
+        text: str,
+        voice: str,
+        speed: float = 1.0,
+        format: str = "wav",
+        emotion: str = None,
+        emotion_strength: float = 1.0,
+        ttl: int = None,
+    ) -> bool:
         """Cache audio segment"""
         cache_key = self._generate_audio_cache_key(
             text, voice, speed, format, emotion, emotion_strength
@@ -71,22 +86,26 @@ class AudioCache:
             ttl = self.default_ttl
 
         # Add tags for better cache management
-        tags = ['audio', f'voice:{voice}', f'format:{format}']
+        tags = ["audio", f"voice:{voice}", f"format:{format}"]
         if emotion:
-            tags.append(f'emotion:{emotion}')
+            tags.append(f"emotion:{emotion}")
 
-        success = self.cache_manager.put(
-            cache_key, audio_segment, ttl_seconds=ttl, tags=tags
-        )
+        success = self.cache_manager.put(cache_key, audio_segment, ttl_seconds=ttl, tags=tags)
 
         if success:
             logger.debug(f"Cached audio: {cache_key[:16]}... ({audio_segment.duration:.2f}s)")
 
         return success
 
-    def _generate_audio_cache_key(self, text: str, voice: str, speed: float,
-                                 format: str, emotion: str = None,
-                                 emotion_strength: float = 1.0) -> str:
+    def _generate_audio_cache_key(
+        self,
+        text: str,
+        voice: str,
+        speed: float,
+        format: str,
+        emotion: str = None,
+        emotion_strength: float = 1.0,
+    ) -> str:
         """Generate standardized cache key for audio using CacheKeyGenerator"""
         return CacheKeyGenerator.generate_audio_cache_key(
             text=text,
@@ -94,7 +113,7 @@ class AudioCache:
             speed=speed,
             format=format,
             emotion=emotion,
-            emotion_strength=emotion_strength
+            emotion_strength=emotion_strength,
         )
 
     def preload_common_phrases(self, phrases: list[str], voice: str) -> dict[str, bool]:
@@ -116,26 +135,26 @@ class AudioCache:
 
         # Add audio-specific stats
         audio_stats = {
-            'audio_cache': base_stats,
-            'cache_type': 'audio',
-            'default_ttl_seconds': self.default_ttl
+            "audio_cache": base_stats,
+            "cache_type": "audio",
+            "default_ttl_seconds": self.default_ttl,
         }
 
         return audio_stats
 
     def clear_voice_cache(self, voice: str):
         """Clear cache for specific voice"""
-        self.cache_manager.clear(tags=[f'voice:{voice}'])
+        self.cache_manager.clear(tags=[f"voice:{voice}"])
         logger.info(f"Cleared cache for voice: {voice}")
 
     def clear_format_cache(self, format: str):
         """Clear cache for specific format"""
-        self.cache_manager.clear(tags=[f'format:{format}'])
+        self.cache_manager.clear(tags=[f"format:{format}"])
         logger.info(f"Cleared cache for format: {format}")
 
     def clear_emotion_cache(self, emotion: str):
         """Clear cache for specific emotion"""
-        self.cache_manager.clear(tags=[f'emotion:{emotion}'])
+        self.cache_manager.clear(tags=[f"emotion:{emotion}"])
         logger.info(f"Cleared cache for emotion: {emotion}")
 
     def optimize(self):
@@ -150,36 +169,38 @@ class AudioCache:
         """Shutdown audio cache"""
         self.cache_manager.shutdown()
 
+
 class TextCache:
     """Cache for processed text (NLP results)"""
 
-    def __init__(self, cache_dir: str = "LiteTTS/cache/text",
-                 max_memory_size: int = None,   # Will use config default
-                 max_disk_size: int = None,     # Will use config default
-                 config=None):
+    def __init__(
+        self,
+        cache_dir: str = "LiteTTS/cache/text",
+        max_memory_size: int = None,  # Will use config default
+        max_disk_size: int = None,  # Will use config default
+        config=None,
+    ):
 
         # Use config values or fallback to defaults
-        if config and hasattr(config, 'cache'):
+        if config and hasattr(config, "cache"):
             memory_size = max_memory_size or (config.cache.text_memory_cache_mb * 1024 * 1024)
             disk_size = max_disk_size or (config.cache.text_disk_cache_mb * 1024 * 1024)
             self.default_ttl = config.cache.text_cache_ttl
         else:
             # Fallback defaults
-            memory_size = max_memory_size or (10 * 1024 * 1024)   # 10MB
-            disk_size = max_disk_size or (50 * 1024 * 1024)      # 50MB
+            memory_size = max_memory_size or (10 * 1024 * 1024)  # 10MB
+            disk_size = max_disk_size or (50 * 1024 * 1024)  # 50MB
             self.default_ttl = 86400  # 24 hours
 
         self.cache_manager = EnhancedCacheManager(
-            cache_dir=cache_dir,
-            max_memory_size=memory_size,
-            max_disk_size=disk_size,
-            config=config
+            cache_dir=cache_dir, max_memory_size=memory_size, max_disk_size=disk_size, config=config
         )
 
         logger.info("Text cache initialized")
 
-    def get_processed_text(self, original_text: str,
-                          normalization_options: dict[str, Any]) -> str | None:
+    def get_processed_text(
+        self, original_text: str, normalization_options: dict[str, Any]
+    ) -> str | None:
         """Get cached processed text"""
         cache_key = self._generate_text_cache_key(original_text, normalization_options)
 
@@ -191,27 +212,29 @@ class TextCache:
 
         return None
 
-    def cache_processed_text(self, original_text: str, processed_text: str,
-                           normalization_options: dict[str, Any], ttl: int = None) -> bool:
+    def cache_processed_text(
+        self,
+        original_text: str,
+        processed_text: str,
+        normalization_options: dict[str, Any],
+        ttl: int = None,
+    ) -> bool:
         """Cache processed text"""
         cache_key = self._generate_text_cache_key(original_text, normalization_options)
 
         if ttl is None:
             ttl = self.default_ttl
 
-        tags = ['text', 'nlp_processed']
+        tags = ["text", "nlp_processed"]
 
-        success = self.cache_manager.put(
-            cache_key, processed_text, ttl_seconds=ttl, tags=tags
-        )
+        success = self.cache_manager.put(cache_key, processed_text, ttl_seconds=ttl, tags=tags)
 
         if success:
             logger.debug(f"Cached processed text: {cache_key[:16]}...")
 
         return success
 
-    def _generate_text_cache_key(self, text: str,
-                                normalization_options: dict[str, Any]) -> str:
+    def _generate_text_cache_key(self, text: str, normalization_options: dict[str, Any]) -> str:
         """Generate cache key for processed text"""
         # Create a stable key from text and options
         options_str = str(sorted(normalization_options.items()))
@@ -223,9 +246,9 @@ class TextCache:
         base_stats = self.cache_manager.get_stats()
 
         text_stats = {
-            'text_cache': base_stats,
-            'cache_type': 'text',
-            'default_ttl_seconds': self.default_ttl
+            "text_cache": base_stats,
+            "cache_type": "text",
+            "default_ttl_seconds": self.default_ttl,
         }
 
         return text_stats
@@ -247,6 +270,7 @@ class TextCache:
         """Shutdown text cache"""
         self.cache_manager.shutdown()
 
+
 class CacheWarmer:
     """Cache warming service for predictive caching"""
 
@@ -265,7 +289,7 @@ class CacheWarmer:
             "Is there anything else I can help you with?",
             "Please try again later.",
             "Your request has been processed.",
-            "Loading, please wait..."
+            "Loading, please wait...",
         ]
 
         logger.info("Cache warmer initialized")
@@ -275,12 +299,12 @@ class CacheWarmer:
         results = {}
 
         for voice in voices:
-            voice_results = self.audio_cache.preload_common_phrases(
-                self.common_phrases, voice
-            )
+            voice_results = self.audio_cache.preload_common_phrases(self.common_phrases, voice)
             results[voice] = voice_results
 
-        logger.info(f"Warmed cache for {len(voices)} voices with {len(self.common_phrases)} phrases")
+        logger.info(
+            f"Warmed cache for {len(voices)} voices with {len(self.common_phrases)} phrases"
+        )
         return results
 
     def warm_user_patterns(self, user_texts: list[str], voice: str) -> dict[str, bool]:
@@ -299,7 +323,7 @@ class CacheWarmer:
     def get_warming_stats(self) -> dict[str, Any]:
         """Get cache warming statistics"""
         return {
-            'common_phrases_count': len(self.common_phrases),
-            'audio_cache_stats': self.audio_cache.get_cache_stats(),
-            'text_cache_stats': self.text_cache.get_cache_stats()
+            "common_phrases_count": len(self.common_phrases),
+            "audio_cache_stats": self.audio_cache.get_cache_stats(),
+            "text_cache_stats": self.text_cache.get_cache_stats(),
         }

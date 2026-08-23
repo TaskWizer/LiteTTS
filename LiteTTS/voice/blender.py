@@ -18,7 +18,8 @@ try:
     # Try relative import first
     import importlib.util
     import os
-    models_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'models.py')
+
+    models_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "models.py")
     spec = importlib.util.spec_from_file_location("models", models_path)
     models_module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(models_module)
@@ -49,16 +50,20 @@ except Exception:
         loaded_at: datetime | None = None
         file_hash: str = ""
 
+
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class BlendConfig:
     """Configuration for voice blending"""
+
     voices: list[tuple[str, float]]  # List of (voice_name, weight) tuples
     blend_method: str = "weighted_average"  # "weighted_average", "interpolation", "style_mixing"
     normalize_weights: bool = True
     preserve_energy: bool = True
     smoothing_factor: float = 0.1  # For style mixing
+
 
 class VoiceBlender:
     """Voice blending system for creating custom voice combinations"""
@@ -70,10 +75,10 @@ class VoiceBlender:
     def blend_voices(self, blend_config: BlendConfig) -> VoiceEmbedding | None:
         """
         Blend multiple voices according to the configuration
-        
+
         Args:
             blend_config: Configuration specifying voices and blending parameters
-            
+
         Returns:
             VoiceEmbedding with blended voice data
         """
@@ -117,7 +122,9 @@ class VoiceBlender:
         elif blend_config.blend_method == "interpolation":
             blended_data = self._interpolation_blend(voice_embeddings, weights)
         elif blend_config.blend_method == "style_mixing":
-            blended_data = self._style_mixing_blend(voice_embeddings, weights, blend_config.smoothing_factor)
+            blended_data = self._style_mixing_blend(
+                voice_embeddings, weights, blend_config.smoothing_factor
+            )
         else:
             logger.error(f"Blend method not implemented: {blend_config.blend_method}")
             return None
@@ -140,21 +147,22 @@ class VoiceBlender:
             embedding_data=blended_data,
             metadata=blended_metadata,
             loaded_at=None,
-            file_hash=""
+            file_hash="",
         )
 
         logger.info(f"Successfully blended {len(voice_embeddings)} voices into '{blended_name}'")
         return blended_embedding
 
-    def _weighted_average_blend(self, voice_embeddings: list[VoiceEmbedding],
-                               weights: list[float]) -> np.ndarray | None:
+    def _weighted_average_blend(
+        self, voice_embeddings: list[VoiceEmbedding], weights: list[float]
+    ) -> np.ndarray | None:
         """Blend voices using weighted average"""
         try:
             # Get embedding data from all voices
             embedding_arrays = []
             for embedding in voice_embeddings:
                 data = embedding.embedding_data
-                if hasattr(data, 'numpy'):
+                if hasattr(data, "numpy"):
                     data = data.numpy()
                 embedding_arrays.append(data)
 
@@ -162,9 +170,13 @@ class VoiceBlender:
             target_shape = embedding_arrays[0].shape
             for i, data in enumerate(embedding_arrays):
                 if data.shape != target_shape:
-                    logger.warning(f"Voice {i} has different shape {data.shape}, reshaping to {target_shape}")
+                    logger.warning(
+                        f"Voice {i} has different shape {data.shape}, reshaping to {target_shape}"
+                    )
                     if data.size >= np.prod(target_shape):
-                        embedding_arrays[i] = data.flatten()[:np.prod(target_shape)].reshape(target_shape)
+                        embedding_arrays[i] = data.flatten()[: np.prod(target_shape)].reshape(
+                            target_shape
+                        )
                     else:
                         logger.error(f"Voice {i} has insufficient data for reshaping")
                         return None
@@ -180,8 +192,9 @@ class VoiceBlender:
             logger.error(f"Weighted average blending failed: {e}")
             return None
 
-    def _interpolation_blend(self, voice_embeddings: list[VoiceEmbedding],
-                           weights: list[float]) -> np.ndarray | None:
+    def _interpolation_blend(
+        self, voice_embeddings: list[VoiceEmbedding], weights: list[float]
+    ) -> np.ndarray | None:
         """Blend voices using smooth interpolation"""
         try:
             # For interpolation, we'll use spherical linear interpolation (slerp) for better results
@@ -195,14 +208,15 @@ class VoiceBlender:
             logger.error(f"Interpolation blending failed: {e}")
             return None
 
-    def _style_mixing_blend(self, voice_embeddings: list[VoiceEmbedding],
-                          weights: list[float], smoothing_factor: float) -> np.ndarray | None:
+    def _style_mixing_blend(
+        self, voice_embeddings: list[VoiceEmbedding], weights: list[float], smoothing_factor: float
+    ) -> np.ndarray | None:
         """Blend voices using style mixing (different parts of the embedding from different voices)"""
         try:
             embedding_arrays = []
             for embedding in voice_embeddings:
                 data = embedding.embedding_data
-                if hasattr(data, 'numpy'):
+                if hasattr(data, "numpy"):
                     data = data.numpy()
                 embedding_arrays.append(data)
 
@@ -211,7 +225,9 @@ class VoiceBlender:
             for i, data in enumerate(embedding_arrays):
                 if data.shape != target_shape:
                     if data.size >= np.prod(target_shape):
-                        embedding_arrays[i] = data.flatten()[:np.prod(target_shape)].reshape(target_shape)
+                        embedding_arrays[i] = data.flatten()[: np.prod(target_shape)].reshape(
+                            target_shape
+                        )
                     else:
                         return None
 
@@ -229,7 +245,9 @@ class VoiceBlender:
                 # Apply smoothing
                 if smoothing_factor > 0:
                     for i in range(1, num_styles):
-                        blended[i] = (1 - smoothing_factor) * blended[i] + smoothing_factor * blended[i-1]
+                        blended[i] = (1 - smoothing_factor) * blended[
+                            i
+                        ] + smoothing_factor * blended[i - 1]
             else:
                 # Fall back to weighted average for other formats
                 return self._weighted_average_blend(voice_embeddings, weights)
@@ -240,15 +258,17 @@ class VoiceBlender:
             logger.error(f"Style mixing blending failed: {e}")
             return None
 
-    def _slerp_blend(self, voice1: VoiceEmbedding, voice2: VoiceEmbedding, t: float) -> np.ndarray | None:
+    def _slerp_blend(
+        self, voice1: VoiceEmbedding, voice2: VoiceEmbedding, t: float
+    ) -> np.ndarray | None:
         """Spherical linear interpolation between two voices"""
         try:
             data1 = voice1.embedding_data
             data2 = voice2.embedding_data
 
-            if hasattr(data1, 'numpy'):
+            if hasattr(data1, "numpy"):
                 data1 = data1.numpy()
-            if hasattr(data2, 'numpy'):
+            if hasattr(data2, "numpy"):
                 data2 = data2.numpy()
 
             # Flatten for slerp calculation
@@ -276,7 +296,9 @@ class VoiceBlender:
                 else:
                     # Spherical linear interpolation
                     sin_omega = np.sin(omega)
-                    result = (np.sin((1 - t) * omega) / sin_omega) * flat1 + (np.sin(t * omega) / sin_omega) * flat2
+                    result = (np.sin((1 - t) * omega) / sin_omega) * flat1 + (
+                        np.sin(t * omega) / sin_omega
+                    ) * flat2
 
             return result.reshape(data1.shape).astype(np.float32)
 
@@ -288,8 +310,8 @@ class VoiceBlender:
         """Preserve the energy level of the original voice"""
         try:
             # Calculate energy (RMS) of reference and blended data
-            ref_energy = np.sqrt(np.mean(reference_data ** 2))
-            blended_energy = np.sqrt(np.mean(blended_data ** 2))
+            ref_energy = np.sqrt(np.mean(reference_data**2))
+            blended_energy = np.sqrt(np.mean(blended_data**2))
 
             if blended_energy > 0:
                 # Scale blended data to match reference energy
@@ -302,8 +324,9 @@ class VoiceBlender:
             logger.warning(f"Energy preservation failed: {e}")
             return blended_data
 
-    def _create_blended_metadata(self, voice_embeddings: list[VoiceEmbedding],
-                               weights: list[float]) -> VoiceMetadata:
+    def _create_blended_metadata(
+        self, voice_embeddings: list[VoiceEmbedding], weights: list[float]
+    ) -> VoiceMetadata:
         """Create metadata for the blended voice"""
         # Combine information from all source voices
         voice_names = [emb.name for emb in voice_embeddings]
@@ -320,7 +343,7 @@ class VoiceBlender:
             voice_type="blended_neural",
             quality_rating=4.0,  # Default quality for blended voices
             language=dominant_voice.metadata.language if dominant_voice.metadata else "en-us",
-            description=f"Blended voice from: {', '.join(voice_names)}"
+            description=f"Blended voice from: {', '.join(voice_names)}",
         )
 
     def _generate_blend_name(self, voices: list[tuple[str, float]]) -> str:
@@ -341,19 +364,19 @@ class VoiceBlender:
             "warm_friendly": BlendConfig(
                 voices=[("af_heart", 0.6), ("af_sarah", 0.4)],
                 blend_method="weighted_average",
-                preserve_energy=True
+                preserve_energy=True,
             ),
             "professional_calm": BlendConfig(
                 voices=[("am_puck", 0.7), ("af_bella", 0.3)],
                 blend_method="interpolation",
-                preserve_energy=True
+                preserve_energy=True,
             ),
             "energetic_mix": BlendConfig(
                 voices=[("af_sky", 0.5), ("am_echo", 0.3), ("af_nova", 0.2)],
                 blend_method="style_mixing",
                 preserve_energy=True,
-                smoothing_factor=0.2
-            )
+                smoothing_factor=0.2,
+            ),
         }
 
         return presets.get(preset_name)

@@ -15,12 +15,14 @@ from typing import Any
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class ModelBenchmarkResult:
     """Results for a single model benchmark"""
+
     model_name: str
     model_path: str
     model_size_mb: float
@@ -49,6 +51,7 @@ class ModelBenchmarkResult:
     test_count: int
     total_test_time: float
 
+
 class ModelBenchmarker:
     """Comprehensive model benchmarking system"""
 
@@ -58,7 +61,7 @@ class ModelBenchmarker:
             "This is a test of the text-to-speech system.",
             "The quick brown fox jumps over the lazy dog.",
             "Performance testing with various text lengths and complexity levels.",
-            "In a hole in the ground there lived a hobbit. Not a nasty, dirty, wet hole filled with the ends of worms and an oozy smell, nor yet a dry, bare, sandy hole with nothing in it to sit down on or to eat: it was a hobbit-hole, and that means comfort."
+            "In a hole in the ground there lived a hobbit. Not a nasty, dirty, wet hole filled with the ends of worms and an oozy smell, nor yet a dry, bare, sandy hole with nothing in it to sit down on or to eat: it was a hobbit-hole, and that means comfort.",
         ]
         self.test_voices = ["af_heart", "am_puck"]
         self.models_dir = Path("LiteTTS/models")
@@ -79,8 +82,9 @@ class ModelBenchmarker:
 
         return sorted(models, key=lambda x: x[2])  # Sort by size
 
-    def benchmark_model(self, model_name: str, model_path: str, model_size_mb: float,
-                       iterations: int = 10) -> ModelBenchmarkResult:
+    def benchmark_model(
+        self, model_name: str, model_path: str, model_size_mb: float, iterations: int = 10
+    ) -> ModelBenchmarkResult:
         """Benchmark a single model variant"""
         logger.info(f"🔬 Benchmarking model: {model_name} ({model_size_mb:.1f}MB)")
 
@@ -101,6 +105,7 @@ class ModelBenchmarker:
 
             # Apply patches for optimization
             from LiteTTS.patches import apply_all_patches
+
             apply_all_patches()
 
             model = kokoro_onnx.Kokoro(model_path, "LiteTTS/voices")
@@ -114,10 +119,10 @@ class ModelBenchmarker:
                 model_name=model_name,
                 model_path=model_path,
                 model_size_mb=model_size_mb,
-                avg_rtf=float('inf'),
-                min_rtf=float('inf'),
-                max_rtf=float('inf'),
-                median_rtf=float('inf'),
+                avg_rtf=float("inf"),
+                min_rtf=float("inf"),
+                max_rtf=float("inf"),
+                median_rtf=float("inf"),
                 std_rtf=0,
                 avg_generation_time=0,
                 avg_audio_duration=0,
@@ -127,7 +132,7 @@ class ModelBenchmarker:
                 success_rate=0,
                 error_count=1,
                 test_count=0,
-                total_test_time=0
+                total_test_time=0,
             )
 
         # Run benchmark iterations
@@ -149,7 +154,7 @@ class ModelBenchmarker:
 
                 # Calculate metrics
                 audio_duration = len(audio) / sample_rate
-                rtf = gen_time / audio_duration if audio_duration > 0 else float('inf')
+                rtf = gen_time / audio_duration if audio_duration > 0 else float("inf")
 
                 # Monitor system resources after
                 memory_after = process.memory_info().rss / (1024 * 1024)
@@ -163,10 +168,12 @@ class ModelBenchmarker:
                     memory_values.append(max(memory_before, memory_after))
                     cpu_values.append(max(cpu_before, cpu_after))
 
-                logger.debug(f"  Iteration {i+1}: RTF={rtf:.3f}, Gen={gen_time:.3f}s, Audio={audio_duration:.2f}s")
+                logger.debug(
+                    f"  Iteration {i + 1}: RTF={rtf:.3f}, Gen={gen_time:.3f}s, Audio={audio_duration:.2f}s"
+                )
 
             except Exception as e:
-                logger.warning(f"  Iteration {i+1} failed: {e}")
+                logger.warning(f"  Iteration {i + 1} failed: {e}")
                 errors += 1
 
         total_test_time = time.time() - total_start
@@ -190,17 +197,17 @@ class ModelBenchmarker:
                 success_rate=(iterations - errors) / iterations * 100,
                 error_count=errors,
                 test_count=iterations,
-                total_test_time=total_test_time
+                total_test_time=total_test_time,
             )
         else:
             result = ModelBenchmarkResult(
                 model_name=model_name,
                 model_path=model_path,
                 model_size_mb=model_size_mb,
-                avg_rtf=float('inf'),
-                min_rtf=float('inf'),
-                max_rtf=float('inf'),
-                median_rtf=float('inf'),
+                avg_rtf=float("inf"),
+                min_rtf=float("inf"),
+                max_rtf=float("inf"),
+                median_rtf=float("inf"),
                 std_rtf=0,
                 avg_generation_time=0,
                 avg_audio_duration=0,
@@ -210,10 +217,12 @@ class ModelBenchmarker:
                 success_rate=0,
                 error_count=errors,
                 test_count=iterations,
-                total_test_time=total_test_time
+                total_test_time=total_test_time,
             )
 
-        logger.info(f"  ✅ Results: RTF={result.avg_rtf:.3f} (±{result.std_rtf:.3f}), Success={result.success_rate:.1f}%")
+        logger.info(
+            f"  ✅ Results: RTF={result.avg_rtf:.3f} (±{result.std_rtf:.3f}), Success={result.success_rate:.1f}%"
+        )
         return result
 
     def run_comprehensive_benchmark(self, iterations: int = 10) -> dict[str, Any]:
@@ -243,8 +252,8 @@ class ModelBenchmarker:
                 "iterations_per_model": iterations,
                 "test_texts": len(self.test_texts),
                 "test_voices": len(self.test_voices),
-                "total_models": len(models)
-            }
+                "total_models": len(models),
+            },
         }
 
     def analyze_results(self, results: list[ModelBenchmarkResult]) -> dict[str, Any]:
@@ -279,55 +288,57 @@ class ModelBenchmarker:
                     "model": best_rtf.model_name,
                     "rtf": best_rtf.avg_rtf,
                     "memory_mb": best_rtf.peak_memory_mb,
-                    "size_mb": best_rtf.model_size_mb
+                    "size_mb": best_rtf.model_size_mb,
                 },
                 "best_memory": {
                     "model": best_memory.model_name,
                     "rtf": best_memory.avg_rtf,
                     "memory_mb": best_memory.peak_memory_mb,
-                    "size_mb": best_memory.model_size_mb
+                    "size_mb": best_memory.model_size_mb,
                 },
                 "best_overall": {
                     "model": best_overall.model_name,
                     "rtf": best_overall.avg_rtf,
                     "memory_mb": best_overall.peak_memory_mb,
                     "size_mb": best_overall.model_size_mb,
-                    "efficiency_score": best_overall.efficiency_score
-                }
+                    "efficiency_score": best_overall.efficiency_score,
+                },
             },
             "performance_tiers": {
                 "excellent": [{"model": r.model_name, "rtf": r.avg_rtf} for r in excellent_rtf],
                 "good": [{"model": r.model_name, "rtf": r.avg_rtf} for r in good_rtf],
-                "fair": [{"model": r.model_name, "rtf": r.avg_rtf} for r in fair_rtf]
+                "fair": [{"model": r.model_name, "rtf": r.avg_rtf} for r in fair_rtf],
             },
             "recommendations": {
                 "production": best_overall.model_name,
                 "low_memory": best_memory.model_name,
                 "fastest_rtf": best_rtf.model_name,
-                "balanced": best_overall.model_name
+                "balanced": best_overall.model_name,
             },
             "summary": {
                 "total_models_tested": len(results),
                 "successful_models": len(successful_results),
                 "best_rtf_achieved": best_rtf.avg_rtf,
-                "memory_range_mb": f"{best_memory.peak_memory_mb:.0f}-{max(r.peak_memory_mb for r in successful_results):.0f}"
-            }
+                "memory_range_mb": f"{best_memory.peak_memory_mb:.0f}-{max(r.peak_memory_mb for r in successful_results):.0f}",
+            },
         }
 
     def save_results(self, results: dict[str, Any], filename: str = None):
         """Save benchmark results to file"""
         if filename is None:
             from datetime import datetime
+
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"docs/benchmark_results_{timestamp}.json"
 
         Path(filename).parent.mkdir(parents=True, exist_ok=True)
 
-        with open(filename, 'w') as f:
+        with open(filename, "w") as f:
             json.dump(results, f, indent=2, default=str)
 
         logger.info(f"📁 Results saved to: {filename}")
         return filename
+
 
 def main():
     import argparse
@@ -356,9 +367,9 @@ def main():
 
         # Print summary
         analysis = results["analysis"]
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("🏆 MODEL BENCHMARK RESULTS")
-        print("="*60)
+        print("=" * 60)
 
         print("\n📊 Summary:")
         print(f"  Models Tested: {analysis['summary']['total_models_tested']}")
@@ -369,8 +380,12 @@ def main():
         print("\n🏆 Best Performers:")
         best = analysis["best_performers"]
         print(f"  🚀 Best RTF: {best['best_rtf']['model']} (RTF: {best['best_rtf']['rtf']:.3f})")
-        print(f"  💾 Best Memory: {best['best_memory']['model']} ({best['best_memory']['memory_mb']:.0f}MB)")
-        print(f"  ⚖️ Best Overall: {best['best_overall']['model']} (Score: {best['best_overall']['efficiency_score']:.3f})")
+        print(
+            f"  💾 Best Memory: {best['best_memory']['model']} ({best['best_memory']['memory_mb']:.0f}MB)"
+        )
+        print(
+            f"  ⚖️ Best Overall: {best['best_overall']['model']} (Score: {best['best_overall']['efficiency_score']:.3f})"
+        )
 
         print("\n🎯 Recommendations:")
         rec = analysis["recommendations"]
@@ -385,8 +400,10 @@ def main():
     except Exception as e:
         logger.error(f"Benchmark failed: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -16,6 +16,7 @@ import numpy as np
 try:
     import librosa
     import soundfile as sf
+
     LIBROSA_AVAILABLE = True
 except ImportError:
     LIBROSA_AVAILABLE = False
@@ -23,6 +24,7 @@ except ImportError:
 
 try:
     import pyrubberband as pyrb
+
     PYRUBBERBAND_AVAILABLE = True
 except ImportError:
     PYRUBBERBAND_AVAILABLE = False
@@ -32,20 +34,24 @@ from .audio_segment import AudioSegment
 
 logger = logging.getLogger(__name__)
 
+
 class StretchQuality(Enum):
     """Time-stretching quality levels"""
+
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
 
+
 @dataclass
 class TimeStretchConfig:
     """Configuration for time-stretching optimization"""
+
     enabled: bool = False
     compress_playback_rate: int = 20  # 0-100% speed increase during generation
     correction_quality: StretchQuality = StretchQuality.MEDIUM
     max_rate: int = 100  # Maximum allowed rate (100% = 2x speed)
-    min_rate: int = 10   # Minimum allowed rate (10% = 1.1x speed)
+    min_rate: int = 10  # Minimum allowed rate (10% = 1.1x speed)
     auto_enable_threshold: int = 50  # Auto-enable for texts longer than this
     quality_fallback: bool = True  # Fallback to lower quality if high quality fails
     benchmark_mode: bool = False  # Enable comprehensive benchmarking
@@ -53,13 +59,17 @@ class TimeStretchConfig:
     def __post_init__(self):
         """Validate configuration"""
         if not (self.min_rate <= self.compress_playback_rate <= self.max_rate):
-            raise ValueError(f"compress_playback_rate must be between {self.min_rate} and {self.max_rate}")
+            raise ValueError(
+                f"compress_playback_rate must be between {self.min_rate} and {self.max_rate}"
+            )
         if self.auto_enable_threshold < 0:
             raise ValueError("auto_enable_threshold must be non-negative")
+
 
 @dataclass
 class StretchMetrics:
     """Metrics for time-stretching performance"""
+
     original_duration: float
     stretched_duration: float
     generation_time: float
@@ -69,6 +79,7 @@ class StretchMetrics:
     rtf_stretched: float
     quality_score: float | None = None
 
+
 class TimeStretcher:
     """Time-stretching processor for TTS optimization"""
 
@@ -77,16 +88,20 @@ class TimeStretcher:
         self.metrics_history: list[StretchMetrics] = []
 
         # Check available libraries
-        self.use_pyrubberband = PYRUBBERBAND_AVAILABLE and config.correction_quality == StretchQuality.HIGH
+        self.use_pyrubberband = (
+            PYRUBBERBAND_AVAILABLE and config.correction_quality == StretchQuality.HIGH
+        )
         self.use_librosa = LIBROSA_AVAILABLE
 
         if not self.use_librosa and not self.use_pyrubberband:
             logger.warning("No time-stretching libraries available - feature disabled")
             self.config.enabled = False
 
-        logger.info(f"TimeStretcher initialized: enabled={self.config.enabled}, "
-                   f"rate={self.config.compress_playback_rate}%, "
-                   f"quality={self.config.correction_quality.value}")
+        logger.info(
+            f"TimeStretcher initialized: enabled={self.config.enabled}, "
+            f"rate={self.config.compress_playback_rate}%, "
+            f"quality={self.config.correction_quality.value}"
+        )
 
     def should_apply_stretching(self, text_length: int) -> bool:
         """Determine if time-stretching should be applied"""
@@ -106,29 +121,30 @@ class TimeStretcher:
 
         return 1.0 + (self.config.compress_playback_rate / 100.0)
 
-    def stretch_audio_to_normal_speed(self, audio_segment: AudioSegment,
-                                    generation_speed: float) -> tuple[AudioSegment, StretchMetrics]:
+    def stretch_audio_to_normal_speed(
+        self, audio_segment: AudioSegment, generation_speed: float
+    ) -> tuple[AudioSegment, StretchMetrics]:
         """Stretch audio back to normal speed after fast generation"""
         start_time = time.perf_counter()
 
         # Calculate stretch ratio (inverse of generation speed)
         stretch_ratio = generation_speed
 
-        logger.debug(f"Stretching audio: {audio_segment.duration:.2f}s at ratio {stretch_ratio:.2f}")
+        logger.debug(
+            f"Stretching audio: {audio_segment.duration:.2f}s at ratio {stretch_ratio:.2f}"
+        )
 
         try:
             # Perform time-stretching
             stretched_audio_data = self._apply_time_stretch(
-                audio_segment.audio_data,
-                audio_segment.sample_rate,
-                stretch_ratio
+                audio_segment.audio_data, audio_segment.sample_rate, stretch_ratio
             )
 
             # Create new audio segment
             stretched_segment = AudioSegment(
                 audio_data=stretched_audio_data,
                 sample_rate=audio_segment.sample_rate,
-                format=audio_segment.format
+                format=audio_segment.format,
             )
 
             stretch_time = time.perf_counter() - start_time
@@ -141,13 +157,15 @@ class TimeStretcher:
                 stretch_time=stretch_time,
                 total_time=0.0,  # Will be set by caller
                 rtf_original=0.0,  # Will be set by caller
-                rtf_stretched=0.0  # Will be set by caller
+                rtf_stretched=0.0,  # Will be set by caller
             )
 
             self.metrics_history.append(metrics)
 
-            logger.debug(f"Time-stretching completed: {stretched_segment.duration:.2f}s "
-                        f"(stretch time: {stretch_time:.3f}s)")
+            logger.debug(
+                f"Time-stretching completed: {stretched_segment.duration:.2f}s "
+                f"(stretch time: {stretch_time:.3f}s)"
+            )
 
             return stretched_segment, metrics
 
@@ -161,12 +179,13 @@ class TimeStretcher:
                 stretch_time=0.0,
                 total_time=0.0,
                 rtf_original=0.0,
-                rtf_stretched=0.0
+                rtf_stretched=0.0,
             )
             return audio_segment, metrics
 
-    def _apply_time_stretch(self, audio_data: np.ndarray, sample_rate: int,
-                           stretch_ratio: float) -> np.ndarray:
+    def _apply_time_stretch(
+        self, audio_data: np.ndarray, sample_rate: int, stretch_ratio: float
+    ) -> np.ndarray:
         """Apply time-stretching using the best available method"""
 
         if self.use_pyrubberband and self.config.correction_quality == StretchQuality.HIGH:
@@ -177,8 +196,9 @@ class TimeStretcher:
             # Fallback to basic interpolation (not recommended for production)
             return self._stretch_basic(audio_data, stretch_ratio)
 
-    def _stretch_with_pyrubberband(self, audio_data: np.ndarray, sample_rate: int,
-                                  stretch_ratio: float) -> np.ndarray:
+    def _stretch_with_pyrubberband(
+        self, audio_data: np.ndarray, sample_rate: int, stretch_ratio: float
+    ) -> np.ndarray:
         """High-quality time-stretching using pyrubberband"""
         try:
             # pyrubberband expects time_ratio (duration multiplier)
@@ -193,8 +213,9 @@ class TimeStretcher:
             logger.warning(f"pyrubberband stretching failed: {e}, falling back to librosa")
             return self._stretch_with_librosa(audio_data, sample_rate, stretch_ratio)
 
-    def _stretch_with_librosa(self, audio_data: np.ndarray, sample_rate: int,
-                             stretch_ratio: float) -> np.ndarray:
+    def _stretch_with_librosa(
+        self, audio_data: np.ndarray, sample_rate: int, stretch_ratio: float
+    ) -> np.ndarray:
         """Medium-quality time-stretching using librosa"""
         try:
             # librosa.effects.time_stretch expects rate (speed multiplier, inverse of time ratio)
@@ -232,10 +253,13 @@ class TimeStretcher:
         recent_metrics = self.metrics_history[-10:]  # Last 10 operations
 
         avg_stretch_time = np.mean([m.stretch_time for m in recent_metrics])
-        avg_rtf_improvement = np.mean([
-            m.rtf_stretched - m.rtf_original for m in recent_metrics
-            if m.rtf_original > 0 and m.rtf_stretched > 0
-        ])
+        avg_rtf_improvement = np.mean(
+            [
+                m.rtf_stretched - m.rtf_original
+                for m in recent_metrics
+                if m.rtf_original > 0 and m.rtf_stretched > 0
+            ]
+        )
 
         return {
             "total_operations": len(self.metrics_history),
@@ -245,12 +269,13 @@ class TimeStretcher:
             "config": {
                 "enabled": self.config.enabled,
                 "rate": self.config.compress_playback_rate,
-                "quality": self.config.correction_quality.value
-            }
+                "quality": self.config.correction_quality.value,
+            },
         }
 
-    def benchmark_rates(self, test_audio: AudioSegment, rates: list[int],
-                       save_samples: bool = True) -> dict[int, StretchMetrics]:
+    def benchmark_rates(
+        self, test_audio: AudioSegment, rates: list[int], save_samples: bool = True
+    ) -> dict[int, StretchMetrics]:
         """Benchmark different stretch rates for testing"""
         results = {}
 
@@ -291,10 +316,14 @@ class TimeStretcher:
                 # Save corrected audio sample
                 if save_samples:
                     corrected_path = os.path.join(samples_dir, f"corrected_{rate}p.wav")
-                    sf.write(corrected_path, stretched_audio.audio_data, stretched_audio.sample_rate)
+                    sf.write(
+                        corrected_path, stretched_audio.audio_data, stretched_audio.sample_rate
+                    )
 
                 results[rate] = metrics
-                logger.info(f"Rate {rate}%: RTF {metrics.rtf_original:.3f} → {metrics.rtf_stretched:.3f}")
+                logger.info(
+                    f"Rate {rate}%: RTF {metrics.rtf_original:.3f} → {metrics.rtf_stretched:.3f}"
+                )
 
             except Exception as e:
                 logger.error(f"Benchmark failed for rate {rate}%: {e}")
@@ -305,7 +334,9 @@ class TimeStretcher:
 
         return results
 
-    def _simulate_fast_generation(self, audio: AudioSegment, speed_multiplier: float) -> AudioSegment:
+    def _simulate_fast_generation(
+        self, audio: AudioSegment, speed_multiplier: float
+    ) -> AudioSegment:
         """Simulate faster TTS generation by speeding up audio"""
         # Use librosa to speed up audio (inverse of time-stretching)
         if LIBROSA_AVAILABLE:
@@ -319,7 +350,7 @@ class TimeStretcher:
         return AudioSegment(
             audio_data=fast_audio_data.astype(np.float32),
             sample_rate=audio.sample_rate,
-            format=audio.format
+            format=audio.format,
         )
 
     def generate_benchmark_report(self, results: dict[int, StretchMetrics]) -> str:
@@ -332,14 +363,20 @@ class TimeStretcher:
         # Summary table
         report.append("## Performance Summary")
         report.append("")
-        report.append("| Rate % | RTF Original | RTF Stretched | Generation Time (ms) | Stretch Time (ms) | Total Time (ms) |")
-        report.append("|--------|--------------|---------------|---------------------|-------------------|-----------------|")
+        report.append(
+            "| Rate % | RTF Original | RTF Stretched | Generation Time (ms) | Stretch Time (ms) | Total Time (ms) |"
+        )
+        report.append(
+            "|--------|--------------|---------------|---------------------|-------------------|-----------------|"
+        )
 
         for rate in sorted(results.keys()):
             metrics = results[rate]
-            report.append(f"| {rate:6d} | {metrics.rtf_original:12.3f} | {metrics.rtf_stretched:13.3f} | "
-                         f"{metrics.generation_time*1000:19.1f} | {metrics.stretch_time*1000:17.1f} | "
-                         f"{metrics.total_time*1000:15.1f} |")
+            report.append(
+                f"| {rate:6d} | {metrics.rtf_original:12.3f} | {metrics.rtf_stretched:13.3f} | "
+                f"{metrics.generation_time * 1000:19.1f} | {metrics.stretch_time * 1000:17.1f} | "
+                f"{metrics.total_time * 1000:15.1f} |"
+            )
 
         report.append("")
 
@@ -358,9 +395,13 @@ class TimeStretcher:
         report.append("")
 
         if best_metrics.rtf_stretched < 0.8:
-            report.append("✅ **Recommended:** Time-stretching shows significant latency improvement")
+            report.append(
+                "✅ **Recommended:** Time-stretching shows significant latency improvement"
+            )
             report.append(f"   - Use rate: {best_rate}%")
-            report.append(f"   - Expected RTF improvement: {best_metrics.rtf_original:.3f} → {best_metrics.rtf_stretched:.3f}")
+            report.append(
+                f"   - Expected RTF improvement: {best_metrics.rtf_original:.3f} → {best_metrics.rtf_stretched:.3f}"
+            )
         elif best_metrics.rtf_stretched < 1.0:
             report.append("⚠️  **Marginal:** Time-stretching shows modest improvement")
             report.append("   - Consider enabling for longer texts only")
@@ -375,7 +416,7 @@ class TimeStretcher:
         report.append("- `original.wav` - Original audio")
 
         for rate in sorted(results.keys()):
-            report.append(f"- `raw_{rate}p.wav` - Audio generated at {1 + rate/100:.1f}x speed")
+            report.append(f"- `raw_{rate}p.wav` - Audio generated at {1 + rate / 100:.1f}x speed")
             report.append(f"- `corrected_{rate}p.wav` - Time-stretched back to normal speed")
 
         return "\n".join(report)

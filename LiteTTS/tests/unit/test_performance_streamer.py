@@ -24,7 +24,7 @@ class TestPerformanceMetrics:
             queue_size=5,
             uptime_seconds=3600.0,
             voices_loaded=3,
-            system_load=[1.0, 1.5, 2.0]
+            system_load=[1.0, 1.5, 2.0],
         )
         assert metrics.rtf == 0.5
         assert metrics.total_requests == 100
@@ -47,6 +47,6 @@ class TestSystemStatus:
             gpu_memory_mb=None,
             active_connections=2,
             error_rate=0.01,
-            last_error=None
+            last_error=None,
         )
         assert status.status == "healthy"

@@ -21,7 +21,7 @@ class TestDownloadProgress:
             downloaded_bytes=1024,
             total_bytes=2048,
             percentage=50.0,
-            speed_mbps=10.5
+            speed_mbps=10.5,
         )
         assert progress.filename == "test.bin"
         assert progress.downloaded_bytes == 1024
@@ -40,7 +40,7 @@ class TestVoiceFileInfo:
             path="voices/test_voice.bin",
             size=1024,
             sha="abc123",
-            download_url="https://example.com/test.bin"
+            download_url="https://example.com/test.bin",
         )
         assert info.name == "test_voice"
         assert info.path == "voices/test_voice.bin"
@@ -53,7 +53,7 @@ class TestVoiceDownloader:
 
     def test_initialization_default(self):
         """Test initialization with defaults"""
-        with patch('LiteTTS.voice.downloader.requests.get'):
+        with patch("LiteTTS.voice.downloader.requests.get"):
             downloader = VoiceDownloader(voices_dir="/tmp/voices")
             assert downloader.voices_dir == Path("/tmp/voices")
             assert isinstance(downloader.discovered_voices, dict)
@@ -74,14 +74,14 @@ class TestVoiceDownloader:
 
     def test_initialization_fallback_defaults(self):
         """Test initialization uses fallback defaults when config unavailable"""
-        with patch('LiteTTS.voice.downloader.requests.get'):
+        with patch("LiteTTS.voice.downloader.requests.get"):
             downloader = VoiceDownloader(voices_dir="/tmp/voices")
             assert downloader.hf_repo == "onnx-community/Kokoro-82M-v1.0-ONNX"
             assert downloader.auto_discovery is True
 
     def test_load_discovery_cache_nonexistent(self, tmp_path):
         """Test loading discovery cache when file doesn't exist"""
-        with patch('LiteTTS.voice.downloader.requests.get'):
+        with patch("LiteTTS.voice.downloader.requests.get"):
             downloader = VoiceDownloader(voices_dir=str(tmp_path))
             downloader._load_discovery_cache()
             assert len(downloader.discovered_voices) == 0
@@ -97,13 +97,13 @@ class TestVoiceDownloader:
                     "path": "voices/test_voice.bin",
                     "size": 1024,
                     "sha": "abc123",
-                    "download_url": "https://example.com/test.bin"
+                    "download_url": "https://example.com/test.bin",
                 }
-            }
+            },
         }
         cache_file.write_text(json.dumps(cache_data))
 
-        with patch('LiteTTS.voice.downloader.requests.get'):
+        with patch("LiteTTS.voice.downloader.requests.get"):
             downloader = VoiceDownloader(voices_dir=str(tmp_path))
             # Clear auto-discovery flag to prevent API call
             downloader.auto_discovery = False
@@ -112,21 +112,21 @@ class TestVoiceDownloader:
 
     def test_save_discovery_cache(self, tmp_path):
         """Test saving discovery cache"""
-        with patch('LiteTTS.voice.downloader.requests.get'):
+        with patch("LiteTTS.voice.downloader.requests.get"):
             downloader = VoiceDownloader(voices_dir=str(tmp_path))
             downloader.discovered_voices["test"] = VoiceFileInfo(
                 name="test",
                 path="test.bin",
                 size=100,
                 sha="hash",
-                download_url="http://example.com/test.bin"
+                download_url="http://example.com/test.bin",
             )
             downloader._save_discovery_cache()
-            assert cache_file.exists() if 'cache_file' in dir() else True
+            assert cache_file.exists() if "cache_file" in dir() else True
 
     def test_discovery_cache_file_path(self, tmp_path):
         """Test discovery cache file is in correct location"""
-        with patch('LiteTTS.voice.downloader.requests.get'):
+        with patch("LiteTTS.voice.downloader.requests.get"):
             downloader = VoiceDownloader(voices_dir=str(tmp_path))
             downloader.auto_discovery = False
             # The cache file should be in voices_dir
@@ -134,7 +134,7 @@ class TestVoiceDownloader:
 
     def test_discover_voices_from_huggingface_api_failure(self, tmp_path):
         """Test discover voices when API fails"""
-        with patch('LiteTTS.voice.downloader.requests.get') as mock_get:
+        with patch("LiteTTS.voice.downloader.requests.get") as mock_get:
             mock_response = Mock()
             mock_response.raise_for_status.side_effect = Exception("API Error")
             mock_get.return_value = mock_response
@@ -145,7 +145,7 @@ class TestVoiceDownloader:
 
     def test_get_available_voice_names(self, tmp_path):
         """Test getting available voice names"""
-        with patch('LiteTTS.voice.downloader.requests.get'):
+        with patch("LiteTTS.voice.downloader.requests.get"):
             downloader = VoiceDownloader(voices_dir=str(tmp_path))
             downloader.discovered_voices["voice1"] = VoiceFileInfo(
                 name="voice1", path="v1.bin", size=100, sha="", download_url=""
@@ -159,7 +159,7 @@ class TestVoiceDownloader:
 
     def test_download_voice_unknown(self, tmp_path):
         """Test downloading unknown voice"""
-        with patch('LiteTTS.voice.downloader.requests.get'):
+        with patch("LiteTTS.voice.downloader.requests.get"):
             downloader = VoiceDownloader(voices_dir=str(tmp_path))
             result = downloader.download_voice("unknown_voice")
             assert result is False
@@ -167,64 +167,60 @@ class TestVoiceDownloader:
     def test_download_voice_already_exists_valid(self, tmp_path):
         """Test downloading voice that already exists and is valid"""
         voice_file = tmp_path / "test_voice.bin"
-        voice_file.write_bytes(b'\x00' * 100)
+        voice_file.write_bytes(b"\x00" * 100)
 
-        with patch('LiteTTS.voice.downloader.requests.get'):
+        with patch("LiteTTS.voice.downloader.requests.get"):
             downloader = VoiceDownloader(voices_dir=str(tmp_path))
             downloader.discovered_voices["test_voice"] = VoiceFileInfo(
                 name="test_voice",
                 path="test_voice.bin",
                 size=100,
                 sha="",  # Empty hash so validation passes
-                download_url="http://example.com/test.bin"
+                download_url="http://example.com/test.bin",
             )
             # Mock is_voice_downloaded to return True
-            with patch.object(downloader, 'is_voice_downloaded', return_value=True):
+            with patch.object(downloader, "is_voice_downloaded", return_value=True):
                 result = downloader.download_voice("test_voice")
                 assert result is True
 
     def test_is_voice_downloaded_unknown(self, tmp_path):
         """Test checking if unknown voice is downloaded"""
-        with patch('LiteTTS.voice.downloader.requests.get'):
+        with patch("LiteTTS.voice.downloader.requests.get"):
             downloader = VoiceDownloader(voices_dir=str(tmp_path))
             result = downloader.is_voice_downloaded("unknown_voice")
             assert result is False
 
     def test_get_downloaded_voices(self, tmp_path):
         """Test getting downloaded voices list"""
-        with patch('LiteTTS.voice.downloader.requests.get'):
+        with patch("LiteTTS.voice.downloader.requests.get"):
             downloader = VoiceDownloader(voices_dir=str(tmp_path))
             downloader.discovered_voices["voice1"] = VoiceFileInfo(
                 name="voice1", path="v1.bin", size=100, sha="", download_url=""
             )
-            with patch.object(downloader, 'is_voice_downloaded', return_value=True):
+            with patch.object(downloader, "is_voice_downloaded", return_value=True):
                 result = downloader.get_downloaded_voices()
                 assert "voice1" in result
 
     def test_get_missing_voices(self, tmp_path):
         """Test getting missing voices list"""
-        with patch('LiteTTS.voice.downloader.requests.get'):
+        with patch("LiteTTS.voice.downloader.requests.get"):
             downloader = VoiceDownloader(voices_dir=str(tmp_path))
             downloader.discovered_voices["voice1"] = VoiceFileInfo(
                 name="voice1", path="v1.bin", size=100, sha="", download_url=""
             )
-            with patch.object(downloader, 'is_voice_downloaded', return_value=False):
+            with patch.object(downloader, "is_voice_downloaded", return_value=False):
                 result = downloader.get_missing_voices()
                 assert "voice1" in result
 
     def test_validate_file_integrity_size_match(self, tmp_path):
         """Test file validation with matching size"""
         voice_file = tmp_path / "test.bin"
-        voice_file.write_bytes(b'\x00' * 100)
+        voice_file.write_bytes(b"\x00" * 100)
 
-        with patch('LiteTTS.voice.downloader.requests.get'):
+        with patch("LiteTTS.voice.downloader.requests.get"):
             downloader = VoiceDownloader(voices_dir=str(tmp_path))
             voice_info = VoiceFileInfo(
-                name="test",
-                path="test.bin",
-                size=100,
-                sha="",
-                download_url=""
+                name="test", path="test.bin", size=100, sha="", download_url=""
             )
             result = downloader._validate_file_integrity(voice_file, voice_info)
             assert result is True
@@ -232,23 +228,23 @@ class TestVoiceDownloader:
     def test_validate_file_integrity_size_mismatch(self, tmp_path):
         """Test file validation with size mismatch"""
         voice_file = tmp_path / "test.bin"
-        voice_file.write_bytes(b'\x00' * 100)
+        voice_file.write_bytes(b"\x00" * 100)
 
-        with patch('LiteTTS.voice.downloader.requests.get'):
+        with patch("LiteTTS.voice.downloader.requests.get"):
             downloader = VoiceDownloader(voices_dir=str(tmp_path))
             voice_info = VoiceFileInfo(
                 name="test",
                 path="test.bin",
                 size=200,  # Different size
                 sha="",
-                download_url=""
+                download_url="",
             )
             result = downloader._validate_file_integrity(voice_file, voice_info)
             assert result is False
 
     def test_get_voice_file_path_unknown(self, tmp_path):
         """Test getting path for unknown voice returns None"""
-        with patch('LiteTTS.voice.downloader.requests.get'):
+        with patch("LiteTTS.voice.downloader.requests.get"):
             downloader = VoiceDownloader(voices_dir=str(tmp_path))
             downloader.auto_discovery = False
             path = downloader.get_voice_file_path("nonexistent")
@@ -257,16 +253,16 @@ class TestVoiceDownloader:
     def test_get_voice_file_path_exists(self, tmp_path):
         """Test getting path for existing voice"""
         voice_file = tmp_path / "test_voice.bin"
-        voice_file.write_bytes(b'\x00' * 100)
+        voice_file.write_bytes(b"\x00" * 100)
 
-        with patch('LiteTTS.voice.downloader.requests.get'):
+        with patch("LiteTTS.voice.downloader.requests.get"):
             downloader = VoiceDownloader(voices_dir=str(tmp_path))
             downloader.discovered_voices["test_voice"] = VoiceFileInfo(
                 name="test_voice",
                 path="test_voice.bin",
                 size=100,
                 sha="",
-                download_url="http://example.com/test.bin"
+                download_url="http://example.com/test.bin",
             )
             path = downloader.get_voice_file_path("test_voice")
             assert path is not None
@@ -274,7 +270,7 @@ class TestVoiceDownloader:
 
     def test_is_cache_expired_no_file(self, tmp_path):
         """Test cache expiry when file doesn't exist"""
-        with patch('LiteTTS.voice.downloader.requests.get'):
+        with patch("LiteTTS.voice.downloader.requests.get"):
             # Create downloader with auto_discovery=False to prevent cache creation during init
             downloader = VoiceDownloader(voices_dir=str(tmp_path))
             downloader.auto_discovery = False
@@ -288,11 +284,11 @@ class TestVoiceDownloader:
         cache_file = tmp_path / "discovery_cache.json"
         cache_data = {
             "timestamp": time.time(),  # Current time
-            "voices": {}
+            "voices": {},
         }
         cache_file.write_text(json.dumps(cache_data))
 
-        with patch('LiteTTS.voice.downloader.requests.get'):
+        with patch("LiteTTS.voice.downloader.requests.get"):
             downloader = VoiceDownloader(voices_dir=str(tmp_path))
             downloader.cache_expiry_hours = 24
             result = downloader._is_cache_expired()
@@ -311,15 +307,17 @@ class TestVoiceDownloader:
                     "path": "dummy.bin",
                     "size": 100,
                     "sha": "",
-                    "download_url": "http://example.com/dummy.bin"
+                    "download_url": "http://example.com/dummy.bin",
                 }
-            }
+            },
         }
         cache_file.write_text(json.dumps(cache_data))
 
-        with patch('LiteTTS.voice.downloader.requests.get'):
+        with patch("LiteTTS.voice.downloader.requests.get"):
             # Also mock discover_voices_from_huggingface to prevent API call during init
-            with patch.object(VoiceDownloader, 'discover_voices_from_huggingface', return_value=True):
+            with patch.object(
+                VoiceDownloader, "discover_voices_from_huggingface", return_value=True
+            ):
                 downloader = VoiceDownloader(voices_dir=str(tmp_path))
                 # With default cache_expiry_hours=24 and cache age=48 hours, should be expired
                 result = downloader._is_cache_expired()
@@ -328,9 +326,9 @@ class TestVoiceDownloader:
     def test_calculate_file_hash(self, tmp_path):
         """Test file hash calculation"""
         voice_file = tmp_path / "test.bin"
-        voice_file.write_bytes(b'\x00' * 100)
+        voice_file.write_bytes(b"\x00" * 100)
 
-        with patch('LiteTTS.voice.downloader.requests.get'):
+        with patch("LiteTTS.voice.downloader.requests.get"):
             downloader = VoiceDownloader(voices_dir=str(tmp_path))
             hash_result = downloader._calculate_file_hash(voice_file)
             assert isinstance(hash_result, str)
@@ -338,18 +336,18 @@ class TestVoiceDownloader:
 
     def test_cleanup_invalid_files(self, tmp_path):
         """Test cleanup of invalid files"""
-        with patch('LiteTTS.voice.downloader.requests.get'):
+        with patch("LiteTTS.voice.downloader.requests.get"):
             downloader = VoiceDownloader(voices_dir=str(tmp_path))
             downloader.discovered_voices["bad_voice"] = VoiceFileInfo(
                 name="bad_voice",
                 path="bad_voice.bin",
                 size=200,  # Different size to trigger validation failure
                 sha="",
-                download_url="http://example.com/bad.bin"
+                download_url="http://example.com/bad.bin",
             )
             # Create file with wrong size
             voice_file = tmp_path / "bad_voice.bin"
-            voice_file.write_bytes(b'\x00' * 100)
+            voice_file.write_bytes(b"\x00" * 100)
 
             result = downloader.cleanup_invalid_files()
             assert "bad_voice" in result
@@ -357,17 +355,17 @@ class TestVoiceDownloader:
 
     def test_cleanup_invalid_files_no_issues(self, tmp_path):
         """Test cleanup when all files are valid"""
-        with patch('LiteTTS.voice.downloader.requests.get'):
+        with patch("LiteTTS.voice.downloader.requests.get"):
             downloader = VoiceDownloader(voices_dir=str(tmp_path))
             downloader.discovered_voices["good_voice"] = VoiceFileInfo(
                 name="good_voice",
                 path="good_voice.bin",
                 size=100,  # Same size as actual file
                 sha="",
-                download_url="http://example.com/good.bin"
+                download_url="http://example.com/good.bin",
             )
             voice_file = tmp_path / "good_voice.bin"
-            voice_file.write_bytes(b'\x00' * 100)
+            voice_file.write_bytes(b"\x00" * 100)
 
             result = downloader.cleanup_invalid_files()
             assert len(result) == 0
@@ -375,23 +373,25 @@ class TestVoiceDownloader:
 
     def test_refresh_discovery(self, tmp_path):
         """Test refresh discovery"""
-        with patch('LiteTTS.voice.downloader.requests.get') as mock_get:
+        with patch("LiteTTS.voice.downloader.requests.get") as mock_get:
             mock_response = Mock()
             mock_response.raise_for_status = Mock()
             mock_response.json.return_value = []
             mock_get.return_value = mock_response
 
             downloader = VoiceDownloader(voices_dir=str(tmp_path))
-            downloader.discovered_voices = {"old_voice": VoiceFileInfo(
-                name="old_voice", path="old.bin", size=100, sha="", download_url=""
-            )}
+            downloader.discovered_voices = {
+                "old_voice": VoiceFileInfo(
+                    name="old_voice", path="old.bin", size=100, sha="", download_url=""
+                )
+            }
             result = downloader.refresh_discovery()
             assert result is True
             assert len(downloader.discovered_voices) == 0  # Cleared
 
     def test_get_discovery_stats(self, tmp_path):
         """Test getting discovery statistics"""
-        with patch('LiteTTS.voice.downloader.requests.get'):
+        with patch("LiteTTS.voice.downloader.requests.get"):
             downloader = VoiceDownloader(voices_dir=str(tmp_path))
             downloader.discovered_voices["v1"] = VoiceFileInfo(
                 name="v1", path="v1.bin", size=100, sha="", download_url=""
@@ -402,14 +402,14 @@ class TestVoiceDownloader:
 
     def test_get_download_info(self, tmp_path):
         """Test getting download info for all voices"""
-        with patch('LiteTTS.voice.downloader.requests.get'):
+        with patch("LiteTTS.voice.downloader.requests.get"):
             downloader = VoiceDownloader(voices_dir=str(tmp_path))
             downloader.discovered_voices["v1"] = VoiceFileInfo(
                 name="v1", path="v1.bin", size=100, sha="", download_url="http://example.com/v1.bin"
             )
             # Create file to make it "downloaded"
             voice_file = tmp_path / "v1.bin"
-            voice_file.write_bytes(b'\x00' * 100)
+            voice_file.write_bytes(b"\x00" * 100)
 
             info = downloader.get_download_info()
             assert "v1" in info
@@ -417,7 +417,7 @@ class TestVoiceDownloader:
 
     def test_get_download_info_not_downloaded(self, tmp_path):
         """Test getting download info for voice not downloaded"""
-        with patch('LiteTTS.voice.downloader.requests.get'):
+        with patch("LiteTTS.voice.downloader.requests.get"):
             downloader = VoiceDownloader(voices_dir=str(tmp_path))
             downloader.discovered_voices["v1"] = VoiceFileInfo(
                 name="v1", path="v1.bin", size=100, sha="", download_url="http://example.com/v1.bin"

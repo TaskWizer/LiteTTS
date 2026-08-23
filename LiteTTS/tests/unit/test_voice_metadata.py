@@ -19,7 +19,7 @@ class TestVoiceMetadataManager:
     @pytest.fixture
     def manager(self):
         """Create manager instance with mocked file operations"""
-        with patch('LiteTTS.voice.metadata.Path.exists', return_value=False):
+        with patch("LiteTTS.voice.metadata.Path.exists", return_value=False):
             manager = VoiceMetadataManager(metadata_file="/tmp/test_metadata.json")
             return manager
 
@@ -27,30 +27,37 @@ class TestVoiceMetadataManager:
     def manager_with_data(self, tmp_path):
         """Create manager with actual data"""
         metadata_file = tmp_path / "metadata.json"
-        with patch.object(Path, 'exists', return_value=True):
-            with patch('builtins.open', mock_open(read_data=json.dumps({
-                'voices': {
-                    'test_voice': {
-                        'name': 'test_voice',
-                        'gender': 'female',
-                        'accent': 'american',
-                        'voice_type': 'neural',
-                        'quality_rating': 4.5,
-                        'language': 'en-us',
-                        'description': 'Test voice'
-                    }
-                },
-                'stats': {
-                    'test_voice': {
-                        'total_requests': 10,
-                        'total_duration': 30.0,
-                        'average_request_length': 3.0,
-                        'last_used': None,
-                        'error_count': 1,
-                        'success_rate': 0.9
-                    }
-                }
-            }))):
+        with patch.object(Path, "exists", return_value=True):
+            with patch(
+                "builtins.open",
+                mock_open(
+                    read_data=json.dumps(
+                        {
+                            "voices": {
+                                "test_voice": {
+                                    "name": "test_voice",
+                                    "gender": "female",
+                                    "accent": "american",
+                                    "voice_type": "neural",
+                                    "quality_rating": 4.5,
+                                    "language": "en-us",
+                                    "description": "Test voice",
+                                }
+                            },
+                            "stats": {
+                                "test_voice": {
+                                    "total_requests": 10,
+                                    "total_duration": 30.0,
+                                    "average_request_length": 3.0,
+                                    "last_used": None,
+                                    "error_count": 1,
+                                    "success_rate": 0.9,
+                                }
+                            },
+                        }
+                    )
+                ),
+            ):
                 manager = VoiceMetadataManager(metadata_file=str(metadata_file))
                 return manager
 
@@ -61,7 +68,7 @@ class TestVoiceMetadataManager:
 
     def test_initialization_with_defaults(self):
         """Test manager initializes with default metadata"""
-        with patch('LiteTTS.voice.metadata.Path.exists', return_value=False):
+        with patch("LiteTTS.voice.metadata.Path.exists", return_value=False):
             manager = VoiceMetadataManager(metadata_file="/tmp/test_metadata.json")
             # Should have default voices loaded
             assert len(manager.voice_metadata) > 0
@@ -171,7 +178,7 @@ class TestVoiceMetadataManager:
             voice_type="neural",
             quality_rating=4.0,
             language="en-gb",
-            description="Custom test voice"
+            description="Custom test voice",
         )
         manager.add_custom_voice("custom_voice", new_metadata)
         result = manager.get_voice_metadata("custom_voice")
@@ -181,10 +188,7 @@ class TestVoiceMetadataManager:
     def test_remove_voice(self, manager):
         """Test removing voice"""
         # First add a voice
-        new_metadata = VoiceMetadata(
-            name="to_remove",
-            gender="male"
-        )
+        new_metadata = VoiceMetadata(name="to_remove", gender="male")
         manager.add_custom_voice("to_remove", new_metadata)
         # Then remove it
         manager.remove_voice("to_remove")
@@ -222,7 +226,7 @@ class TestVoiceStats:
             average_request_length=3.0,
             last_used=datetime.now(),
             error_count=1,
-            success_rate=0.9
+            success_rate=0.9,
         )
         assert stats.total_requests == 10
         assert stats.success_rate == 0.9

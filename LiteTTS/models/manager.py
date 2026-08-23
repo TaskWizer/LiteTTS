@@ -15,9 +15,11 @@ import requests
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class ModelInfo:
     """Information about a model variant"""
+
     name: str
     path: str
     size: int
@@ -26,14 +28,17 @@ class ModelInfo:
     variant_type: str  # e.g., "base", "fp16", "quantized"
     description: str = ""
 
+
 @dataclass
 class DownloadProgress:
     """Download progress information"""
+
     filename: str
     downloaded_bytes: int
     total_bytes: int
     percentage: float
     speed_mbps: float = 0.0
+
 
 class ModelManager:
     """Manages ONNX model variants with dynamic discovery and caching"""
@@ -55,12 +60,19 @@ class ModelManager:
         else:
             # Fallback defaults
             self.hf_repo = "onnx-community/Kokoro-82M-v1.0-ONNX"
-            self.base_url = "https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main"
+            self.base_url = (
+                "https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main"
+            )
             self.models_path = "onnx"
             self.available_variants = [
-                "model.onnx", "model_fp16.onnx", "model_q4.onnx",
-                "model_q4f16.onnx", "model_q8f16.onnx", "model_quantized.onnx",
-                "model_uint8.onnx", "model_uint8f16.onnx"
+                "model.onnx",
+                "model_fp16.onnx",
+                "model_q4.onnx",
+                "model_q4f16.onnx",
+                "model_q8f16.onnx",
+                "model_quantized.onnx",
+                "model_uint8.onnx",
+                "model_uint8f16.onnx",
             ]
             self.default_variant = "model_q4.onnx"  # Use Q4 quantized model for optimal balance
             self.auto_discovery = True
@@ -84,15 +96,16 @@ class ModelManager:
             return
 
         try:
-            with open(self.discovery_cache_file, 'r') as f:
+            with open(self.discovery_cache_file, "r") as f:
                 cache_data = json.load(f)
 
-            if 'models' in cache_data and 'timestamp' in cache_data:
+            if "models" in cache_data and "timestamp" in cache_data:
                 self.discovered_models = {
-                    name: ModelInfo(**info)
-                    for name, info in cache_data['models'].items()
+                    name: ModelInfo(**info) for name, info in cache_data["models"].items()
                 }
-                logger.info(f"Loaded model discovery cache with {len(self.discovered_models)} models")
+                logger.info(
+                    f"Loaded model discovery cache with {len(self.discovered_models)} models"
+                )
 
         except Exception as e:
             logger.warning(f"Failed to load model discovery cache: {e}")
@@ -102,22 +115,22 @@ class ModelManager:
         """Save discovery cache to JSON file"""
         try:
             cache_data = {
-                'timestamp': time.time(),
-                'models': {
+                "timestamp": time.time(),
+                "models": {
                     name: {
-                        'name': info.name,
-                        'path': info.path,
-                        'size': info.size,
-                        'sha': info.sha,
-                        'download_url': info.download_url,
-                        'variant_type': info.variant_type,
-                        'description': info.description
+                        "name": info.name,
+                        "path": info.path,
+                        "size": info.size,
+                        "sha": info.sha,
+                        "download_url": info.download_url,
+                        "variant_type": info.variant_type,
+                        "description": info.description,
                     }
                     for name, info in self.discovered_models.items()
-                }
+                },
             }
 
-            with open(self.discovery_cache_file, 'w') as f:
+            with open(self.discovery_cache_file, "w") as f:
                 json.dump(cache_data, f, indent=2)
 
             logger.debug(f"Saved model discovery cache with {len(self.discovered_models)} models")
@@ -131,13 +144,13 @@ class ModelManager:
             return True
 
         try:
-            with open(self.discovery_cache_file, 'r') as f:
+            with open(self.discovery_cache_file, "r") as f:
                 cache_data = json.load(f)
 
-            if 'timestamp' not in cache_data:
+            if "timestamp" not in cache_data:
                 return True
 
-            cache_age_hours = (time.time() - cache_data['timestamp']) / 3600
+            cache_age_hours = (time.time() - cache_data["timestamp"]) / 3600
             return cache_age_hours > self.cache_expiry_hours
 
         except Exception:
@@ -149,7 +162,9 @@ class ModelManager:
 
         try:
             # Get repository tree from HuggingFace API
-            tree_url = f"https://huggingface.co/api/models/{self.hf_repo}/tree/main/{self.models_path}"
+            tree_url = (
+                f"https://huggingface.co/api/models/{self.hf_repo}/tree/main/{self.models_path}"
+            )
             response = requests.get(tree_url, timeout=30)
             response.raise_for_status()
 
@@ -158,31 +173,30 @@ class ModelManager:
 
             # Find all .onnx files
             for item in repo_data:
-                if (item.get('type') == 'file' and
-                    item.get('path', '').endswith('.onnx')):
+                if item.get("type") == "file" and item.get("path", "").endswith(".onnx"):
                     model_files.append(item)
 
             # Process discovered model files
             self.discovered_models = {}
             for file_info in model_files:
-                model_name = Path(file_info['path']).name
+                model_name = Path(file_info["path"]).name
 
                 # Determine variant type
                 variant_type = self._determine_variant_type(model_name)
 
                 # For LFS files, use the actual file hash from lfs.oid
-                lfs_info = file_info.get('lfs', {})
-                actual_hash = lfs_info.get('oid', file_info.get('oid', ''))
-                actual_size = lfs_info.get('size', file_info.get('size', 0))
+                lfs_info = file_info.get("lfs", {})
+                actual_hash = lfs_info.get("oid", file_info.get("oid", ""))
+                actual_size = lfs_info.get("size", file_info.get("size", 0))
 
                 model_info = ModelInfo(
                     name=model_name,
-                    path=file_info['path'],
+                    path=file_info["path"],
                     size=actual_size,
                     sha=actual_hash,
                     download_url=f"{self.base_url}/{file_info['path']}",
                     variant_type=variant_type,
-                    description=self._get_variant_description(variant_type)
+                    description=self._get_variant_description(variant_type),
                 )
 
                 self.discovered_models[model_name] = model_info
@@ -232,7 +246,7 @@ class ModelManager:
             "uint8": "8-bit unsigned integer quantized",
             "uint8f16": "8-bit unsigned integer with 16-bit float",
             "quantized": "General quantized model",
-            "unknown": "Unknown variant type"
+            "unknown": "Unknown variant type",
         }
         return descriptions.get(variant_type, "Unknown variant type")
 
@@ -263,11 +277,14 @@ class ModelManager:
 
         return self.models_dir / model_name
 
-    def download_model(self, model_name: str,
-                      progress_callback: Callable[[DownloadProgress], None] | None = None) -> bool:
+    def download_model(
+        self, model_name: str, progress_callback: Callable[[DownloadProgress], None] | None = None
+    ) -> bool:
         """Download a specific model"""
         if model_name not in self.discovered_models:
-            logger.error(f"Unknown model: {model_name}. Available models: {list(self.discovered_models.keys())}")
+            logger.error(
+                f"Unknown model: {model_name}. Available models: {list(self.discovered_models.keys())}"
+            )
             return False
 
         model_info = self.discovered_models[model_name]
@@ -290,11 +307,11 @@ class ModelManager:
             response = requests.get(url, stream=True, timeout=60)
             response.raise_for_status()
 
-            total_size = int(response.headers.get('content-length', model_info.size))
+            total_size = int(response.headers.get("content-length", model_info.size))
             downloaded_size = 0
             start_time = time.time()
 
-            with open(local_path, 'wb') as f:
+            with open(local_path, "wb") as f:
                 for chunk in response.iter_content(chunk_size=8192):
                     if chunk:
                         f.write(chunk)
@@ -302,14 +319,16 @@ class ModelManager:
 
                         if progress_callback and total_size > 0:
                             elapsed_time = time.time() - start_time
-                            speed_mbps = (downloaded_size / (1024 * 1024)) / max(elapsed_time, 0.001)
+                            speed_mbps = (downloaded_size / (1024 * 1024)) / max(
+                                elapsed_time, 0.001
+                            )
 
                             progress = DownloadProgress(
                                 filename=model_name,
                                 downloaded_bytes=downloaded_size,
                                 total_bytes=total_size,
                                 percentage=(downloaded_size / total_size) * 100,
-                                speed_mbps=speed_mbps
+                                speed_mbps=speed_mbps,
                             )
                             progress_callback(progress)
 
@@ -334,14 +353,18 @@ class ModelManager:
             # Check file size
             actual_size = file_path.stat().st_size
             if model_info.size > 0 and actual_size != model_info.size:
-                logger.warning(f"File size mismatch for {model_info.name}: expected {model_info.size}, got {actual_size}")
+                logger.warning(
+                    f"File size mismatch for {model_info.name}: expected {model_info.size}, got {actual_size}"
+                )
                 return False
 
             # Check SHA hash if available
             if model_info.sha and model_info.sha != "":
                 actual_hash = self._calculate_file_hash(file_path)
                 if actual_hash != model_info.sha:
-                    logger.warning(f"Hash mismatch for {model_info.name}: expected {model_info.sha}, got {actual_hash}")
+                    logger.warning(
+                        f"Hash mismatch for {model_info.name}: expected {model_info.sha}, got {actual_hash}"
+                    )
                     return False
 
             return True

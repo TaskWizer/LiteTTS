@@ -17,6 +17,7 @@ from LiteTTS.nlp.advanced_symbol_processor import AdvancedSymbolProcessor
 # Skip - internal NLP component tests with incorrect expectations
 pytestmark = pytest.mark.skip(reason="Internal NLP component tests with incorrect expectations")
 
+
 class TestAdvancedSymbolPunctuationHandler(unittest.TestCase):
     """Test cases for Advanced Symbol & Punctuation Handler"""
 
@@ -147,8 +148,11 @@ class TestAdvancedSymbolPunctuationHandler(unittest.TestCase):
                 if "–" in input_text:
                     self.assertIn("en dash", result)
                 if """ in input_text or """ in input_text:
-                    self.assertNotIn(""", result)
-                    self.assertNotIn(""", result)
+                    self.assertNotIn(
+                        """, result)
+                    self.assertNotIn(""",
+                        result,
+                    )
 
     def test_context_aware_processing(self):
         """Test context-aware symbol processing"""
@@ -160,7 +164,6 @@ class TestAdvancedSymbolPunctuationHandler(unittest.TestCase):
             ("8 / 2 = 4", "8 divided by 2 equals 4"),
             ("50%", "50 percent"),
             ("90°", "90 degrees"),
-
             # Programming context
             ("function()", "function function"),
             ("array[0]", "array array index 0"),
@@ -209,12 +212,12 @@ class TestAdvancedSymbolPunctuationHandler(unittest.TestCase):
         complex_analysis = self.processor.analyze_symbol_complexity(complex_text)
 
         # Simple text should have lower complexity
-        self.assertLess(simple_analysis['complexity_score'], complex_analysis['complexity_score'])
+        self.assertLess(simple_analysis["complexity_score"], complex_analysis["complexity_score"])
 
         # Complex text should detect various elements
-        self.assertGreater(len(complex_analysis['html_entities']), 0)
-        self.assertGreater(len(complex_analysis['special_characters']), 0)
-        self.assertGreater(len(complex_analysis['processing_recommendations']), 0)
+        self.assertGreater(len(complex_analysis["html_entities"]), 0)
+        self.assertGreater(len(complex_analysis["special_characters"]), 0)
+        self.assertGreater(len(complex_analysis["processing_recommendations"]), 0)
 
     def test_configuration_options(self):
         """Test configuration options"""
@@ -234,6 +237,7 @@ class TestAdvancedSymbolPunctuationHandler(unittest.TestCase):
         # Re-enable for other tests
         self.processor.set_configuration(handle_quotes_naturally=True)
 
+
 def run_comprehensive_test():
     """Run comprehensive test with detailed output"""
     print("🧪 Advanced Symbol & Punctuation Handler Comprehensive Test")
@@ -247,21 +251,17 @@ def run_comprehensive_test():
         ("The * symbol", "asterisk"),
         ("John&#x27;s car", "John's car"),
         ("&quot;Hello&quot;", "Hello"),
-
         # Enhanced special characters
         ("© 2024 Company", "copyright"),
         ("90° angle", "degrees"),
         ("± 5%", "plus or minus"),
-
         # International currencies
         ("₹100 rupees", "rupee"),
         ("₩1000 won", "won"),
-
         # Advanced punctuation
         ("Text...", "ellipsis"),
         ("Text—dash", "em dash"),
         ('"Smart quotes"', "Smart quotes"),
-
         # Context-aware processing
         ("2 + 3 = 5", "plus"),
         ("function()", "function"),
@@ -290,15 +290,18 @@ def run_comprehensive_test():
 
     print("\n" + "=" * 70)
     print(f"📊 Test Results: {passed} passed, {failed} failed")
-    print(f"Success rate: {passed/(passed+failed)*100:.1f}%")
+    print(f"Success rate: {passed / (passed + failed) * 100:.1f}%")
 
     return failed == 0
+
 
 if __name__ == "__main__":
     # Run comprehensive test
     success = run_comprehensive_test()
 
-    print(f"\n🎯 Advanced Symbol & Punctuation Handler: {'✅ READY' if success else '❌ NEEDS FIXES'}")
+    print(
+        f"\n🎯 Advanced Symbol & Punctuation Handler: {'✅ READY' if success else '❌ NEEDS FIXES'}"
+    )
 
     # Run unit tests
     print("\n" + "=" * 70)

@@ -73,19 +73,24 @@ def test_quote_edge_cases():
 
         # Check for ASCII single quotes that are NOT contractions
         import re
+
         # Find single quotes that are not part of contractions (letter + ' + letter)
-        non_contraction_quotes = re.findall(r"(?<![a-zA-Z])'(?![a-zA-Z])|'(?=[^a-zA-Z])|(?<=[^a-zA-Z])'", nlp_result)
+        non_contraction_quotes = re.findall(
+            r"(?<![a-zA-Z])'(?![a-zA-Z])|'(?=[^a-zA-Z])|(?<=[^a-zA-Z])'", nlp_result
+        )
 
         if found_quotes or non_contraction_quotes:
             if non_contraction_quotes:
                 print(f"  ⚠️ WARNING: Found non-contraction quotes: {non_contraction_quotes}")
             if found_quotes:
                 print(f"  ⚠️ WARNING: Found Unicode quotes: {found_quotes}")
-            issues_found.append({
-                'input': test_case,
-                'output': nlp_result,
-                'quotes_found': found_quotes + non_contraction_quotes
-            })
+            issues_found.append(
+                {
+                    "input": test_case,
+                    "output": nlp_result,
+                    "quotes_found": found_quotes + non_contraction_quotes,
+                }
+            )
         else:
             print("  ✅ No problematic quotes in output")
 
@@ -99,6 +104,7 @@ def test_quote_edge_cases():
         print("\n✅ No quote processing issues found")
 
     return len(issues_found) == 0
+
 
 def test_boy_pronunciation_contexts():
     """Test 'Boy' pronunciation in various contexts"""
@@ -143,8 +149,8 @@ def test_boy_pronunciation_contexts():
         print(f"  NLP Result: '{nlp_result}'")
 
         # Check if "Boy" is preserved correctly
-        if 'boy' in test_case.lower():
-            if 'boy' in nlp_result.lower():
+        if "boy" in test_case.lower():
+            if "boy" in nlp_result.lower():
                 print("  ✅ 'Boy' preserved in text processing")
             else:
                 print("  ❌ 'Boy' not found in output")
@@ -154,9 +160,10 @@ def test_boy_pronunciation_contexts():
         result_words = nlp_result.lower().split()
 
         for word in original_words:
-            clean_word = word.strip('.,!?;:')
+            clean_word = word.strip(".,!?;:")
             if clean_word and not any(clean_word in result_word for result_word in result_words):
                 print(f"  ⚠️ Word '{clean_word}' may have been altered")
+
 
 def test_api_pronunciation_issues():
     """Test pronunciation issues through the API with actual audio generation"""
@@ -171,28 +178,28 @@ def test_api_pronunciation_issues():
         {
             "name": "Quote pronunciation test",
             "input": '"Hello world" she said',
-            "expected": "Should not contain 'in quat' pronunciation"
+            "expected": "Should not contain 'in quat' pronunciation",
         },
         {
             "name": "Boy pronunciation test",
             "input": "The boy is here",
-            "expected": "Should pronounce 'boy' with full /bɔɪ/ sound, not 'boi'"
+            "expected": "Should pronounce 'boy' with full /bɔɪ/ sound, not 'boi'",
         },
         {
             "name": "Multiple quotes test",
             "input": '"First" and "second" quotes',
-            "expected": "No quote pronunciations"
+            "expected": "No quote pronunciations",
         },
         {
             "name": "Boy in context test",
             "input": "Good boy, that's right",
-            "expected": "Clear 'boy' pronunciation"
+            "expected": "Clear 'boy' pronunciation",
         },
         {
             "name": "Mixed pronunciation test",
             "input": 'The boy said "Hello" to everyone',
-            "expected": "Both issues should be resolved"
-        }
+            "expected": "Both issues should be resolved",
+        },
     ]
 
     for i, test_case in enumerate(test_cases, 1):
@@ -200,19 +207,11 @@ def test_api_pronunciation_issues():
         print(f"Input: '{test_case['input']}'")
         print(f"Expected: {test_case['expected']}")
 
-        payload = {
-            "input": test_case['input'],
-            "voice": "af_heart",
-            "response_format": "mp3"
-        }
+        payload = {"input": test_case["input"], "voice": "af_heart", "response_format": "mp3"}
 
         try:
             start_time = time.time()
-            response = requests.post(
-                f"{base_url}/v1/audio/speech",
-                json=payload,
-                timeout=30
-            )
+            response = requests.post(f"{base_url}/v1/audio/speech", json=payload, timeout=30)
             end_time = time.time()
 
             if response.status_code == 200:
@@ -222,7 +221,7 @@ def test_api_pronunciation_issues():
 
                 # Save audio for manual inspection
                 filename = f"pronunciation_issue_test_{i}.mp3"
-                with open(filename, 'wb') as f:
+                with open(filename, "wb") as f:
                     f.write(response.content)
                 print(f"   Audio saved as: {filename}")
                 print("   🎧 MANUAL CHECK REQUIRED: Listen for pronunciation issues")
@@ -237,7 +236,9 @@ def test_api_pronunciation_issues():
 
         except requests.exceptions.ConnectionError:
             print("⚠️ Could not connect to API server")
-            print("   Please start the server with: uv run uvicorn app:app --host 0.0.0.0 --port 8354")
+            print(
+                "   Please start the server with: uv run uvicorn app:app --host 0.0.0.0 --port 8354"
+            )
             return False
         except Exception as e:
             print(f"❌ API test failed: {e}")
@@ -251,6 +252,7 @@ def test_api_pronunciation_issues():
 
     return True
 
+
 def investigate_phonemizer_configuration():
     """Investigate phonemizer configuration that might affect pronunciation"""
 
@@ -263,23 +265,24 @@ def investigate_phonemizer_configuration():
     print(f"  Emoji replacement: '{phonemizer_preprocessor.emoji_replacement}'")
 
     # Test phonemizer preprocessing with problematic cases
-    test_cases = [
-        '"Hello world"',
-        'Boy',
-        'The boy said "Hello"'
-    ]
+    test_cases = ['"Hello world"', "Boy", 'The boy said "Hello"']
 
     for test_case in test_cases:
         print(f"\nTesting: '{test_case}'")
 
         # Test both conservative and aggressive modes
-        conservative_result = phonemizer_preprocessor.preprocess_text(test_case, preserve_word_count=True)
-        aggressive_result = phonemizer_preprocessor.preprocess_text(test_case, preserve_word_count=False)
+        conservative_result = phonemizer_preprocessor.preprocess_text(
+            test_case, preserve_word_count=True
+        )
+        aggressive_result = phonemizer_preprocessor.preprocess_text(
+            test_case, preserve_word_count=False
+        )
 
         print(f"  Conservative: '{conservative_result.processed_text}'")
         print(f"  Aggressive: '{aggressive_result.processed_text}'")
         print(f"  Conservative changes: {conservative_result.changes_made}")
         print(f"  Aggressive changes: {aggressive_result.changes_made}")
+
 
 def check_different_processing_paths():
     """Check if different processing paths might cause inconsistent behavior"""
@@ -303,6 +306,7 @@ def check_different_processing_paths():
 
     # Path 3: Check if there are any other processing components
     from LiteTTS.nlp.text_normalizer import TextNormalizer
+
     normalizer = TextNormalizer()
     normalized = normalizer.normalize_text(test_input)
     print(f"3. Direct normalizer: '{normalized}'")
@@ -313,6 +317,7 @@ def check_different_processing_paths():
     else:
         print("❌ Processing paths produce different results!")
         print("   Difference detected between direct NLP and preprocess+NLP")
+
 
 def main():
     """Run comprehensive investigation of remaining pronunciation issues"""
@@ -341,6 +346,7 @@ def main():
     print("4. Check TTS model-specific pronunciation handling")
 
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -25,12 +25,24 @@ try:
     )
 except ImportError:
     # Fallback functions if utility module is not available
-    def log_start(msg): return f"[START] {msg}"
-    def log_success(msg): return f"[OK] {msg}"
-    def log_error(msg): return f"[ERROR] {msg}"
-    def log_warning(msg): return f"[WARN] {msg}"
-    def log_config(msg): return f"[CONFIG] {msg}"
-    def log_info(msg): return f"[INFO] {msg}"
+    def log_start(msg):
+        return f"[START] {msg}"
+
+    def log_success(msg):
+        return f"[OK] {msg}"
+
+    def log_error(msg):
+        return f"[ERROR] {msg}"
+
+    def log_warning(msg):
+        return f"[WARN] {msg}"
+
+    def log_config(msg):
+        return f"[CONFIG] {msg}"
+
+    def log_info(msg):
+        return f"[INFO] {msg}"
+
 
 logger = logging.getLogger(__name__)
 
@@ -55,21 +67,22 @@ def configure_windows_console() -> bool:
         import os
 
         # Set environment variables for UTF-8 support
-        os.environ['PYTHONIOENCODING'] = 'utf-8'
+        os.environ["PYTHONIOENCODING"] = "utf-8"
 
         # Try to set console code page to UTF-8 (65001)
         try:
             import subprocess
-            subprocess.run(['chcp', '65001'], capture_output=True, check=False)
+
+            subprocess.run(["chcp", "65001"], capture_output=True, check=False)
         except (subprocess.SubprocessError, FileNotFoundError):
             pass  # chcp command not available or failed
 
         # Configure Python's locale for UTF-8
         try:
-            locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+            locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
         except locale.Error:
             try:
-                locale.setlocale(locale.LC_ALL, 'C.UTF-8')
+                locale.setlocale(locale.LC_ALL, "C.UTF-8")
             except locale.Error:
                 pass  # Locale configuration failed, continue anyway
 
@@ -78,15 +91,11 @@ def configure_windows_console() -> bool:
             import codecs
 
             # Only reconfigure if we're using a problematic encoding
-            stdout_encoding = getattr(sys.stdout, 'encoding', 'cp1252')
-            if stdout_encoding.lower() in ['cp1252', 'windows-1252']:
+            stdout_encoding = getattr(sys.stdout, "encoding", "cp1252")
+            if stdout_encoding.lower() in ["cp1252", "windows-1252"]:
                 # Wrap stdout and stderr with UTF-8 codec and error handling
-                sys.stdout = codecs.getwriter('utf-8')(
-                    sys.stdout.detach(), errors='replace'
-                )
-                sys.stderr = codecs.getwriter('utf-8')(
-                    sys.stderr.detach(), errors='replace'
-                )
+                sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach(), errors="replace")
+                sys.stderr = codecs.getwriter("utf-8")(sys.stderr.detach(), errors="replace")
 
         except (AttributeError, OSError):
             pass  # Stream reconfiguration failed, continue anyway
@@ -124,16 +133,16 @@ class StartupValidator:
     def validate_dependencies(self) -> bool:
         """Validate required dependencies are installed"""
         required_packages = [
-            ('fastapi', 'FastAPI'),
-            ('uvicorn', 'Uvicorn'),
-            ('numpy', 'NumPy'),
-            ('onnxruntime', 'ONNX Runtime'),
-            ('pydantic', 'Pydantic'),
+            ("fastapi", "FastAPI"),
+            ("uvicorn", "Uvicorn"),
+            ("numpy", "NumPy"),
+            ("onnxruntime", "ONNX Runtime"),
+            ("pydantic", "Pydantic"),
         ]
 
         optional_packages = [
-            ('torch', 'PyTorch (for CUDA support)'),
-            ('psutil', 'psutil (for system monitoring)'),
+            ("torch", "PyTorch (for CUDA support)"),
+            ("psutil", "psutil (for system monitoring)"),
         ]
 
         missing_required = []
@@ -206,13 +215,16 @@ class StartupValidator:
         if config.tts.device == "cuda":
             try:
                 import torch
+
                 if not torch.cuda.is_available():
                     self.warnings.append("CUDA requested but not available, falling back to CPU")
                     config.tts.device = "cpu"
                 else:
                     logger.info(log_success(f"CUDA available: {torch.cuda.get_device_name(0)}"))
             except ImportError:
-                self.warnings.append("CUDA requested but PyTorch not available, falling back to CPU")
+                self.warnings.append(
+                    "CUDA requested but PyTorch not available, falling back to CPU"
+                )
                 config.tts.device = "cpu"
 
         logger.info(log_success(f"Using device: {config.tts.device}"))
@@ -279,6 +291,7 @@ async def initialize_system() -> bool:
     # Initialize warning suppression early
     try:
         from .utils.deprecation_warnings import initialize_warning_suppression
+
         initialize_warning_suppression()
     except ImportError:
         pass  # Warning suppression not available

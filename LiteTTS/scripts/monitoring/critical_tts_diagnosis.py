@@ -4,7 +4,7 @@ CRITICAL TTS DIAGNOSIS SCRIPT
 
 Systematically tests TTS synthesis to identify and diagnose critical failures:
 1. Truncated output (< 1 second audio for full sentences)
-2. Silent/empty output 
+2. Silent/empty output
 3. Pronunciation regressions ("Okay" -> "Awk-key", "boy" -> "bow")
 4. Text preprocessing warnings and word count mismatches
 """
@@ -27,9 +27,9 @@ def analyze_audio_file(filepath: str) -> dict[str, Any]:
         # Get file size
         file_size = os.path.getsize(filepath)
 
-        if filepath.endswith('.wav'):
+        if filepath.endswith(".wav"):
             try:
-                with wave.open(filepath, 'rb') as wav_file:
+                with wave.open(filepath, "rb") as wav_file:
                     frames = wav_file.getnframes()
                     sample_rate = wav_file.getframerate()
                     duration = frames / sample_rate if sample_rate > 0 else 0
@@ -40,7 +40,7 @@ def analyze_audio_file(filepath: str) -> dict[str, Any]:
                         "sample_rate": sample_rate,
                         "frames": frames,
                         "channels": wav_file.getnchannels(),
-                        "sample_width": wav_file.getsampwidth()
+                        "sample_width": wav_file.getsampwidth(),
                     }
             except Exception as e:
                 return {"error": f"WAV analysis failed: {e}", "file_size_bytes": file_size}
@@ -51,13 +51,13 @@ def analyze_audio_file(filepath: str) -> dict[str, Any]:
                 from mutagen import File
 
                 audio_file = File(filepath)
-                if audio_file is not None and hasattr(audio_file, 'info'):
+                if audio_file is not None and hasattr(audio_file, "info"):
                     actual_duration = audio_file.info.length
                     return {
                         "file_size_bytes": file_size,
                         "duration_seconds": actual_duration,
                         "format": "mp3_actual",
-                        "bitrate": getattr(audio_file.info, 'bitrate', 'unknown')
+                        "bitrate": getattr(audio_file.info, "bitrate", "unknown"),
                     }
             except ImportError:
                 pass  # mutagen not available, fall back to estimation
@@ -71,32 +71,26 @@ def analyze_audio_file(filepath: str) -> dict[str, Any]:
             return {
                 "file_size_bytes": file_size,
                 "estimated_duration_seconds": estimated_duration,
-                "format": "non-wav"
+                "format": "non-wav",
             }
 
     except Exception as e:
         return {"error": f"Analysis failed: {e}"}
 
-def test_tts_endpoint(text: str, voice: str = "af_heart", format: str = "mp3",
-                     expected_min_duration: float = 1.0) -> dict[str, Any]:
+
+def test_tts_endpoint(
+    text: str, voice: str = "af_heart", format: str = "mp3", expected_min_duration: float = 1.0
+) -> dict[str, Any]:
     """Test TTS endpoint with specific input and analyze results"""
 
     print(f"\n🔍 Testing: '{text}' (voice: {voice}, format: {format})")
     print(f"   Expected minimum duration: {expected_min_duration}s")
 
-    payload = {
-        "input": text,
-        "voice": voice,
-        "response_format": format
-    }
+    payload = {"input": text, "voice": voice, "response_format": format}
 
     try:
         start_time = time.time()
-        response = requests.post(
-            "http://localhost:8354/v1/audio/speech",
-            json=payload,
-            timeout=30
-        )
+        response = requests.post("http://localhost:8354/v1/audio/speech", json=payload, timeout=30)
         request_time = time.time() - start_time
 
         if response.status_code != 200:
@@ -104,23 +98,24 @@ def test_tts_endpoint(text: str, voice: str = "af_heart", format: str = "mp3",
                 "success": False,
                 "error": f"HTTP {response.status_code}",
                 "response_text": response.text[:500],
-                "request_time": request_time
+                "request_time": request_time,
             }
 
         # Save audio file for analysis
         filename = f"diagnosis_{voice}_{format}_{int(time.time())}.{format}"
-        with open(filename, 'wb') as f:
+        with open(filename, "wb") as f:
             f.write(response.content)
 
         # Analyze audio
         audio_analysis = analyze_audio_file(filename)
 
         # Determine if this is a failure
-        actual_duration = audio_analysis.get('duration_seconds',
-                                           audio_analysis.get('estimated_duration_seconds', 0))
+        actual_duration = audio_analysis.get(
+            "duration_seconds", audio_analysis.get("estimated_duration_seconds", 0)
+        )
 
         is_truncated = actual_duration < expected_min_duration
-        is_silent = audio_analysis.get('file_size_bytes', 0) < 1000  # Less than 1KB likely silent
+        is_silent = audio_analysis.get("file_size_bytes", 0) < 1000  # Less than 1KB likely silent
 
         result = {
             "success": True,
@@ -131,14 +126,16 @@ def test_tts_endpoint(text: str, voice: str = "af_heart", format: str = "mp3",
             "expected_min_duration": expected_min_duration,
             "is_truncated": is_truncated,
             "is_silent": is_silent,
-            "failure_detected": is_truncated or is_silent
+            "failure_detected": is_truncated or is_silent,
         }
 
         # Print immediate results
         if result["failure_detected"]:
             print("   ❌ FAILURE DETECTED:")
             if is_truncated:
-                print(f"      - TRUNCATED: {actual_duration:.2f}s < {expected_min_duration}s expected")
+                print(
+                    f"      - TRUNCATED: {actual_duration:.2f}s < {expected_min_duration}s expected"
+                )
             if is_silent:
                 print(f"      - SILENT: File size {audio_analysis.get('file_size_bytes', 0)} bytes")
         else:
@@ -150,14 +147,15 @@ def test_tts_endpoint(text: str, voice: str = "af_heart", format: str = "mp3",
         return {
             "success": False,
             "error": "Connection failed - is TTS server running?",
-            "request_time": 0
+            "request_time": 0,
         }
     except Exception as e:
         return {
             "success": False,
             "error": f"Request failed: {e}",
-            "request_time": time.time() - start_time
+            "request_time": time.time() - start_time,
         }
+
 
 def test_pronunciation_regressions() -> dict[str, Any]:
     """Test specific pronunciation regression cases"""
@@ -171,7 +169,6 @@ def test_pronunciation_regressions() -> dict[str, Any]:
         {"text": "boy", "voice": "af_heart", "issue": "Should be 'boy' not 'bow'"},
         {"text": "Boy", "voice": "af_heart", "issue": "Uppercase version - should work correctly"},
         {"text": "Okay, boy", "voice": "af_heart", "issue": "Combined regression test"},
-
         # Additional pronunciation tests
         {"text": "June", "voice": "af_heart", "issue": "Should preserve final consonant"},
         {"text": "Jan", "voice": "af_heart", "issue": "Should preserve final consonant"},
@@ -186,16 +183,17 @@ def test_pronunciation_regressions() -> dict[str, Any]:
         print(f"   Issue: {test_case['issue']}")
 
         result = test_tts_endpoint(
-            test_case['text'],
-            test_case['voice'],
+            test_case["text"],
+            test_case["voice"],
             "mp3",
-            expected_min_duration=0.3  # Realistic expectation for single words
+            expected_min_duration=0.3,  # Realistic expectation for single words
         )
 
-        result['test_case'] = test_case
+        result["test_case"] = test_case
         results.append(result)
 
     return {"pronunciation_tests": results}
+
 
 def test_duration_failures() -> dict[str, Any]:
     """Test cases that should produce longer audio but are getting truncated"""
@@ -207,23 +205,23 @@ def test_duration_failures() -> dict[str, Any]:
         {
             "text": "Hello world",
             "expected_min_duration": 0.8,  # More realistic for 2 words
-            "description": "Simple two-word test"
+            "description": "Simple two-word test",
         },
         {
             "text": "This is a test of the text-to-speech system",
             "expected_min_duration": 2.5,  # More realistic for 9 words
-            "description": "Medium sentence"
+            "description": "Medium sentence",
         },
         {
             "text": "The quick brown fox jumps over the lazy dog. This sentence contains multiple clauses and should generate several seconds of audio.",
             "expected_min_duration": 6.0,  # More realistic for long sentence
-            "description": "Long complex sentence"
+            "description": "Long complex sentence",
         },
         {
             "text": "(silence, then attempting to read) ... Okay, I...",
             "expected_min_duration": 2.0,  # More realistic expectation
-            "description": "Text from server logs that caused word count mismatch"
-        }
+            "description": "Text from server logs that caused word count mismatch",
+        },
     ]
 
     results = []
@@ -233,16 +231,14 @@ def test_duration_failures() -> dict[str, Any]:
         print(f"   Text: '{test_case['text'][:50]}{'...' if len(test_case['text']) > 50 else ''}'")
 
         result = test_tts_endpoint(
-            test_case['text'],
-            "af_heart",
-            "mp3",
-            test_case['expected_min_duration']
+            test_case["text"], "af_heart", "mp3", test_case["expected_min_duration"]
         )
 
-        result['test_case'] = test_case
+        result["test_case"] = test_case
         results.append(result)
 
     return {"duration_tests": results}
+
 
 def test_multiple_voices_and_formats() -> dict[str, Any]:
     """Test across multiple voices and formats to isolate issues"""
@@ -261,11 +257,12 @@ def test_multiple_voices_and_formats() -> dict[str, Any]:
             print(f"\n🔍 Testing voice: {voice}, format: {format}")
 
             result = test_tts_endpoint(test_text, voice, format, 1.5)  # More realistic for 6 words
-            result['voice'] = voice
-            result['format'] = format
+            result["voice"] = voice
+            result["format"] = format
             results.append(result)
 
     return {"voice_format_tests": results}
+
 
 def analyze_text_preprocessing() -> dict[str, Any]:
     """Test text preprocessing pipeline directly"""
@@ -276,6 +273,7 @@ def analyze_text_preprocessing() -> dict[str, Any]:
     try:
         import os
         import sys
+
         sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
         from LiteTTS.nlp.processor import NLPProcessor
@@ -287,7 +285,7 @@ def analyze_text_preprocessing() -> dict[str, Any]:
             "Okay, boy",
             "(silence, then attempting to read) ... Okay, I...",
             "Hello world",
-            "The quick brown fox jumps over the lazy dog"
+            "The quick brown fox jumps over the lazy dog",
         ]
 
         results = []
@@ -309,27 +307,33 @@ def analyze_text_preprocessing() -> dict[str, Any]:
             preprocessed_words = len(preprocess_result.processed_text.split())
             nlp_words = len(nlp_result.split())
 
-            word_count_issue = (original_words != preprocessed_words or
-                              preprocessed_words != nlp_words)
+            word_count_issue = (
+                original_words != preprocessed_words or preprocessed_words != nlp_words
+            )
 
             if word_count_issue:
-                print(f"   ⚠️ WORD COUNT MISMATCH: {original_words} -> {preprocessed_words} -> {nlp_words}")
+                print(
+                    f"   ⚠️ WORD COUNT MISMATCH: {original_words} -> {preprocessed_words} -> {nlp_words}"
+                )
 
-            results.append({
-                "original_text": text,
-                "preprocessed_text": preprocess_result.processed_text,
-                "nlp_text": nlp_result,
-                "original_word_count": original_words,
-                "preprocessed_word_count": preprocessed_words,
-                "nlp_word_count": nlp_words,
-                "word_count_issue": word_count_issue,
-                "changes_made": preprocess_result.changes_made
-            })
+            results.append(
+                {
+                    "original_text": text,
+                    "preprocessed_text": preprocess_result.processed_text,
+                    "nlp_text": nlp_result,
+                    "original_word_count": original_words,
+                    "preprocessed_word_count": preprocessed_words,
+                    "nlp_word_count": nlp_words,
+                    "word_count_issue": word_count_issue,
+                    "changes_made": preprocess_result.changes_made,
+                }
+            )
 
         return {"preprocessing_tests": results}
 
     except Exception as e:
         return {"error": f"Preprocessing test failed: {e}"}
+
 
 def main():
     """Run comprehensive TTS diagnosis"""
@@ -377,8 +381,8 @@ def main():
     for test_category, test_results in results.items():
         if isinstance(test_results, list):
             category_tests = len(test_results)
-            category_failures = sum(1 for r in test_results if r.get('failure_detected', False))
-        elif isinstance(test_results, dict) and 'error' in test_results:
+            category_failures = sum(1 for r in test_results if r.get("failure_detected", False))
+        elif isinstance(test_results, dict) and "error" in test_results:
             category_tests = 1
             category_failures = 1
         else:
@@ -404,6 +408,7 @@ def main():
     print("\n📄 Detailed results saved to: tts_diagnosis_results.json")
 
     return failed_tests == 0
+
 
 if __name__ == "__main__":
     success = main()

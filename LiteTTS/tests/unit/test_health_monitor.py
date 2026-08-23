@@ -22,8 +22,10 @@ class TestHealthMonitor:
 
     def test_register_health_checker(self, monitor):
         """Test registering a health checker"""
+
         def dummy_checker():
             return HealthStatus(name="test", status="healthy", message="OK")
+
         monitor.register_health_checker("test_check", dummy_checker)
         assert "test_check" in monitor.health_checkers
 
@@ -52,10 +54,13 @@ class TestHealthMonitorEdgeCases:
 
     def test_register_multiple_checkers(self, monitor):
         """Test registering multiple health checkers"""
+
         def checker1():
             return HealthStatus(name="test1", status="healthy", message="OK")
+
         def checker2():
             return HealthStatus(name="test2", status="healthy", message="OK")
+
         monitor.register_health_checker("check1", checker1)
         monitor.register_health_checker("check2", checker2)
         assert len(monitor.health_checkers) >= 2

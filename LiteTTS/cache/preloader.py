@@ -13,31 +13,37 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class CacheWarmingConfig:
     """Configuration for cache warming system - OPTIMIZED FOR FAST STARTUP"""
+
     # Primary voice for fastest startup (single voice only)
     primary_voices: list[str] = field(default_factory=lambda: ["af_heart"])
 
     # CRITICAL: Only essential words for instant response (reduced from 13 to 6)
-    instant_words: list[str] = field(default_factory=lambda: [
-        "Hi", "Hello", "Yes", "No", "Okay", "Thanks"
-    ])
+    instant_words: list[str] = field(
+        default_factory=lambda: ["Hi", "Hello", "Yes", "No", "Okay", "Thanks"]
+    )
 
     # CRITICAL: Only most common phrases (reduced from 14 to 4)
-    common_phrases: list[str] = field(default_factory=lambda: [
-        "Thank you", "How are you?", "Have a good day", "See you later"
-    ])
+    common_phrases: list[str] = field(
+        default_factory=lambda: ["Thank you", "How are you?", "Have a good day", "See you later"]
+    )
 
     # DEFERRED: Load these during idle time, not startup (moved to background)
-    conversation_starters: list[str] = field(default_factory=lambda: [
-        "How can I help you?", "What can I do for you?", "I'm here to help"
-    ])
+    conversation_starters: list[str] = field(
+        default_factory=lambda: [
+            "How can I help you?",
+            "What can I do for you?",
+            "I'm here to help",
+        ]
+    )
 
     # DEFERRED: Load these during idle time, not startup (moved to background)
-    system_responses: list[str] = field(default_factory=lambda: [
-        "I understand", "Got it", "That makes sense"
-    ])
+    system_responses: list[str] = field(
+        default_factory=lambda: ["I understand", "Got it", "That makes sense"]
+    )
 
     # PERFORMANCE OPTIMIZED: Cache warming settings
     warm_on_startup: bool = True
@@ -53,15 +59,18 @@ class CacheWarmingConfig:
     startup_timeout_seconds: float = 2.0  # Maximum time to spend on startup warming
     background_warming_enabled: bool = True  # Enable background warming for non-critical items
 
+
 @dataclass
 class WarmingTask:
     """Represents a cache warming task"""
+
     text: str
     voice: str
     priority: int = 1  # 1=highest, 5=lowest
     created_at: datetime = field(default_factory=datetime.now)
     attempts: int = 0
     max_attempts: int = 3
+
 
 class IntelligentPreloader:
     """
@@ -79,10 +88,10 @@ class IntelligentPreloader:
         self.warming_queue: list[WarmingTask] = []
         self.warmed_cache: set[str] = set()
         self.warming_stats = {
-            'total_warmed': 0,
-            'cache_hits_from_warming': 0,
-            'warming_time_spent': 0.0,
-            'last_warming_session': None
+            "total_warmed": 0,
+            "cache_hits_from_warming": 0,
+            "warming_time_spent": 0.0,
+            "last_warming_session": None,
         }
 
         # Threading
@@ -123,7 +132,9 @@ class IntelligentPreloader:
         try:
             # Get only the most critical tasks (priority 1)
             critical_tasks = []
-            primary_voice = self.config.primary_voices[0] if self.config.primary_voices else "af_heart"
+            primary_voice = (
+                self.config.primary_voices[0] if self.config.primary_voices else "af_heart"
+            )
 
             # Only the most essential words (reduced set)
             essential_words = ["Hi", "Hello", "Yes", "No"]
@@ -134,22 +145,32 @@ class IntelligentPreloader:
             # Limit to absolute minimum for fastest startup
             critical_tasks = critical_tasks[:4]  # Maximum 4 entries
 
-            logger.info(f"Warming {len(critical_tasks)} CRITICAL entries with {self.config.startup_timeout_seconds}s timeout")
+            logger.info(
+                f"Warming {len(critical_tasks)} CRITICAL entries with {self.config.startup_timeout_seconds}s timeout"
+            )
 
             # Warm immediately with parallel processing
             if self.config.enable_parallel_startup_warming and len(critical_tasks) > 1:
-                successful = self._warm_batch_parallel(critical_tasks, self.config.startup_timeout_seconds)
+                successful = self._warm_batch_parallel(
+                    critical_tasks, self.config.startup_timeout_seconds
+                )
             else:
-                successful = self._warm_batch_sequential(critical_tasks, self.config.startup_timeout_seconds)
+                successful = self._warm_batch_sequential(
+                    critical_tasks, self.config.startup_timeout_seconds
+                )
 
             warming_time = time.time() - start_time
             success_rate = successful / len(critical_tasks) if critical_tasks else 1.0
 
             if warming_time <= self.config.startup_timeout_seconds and success_rate >= 0.75:
-                logger.info(f"✅ CRITICAL cache warming completed: {successful}/{len(critical_tasks)} in {warming_time:.2f}s")
+                logger.info(
+                    f"✅ CRITICAL cache warming completed: {successful}/{len(critical_tasks)} in {warming_time:.2f}s"
+                )
                 return True
             else:
-                logger.warning(f"⚠️ CRITICAL cache warming incomplete: {successful}/{len(critical_tasks)} in {warming_time:.2f}s")
+                logger.warning(
+                    f"⚠️ CRITICAL cache warming incomplete: {successful}/{len(critical_tasks)} in {warming_time:.2f}s"
+                )
                 return False
 
         except Exception as e:
@@ -175,7 +196,7 @@ class IntelligentPreloader:
         # Check if this was a cache hit from our warming
         cache_key = self._generate_cache_key(text, voice)
         if cache_key in self.warmed_cache:
-            self.warming_stats['cache_hits_from_warming'] += 1
+            self.warming_stats["cache_hits_from_warming"] += 1
             logger.debug(f"Cache hit from preloading: {text[:30]}...")
 
     def _schedule_startup_warming(self):
@@ -185,7 +206,9 @@ class IntelligentPreloader:
             background_tasks = []
 
             # CRITICAL PRIORITY: Only essential instant words for primary voice (startup)
-            primary_voice = self.config.primary_voices[0] if self.config.primary_voices else "af_heart"
+            primary_voice = (
+                self.config.primary_voices[0] if self.config.primary_voices else "af_heart"
+            )
             for word in self.config.instant_words:
                 task = WarmingTask(text=word, voice=primary_voice, priority=1)
                 startup_tasks.append(task)
@@ -196,7 +219,7 @@ class IntelligentPreloader:
                 startup_tasks.append(task)
 
             # Apply startup cache limit to prevent excessive warming
-            startup_tasks = startup_tasks[:self.config.startup_cache_limit]
+            startup_tasks = startup_tasks[: self.config.startup_cache_limit]
 
             # BACKGROUND PRIORITY: Conversation starters and system responses (background)
             for text in self.config.conversation_starters + self.config.system_responses:
@@ -219,8 +242,12 @@ class IntelligentPreloader:
             # Sort by priority (startup tasks first)
             self.warming_queue.sort(key=lambda x: (x.priority, x.created_at))
 
-            logger.info(f"Scheduled {len(startup_tasks)} CRITICAL startup tasks + {len(background_tasks)} background tasks")
-            logger.info(f"Startup cache limit: {self.config.startup_cache_limit}, Timeout: {self.config.startup_timeout_seconds}s")
+            logger.info(
+                f"Scheduled {len(startup_tasks)} CRITICAL startup tasks + {len(background_tasks)} background tasks"
+            )
+            logger.info(
+                f"Startup cache limit: {self.config.startup_cache_limit}, Timeout: {self.config.startup_timeout_seconds}s"
+            )
 
     def _warming_worker(self):
         """Background worker that performs cache warming"""
@@ -294,11 +321,13 @@ class IntelligentPreloader:
                 successful_warmings = self._warm_batch_sequential(tasks, timeout)
 
             warming_time = time.time() - start_time
-            self.warming_stats['warming_time_spent'] += warming_time
-            self.warming_stats['last_warming_session'] = datetime.now().isoformat()
+            self.warming_stats["warming_time_spent"] += warming_time
+            self.warming_stats["last_warming_session"] = datetime.now().isoformat()
 
             batch_type = "STARTUP" if is_startup_batch else "BACKGROUND"
-            logger.info(f"Completed {batch_type} warming {successful_warmings}/{len(tasks)} cache entries in {warming_time:.2f}s")
+            logger.info(
+                f"Completed {batch_type} warming {successful_warmings}/{len(tasks)} cache entries in {warming_time:.2f}s"
+            )
 
         finally:
             self.is_warming = False
@@ -318,7 +347,9 @@ class IntelligentPreloader:
             future_to_task = {}
             for task in tasks:
                 if timeout and (time.time() - start_time) > timeout:
-                    logger.warning(f"Startup warming timeout reached ({timeout}s), skipping remaining tasks")
+                    logger.warning(
+                        f"Startup warming timeout reached ({timeout}s), skipping remaining tasks"
+                    )
                     break
 
                 future = executor.submit(self._warm_single_entry_safe, task)
@@ -328,7 +359,9 @@ class IntelligentPreloader:
             remaining_timeout = timeout - (time.time() - start_time) if timeout else None
 
             try:
-                for future in concurrent.futures.as_completed(future_to_task, timeout=remaining_timeout):
+                for future in concurrent.futures.as_completed(
+                    future_to_task, timeout=remaining_timeout
+                ):
                     task = future_to_task[future]
                     try:
                         success = future.result()
@@ -407,10 +440,7 @@ class IntelligentPreloader:
 
             try:
                 audio, sample_rate = self.tts_app.model.create(
-                    task.text,
-                    voice=task.voice,
-                    speed=1.0,
-                    lang="en-us"
+                    task.text, voice=task.voice, speed=1.0, lang="en-us"
                 )
 
                 generation_time = time.time() - start_time
@@ -422,17 +452,21 @@ class IntelligentPreloader:
 
                 # Mark as warmed (thread-safe)
                 self.warmed_cache.add(cache_key)
-                self.warming_stats['total_warmed'] += 1
+                self.warming_stats["total_warmed"] += 1
 
                 priority_label = "CRITICAL" if task.priority <= 2 else "BACKGROUND"
-                logger.debug(f"[{priority_label}] Warmed cache: '{task.text}' ({task.voice}) in {generation_time:.3f}s")
+                logger.debug(
+                    f"[{priority_label}] Warmed cache: '{task.text}' ({task.voice}) in {generation_time:.3f}s"
+                )
 
                 return True
 
             except Exception as generation_error:
                 generation_time = time.time() - start_time
                 if generation_time > generation_timeout:
-                    logger.warning(f"Warming timeout for '{task.text}' after {generation_time:.2f}s")
+                    logger.warning(
+                        f"Warming timeout for '{task.text}' after {generation_time:.2f}s"
+                    )
                 else:
                     logger.warning(f"Generation failed for '{task.text}': {generation_error}")
                 return False
@@ -441,10 +475,13 @@ class IntelligentPreloader:
             logger.error(f"Failed to warm cache entry '{task.text}': {e}")
             return False
 
-    def _generate_cache_key(self, text: str, voice: str, speed: float = 1.0, format: str = "mp3") -> str:
+    def _generate_cache_key(
+        self, text: str, voice: str, speed: float = 1.0, format: str = "mp3"
+    ) -> str:
         """Generate cache key for text/voice combination"""
         # This should match the cache key generation in the main app
         import hashlib
+
         key_data = f"{text}|{voice}|{speed}|{format}"
         return hashlib.md5(key_data.encode()).hexdigest()
 
@@ -452,19 +489,20 @@ class IntelligentPreloader:
         """Get preloader statistics"""
         with self.warming_lock:
             return {
-                'warming_stats': self.warming_stats.copy(),
-                'queue_size': len(self.warming_queue),
-                'warmed_entries': len(self.warmed_cache),
-                'is_warming': self.is_warming,
-                'top_phrases': dict(sorted(self.phrase_usage_stats.items(),
-                                         key=lambda x: x[1], reverse=True)[:10]),
-                'voice_usage': self.voice_usage_stats.copy(),
-                'config': {
-                    'primary_voices': self.config.primary_voices,
-                    'instant_words_count': len(self.config.instant_words),
-                    'common_phrases_count': len(self.config.common_phrases),
-                    'idle_threshold': self.config.idle_threshold_seconds
-                }
+                "warming_stats": self.warming_stats.copy(),
+                "queue_size": len(self.warming_queue),
+                "warmed_entries": len(self.warmed_cache),
+                "is_warming": self.is_warming,
+                "top_phrases": dict(
+                    sorted(self.phrase_usage_stats.items(), key=lambda x: x[1], reverse=True)[:10]
+                ),
+                "voice_usage": self.voice_usage_stats.copy(),
+                "config": {
+                    "primary_voices": self.config.primary_voices,
+                    "instant_words_count": len(self.config.instant_words),
+                    "common_phrases_count": len(self.config.common_phrases),
+                    "idle_threshold": self.config.idle_threshold_seconds,
+                },
             }
 
     def add_dynamic_warming_task(self, text: str, voice: str, priority: int = 4):

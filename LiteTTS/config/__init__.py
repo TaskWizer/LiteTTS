@@ -14,6 +14,7 @@ if parent_dir not in sys.path:
 try:
     # Import from the parent config.py file
     import importlib.util
+
     config_path = Path(__file__).parent.parent / "config.py"
 
     if config_path.exists():
@@ -48,5 +49,5 @@ __all__ = [
     "WhisperSettings",
     "config",
     "get_whisper_config",
-    "get_whisper_settings"
+    "get_whisper_settings",
 ]

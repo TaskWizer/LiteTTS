@@ -21,11 +21,9 @@ from LiteTTS.models import TTSConfiguration, TTSRequest
 from LiteTTS.tts.synthesizer import TTSSynthesizer
 
 # Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 class TimeStretchingTestGenerator:
     """Generate comprehensive time-stretching tests"""
@@ -57,19 +55,14 @@ class TimeStretchingTestGenerator:
         """Generate baseline audio for testing"""
         logger.info("Generating baseline audio...")
 
-        request = TTSRequest(
-            text=self.test_text,
-            voice="af_heart",
-            speed=1.0,
-            format="wav"
-        )
+        request = TTSRequest(text=self.test_text, voice="af_heart", speed=1.0, format="wav")
 
         # Generate baseline audio
         baseline_audio = self.synthesizer.synthesize(request)
 
         # Save baseline
         baseline_path = self.output_dir / "baseline.wav"
-        with open(baseline_path, 'wb') as f:
+        with open(baseline_path, "wb") as f:
             f.write(baseline_audio.audio_data.tobytes())
 
         logger.info(f"Baseline audio saved: {baseline_path}")
@@ -93,7 +86,7 @@ class TimeStretchingTestGenerator:
                     enabled=True,
                     compress_playback_rate=rate,
                     correction_quality=StretchQuality.MEDIUM,
-                    benchmark_mode=True
+                    benchmark_mode=True,
                 )
 
                 time_stretcher = TimeStretcher(stretch_config)
@@ -139,11 +132,17 @@ class TimeStretchingTestGenerator:
         """Generate CSV benchmark report"""
         csv_path = self.output_dir / "reports" / "benchmark_results.csv"
 
-        with open(csv_path, 'w', newline='') as csvfile:
+        with open(csv_path, "w", newline="") as csvfile:
             fieldnames = [
-                'Rate_%', 'RTF_Original', 'RTF_Stretched', 'Generation_Time_ms',
-                'Stretch_Time_ms', 'Total_Time_ms', 'Original_Duration_s',
-                'Stretched_Duration_s', 'Quality_Score'
+                "Rate_%",
+                "RTF_Original",
+                "RTF_Stretched",
+                "Generation_Time_ms",
+                "Stretch_Time_ms",
+                "Total_Time_ms",
+                "Original_Duration_s",
+                "Stretched_Duration_s",
+                "Quality_Score",
             ]
 
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -151,17 +150,19 @@ class TimeStretchingTestGenerator:
 
             for rate in sorted(self.results.keys()):
                 metrics = self.results[rate]
-                writer.writerow({
-                    'Rate_%': rate,
-                    'RTF_Original': f"{metrics.rtf_original:.4f}",
-                    'RTF_Stretched': f"{metrics.rtf_stretched:.4f}",
-                    'Generation_Time_ms': f"{metrics.generation_time * 1000:.1f}",
-                    'Stretch_Time_ms': f"{metrics.stretch_time * 1000:.1f}",
-                    'Total_Time_ms': f"{metrics.total_time * 1000:.1f}",
-                    'Original_Duration_s': f"{metrics.original_duration:.2f}",
-                    'Stretched_Duration_s': f"{metrics.stretched_duration:.2f}",
-                    'Quality_Score': metrics.quality_score or "N/A"
-                })
+                writer.writerow(
+                    {
+                        "Rate_%": rate,
+                        "RTF_Original": f"{metrics.rtf_original:.4f}",
+                        "RTF_Stretched": f"{metrics.rtf_stretched:.4f}",
+                        "Generation_Time_ms": f"{metrics.generation_time * 1000:.1f}",
+                        "Stretch_Time_ms": f"{metrics.stretch_time * 1000:.1f}",
+                        "Total_Time_ms": f"{metrics.total_time * 1000:.1f}",
+                        "Original_Duration_s": f"{metrics.original_duration:.2f}",
+                        "Stretched_Duration_s": f"{metrics.stretched_duration:.2f}",
+                        "Quality_Score": metrics.quality_score or "N/A",
+                    }
+                )
 
         logger.info(f"CSV report saved: {csv_path}")
 
@@ -184,7 +185,7 @@ class TimeStretchingTestGenerator:
 
         # Save report
         report_path = self.output_dir / "reports" / "benchmark_report.md"
-        with open(report_path, 'w') as f:
+        with open(report_path, "w") as f:
             f.write(report_content)
 
         logger.info(f"Markdown report saved: {report_path}")
@@ -197,9 +198,9 @@ class TimeStretchingTestGenerator:
                 "test_rates": self.test_rates,
                 "baseline_voice": "af_heart",
                 "quality_level": "medium",
-                "generated_at": time.strftime('%Y-%m-%d %H:%M:%S')
+                "generated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
             },
-            "results": {}
+            "results": {},
         }
 
         for rate, metrics in self.results.items():
@@ -212,11 +213,11 @@ class TimeStretchingTestGenerator:
                 "total_time_ms": metrics.total_time * 1000,
                 "original_duration_s": metrics.original_duration,
                 "stretched_duration_s": metrics.stretched_duration,
-                "quality_score": metrics.quality_score
+                "quality_score": metrics.quality_score,
             }
 
         json_path = self.output_dir / "reports" / "benchmark_results.json"
-        with open(json_path, 'w') as f:
+        with open(json_path, "w") as f:
             json.dump(json_data, f, indent=2)
 
         logger.info(f"JSON report saved: {json_path}")
@@ -227,11 +228,13 @@ class TimeStretchingTestGenerator:
             print("❌ No test results available")
             return
 
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("🎯 TIME-STRETCHING TEST SUMMARY")
-        print("="*60)
+        print("=" * 60)
 
-        print(f"\n📊 Tested {len(self.results)} rates: {', '.join(map(str, sorted(self.results.keys())))}%")
+        print(
+            f"\n📊 Tested {len(self.results)} rates: {', '.join(map(str, sorted(self.results.keys())))}%"
+        )
 
         # Find best rate
         best_rate = min(self.results.keys(), key=lambda r: self.results[r].rtf_stretched)
@@ -239,7 +242,9 @@ class TimeStretchingTestGenerator:
 
         print(f"\n🏆 Best Rate: {best_rate}%")
         print(f"   RTF: {best_metrics.rtf_original:.3f} → {best_metrics.rtf_stretched:.3f}")
-        print(f"   Improvement: {((best_metrics.rtf_original - best_metrics.rtf_stretched) / best_metrics.rtf_original * 100):.1f}%")
+        print(
+            f"   Improvement: {((best_metrics.rtf_original - best_metrics.rtf_stretched) / best_metrics.rtf_original * 100):.1f}%"
+        )
 
         # Recommendation
         if best_metrics.rtf_stretched < 0.8:
@@ -253,7 +258,8 @@ class TimeStretchingTestGenerator:
             print("   No significant benefit observed")
 
         print(f"\n📁 Results saved to: {self.output_dir}")
-        print("="*60)
+        print("=" * 60)
+
 
 def main():
     """Main execution function"""
@@ -270,8 +276,10 @@ def main():
     except Exception as e:
         logger.error(f"Test generation failed: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

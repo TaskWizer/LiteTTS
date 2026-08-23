@@ -30,9 +30,11 @@ import psutil
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class PerformanceMetrics:
     """Performance metrics for TTS operations"""
+
     operation_name: str
     execution_time: float
     memory_usage_mb: float
@@ -43,9 +45,11 @@ class PerformanceMetrics:
     timestamp: float = field(default_factory=time.time)
     metadata: dict[str, Any] = field(default_factory=dict)
 
+
 @dataclass
 class ProfilingSession:
     """Complete profiling session data"""
+
     session_id: str
     start_time: float
     end_time: float
@@ -56,12 +60,13 @@ class ProfilingSession:
     bottlenecks: list[dict] = field(default_factory=list)
     summary: dict[str, Any] = field(default_factory=dict)
 
+
 class PerformanceProfiler:
     """Comprehensive performance profiler for LiteTTS"""
 
     def __init__(self, enable_memory_tracking: bool = True, enable_cpu_tracking: bool = True):
         """Initialize performance profiler
-        
+
         Args:
             enable_memory_tracking: Enable memory usage tracking
             enable_cpu_tracking: Enable CPU usage tracking
@@ -86,10 +91,10 @@ class PerformanceProfiler:
 
     def start_session(self, session_id: str = None) -> str:
         """Start a new profiling session
-        
+
         Args:
             session_id: Optional session identifier
-            
+
         Returns:
             Session ID
         """
@@ -97,10 +102,7 @@ class PerformanceProfiler:
             session_id = f"session_{int(time.time())}"
 
         self.current_session = ProfilingSession(
-            session_id=session_id,
-            start_time=time.time(),
-            end_time=0.0,
-            total_duration=0.0
+            session_id=session_id, start_time=time.time(), end_time=0.0, total_duration=0.0
         )
 
         # Start memory tracking
@@ -115,7 +117,7 @@ class PerformanceProfiler:
 
     def end_session(self) -> ProfilingSession:
         """End the current profiling session
-        
+
         Returns:
             Completed profiling session
         """
@@ -170,12 +172,14 @@ class PerformanceProfiler:
                 # Memory monitoring
                 if self.enable_memory_tracking and self.current_session:
                     memory_info = psutil.virtual_memory()
-                    self.current_session.memory_snapshots.append({
-                        'timestamp': time.time(),
-                        'used_mb': memory_info.used / 1024 / 1024,
-                        'available_mb': memory_info.available / 1024 / 1024,
-                        'percent': memory_info.percent
-                    })
+                    self.current_session.memory_snapshots.append(
+                        {
+                            "timestamp": time.time(),
+                            "used_mb": memory_info.used / 1024 / 1024,
+                            "available_mb": memory_info.available / 1024 / 1024,
+                            "percent": memory_info.percent,
+                        }
+                    )
 
                 time.sleep(0.5)  # Monitor every 500ms
 
@@ -184,15 +188,18 @@ class PerformanceProfiler:
 
     def profile_operation(self, operation_name: str):
         """Decorator for profiling individual operations
-        
+
         Args:
             operation_name: Name of the operation being profiled
         """
+
         def decorator(func: Callable) -> Callable:
             @functools.wraps(func)
             def wrapper(*args, **kwargs):
                 return self._profile_function(func, operation_name, *args, **kwargs)
+
             return wrapper
+
         return decorator
 
     def _profile_function(self, func: Callable, operation_name: str, *args, **kwargs):
@@ -228,10 +235,10 @@ class PerformanceProfiler:
                 break
 
         # Try to extract audio duration from result
-        if hasattr(result, 'duration'):
+        if hasattr(result, "duration"):
             audio_duration = result.duration
-        elif isinstance(result, dict) and 'duration' in result:
-            audio_duration = result['duration']
+        elif isinstance(result, dict) and "duration" in result:
+            audio_duration = result["duration"]
 
         # Calculate RTF if we have audio duration
         if audio_duration > 0:
@@ -246,11 +253,7 @@ class PerformanceProfiler:
             text_length=text_length,
             audio_duration=audio_duration,
             rtf=rtf,
-            metadata={
-                'success': success,
-                'args_count': len(args),
-                'kwargs_count': len(kwargs)
-            }
+            metadata={"success": success, "args_count": len(args), "kwargs_count": len(kwargs)},
         )
 
         # Store metrics
@@ -273,7 +276,7 @@ class PerformanceProfiler:
     @contextmanager
     def profile_context(self, operation_name: str):
         """Context manager for profiling code blocks
-        
+
         Args:
             operation_name: Name of the operation being profiled
         """
@@ -291,7 +294,7 @@ class PerformanceProfiler:
                 execution_time=execution_time,
                 memory_usage_mb=memory_usage,
                 cpu_percent=psutil.cpu_percent(),
-                metadata={'context_manager': True}
+                metadata={"context_manager": True},
             )
 
             self.operation_metrics[operation_name].append(metrics)
@@ -300,12 +303,12 @@ class PerformanceProfiler:
 
     def profile_with_cprofile(self, func: Callable, *args, **kwargs) -> tuple[Any, pstats.Stats]:
         """Profile function with cProfile for detailed analysis
-        
+
         Args:
             func: Function to profile
             *args: Function arguments
             **kwargs: Function keyword arguments
-            
+
         Returns:
             Tuple of (function_result, profiling_stats)
         """
@@ -330,12 +333,14 @@ class PerformanceProfiler:
 
         operations = self.current_session.operations
         if not operations:
-            return {'total_operations': 0}
+            return {"total_operations": 0}
 
         # Calculate aggregated metrics
         total_time = sum(op.execution_time for op in operations)
         total_memory = sum(op.memory_usage_mb for op in operations)
-        avg_rtf = sum(op.rtf for op in operations if op.rtf > 0) / max(1, len([op for op in operations if op.rtf > 0]))
+        avg_rtf = sum(op.rtf for op in operations if op.rtf > 0) / max(
+            1, len([op for op in operations if op.rtf > 0])
+        )
 
         # Find slowest operations
         slowest_ops = sorted(operations, key=lambda x: x.execution_time, reverse=True)[:5]
@@ -344,29 +349,30 @@ class PerformanceProfiler:
         memory_intensive = sorted(operations, key=lambda x: x.memory_usage_mb, reverse=True)[:5]
 
         return {
-            'total_operations': len(operations),
-            'total_execution_time': total_time,
-            'total_memory_usage_mb': total_memory,
-            'average_rtf': avg_rtf,
-            'slowest_operations': [
-                {'name': op.operation_name, 'time': op.execution_time, 'rtf': op.rtf}
+            "total_operations": len(operations),
+            "total_execution_time": total_time,
+            "total_memory_usage_mb": total_memory,
+            "average_rtf": avg_rtf,
+            "slowest_operations": [
+                {"name": op.operation_name, "time": op.execution_time, "rtf": op.rtf}
                 for op in slowest_ops
             ],
-            'memory_intensive_operations': [
-                {'name': op.operation_name, 'memory_mb': op.memory_usage_mb}
+            "memory_intensive_operations": [
+                {"name": op.operation_name, "memory_mb": op.memory_usage_mb}
                 for op in memory_intensive
             ],
-            'cpu_usage_avg': sum(self.current_session.cpu_snapshots) / max(1, len(self.current_session.cpu_snapshots)),
-            'memory_snapshots_count': len(self.current_session.memory_snapshots)
+            "cpu_usage_avg": sum(self.current_session.cpu_snapshots)
+            / max(1, len(self.current_session.cpu_snapshots)),
+            "memory_snapshots_count": len(self.current_session.memory_snapshots),
         }
 
     def save_session_report(self, session: ProfilingSession, filename: str = None) -> Path:
         """Save session report to file
-        
+
         Args:
             session: Profiling session to save
             filename: Optional filename (defaults to session_id.json)
-            
+
         Returns:
             Path to saved report
         """
@@ -377,30 +383,30 @@ class PerformanceProfiler:
 
         # Convert session to serializable format
         report_data = {
-            'session_id': session.session_id,
-            'start_time': session.start_time,
-            'end_time': session.end_time,
-            'total_duration': session.total_duration,
-            'operations': [
+            "session_id": session.session_id,
+            "start_time": session.start_time,
+            "end_time": session.end_time,
+            "total_duration": session.total_duration,
+            "operations": [
                 {
-                    'operation_name': op.operation_name,
-                    'execution_time': op.execution_time,
-                    'memory_usage_mb': op.memory_usage_mb,
-                    'cpu_percent': op.cpu_percent,
-                    'text_length': op.text_length,
-                    'audio_duration': op.audio_duration,
-                    'rtf': op.rtf,
-                    'timestamp': op.timestamp,
-                    'metadata': op.metadata
+                    "operation_name": op.operation_name,
+                    "execution_time": op.execution_time,
+                    "memory_usage_mb": op.memory_usage_mb,
+                    "cpu_percent": op.cpu_percent,
+                    "text_length": op.text_length,
+                    "audio_duration": op.audio_duration,
+                    "rtf": op.rtf,
+                    "timestamp": op.timestamp,
+                    "metadata": op.metadata,
                 }
                 for op in session.operations
             ],
-            'memory_snapshots': session.memory_snapshots,
-            'cpu_snapshots': session.cpu_snapshots,
-            'summary': session.summary
+            "memory_snapshots": session.memory_snapshots,
+            "cpu_snapshots": session.cpu_snapshots,
+            "summary": session.summary,
         }
 
-        with open(report_path, 'w', encoding='utf-8') as f:
+        with open(report_path, "w", encoding="utf-8") as f:
             json.dump(report_data, f, indent=2, ensure_ascii=False)
 
         logger.info(f"Saved profiling report: {report_path}")
@@ -408,46 +414,48 @@ class PerformanceProfiler:
 
     def get_operation_statistics(self, operation_name: str) -> dict[str, Any]:
         """Get statistics for a specific operation
-        
+
         Args:
             operation_name: Name of the operation
-            
+
         Returns:
             Statistics dictionary
         """
         metrics = self.operation_metrics.get(operation_name, [])
         if not metrics:
-            return {'operation_name': operation_name, 'count': 0}
+            return {"operation_name": operation_name, "count": 0}
 
         execution_times = [m.execution_time for m in metrics]
         memory_usages = [m.memory_usage_mb for m in metrics]
         rtfs = [m.rtf for m in metrics if m.rtf > 0]
 
         return {
-            'operation_name': operation_name,
-            'count': len(metrics),
-            'execution_time': {
-                'min': min(execution_times),
-                'max': max(execution_times),
-                'avg': sum(execution_times) / len(execution_times),
-                'total': sum(execution_times)
+            "operation_name": operation_name,
+            "count": len(metrics),
+            "execution_time": {
+                "min": min(execution_times),
+                "max": max(execution_times),
+                "avg": sum(execution_times) / len(execution_times),
+                "total": sum(execution_times),
             },
-            'memory_usage_mb': {
-                'min': min(memory_usages),
-                'max': max(memory_usages),
-                'avg': sum(memory_usages) / len(memory_usages),
-                'total': sum(memory_usages)
+            "memory_usage_mb": {
+                "min": min(memory_usages),
+                "max": max(memory_usages),
+                "avg": sum(memory_usages) / len(memory_usages),
+                "total": sum(memory_usages),
             },
-            'rtf': {
-                'min': min(rtfs) if rtfs else 0,
-                'max': max(rtfs) if rtfs else 0,
-                'avg': sum(rtfs) / len(rtfs) if rtfs else 0,
-                'count': len(rtfs)
-            }
+            "rtf": {
+                "min": min(rtfs) if rtfs else 0,
+                "max": max(rtfs) if rtfs else 0,
+                "avg": sum(rtfs) / len(rtfs) if rtfs else 0,
+                "count": len(rtfs),
+            },
         }
+
 
 # Global profiler instance
 _profiler: PerformanceProfiler | None = None
+
 
 def get_profiler() -> PerformanceProfiler:
     """Get the global profiler instance"""
@@ -456,22 +464,27 @@ def get_profiler() -> PerformanceProfiler:
         _profiler = PerformanceProfiler()
     return _profiler
 
+
 def profile_tts_operation(operation_name: str):
     """Decorator for profiling TTS operations"""
     return get_profiler().profile_operation(operation_name)
+
 
 # Convenience functions
 def start_profiling_session(session_id: str = None) -> str:
     """Start a profiling session"""
     return get_profiler().start_session(session_id)
 
+
 def end_profiling_session() -> ProfilingSession:
     """End the current profiling session"""
     return get_profiler().end_session()
 
+
 def profile_context(operation_name: str):
     """Context manager for profiling"""
     return get_profiler().profile_context(operation_name)
+
 
 # Example usage and testing
 if __name__ == "__main__":

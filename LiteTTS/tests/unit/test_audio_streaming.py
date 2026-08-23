@@ -3,7 +3,6 @@
 Unit tests for audio streaming
 """
 
-
 import numpy as np
 import pytest
 
@@ -22,6 +21,7 @@ class TestAudioStreamer:
     def audio_segment(self):
         """Create sample audio segment"""
         from LiteTTS.audio.audio_segment import AudioSegment
+
         audio_data = np.random.randn(24000).astype(np.float32)
         return AudioSegment(audio_data=audio_data, sample_rate=24000)
 
@@ -55,6 +55,7 @@ class TestAudioStreamer:
     def test_estimate_stream_size_zero(self, streamer):
         """Test estimating stream size for empty segment"""
         from LiteTTS.audio.audio_segment import AudioSegment
+
         empty_segment = AudioSegment(audio_data=np.array([], dtype=np.float32), sample_rate=24000)
         result = streamer.estimate_stream_size(empty_segment, "mp3")
         assert isinstance(result, int)
@@ -96,17 +97,14 @@ class TestStreamChunk:
     def test_creation(self):
         """Test creating stream chunk"""
         chunk = StreamChunk(
-            data=b'\x00\x01\x02\x03',
-            chunk_index=0,
-            total_chunks=10,
-            is_final=False
+            data=b"\x00\x01\x02\x03", chunk_index=0, total_chunks=10, is_final=False
         )
-        assert chunk.data == b'\x00\x01\x02\x03'
+        assert chunk.data == b"\x00\x01\x02\x03"
         assert chunk.chunk_index == 0
         assert chunk.total_chunks == 10
         assert chunk.is_final is False
 
     def test_creation_defaults(self):
         """Test stream chunk with defaults"""
-        chunk = StreamChunk(data=b'test', chunk_index=0, total_chunks=1)
+        chunk = StreamChunk(data=b"test", chunk_index=0, total_chunks=1)
         assert chunk.is_final is False

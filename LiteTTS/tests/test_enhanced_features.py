@@ -20,13 +20,13 @@ def test_enhanced_configuration():
     config = ConfigManager()
 
     # Verify new configuration sections exist
-    assert hasattr(config, 'model')
-    assert hasattr(config, 'voice')
-    assert hasattr(config, 'audio')
-    assert hasattr(config, 'server')
-    assert hasattr(config, 'performance')
-    assert hasattr(config, 'repository')
-    assert hasattr(config, 'paths')
+    assert hasattr(config, "model")
+    assert hasattr(config, "voice")
+    assert hasattr(config, "audio")
+    assert hasattr(config, "server")
+    assert hasattr(config, "performance")
+    assert hasattr(config, "repository")
+    assert hasattr(config, "paths")
 
     # Test model configuration
     assert config.model.name == "LiteTTS"
@@ -45,23 +45,17 @@ def test_enhanced_configuration():
     assert config.server.port == 8354
     assert config.server.max_port_attempts == 5
 
+
 def test_configuration_from_json():
     """Test loading configuration from JSON file"""
     from LiteTTS.config import ConfigManager
 
     # Create temporary config file
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
         test_config = {
-            "model": {
-                "name": "test_model",
-                "default_variant": "test_variant.onnx"
-            },
-            "voice": {
-                "default_voice": "test_voice"
-            },
-            "server": {
-                "port": 9999
-            }
+            "model": {"name": "test_model", "default_variant": "test_variant.onnx"},
+            "voice": {"default_voice": "test_voice"},
+            "server": {"port": 9999},
         }
         json.dump(test_config, f)
         config_file = f.name
@@ -79,6 +73,7 @@ def test_configuration_from_json():
     finally:
         Path(config_file).unlink()
 
+
 def test_environment_variable_override():
     """Test environment variable configuration override"""
     import os
@@ -89,7 +84,7 @@ def test_environment_variable_override():
     test_env = {
         "KOKORO_DEFAULT_VOICE": "env_voice",
         "PORT": "7777",
-        "KOKORO_MODEL_VARIANT": "env_model.onnx"
+        "KOKORO_MODEL_VARIANT": "env_model.onnx",
     }
 
     with patch.dict(os.environ, test_env):
@@ -99,6 +94,7 @@ def test_environment_variable_override():
         assert config.voice.default_voice == "env_voice"
         assert config.server.port == 7777
         assert config.model.default_variant == "env_model.onnx"
+
 
 @pytest.mark.skip(reason="Circular import issue in LiteTTS.models.manager")
 def test_model_manager():
@@ -126,6 +122,7 @@ def test_model_manager():
         model_path = manager.get_model_path("test_model.onnx")
         assert model_path == Path(temp_dir) / "test_model.onnx"
 
+
 def test_voice_downloader():
     """Test the enhanced voice downloader"""
     from LiteTTS.voice.downloader import VoiceDownloader
@@ -148,7 +145,8 @@ def test_voice_downloader():
         assert downloader.cache_discovery == True
         assert downloader.cache_expiry_hours == 24
 
-@patch('requests.get')
+
+@patch("requests.get")
 def test_voice_discovery(mock_get):
     """Test automatic voice discovery from HuggingFace"""
     from LiteTTS.voice.downloader import VoiceDownloader
@@ -161,15 +159,15 @@ def test_voice_discovery(mock_get):
             "path": "voices/test_voice1.bin",
             "size": 1024,
             "oid": "abc123",
-            "lfs": {"oid": "def456", "size": 1024}
+            "lfs": {"oid": "def456", "size": 1024},
         },
         {
             "type": "file",
             "path": "voices/test_voice2.bin",
             "size": 2048,
             "oid": "ghi789",
-            "lfs": {"oid": "jkl012", "size": 2048}
-        }
+            "lfs": {"oid": "jkl012", "size": 2048},
+        },
     ]
     mock_response.raise_for_status.return_value = None
     mock_get.return_value = mock_response
@@ -192,6 +190,7 @@ def test_voice_discovery(mock_get):
         assert voice_info.size == 1024
         assert voice_info.sha == "def456"
 
+
 def test_hot_reload_manager():
     """Test hot reload functionality"""
     from LiteTTS.performance.hot_reload import HotReloadManager
@@ -211,6 +210,7 @@ def test_hot_reload_manager():
     status = manager.get_status()
     assert status["enabled"] == True
     assert status["active_watchers"] == 0
+
 
 def test_fault_tolerance():
     """Test fault tolerance features"""
@@ -244,6 +244,7 @@ def test_fault_tolerance():
     result = health_checker.run_check("test")
     assert result == True
 
+
 def test_performance_monitor():
     """Test performance monitoring"""
     from LiteTTS.performance.hot_reload import PerformanceMonitor
@@ -263,6 +264,7 @@ def test_performance_monitor():
     assert metrics["model_loads"] == 1
     assert metrics["average_response_time"] == 0.5
 
+
 def test_api_request_defaults():
     """Test API request with configuration defaults"""
     from app import TTSRequest
@@ -277,12 +279,13 @@ def test_api_request_defaults():
     # Speed defaults to None in model, but is handled as 1.0 at usage sites
     assert request.speed is None
 
+
 @pytest.mark.skip(reason="Requires kokoro.downloader which uses different import path")
 def test_dynamic_voice_list():
     """Test dynamic voice list generation"""
     from LiteTTS.downloader import get_available_voices
 
-    with patch('kokoro.downloader.VoiceDownloader') as mock_downloader_class:
+    with patch("kokoro.downloader.VoiceDownloader") as mock_downloader_class:
         mock_downloader = Mock()
         mock_downloader.get_available_voice_names.return_value = ["voice1", "voice2", "voice3"]
         mock_downloader_class.return_value = mock_downloader
@@ -290,22 +293,24 @@ def test_dynamic_voice_list():
         voices = get_available_voices()
         assert voices == ["voice1", "voice2", "voice3"]
 
+
 @pytest.mark.skip(reason="Module LiteTTS.scripts.install_cpu_only does not exist")
 def test_cpu_only_installation():
     """Test CPU-only installation verification"""
     from LiteTTS.scripts.install_cpu_only import check_gpu_packages
 
     # Test GPU package detection
-    with patch('subprocess.run') as mock_run:
+    with patch("subprocess.run") as mock_run:
         # Mock no GPU packages found
         mock_run.return_value.returncode = 1
         result = check_gpu_packages()
         assert result == True
 
     # Test installation verification
-    with patch('importlib.import_module') as mock_import:
+    with patch("importlib.import_module") as mock_import:
         mock_import.return_value = Mock()
         # This would test the actual verification in a real environment
+
 
 def test_configuration_save():
     """Test configuration saving"""
@@ -326,11 +331,12 @@ def test_configuration_save():
         assert config_file.exists()
 
         # Verify saved content
-        with open(config_file, encoding='utf-8') as f:
+        with open(config_file, encoding="utf-8") as f:
             saved_config = json.load(f)
 
         assert saved_config["voice"]["default_voice"] == "test_voice"
         assert saved_config["server"]["port"] == 9999
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

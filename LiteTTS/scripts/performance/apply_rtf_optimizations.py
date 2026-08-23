@@ -18,6 +18,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 logger = logging.getLogger(__name__)
 
+
 def get_system_info() -> dict[str, Any]:
     """Get system information for optimization"""
     cpu_count = psutil.cpu_count(logical=True)
@@ -28,8 +29,9 @@ def get_system_info() -> dict[str, Any]:
         "cpu_count_logical": cpu_count,
         "cpu_count_physical": cpu_count_physical,
         "memory_total_gb": memory.total / (1024**3),
-        "memory_available_gb": memory.available / (1024**3)
+        "memory_available_gb": memory.available / (1024**3),
     }
+
 
 def apply_environment_optimizations():
     """Apply environment variable optimizations for ONNX Runtime"""
@@ -46,13 +48,11 @@ def apply_environment_optimizations():
         "ORT_ENABLE_CPU_FP16_OPS": "1",
         "ORT_DISABLE_SPARSE_TENSORS": "1",
         "ORT_ENABLE_EXTENDED_NORMALIZATION_OPS": "1",
-
         # Threading optimizations
         "OMP_NUM_THREADS": str(omp_threads),
         "OPENBLAS_NUM_THREADS": str(omp_threads),
         "MKL_NUM_THREADS": str(omp_threads),
         "NUMEXPR_NUM_THREADS": str(min(6, cpu_count // 3)),
-
         # Aggressive CPU optimizations
         "OMP_SCHEDULE": "dynamic",
         "OMP_PROC_BIND": "spread",
@@ -60,7 +60,6 @@ def apply_environment_optimizations():
         "KMP_AFFINITY": "granularity=fine,compact,1,0",
         "KMP_BLOCKTIME": "0",
         "KMP_SETTINGS": "1",
-
         # Memory optimizations
         "MALLOC_TRIM_THRESHOLD_": "100000",
         "MALLOC_MMAP_THRESHOLD_": "131072",
@@ -73,6 +72,7 @@ def apply_environment_optimizations():
 
     return env_vars
 
+
 def update_config_for_performance():
     """Update config.json with performance optimizations"""
     config_path = Path("config.json")
@@ -81,7 +81,7 @@ def update_config_for_performance():
         logger.error("config.json not found")
         return False
 
-    with open(config_path, 'r') as f:
+    with open(config_path, "r") as f:
         config = json.load(f)
 
     system_info = get_system_info()
@@ -97,8 +97,8 @@ def update_config_for_performance():
             "aggressive_mode": True,
             "thermal_protection": True,
             "onnx_integration": True,
-            "update_environment": True
-        }
+            "update_environment": True,
+        },
     }
 
     # Update model settings for performance
@@ -106,7 +106,7 @@ def update_config_for_performance():
         "default_variant": "model_q4.onnx",  # Use quantized model
         "performance_mode": "speed",
         "cache_models": True,
-        "preload_models": True
+        "preload_models": True,
     }
 
     # Apply updates
@@ -114,15 +114,16 @@ def update_config_for_performance():
     config["model"].update(model_updates)
 
     # Write updated config
-    with open(config_path, 'w') as f:
+    with open(config_path, "w") as f:
         json.dump(config, f, indent=2)
 
     logger.info("Updated config.json with performance optimizations")
     return True
 
+
 def create_performance_startup_script():
     """Create a startup script to apply optimizations"""
-    script_content = '''#!/bin/bash
+    script_content = """#!/bin/bash
 # Performance optimization startup script
 
 echo "Applying CPU performance optimizations..."
@@ -152,17 +153,18 @@ echo "Applying memory optimizations..."
 echo 1 > /proc/sys/vm/drop_caches 2>/dev/null || true
 
 echo "Performance optimizations applied!"
-'''
+"""
 
     script_path = Path("scripts/performance/optimize_system.sh")
     script_path.parent.mkdir(parents=True, exist_ok=True)
 
-    with open(script_path, 'w') as f:
+    with open(script_path, "w") as f:
         f.write(script_content)
 
     # Make executable
     script_path.chmod(0o755)
     logger.info(f"Created performance startup script: {script_path}")
+
 
 def main():
     """Apply all RTF performance optimizations"""
@@ -208,6 +210,7 @@ def main():
     print("   2. Run performance benchmarks to verify RTF < 0.25")
     print("   3. Monitor system resources during operation")
     print("   4. Use the dashboard to track real-time performance")
+
 
 if __name__ == "__main__":
     main()

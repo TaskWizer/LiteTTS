@@ -36,5 +36,5 @@ __all__ = [
     "create_performance_streamer",
     "get_websocket_manager",
     "setup_websocket_endpoints",
-    "websocket_manager"
+    "websocket_manager",
 ]

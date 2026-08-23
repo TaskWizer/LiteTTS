@@ -19,9 +19,11 @@ from .audio_quality_tester import AudioQualityMetrics, AudioQualityTester, Audio
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class TestSuiteResults:
     """Results from comprehensive audio quality test suite"""
+
     total_tests: int
     passed_tests: int
     failed_tests: int
@@ -34,6 +36,7 @@ class TestSuiteResults:
     baseline_comparison: dict[str, Any] | None = None
     execution_time: float = 0.0
     timestamp: str = ""
+
 
 class ComprehensiveAudioQualityTestSuite:
     """
@@ -59,19 +62,26 @@ class ComprehensiveAudioQualityTestSuite:
         self.cache_enabled = self.audio_config.get("cache_enabled", True)
 
         # Quality thresholds
-        self.quality_thresholds = self.audio_config.get("quality_thresholds", {
-            "min_mos_score": 3.0,
-            "max_wer": 0.1,
-            "min_pronunciation_accuracy": 0.9,
-            "max_rtf": 0.25,
-            "min_prosody_score": 0.7
-        })
+        self.quality_thresholds = self.audio_config.get(
+            "quality_thresholds",
+            {
+                "min_mos_score": 3.0,
+                "max_wer": 0.1,
+                "min_pronunciation_accuracy": 0.9,
+                "max_rtf": 0.25,
+                "min_prosody_score": 0.7,
+            },
+        )
 
         # Test categories
         self.test_categories = self.audio_config.get("test_categories", {})
 
         # Results tracking
-        self.results_dir = Path(self.audio_config.get("reporting", {}).get("output_directory", "test_results/audio_quality"))
+        self.results_dir = Path(
+            self.audio_config.get("reporting", {}).get(
+                "output_directory", "test_results/audio_quality"
+            )
+        )
         self.results_dir.mkdir(parents=True, exist_ok=True)
 
         logger.info("Comprehensive Audio Quality Test Suite initialized")
@@ -79,19 +89,15 @@ class ComprehensiveAudioQualityTestSuite:
     def _load_config(self, config_path: str | None) -> dict[str, Any]:
         """Load configuration from file or use defaults"""
         if config_path and Path(config_path).exists():
-            with open(config_path, 'r') as f:
+            with open(config_path, "r") as f:
                 return json.load(f)
 
         # Try default config locations
-        default_configs = [
-            "config/settings.json",
-            "LiteTTS/config/settings.json",
-            "settings.json"
-        ]
+        default_configs = ["config/settings.json", "LiteTTS/config/settings.json", "settings.json"]
 
         for config_file in default_configs:
             if Path(config_file).exists():
-                with open(config_file, 'r') as f:
+                with open(config_file, "r") as f:
                     return json.load(f)
 
         # Return minimal default config
@@ -104,8 +110,8 @@ class ComprehensiveAudioQualityTestSuite:
                     "max_wer": 0.1,
                     "min_pronunciation_accuracy": 0.9,
                     "max_rtf": 0.25,
-                    "min_prosody_score": 0.7
-                }
+                    "min_prosody_score": 0.7,
+                },
             }
         }
 
@@ -123,7 +129,7 @@ class ComprehensiveAudioQualityTestSuite:
                 test_category="contractions",
                 description="Test wasn't pronunciation fix",
                 priority="critical",
-                max_wer=0.05
+                max_wer=0.05,
             ),
             AudioTestCase(
                 test_id="interjection_hmm",
@@ -133,7 +139,7 @@ class ComprehensiveAudioQualityTestSuite:
                 test_category="interjections",
                 description="Test hmm pronunciation (should not be 'hum')",
                 priority="critical",
-                max_wer=0.05
+                max_wer=0.05,
             ),
             AudioTestCase(
                 test_id="question_intonation",
@@ -142,7 +148,7 @@ class ComprehensiveAudioQualityTestSuite:
                 voice_model="af_heart",
                 test_category="prosody",
                 description="Test question mark intonation",
-                priority="high"
+                priority="high",
             ),
             AudioTestCase(
                 test_id="exclamation_intonation",
@@ -151,8 +157,8 @@ class ComprehensiveAudioQualityTestSuite:
                 voice_model="af_heart",
                 test_category="prosody",
                 description="Test exclamation intonation",
-                priority="high"
-            )
+                priority="high",
+            ),
         ]
 
         # Performance validation cases
@@ -165,7 +171,7 @@ class ComprehensiveAudioQualityTestSuite:
                 test_category="performance",
                 description="RTF test for short text",
                 priority="high",
-                max_rtf=0.2
+                max_rtf=0.2,
             ),
             AudioTestCase(
                 test_id="rtf_medium_text",
@@ -175,8 +181,8 @@ class ComprehensiveAudioQualityTestSuite:
                 test_category="performance",
                 description="RTF test for medium text",
                 priority="high",
-                max_rtf=0.25
-            )
+                max_rtf=0.25,
+            ),
         ]
 
         # Symbol processing cases
@@ -189,7 +195,7 @@ class ComprehensiveAudioQualityTestSuite:
                 test_category="symbols",
                 description="Test individual number pronunciation",
                 priority="normal",
-                expected_symbols=["1", "2", "3", "4", "5"]
+                expected_symbols=["1", "2", "3", "4", "5"],
             ),
             AudioTestCase(
                 test_id="punctuation_processing",
@@ -198,24 +204,26 @@ class ComprehensiveAudioQualityTestSuite:
                 voice_model="af_heart",
                 test_category="symbols",
                 description="Test punctuation and contraction processing",
-                priority="normal"
-            )
+                priority="normal",
+            ),
         ]
 
         # Voice quality cases (multiple voices)
         voice_cases = []
         test_voices = ["af_heart", "af_bella", "am_adam", "bf_alice"]
         for voice in test_voices:
-            voice_cases.append(AudioTestCase(
-                test_id=f"voice_quality_{voice}",
-                input_text="This is a voice quality test for natural speech synthesis.",
-                expected_transcription="This is a voice quality test for natural speech synthesis.",
-                voice_model=voice,
-                test_category="voice_quality",
-                description=f"Test voice quality for {voice}",
-                priority="normal",
-                min_mos_score=3.5
-            ))
+            voice_cases.append(
+                AudioTestCase(
+                    test_id=f"voice_quality_{voice}",
+                    input_text="This is a voice quality test for natural speech synthesis.",
+                    expected_transcription="This is a voice quality test for natural speech synthesis.",
+                    voice_model=voice,
+                    test_category="voice_quality",
+                    description=f"Test voice quality for {voice}",
+                    priority="normal",
+                    min_mos_score=3.5,
+                )
+            )
 
         test_cases.extend(critical_cases)
         test_cases.extend(performance_cases)
@@ -243,7 +251,7 @@ class ComprehensiveAudioQualityTestSuite:
             performance_metrics={},
             quality_metrics={},
             regression_detected=False,
-            timestamp=time.strftime("%Y-%m-%d %H:%M:%S")
+            timestamp=time.strftime("%Y-%m-%d %H:%M:%S"),
         )
 
         # Group tests by category
@@ -277,11 +285,15 @@ class ComprehensiveAudioQualityTestSuite:
         await self._generate_test_report(results)
 
         logger.info(f"Test suite completed in {results.execution_time:.2f}s")
-        logger.info(f"Results: {results.passed_tests}/{results.total_tests} passed, Score: {results.overall_score:.2f}")
+        logger.info(
+            f"Results: {results.passed_tests}/{results.total_tests} passed, Score: {results.overall_score:.2f}"
+        )
 
         return results
 
-    async def _run_category_tests(self, category: str, test_cases: list[AudioTestCase]) -> dict[str, Any]:
+    async def _run_category_tests(
+        self, category: str, test_cases: list[AudioTestCase]
+    ) -> dict[str, Any]:
         """Run tests for a specific category"""
         category_results = {
             "category": category,
@@ -290,7 +302,7 @@ class ComprehensiveAudioQualityTestSuite:
             "failed": 0,
             "skipped": 0,
             "test_results": [],
-            "avg_metrics": {}
+            "avg_metrics": {},
         }
 
         # Run tests with concurrency control
@@ -312,11 +324,9 @@ class ComprehensiveAudioQualityTestSuite:
             if isinstance(result, Exception):
                 logger.error(f"Test {test_cases[i].test_id} failed with exception: {result}")
                 category_results["failed"] += 1
-                category_results["test_results"].append({
-                    "test_id": test_cases[i].test_id,
-                    "status": "error",
-                    "error": str(result)
-                })
+                category_results["test_results"].append(
+                    {"test_id": test_cases[i].test_id, "status": "error", "error": str(result)}
+                )
             else:
                 test_passed = result["passed"]
                 if test_passed:
@@ -355,7 +365,7 @@ class ComprehensiveAudioQualityTestSuite:
                     "test_id": test_case.test_id,
                     "status": "failed",
                     "passed": False,
-                    "error": "Failed to generate audio"
+                    "error": "Failed to generate audio",
                 }
 
             # Run quality analysis using the correct method
@@ -370,7 +380,7 @@ class ComprehensiveAudioQualityTestSuite:
                 "passed": test_passed,
                 "metrics": asdict(metrics),
                 "generation_time": generation_time,
-                "audio_size": len(audio_data)
+                "audio_size": len(audio_data),
             }
 
         except Exception as e:
@@ -379,7 +389,7 @@ class ComprehensiveAudioQualityTestSuite:
                 "test_id": test_case.test_id,
                 "status": "error",
                 "passed": False,
-                "error": str(e)
+                "error": str(e),
             }
 
     async def _generate_audio(self, test_case: AudioTestCase) -> tuple[bytes | None, float]:
@@ -392,9 +402,9 @@ class ComprehensiveAudioQualityTestSuite:
                 json={
                     "input": test_case.input_text,
                     "voice": test_case.voice_model,
-                    "response_format": "wav"
+                    "response_format": "wav",
                 },
-                timeout=30
+                timeout=30,
             )
 
             generation_time = time.time() - start_time
@@ -409,11 +419,13 @@ class ComprehensiveAudioQualityTestSuite:
             logger.error(f"Failed to generate audio: {e}")
             return None, 0.0
 
-    async def _analyze_audio_quality(self, test_case: AudioTestCase, audio_data: bytes, generation_time: float) -> AudioQualityMetrics:
+    async def _analyze_audio_quality(
+        self, test_case: AudioTestCase, audio_data: bytes, generation_time: float
+    ) -> AudioQualityMetrics:
         """Analyze audio quality for a test case"""
         try:
             # Create a temporary file for audio analysis
-            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_file:
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_file:
                 temp_file.write(audio_data)
                 temp_file_path = temp_file.name
 
@@ -423,7 +435,7 @@ class ComprehensiveAudioQualityTestSuite:
                 duration = audio_props.get("duration", 0)
 
                 # Calculate RTF
-                rtf = generation_time / duration if duration > 0 else float('inf')
+                rtf = generation_time / duration if duration > 0 else float("inf")
 
                 # Predict MOS score
                 mos_prediction = self.tester.predict_mos_score(audio_data, test_case.input_text)
@@ -450,7 +462,7 @@ class ComprehensiveAudioQualityTestSuite:
                     confidence_score=0.9,  # Default heuristic
                     voice_model=test_case.voice_model,
                     text_length=len(test_case.input_text),
-                    test_category=test_case.test_category
+                    test_category=test_case.test_category,
                 )
 
                 return metrics
@@ -468,13 +480,13 @@ class ComprehensiveAudioQualityTestSuite:
                 pronunciation_accuracy=0.0,  # Worst case
                 symbol_processing_accuracy=0.0,
                 prosody_score=0.0,
-                rtf=float('inf'),
+                rtf=float("inf"),
                 audio_duration=0.0,
                 processing_time=generation_time,
                 confidence_score=0.0,
                 voice_model="unknown",
                 text_length=0,
-                test_category="error"
+                test_category="error",
             )
 
     def _calculate_simple_wer(self, test_case: AudioTestCase) -> float:
@@ -548,7 +560,7 @@ class ComprehensiveAudioQualityTestSuite:
             return False
 
         # Check prosody score
-        if metrics.prosody_score < getattr(test_case, 'min_prosody_score', 0.7):
+        if metrics.prosody_score < getattr(test_case, "min_prosody_score", 0.7):
             return False
 
         return True
@@ -569,7 +581,7 @@ class ComprehensiveAudioQualityTestSuite:
             "prosody": 0.20,
             "performance": 0.25,
             "symbols": 0.10,
-            "voice_quality": 0.05
+            "voice_quality": 0.05,
         }
 
         weighted_score = 0.0
@@ -598,7 +610,7 @@ class ComprehensiveAudioQualityTestSuite:
             return False
 
         try:
-            with open(baseline_file, 'r') as f:
+            with open(baseline_file, "r") as f:
                 baseline = json.load(f)
 
             # Compare overall scores
@@ -606,10 +618,14 @@ class ComprehensiveAudioQualityTestSuite:
             current_score = results.overall_score
 
             # Check for significant regression (>5% decrease)
-            regression_threshold = self.audio_config.get("integration", {}).get("baseline_update_threshold", 0.05)
+            regression_threshold = self.audio_config.get("integration", {}).get(
+                "baseline_update_threshold", 0.05
+            )
 
             if current_score < baseline_score - (regression_threshold * 100):
-                logger.warning(f"Quality regression detected: {current_score:.2f} vs baseline {baseline_score:.2f}")
+                logger.warning(
+                    f"Quality regression detected: {current_score:.2f} vs baseline {baseline_score:.2f}"
+                )
                 return True
 
             # Check category-specific regressions
@@ -617,11 +633,17 @@ class ComprehensiveAudioQualityTestSuite:
                 if category in baseline.get("category_results", {}):
                     baseline_result = baseline["category_results"][category]
 
-                    baseline_pass_rate = baseline_result.get("passed", 0) / max(1, baseline_result.get("total", 1))
-                    current_pass_rate = current_result.get("passed", 0) / max(1, current_result.get("total", 1))
+                    baseline_pass_rate = baseline_result.get("passed", 0) / max(
+                        1, baseline_result.get("total", 1)
+                    )
+                    current_pass_rate = current_result.get("passed", 0) / max(
+                        1, current_result.get("total", 1)
+                    )
 
                     if current_pass_rate < baseline_pass_rate - regression_threshold:
-                        logger.warning(f"Regression in {category}: {current_pass_rate:.2f} vs baseline {baseline_pass_rate:.2f}")
+                        logger.warning(
+                            f"Regression in {category}: {current_pass_rate:.2f} vs baseline {baseline_pass_rate:.2f}"
+                        )
                         return True
 
             return False
@@ -636,7 +658,7 @@ class ComprehensiveAudioQualityTestSuite:
 
         try:
             baseline_data = asdict(results)
-            with open(baseline_file, 'w') as f:
+            with open(baseline_file, "w") as f:
                 json.dump(baseline_data, f, indent=2)
 
             logger.info(f"Baseline saved to {baseline_file}")
@@ -651,12 +673,12 @@ class ComprehensiveAudioQualityTestSuite:
 
         try:
             # Save JSON report
-            with open(report_file, 'w') as f:
+            with open(report_file, "w") as f:
                 json.dump(asdict(results), f, indent=2)
 
             # Generate HTML report
             html_content = self._generate_html_report(results)
-            with open(html_report_file, 'w') as f:
+            with open(html_report_file, "w") as f:
                 f.write(html_content)
 
             logger.info(f"Test reports saved: {report_file}, {html_report_file}")
@@ -702,7 +724,7 @@ class ComprehensiveAudioQualityTestSuite:
         </div>
         <div class="metric">
             <h3>Regression</h3>
-            <div style="font-size: 24px; font-weight: bold;">{'Yes' if results.regression_detected else 'No'}</div>
+            <div style="font-size: 24px; font-weight: bold;">{"Yes" if results.regression_detected else "No"}</div>
         </div>
     </div>
 """
@@ -712,15 +734,15 @@ class ComprehensiveAudioQualityTestSuite:
             html += f"""
     <div class="category">
         <div class="category-header">{category.title()} Tests</div>
-        <p>Passed: {category_result['passed']}/{category_result['total']}</p>
+        <p>Passed: {category_result["passed"]}/{category_result["total"]}</p>
 """
 
-            for test_result in category_result.get('test_results', []):
-                status_class = test_result['status']
+            for test_result in category_result.get("test_results", []):
+                status_class = test_result["status"]
                 html += f"""
         <div class="test-result">
-            <span class="{status_class}">● {test_result['test_id']}</span>
-            - Status: {test_result['status']}
+            <span class="{status_class}">● {test_result["test_id"]}</span>
+            - Status: {test_result["status"]}
         </div>
 """
 

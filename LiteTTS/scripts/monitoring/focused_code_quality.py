@@ -13,8 +13,9 @@ from pathlib import Path
 from typing import Any
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 class FocusedCodeQualityAssessor:
     """Focused code quality assessment for project code only"""
@@ -26,34 +27,43 @@ class FocusedCodeQualityAssessor:
             "incomplete": [],
             "structure": [],
             "performance": [],
-            "maintainability": []
+            "maintainability": [],
         }
 
         # Only analyze these directories (project code)
         self.include_dirs = ["kokoro", "scripts", "monitoring"]
         self.exclude_patterns = [
-            "__pycache__", ".git", ".venv", "venv", "node_modules",
-            "cache", "samples", "examples", "static", "nginx", "docs"
+            "__pycache__",
+            ".git",
+            ".venv",
+            "venv",
+            "node_modules",
+            "cache",
+            "samples",
+            "examples",
+            "static",
+            "nginx",
+            "docs",
         ]
 
         # Security patterns to check
         self.security_patterns = [
-            (r'eval\s*\(', "Use of eval() function"),
-            (r'exec\s*\(', "Use of exec() function"),
-            (r'subprocess\.call\s*\(.*shell\s*=\s*True', "Shell injection risk"),
-            (r'os\.system\s*\(', "Use of os.system()"),
-            (r'pickle\.loads?\s*\(', "Unsafe pickle usage"),
-            (r'SECRET|PASSWORD|TOKEN|KEY.*=.*[\'\"]\w{8,}', "Hardcoded secrets"),
-            (r'DEBUG\s*=\s*True', "Debug mode enabled in production")
+            (r"eval\s*\(", "Use of eval() function"),
+            (r"exec\s*\(", "Use of exec() function"),
+            (r"subprocess\.call\s*\(.*shell\s*=\s*True", "Shell injection risk"),
+            (r"os\.system\s*\(", "Use of os.system()"),
+            (r"pickle\.loads?\s*\(", "Unsafe pickle usage"),
+            (r"SECRET|PASSWORD|TOKEN|KEY.*=.*[\'\"]\w{8,}", "Hardcoded secrets"),
+            (r"DEBUG\s*=\s*True", "Debug mode enabled in production"),
         ]
 
         # Code quality patterns
         self.quality_patterns = [
-            (r'TODO|FIXME|HACK|XXX', "TODO/FIXME comments"),
-            (r'print\s*\(', "Print statements (should use logging)"),
-            (r'except\s*:', "Bare except clause"),
-            (r'pass\s*#.*TODO', "TODO pass statements"),
-            (r'import\s+\*', "Wildcard imports")
+            (r"TODO|FIXME|HACK|XXX", "TODO/FIXME comments"),
+            (r"print\s*\(", "Print statements (should use logging)"),
+            (r"except\s*:", "Bare except clause"),
+            (r"pass\s*#.*TODO", "TODO pass statements"),
+            (r"import\s+\*", "Wildcard imports"),
         ]
 
     def should_analyze_file(self, file_path: Path) -> bool:
@@ -85,13 +95,13 @@ class FocusedCodeQualityAssessor:
             "security_issues": [],
             "quality_issues": [],
             "incomplete_implementations": [],
-            "docstring_coverage": 0
+            "docstring_coverage": 0,
         }
 
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
-                lines = content.split('\n')
+                lines = content.split("\n")
                 analysis["lines"] = len(lines)
 
             # Parse AST for detailed analysis
@@ -99,86 +109,98 @@ class FocusedCodeQualityAssessor:
                 tree = ast.parse(content)
                 analysis.update(self._analyze_ast(tree, content))
             except SyntaxError as e:
-                self.issues["structure"].append({
-                    "file": str(file_path.relative_to(self.project_root)),
-                    "issue": f"Syntax error: {e}",
-                    "severity": "high"
-                })
+                self.issues["structure"].append(
+                    {
+                        "file": str(file_path.relative_to(self.project_root)),
+                        "issue": f"Syntax error: {e}",
+                        "severity": "high",
+                    }
+                )
 
             # Check security patterns
             for pattern, description in self.security_patterns:
                 matches = re.finditer(pattern, content, re.IGNORECASE | re.MULTILINE)
                 for match in matches:
-                    line_num = content[:match.start()].count('\n') + 1
-                    analysis["security_issues"].append({
-                        "line": line_num,
-                        "issue": description,
-                        "code": lines[line_num - 1].strip() if line_num <= len(lines) else ""
-                    })
-                    self.issues["security"].append({
-                        "file": str(file_path.relative_to(self.project_root)),
-                        "line": line_num,
-                        "issue": description,
-                        "severity": "medium"
-                    })
+                    line_num = content[: match.start()].count("\n") + 1
+                    analysis["security_issues"].append(
+                        {
+                            "line": line_num,
+                            "issue": description,
+                            "code": lines[line_num - 1].strip() if line_num <= len(lines) else "",
+                        }
+                    )
+                    self.issues["security"].append(
+                        {
+                            "file": str(file_path.relative_to(self.project_root)),
+                            "line": line_num,
+                            "issue": description,
+                            "severity": "medium",
+                        }
+                    )
 
             # Check quality patterns
             for pattern, description in self.quality_patterns:
                 matches = re.finditer(pattern, content, re.IGNORECASE | re.MULTILINE)
                 for match in matches:
-                    line_num = content[:match.start()].count('\n') + 1
-                    analysis["quality_issues"].append({
-                        "line": line_num,
-                        "issue": description,
-                        "code": lines[line_num - 1].strip() if line_num <= len(lines) else ""
-                    })
-                    self.issues["maintainability"].append({
-                        "file": str(file_path.relative_to(self.project_root)),
-                        "line": line_num,
-                        "issue": description,
-                        "severity": "low"
-                    })
+                    line_num = content[: match.start()].count("\n") + 1
+                    analysis["quality_issues"].append(
+                        {
+                            "line": line_num,
+                            "issue": description,
+                            "code": lines[line_num - 1].strip() if line_num <= len(lines) else "",
+                        }
+                    )
+                    self.issues["maintainability"].append(
+                        {
+                            "file": str(file_path.relative_to(self.project_root)),
+                            "line": line_num,
+                            "issue": description,
+                            "severity": "low",
+                        }
+                    )
 
             # Check for incomplete implementations
             incomplete_patterns = [
-                (r'raise\s+NotImplementedError', "NotImplementedError"),
-                (r'pass\s*#.*TODO', "TODO implementation"),
-                (r'def\s+\w+.*:\s*pass\s*$', "Empty function"),
-                (r'class\s+\w+.*:\s*pass\s*$', "Empty class")
+                (r"raise\s+NotImplementedError", "NotImplementedError"),
+                (r"pass\s*#.*TODO", "TODO implementation"),
+                (r"def\s+\w+.*:\s*pass\s*$", "Empty function"),
+                (r"class\s+\w+.*:\s*pass\s*$", "Empty class"),
             ]
 
             for pattern, description in incomplete_patterns:
                 matches = re.finditer(pattern, content, re.MULTILINE)
                 for match in matches:
-                    line_num = content[:match.start()].count('\n') + 1
-                    analysis["incomplete_implementations"].append({
-                        "line": line_num,
-                        "issue": description,
-                        "code": lines[line_num - 1].strip() if line_num <= len(lines) else ""
-                    })
-                    self.issues["incomplete"].append({
-                        "file": str(file_path.relative_to(self.project_root)),
-                        "line": line_num,
-                        "issue": description,
-                        "severity": "medium"
-                    })
+                    line_num = content[: match.start()].count("\n") + 1
+                    analysis["incomplete_implementations"].append(
+                        {
+                            "line": line_num,
+                            "issue": description,
+                            "code": lines[line_num - 1].strip() if line_num <= len(lines) else "",
+                        }
+                    )
+                    self.issues["incomplete"].append(
+                        {
+                            "file": str(file_path.relative_to(self.project_root)),
+                            "line": line_num,
+                            "issue": description,
+                            "severity": "medium",
+                        }
+                    )
 
         except Exception as e:
-            self.issues["structure"].append({
-                "file": str(file_path.relative_to(self.project_root)),
-                "issue": f"Failed to analyze file: {e}",
-                "severity": "medium"
-            })
+            self.issues["structure"].append(
+                {
+                    "file": str(file_path.relative_to(self.project_root)),
+                    "issue": f"Failed to analyze file: {e}",
+                    "severity": "medium",
+                }
+            )
 
         return analysis
 
     def _analyze_ast(self, tree: ast.AST, content: str) -> dict[str, Any]:
         """Analyze AST for code metrics"""
-        analysis = {
-            "functions": 0,
-            "classes": 0,
-            "docstring_coverage": 0
-        }
+        analysis = {"functions": 0, "classes": 0, "docstring_coverage": 0}
 
         functions_with_docs = 0
         classes_with_docs = 0
@@ -206,11 +228,7 @@ class FocusedCodeQualityAssessor:
         """Check configuration files for issues"""
         logger.info("🔧 Analyzing configuration files...")
 
-        config_analysis = {
-            "files_checked": [],
-            "security_issues": [],
-            "structure_issues": []
-        }
+        config_analysis = {"files_checked": [], "security_issues": [], "structure_issues": []}
 
         config_files = ["config.json", "override.json", "app.py"]
 
@@ -220,41 +238,43 @@ class FocusedCodeQualityAssessor:
                 config_analysis["files_checked"].append(config_file)
 
                 try:
-                    with open(file_path, 'r') as f:
+                    with open(file_path, "r") as f:
                         content = f.read()
 
                     # Check for sensitive data patterns (more specific)
-                    if config_file.endswith('.json'):
+                    if config_file.endswith(".json"):
                         try:
                             json.loads(content)
                         except json.JSONDecodeError as e:
-                            config_analysis["structure_issues"].append({
-                                "file": config_file,
-                                "issue": f"Invalid JSON: {e}",
-                                "severity": "high"
-                            })
+                            config_analysis["structure_issues"].append(
+                                {
+                                    "file": config_file,
+                                    "issue": f"Invalid JSON: {e}",
+                                    "severity": "high",
+                                }
+                            )
 
                     # Check for hardcoded secrets (more specific patterns)
                     secret_patterns = [
                         (r'"password"\s*:\s*"[^"]{8,}"', "Hardcoded password in config"),
                         (r'"secret"\s*:\s*"[^"]{16,}"', "Hardcoded secret in config"),
-                        (r'"token"\s*:\s*"[^"]{20,}"', "Hardcoded token in config")
+                        (r'"token"\s*:\s*"[^"]{20,}"', "Hardcoded token in config"),
                     ]
 
                     for pattern, description in secret_patterns:
                         if re.search(pattern, content, re.IGNORECASE):
-                            config_analysis["security_issues"].append({
-                                "file": config_file,
-                                "issue": description,
-                                "severity": "high"
-                            })
+                            config_analysis["security_issues"].append(
+                                {"file": config_file, "issue": description, "severity": "high"}
+                            )
 
                 except Exception as e:
-                    config_analysis["structure_issues"].append({
-                        "file": config_file,
-                        "issue": f"Failed to analyze: {e}",
-                        "severity": "medium"
-                    })
+                    config_analysis["structure_issues"].append(
+                        {
+                            "file": config_file,
+                            "issue": f"Failed to analyze: {e}",
+                            "severity": "medium",
+                        }
+                    )
 
         return config_analysis
 
@@ -271,10 +291,10 @@ class FocusedCodeQualityAssessor:
                 "total_lines": 0,
                 "total_functions": 0,
                 "total_classes": 0,
-                "avg_docstring_coverage": 0
+                "avg_docstring_coverage": 0,
             },
             "issues_summary": {},
-            "recommendations": []
+            "recommendations": [],
         }
 
         # 1. Configuration analysis
@@ -313,7 +333,9 @@ class FocusedCodeQualityAssessor:
             "total_lines": total_lines,
             "total_functions": total_functions,
             "total_classes": total_classes,
-            "avg_docstring_coverage": total_docstring_coverage / len(python_files) if python_files else 0
+            "avg_docstring_coverage": total_docstring_coverage / len(python_files)
+            if python_files
+            else 0,
         }
 
         # 4. Summarize issues
@@ -335,35 +357,43 @@ class FocusedCodeQualityAssessor:
 
         # Security recommendations
         if self.issues["security"]:
-            recommendations.append({
-                "category": "Security",
-                "priority": "High",
-                "recommendation": f"Address {len(self.issues['security'])} security issues in project code"
-            })
+            recommendations.append(
+                {
+                    "category": "Security",
+                    "priority": "High",
+                    "recommendation": f"Address {len(self.issues['security'])} security issues in project code",
+                }
+            )
 
         # Incomplete implementations
         if self.issues["incomplete"]:
-            recommendations.append({
-                "category": "Implementation",
-                "priority": "High",
-                "recommendation": f"Complete {len(self.issues['incomplete'])} incomplete implementations"
-            })
+            recommendations.append(
+                {
+                    "category": "Implementation",
+                    "priority": "High",
+                    "recommendation": f"Complete {len(self.issues['incomplete'])} incomplete implementations",
+                }
+            )
 
         # Structure recommendations
         if self.issues["structure"]:
-            recommendations.append({
-                "category": "Structure",
-                "priority": "Medium",
-                "recommendation": f"Fix {len(self.issues['structure'])} structural issues"
-            })
+            recommendations.append(
+                {
+                    "category": "Structure",
+                    "priority": "Medium",
+                    "recommendation": f"Fix {len(self.issues['structure'])} structural issues",
+                }
+            )
 
         # Maintainability recommendations
         if self.issues["maintainability"]:
-            recommendations.append({
-                "category": "Maintainability",
-                "priority": "Low",
-                "recommendation": f"Improve {len(self.issues['maintainability'])} maintainability issues"
-            })
+            recommendations.append(
+                {
+                    "category": "Maintainability",
+                    "priority": "Low",
+                    "recommendation": f"Improve {len(self.issues['maintainability'])} maintainability issues",
+                }
+            )
 
         return recommendations
 
@@ -404,9 +434,11 @@ class FocusedCodeQualityAssessor:
             logger.info("\n📋 Files with Most Issues:")
             file_issue_counts = {}
             for file_path, analysis in results["file_analysis"].items():
-                issue_count = (len(analysis["security_issues"]) +
-                             len(analysis["quality_issues"]) +
-                             len(analysis["incomplete_implementations"]))
+                issue_count = (
+                    len(analysis["security_issues"])
+                    + len(analysis["quality_issues"])
+                    + len(analysis["incomplete_implementations"])
+                )
                 if issue_count > 0:
                     file_issue_counts[file_path] = issue_count
 
@@ -420,7 +452,13 @@ class FocusedCodeQualityAssessor:
         if recommendations:
             logger.info("\n💡 Recommendations:")
             for rec in recommendations:
-                priority_icon = "🔴" if rec["priority"] == "High" else "🟡" if rec["priority"] == "Medium" else "🟢"
+                priority_icon = (
+                    "🔴"
+                    if rec["priority"] == "High"
+                    else "🟡"
+                    if rec["priority"] == "Medium"
+                    else "🟢"
+                )
                 logger.info(f"   {priority_icon} {rec['category']}: {rec['recommendation']}")
 
         # Overall assessment
@@ -439,6 +477,7 @@ class FocusedCodeQualityAssessor:
 
         logger.info("=" * 70)
 
+
 def main():
     """Main assessment function"""
     assessor = FocusedCodeQualityAssessor()
@@ -456,6 +495,7 @@ def main():
         sys.exit(0)
     else:
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

@@ -19,7 +19,7 @@ class TestTextChunker:
             min_chunk_size=50,
             overlap_size=20,
             strategy=ChunkingStrategy.SENTENCE,
-            enabled=True
+            enabled=True,
         )
         return TextChunker(config)
 
@@ -82,7 +82,7 @@ class TestTextChunk:
             start_position=0,
             end_position=11,
             is_sentence_boundary=True,
-            is_paragraph_boundary=False
+            is_paragraph_boundary=False,
         )
         assert chunk.text == "Hello world"
         assert chunk.chunk_id == 0
@@ -98,7 +98,7 @@ class TestTextChunk:
             start_position=0,
             end_position=4,
             is_sentence_boundary=False,
-            is_paragraph_boundary=False
+            is_paragraph_boundary=False,
         )
         assert chunk.overlap_text is None or chunk.overlap_text == ""
 
@@ -120,7 +120,7 @@ class TestChunkingConfig:
             max_chunk_size=500,
             min_chunk_size=100,
             overlap_size=50,
-            strategy=ChunkingStrategy.PHRASE
+            strategy=ChunkingStrategy.PHRASE,
         )
         assert config.max_chunk_size == 500
         assert config.min_chunk_size == 100

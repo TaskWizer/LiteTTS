@@ -11,6 +11,7 @@ import requests
 
 BASE_URL = "http://localhost:8354"
 
+
 def test_openwebui_typical_request():
     """Test the most common OpenWebUI request pattern"""
     print("🧪 Testing typical OpenWebUI request...")
@@ -21,16 +22,12 @@ def test_openwebui_typical_request():
         "voice": "af_heart",
         "response_format": None,  # OpenWebUI often sends null
         "speed": 1.0,
-        "model": None  # OpenWebUI includes this field
+        "model": None,  # OpenWebUI includes this field
     }
 
     try:
         start_time = time.time()
-        response = requests.post(
-            f"{BASE_URL}/v1/audio/speech",
-            json=payload,
-            timeout=30
-        )
+        response = requests.post(f"{BASE_URL}/v1/audio/speech", json=payload, timeout=30)
         end_time = time.time()
 
         if response.status_code == 200:
@@ -52,22 +49,19 @@ def test_openwebui_typical_request():
         print(f"❌ EXCEPTION: {e}")
         return False
 
+
 def test_openwebui_minimal_request():
     """Test minimal OpenWebUI request (only required fields)"""
     print("\n🧪 Testing minimal OpenWebUI request...")
 
     payload = {
         "input": "Minimal test",
-        "voice": "af_heart"
+        "voice": "af_heart",
         # No optional fields - should use defaults
     }
 
     try:
-        response = requests.post(
-            f"{BASE_URL}/v1/audio/speech",
-            json=payload,
-            timeout=30
-        )
+        response = requests.post(f"{BASE_URL}/v1/audio/speech", json=payload, timeout=30)
 
         if response.status_code == 200:
             audio_size = len(response.content)
@@ -81,6 +75,7 @@ def test_openwebui_minimal_request():
         print(f"❌ EXCEPTION: {e}")
         return False
 
+
 def test_openwebui_edge_cases():
     """Test edge cases that might occur with OpenWebUI"""
     print("\n🧪 Testing OpenWebUI edge cases...")
@@ -88,29 +83,33 @@ def test_openwebui_edge_cases():
     edge_cases = [
         {
             "name": "Empty string format",
-            "payload": {"input": "Test empty format", "voice": "af_heart", "response_format": ""}
+            "payload": {"input": "Test empty format", "voice": "af_heart", "response_format": ""},
         },
         {
             "name": "Null speed",
-            "payload": {"input": "Test null speed", "voice": "af_heart", "speed": None}
+            "payload": {"input": "Test null speed", "voice": "af_heart", "speed": None},
         },
         {
             "name": "String speed",
-            "payload": {"input": "Test string speed", "voice": "af_heart", "speed": "1.2"}
+            "payload": {"input": "Test string speed", "voice": "af_heart", "speed": "1.2"},
         },
         {
             "name": "All nulls",
-            "payload": {"input": "Test all nulls", "voice": "af_heart", "response_format": None, "speed": None, "model": None}
-        }
+            "payload": {
+                "input": "Test all nulls",
+                "voice": "af_heart",
+                "response_format": None,
+                "speed": None,
+                "model": None,
+            },
+        },
     ]
 
     success_count = 0
     for case in edge_cases:
         try:
             response = requests.post(
-                f"{BASE_URL}/v1/audio/speech",
-                json=case["payload"],
-                timeout=30
+                f"{BASE_URL}/v1/audio/speech", json=case["payload"], timeout=30
             )
 
             if response.status_code == 200:
@@ -126,6 +125,7 @@ def test_openwebui_edge_cases():
     print(f"\n📊 Edge cases: {success_count}/{len(edge_cases)} passed")
     return success_count == len(edge_cases)
 
+
 def test_openwebui_error_handling():
     """Test that error handling works correctly for OpenWebUI"""
     print("\n🧪 Testing OpenWebUI error handling...")
@@ -134,27 +134,25 @@ def test_openwebui_error_handling():
         {
             "name": "Empty text",
             "payload": {"input": "", "voice": "af_heart"},
-            "expected_status": 400
+            "expected_status": 400,
         },
         {
             "name": "Invalid voice",
             "payload": {"input": "Test", "voice": "nonexistent_voice"},
-            "expected_status": 400
+            "expected_status": 400,
         },
         {
             "name": "Invalid format",
             "payload": {"input": "Test", "voice": "af_heart", "response_format": "invalid"},
-            "expected_status": 400
-        }
+            "expected_status": 400,
+        },
     ]
 
     success_count = 0
     for case in error_cases:
         try:
             response = requests.post(
-                f"{BASE_URL}/v1/audio/speech",
-                json=case["payload"],
-                timeout=30
+                f"{BASE_URL}/v1/audio/speech", json=case["payload"], timeout=30
             )
 
             if response.status_code == case["expected_status"]:
@@ -168,13 +166,16 @@ def test_openwebui_error_handling():
                 except:
                     print(f"❌ {case['name']}: Invalid JSON response")
             else:
-                print(f"❌ {case['name']}: Expected {case['expected_status']}, got {response.status_code}")
+                print(
+                    f"❌ {case['name']}: Expected {case['expected_status']}, got {response.status_code}"
+                )
 
         except Exception as e:
             print(f"❌ {case['name']}: Exception {e}")
 
     print(f"\n📊 Error handling: {success_count}/{len(error_cases)} passed")
     return success_count == len(error_cases)
+
 
 def test_openwebui_performance():
     """Test performance characteristics important for OpenWebUI"""
@@ -206,7 +207,9 @@ def test_openwebui_performance():
         # Verify performance improvement
         if cache_time < cold_time and cache_time < 0.1:
             speedup = cold_time / cache_time
-            print(f"✅ Cache performance: {speedup:.1f}x speedup ({cache_time:.3f}s vs {cold_time:.3f}s)")
+            print(
+                f"✅ Cache performance: {speedup:.1f}x speedup ({cache_time:.3f}s vs {cold_time:.3f}s)"
+            )
             return True
         else:
             print(f"❌ Cache not working: {cache_time:.3f}s vs {cold_time:.3f}s")
@@ -215,6 +218,7 @@ def test_openwebui_performance():
     except Exception as e:
         print(f"❌ Performance test exception: {e}")
         return False
+
 
 def main():
     """Run all OpenWebUI integration tests"""
@@ -228,7 +232,7 @@ def main():
         ("Minimal Request", test_openwebui_minimal_request),
         ("Edge Cases", test_openwebui_edge_cases),
         ("Error Handling", test_openwebui_error_handling),
-        ("Performance", test_openwebui_performance)
+        ("Performance", test_openwebui_performance),
     ]
 
     passed = 0
@@ -257,6 +261,7 @@ def main():
         print(f"\n❌ {total - passed} test categories failed")
         print("🔧 OpenWebUI integration may have issues")
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

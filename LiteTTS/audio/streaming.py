@@ -16,14 +16,17 @@ from .format_converter import AudioFormatConverter
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class StreamChunk:
     """Represents a chunk of streaming audio data"""
+
     data: bytes
     chunk_index: int
     total_chunks: int | None = None
     metadata: dict[str, Any] = None
     is_final: bool = False
+
 
 class AudioStreamer:
     """Handles streaming audio responses"""
@@ -32,8 +35,9 @@ class AudioStreamer:
         self.chunk_duration = chunk_duration
         self.format_converter = AudioFormatConverter()
 
-    def stream_audio_sync(self, audio_segment: AudioSegment,
-                         format: str = "mp3") -> Iterator[StreamChunk]:
+    def stream_audio_sync(
+        self, audio_segment: AudioSegment, format: str = "mp3"
+    ) -> Iterator[StreamChunk]:
         """Stream audio synchronously in chunks"""
         logger.debug(f"Starting sync audio stream, duration: {audio_segment.duration}s")
 
@@ -43,20 +47,18 @@ class AudioStreamer:
         for i, chunk in enumerate(chunks):
             try:
                 # For WAV streaming: first chunk gets header, rest are raw PCM
-                if format.lower() == 'wav' and i > 0:
+                if format.lower() == "wav" and i > 0:
                     # Subsequent WAV chunks: raw PCM without header
                     chunk_bytes = self.format_converter.convert_format(
                         chunk.audio_data,
                         chunk.sample_rate,
                         format,
-                        include_header=False  # No header for subsequent chunks
+                        include_header=False,  # No header for subsequent chunks
                     )
                 else:
                     # First chunk or non-WAV: include header
                     chunk_bytes = self.format_converter.convert_format(
-                        chunk.audio_data,
-                        chunk.sample_rate,
-                        format
+                        chunk.audio_data, chunk.sample_rate, format
                     )
 
                 yield StreamChunk(
@@ -64,12 +66,12 @@ class AudioStreamer:
                     chunk_index=i,
                     total_chunks=total_chunks,
                     metadata={
-                        'duration': chunk.duration,
-                        'sample_rate': chunk.sample_rate,
-                        'format': format,
-                        'chunk_size': len(chunk_bytes)
+                        "duration": chunk.duration,
+                        "sample_rate": chunk.sample_rate,
+                        "format": format,
+                        "chunk_size": len(chunk_bytes),
                     },
-                    is_final=(i == total_chunks - 1)
+                    is_final=(i == total_chunks - 1),
                 )
 
             except Exception as e:
@@ -78,8 +80,9 @@ class AudioStreamer:
 
         logger.debug(f"Completed sync audio stream, {total_chunks} chunks")
 
-    async def stream_audio_async(self, audio_segment: AudioSegment,
-                                format: str = "mp3") -> AsyncIterator[StreamChunk]:
+    async def stream_audio_async(
+        self, audio_segment: AudioSegment, format: str = "mp3"
+    ) -> AsyncIterator[StreamChunk]:
         """Stream audio asynchronously in chunks"""
         logger.debug(f"Starting async audio stream, duration: {audio_segment.duration}s")
 
@@ -89,15 +92,15 @@ class AudioStreamer:
         for i, chunk in enumerate(chunks):
             try:
                 # For WAV streaming: first chunk gets header, rest are raw PCM
-                if format.lower() == 'wav':
-                    include_header = (i == 0)
+                if format.lower() == "wav":
+                    include_header = i == 0
                     chunk_bytes = await asyncio.get_event_loop().run_in_executor(
                         None,
                         self.format_converter.convert_to_wav,
                         chunk.audio_data,
                         chunk.sample_rate,
                         None,  # bit_depth
-                        include_header
+                        include_header,
                     )
                 else:
                     # Non-WAV formats always include their container headers
@@ -106,7 +109,7 @@ class AudioStreamer:
                         self.format_converter.convert_format,
                         chunk.audio_data,
                         chunk.sample_rate,
-                        format
+                        format,
                     )
 
                 yield StreamChunk(
@@ -114,12 +117,12 @@ class AudioStreamer:
                     chunk_index=i,
                     total_chunks=total_chunks,
                     metadata={
-                        'duration': chunk.duration,
-                        'sample_rate': chunk.sample_rate,
-                        'format': format,
-                        'chunk_size': len(chunk_bytes)
+                        "duration": chunk.duration,
+                        "sample_rate": chunk.sample_rate,
+                        "format": format,
+                        "chunk_size": len(chunk_bytes),
                     },
-                    is_final=(i == total_chunks - 1)
+                    is_final=(i == total_chunks - 1),
                 )
 
                 # Small delay to allow other coroutines to run
@@ -131,24 +134,25 @@ class AudioStreamer:
 
         logger.debug(f"Completed async audio stream, {total_chunks} chunks")
 
-    def create_streaming_response_headers(self, format: str,
-                                        estimated_size: int | None = None) -> dict[str, str]:
+    def create_streaming_response_headers(
+        self, format: str, estimated_size: int | None = None
+    ) -> dict[str, str]:
         """Create headers for streaming audio response"""
         headers = {
-            'Content-Type': self.format_converter.get_content_type(format),
-            'Transfer-Encoding': 'chunked',
-            'Cache-Control': 'no-cache',
-            'Connection': 'keep-alive'
+            "Content-Type": self.format_converter.get_content_type(format),
+            "Transfer-Encoding": "chunked",
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
         }
 
         if estimated_size:
-            headers['X-Estimated-Content-Length'] = str(estimated_size)
+            headers["X-Estimated-Content-Length"] = str(estimated_size)
 
         # Add format-specific headers
-        if format.lower() == 'mp3':
-            headers['X-Audio-Bitrate'] = '128'
-        elif format.lower() == 'wav':
-            headers['X-Audio-Bit-Depth'] = '16'
+        if format.lower() == "mp3":
+            headers["X-Audio-Bitrate"] = "128"
+        elif format.lower() == "wav":
+            headers["X-Audio-Bit-Depth"] = "16"
 
         return headers
 
@@ -158,43 +162,45 @@ class AudioStreamer:
         duration = audio_segment.duration
         sample_rate = audio_segment.sample_rate
 
-        if format.lower() == 'wav':
+        if format.lower() == "wav":
             # WAV: sample_rate * duration * 2 bytes (16-bit) + header
             return int(sample_rate * duration * 2) + 44
-        elif format.lower() == 'mp3':
+        elif format.lower() == "mp3":
             # MP3: roughly 128 kbps = 16 KB/s
             return int(duration * 16 * 1024)
-        elif format.lower() == 'ogg':
+        elif format.lower() == "ogg":
             # OGG: roughly 96 kbps = 12 KB/s
             return int(duration * 12 * 1024)
         else:
             # Default to WAV estimate
             return int(sample_rate * duration * 2) + 44
 
-    def create_sse_stream(self, audio_segment: AudioSegment,
-                         format: str = "mp3") -> Iterator[str]:
+    def create_sse_stream(self, audio_segment: AudioSegment, format: str = "mp3") -> Iterator[str]:
         """Create Server-Sent Events stream for audio data"""
         logger.debug("Creating SSE stream for audio")
 
         for chunk in self.stream_audio_sync(audio_segment, format):
             # Encode chunk data as base64 for SSE
             import base64
-            encoded_data = base64.b64encode(chunk.data).decode('utf-8')
+
+            encoded_data = base64.b64encode(chunk.data).decode("utf-8")
 
             # Create SSE event
             sse_data = {
-                'chunk_index': chunk.chunk_index,
-                'total_chunks': chunk.total_chunks,
-                'data': encoded_data,
-                'metadata': chunk.metadata,
-                'is_final': chunk.is_final
+                "chunk_index": chunk.chunk_index,
+                "total_chunks": chunk.total_chunks,
+                "data": encoded_data,
+                "metadata": chunk.metadata,
+                "is_final": chunk.is_final,
             }
 
             import json
+
             yield f"data: {json.dumps(sse_data)}\n\n"
 
         # Send final event
         yield "event: complete\ndata: {}\n\n"
+
 
 class RealTimeStreamer:
     """Handles real-time audio streaming as it's being generated"""
@@ -227,11 +233,7 @@ class RealTimeStreamer:
             try:
                 # Convert to target format
                 chunk_bytes = await asyncio.get_event_loop().run_in_executor(
-                    None,
-                    self.format_converter.convert_format,
-                    audio_data,
-                    sample_rate,
-                    format
+                    None, self.format_converter.convert_format, audio_data, sample_rate, format
                 )
 
                 yield chunk_bytes

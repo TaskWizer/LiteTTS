@@ -37,14 +37,14 @@ class ProductionReadinessAssessment:
             try:
                 result = test_func()
                 results[test_name] = result
-                if result.get('success', False):
+                if result.get("success", False):
                     self.score += 1
                     print(f"   ✅ {test_name}: PASS")
                 else:
                     print(f"   ❌ {test_name}: FAIL - {result.get('error', 'Unknown error')}")
                 self.max_score += 1
             except Exception as e:
-                results[test_name] = {'success': False, 'error': str(e)}
+                results[test_name] = {"success": False, "error": str(e)}
                 print(f"   ❌ {test_name}: ERROR - {e}")
                 self.max_score += 1
 
@@ -64,8 +64,13 @@ class ProductionReadinessAssessment:
             start_time = time.time()
             response = requests.post(
                 "http://localhost:8354/v1/audio/speech",
-                json={"model": "kokoro", "input": unique_text, "voice": "af_heart", "response_format": "mp3"},
-                timeout=10
+                json={
+                    "model": "kokoro",
+                    "input": unique_text,
+                    "voice": "af_heart",
+                    "response_format": "mp3",
+                },
+                timeout=10,
             )
             cache_miss_time = time.time() - start_time
 
@@ -73,14 +78,21 @@ class ProductionReadinessAssessment:
             start_time = time.time()
             response = requests.post(
                 "http://localhost:8354/v1/audio/speech",
-                json={"model": "kokoro", "input": unique_text, "voice": "af_heart", "response_format": "mp3"},
-                timeout=10
+                json={
+                    "model": "kokoro",
+                    "input": unique_text,
+                    "voice": "af_heart",
+                    "response_format": "mp3",
+                },
+                timeout=10,
             )
             cache_hit_time = time.time() - start_time
 
-            performance_results['cache_miss_time'] = cache_miss_time
-            performance_results['cache_hit_time'] = cache_hit_time
-            performance_results['speedup'] = cache_miss_time / cache_hit_time if cache_hit_time > 0 else 0
+            performance_results["cache_miss_time"] = cache_miss_time
+            performance_results["cache_hit_time"] = cache_hit_time
+            performance_results["speedup"] = (
+                cache_miss_time / cache_hit_time if cache_hit_time > 0 else 0
+            )
 
             # Performance scoring
             if cache_hit_time < 0.1:  # 100ms
@@ -101,7 +113,7 @@ class ProductionReadinessAssessment:
             self.max_score += 3
 
         except Exception as e:
-            performance_results['error'] = str(e)
+            performance_results["error"] = str(e)
             print(f"   ❌ Performance Test Failed: {e}")
             self.max_score += 3
 
@@ -119,17 +131,17 @@ class ProductionReadinessAssessment:
             response = requests.get("http://localhost:8354/health", timeout=5)
             if response.status_code == 200:
                 health_data = response.json()
-                reliability_results['health_check'] = True
-                reliability_results['health_data'] = health_data
+                reliability_results["health_check"] = True
+                reliability_results["health_data"] = health_data
                 self.score += 1
                 print("   ✅ Health Check: OPERATIONAL")
             else:
-                reliability_results['health_check'] = False
+                reliability_results["health_check"] = False
                 print(f"   ❌ Health Check: FAILED ({response.status_code})")
             self.max_score += 1
         except Exception as e:
-            reliability_results['health_check'] = False
-            reliability_results['health_error'] = str(e)
+            reliability_results["health_check"] = False
+            reliability_results["health_error"] = str(e)
             print(f"   ❌ Health Check: ERROR - {e}")
             self.max_score += 1
 
@@ -144,12 +156,17 @@ class ProductionReadinessAssessment:
                 try:
                     response = requests.post(
                         "http://localhost:8354/v1/audio/speech",
-                        json={"model": "kokoro", "input": f"Concurrent test {request_id}", "voice": "af_heart", "response_format": "mp3"},
-                        timeout=10
+                        json={
+                            "model": "kokoro",
+                            "input": f"Concurrent test {request_id}",
+                            "voice": "af_heart",
+                            "response_format": "mp3",
+                        },
+                        timeout=10,
                     )
-                    results_queue.put({'id': request_id, 'success': response.status_code == 200})
+                    results_queue.put({"id": request_id, "success": response.status_code == 200})
                 except Exception as e:
-                    results_queue.put({'id': request_id, 'success': False, 'error': str(e)})
+                    results_queue.put({"id": request_id, "success": False, "error": str(e)})
 
             # Launch 5 concurrent requests
             threads = []
@@ -167,11 +184,11 @@ class ProductionReadinessAssessment:
             while not results_queue.empty():
                 concurrent_results.append(results_queue.get())
 
-            successful = sum(1 for r in concurrent_results if r.get('success', False))
-            reliability_results['concurrent_test'] = {
-                'total': len(concurrent_results),
-                'successful': successful,
-                'success_rate': successful / len(concurrent_results) if concurrent_results else 0
+            successful = sum(1 for r in concurrent_results if r.get("success", False))
+            reliability_results["concurrent_test"] = {
+                "total": len(concurrent_results),
+                "successful": successful,
+                "success_rate": successful / len(concurrent_results) if concurrent_results else 0,
             }
 
             if successful >= 4:  # 80% success rate
@@ -183,7 +200,7 @@ class ProductionReadinessAssessment:
             self.max_score += 1
 
         except Exception as e:
-            reliability_results['concurrent_error'] = str(e)
+            reliability_results["concurrent_error"] = str(e)
             print(f"   ❌ Concurrent Test: ERROR - {e}")
             self.max_score += 1
 
@@ -205,16 +222,23 @@ class ProductionReadinessAssessment:
 
         if config_file:
             try:
-                with open(config_file, 'r') as f:
+                with open(config_file, "r") as f:
                     config_data = json.load(f)
 
-                required_sections = ["model", "voice", "audio", "server", "performance", "tokenizer"]
+                required_sections = [
+                    "model",
+                    "voice",
+                    "audio",
+                    "server",
+                    "performance",
+                    "tokenizer",
+                ]
                 missing_sections = [s for s in required_sections if s not in config_data]
 
-                config_results['config_file_exists'] = True
-                config_results['sections_present'] = len(required_sections) - len(missing_sections)
-                config_results['total_sections'] = len(required_sections)
-                config_results['missing_sections'] = missing_sections
+                config_results["config_file_exists"] = True
+                config_results["sections_present"] = len(required_sections) - len(missing_sections)
+                config_results["total_sections"] = len(required_sections)
+                config_results["missing_sections"] = missing_sections
 
                 if not missing_sections:
                     self.score += 1
@@ -225,11 +249,11 @@ class ProductionReadinessAssessment:
                 self.max_score += 1
 
             except Exception as e:
-                config_results['config_error'] = str(e)
+                config_results["config_error"] = str(e)
                 print(f"   ❌ Configuration: ERROR - {e}")
                 self.max_score += 1
         else:
-            config_results['config_file_exists'] = False
+            config_results["config_file_exists"] = False
             print("   ❌ Configuration: FILE MISSING")
             self.max_score += 1
 
@@ -244,10 +268,10 @@ class ProductionReadinessAssessment:
 
         # Check for key documentation files
         key_docs = {
-            'README.md': 'Main documentation',
-            'docs/SYSTEM_STATUS.md': 'System status',
-            'LiteTTS/config.json': 'Configuration',
-            'pyproject.toml': 'Project configuration'
+            "README.md": "Main documentation",
+            "docs/SYSTEM_STATUS.md": "System status",
+            "LiteTTS/config.json": "Configuration",
+            "pyproject.toml": "Project configuration",
         }
 
         present_docs = 0
@@ -258,8 +282,8 @@ class ProductionReadinessAssessment:
             else:
                 print(f"   ❌ {description}: MISSING")
 
-        doc_results['key_docs_present'] = present_docs
-        doc_results['total_key_docs'] = len(key_docs)
+        doc_results["key_docs_present"] = present_docs
+        doc_results["total_key_docs"] = len(key_docs)
 
         if present_docs >= len(key_docs) * 0.8:  # 80% of key docs
             self.score += 1
@@ -272,13 +296,18 @@ class ProductionReadinessAssessment:
         """Test basic TTS functionality"""
         response = requests.post(
             "http://localhost:8354/v1/audio/speech",
-            json={"model": "kokoro", "input": "Hello, world!", "voice": "af_heart", "response_format": "mp3"},
-            timeout=10
+            json={
+                "model": "kokoro",
+                "input": "Hello, world!",
+                "voice": "af_heart",
+                "response_format": "mp3",
+            },
+            timeout=10,
         )
         return {
-            'success': response.status_code == 200,
-            'status_code': response.status_code,
-            'audio_size': len(response.content) if response.status_code == 200 else 0
+            "success": response.status_code == 200,
+            "status_code": response.status_code,
+            "audio_size": len(response.content) if response.status_code == 200 else 0,
         }
 
     def _test_multiple_voices(self) -> dict[str, Any]:
@@ -289,15 +318,20 @@ class ProductionReadinessAssessment:
         for voice in voices:
             response = requests.post(
                 "http://localhost:8354/v1/audio/speech",
-                json={"model": "kokoro", "input": "Test voice", "voice": voice, "response_format": "mp3"},
-                timeout=10
+                json={
+                    "model": "kokoro",
+                    "input": "Test voice",
+                    "voice": voice,
+                    "response_format": "mp3",
+                },
+                timeout=10,
             )
             results.append(response.status_code == 200)
 
         return {
-            'success': all(results),
-            'voices_tested': len(voices),
-            'voices_working': sum(results)
+            "success": all(results),
+            "voices_tested": len(voices),
+            "voices_working": sum(results),
         }
 
     def _test_different_formats(self) -> dict[str, Any]:
@@ -308,40 +342,53 @@ class ProductionReadinessAssessment:
         for fmt in formats:
             response = requests.post(
                 "http://localhost:8354/v1/audio/speech",
-                json={"model": "kokoro", "input": "Format test", "voice": "af_heart", "response_format": fmt},
-                timeout=10
+                json={
+                    "model": "kokoro",
+                    "input": "Format test",
+                    "voice": "af_heart",
+                    "response_format": fmt,
+                },
+                timeout=10,
             )
             results.append(response.status_code == 200)
 
         return {
-            'success': all(results),
-            'formats_tested': len(formats),
-            'formats_working': sum(results)
+            "success": all(results),
+            "formats_tested": len(formats),
+            "formats_working": sum(results),
         }
 
     def _test_speed_control(self) -> dict[str, Any]:
         """Test speed control"""
         response = requests.post(
             "http://localhost:8354/v1/audio/speech",
-            json={"model": "kokoro", "input": "Speed test", "voice": "af_heart", "speed": 1.5, "response_format": "mp3"},
-            timeout=10
+            json={
+                "model": "kokoro",
+                "input": "Speed test",
+                "voice": "af_heart",
+                "speed": 1.5,
+                "response_format": "mp3",
+            },
+            timeout=10,
         )
-        return {
-            'success': response.status_code == 200,
-            'status_code': response.status_code
-        }
+        return {"success": response.status_code == 200, "status_code": response.status_code}
 
     def _test_error_handling(self) -> dict[str, Any]:
         """Test error handling"""
         # Test with invalid voice
         response = requests.post(
             "http://localhost:8354/v1/audio/speech",
-            json={"model": "kokoro", "input": "Error test", "voice": "invalid_voice", "response_format": "mp3"},
-            timeout=10
+            json={
+                "model": "kokoro",
+                "input": "Error test",
+                "voice": "invalid_voice",
+                "response_format": "mp3",
+            },
+            timeout=10,
         )
         return {
-            'success': response.status_code in [400, 422],  # Should return error
-            'status_code': response.status_code
+            "success": response.status_code in [400, 422],  # Should return error
+            "status_code": response.status_code,
         }
 
     def generate_final_report(self) -> dict[str, Any]:
@@ -373,13 +420,14 @@ class ProductionReadinessAssessment:
         print(f"💡 Recommendation: {recommendation}")
 
         return {
-            'score': self.score,
-            'max_score': self.max_score,
-            'percentage': percentage,
-            'readiness': readiness,
-            'recommendation': recommendation,
-            'timestamp': time.time()
+            "score": self.score,
+            "max_score": self.max_score,
+            "percentage": percentage,
+            "readiness": readiness,
+            "recommendation": recommendation,
+            "timestamp": time.time(),
         }
+
 
 def main():
     """Main assessment function"""
@@ -414,19 +462,20 @@ def main():
 
     # Save results
     results = {
-        'core_functionality': core_results,
-        'performance': performance_results,
-        'reliability': reliability_results,
-        'configuration': config_results,
-        'documentation': doc_results,
-        'final_report': final_report
+        "core_functionality": core_results,
+        "performance": performance_results,
+        "reliability": reliability_results,
+        "configuration": config_results,
+        "documentation": doc_results,
+        "final_report": final_report,
     }
 
-    with open('production_readiness_report.json', 'w') as f:
+    with open("production_readiness_report.json", "w") as f:
         json.dump(results, f, indent=2)
 
     print("\n📄 Detailed report saved to: production_readiness_report.json")
     print("\n🎉 Assessment complete!")
+
 
 if __name__ == "__main__":
     main()

@@ -81,9 +81,7 @@ class TestAudioQualityProfile:
     def test_profile_custom(self):
         """Test profile with custom values"""
         profile = AudioQualityProfile(
-            emotional_intensity=0.5,
-            prosodic_variation=0.6,
-            naturalness_level=0.8
+            emotional_intensity=0.5, prosodic_variation=0.6, naturalness_level=0.8
         )
         assert profile.emotional_intensity == 0.5
         assert profile.prosodic_variation == 0.6
@@ -96,10 +94,7 @@ class TestProsodyMarker:
     def test_creation(self):
         """Test creating prosody marker"""
         marker = ProsodyMarker(
-            start_pos=0,
-            end_pos=5,
-            emotion=EmotionType.NEUTRAL,
-            emphasis=ProsodyLevel.NORMAL
+            start_pos=0, end_pos=5, emotion=EmotionType.NEUTRAL, emphasis=ProsodyLevel.NORMAL
         )
         assert marker.start_pos == 0
         assert marker.end_pos == 5
@@ -116,7 +111,7 @@ class TestProsodyMarker:
             pause_before=0.2,
             pause_after=0.3,
             pitch_shift=2.0,
-            speed_factor=1.1
+            speed_factor=1.1,
         )
         assert marker.pause_before == 0.2
         assert marker.pause_after == 0.3
@@ -201,7 +196,7 @@ class TestAudioQualityEnhancerEdgeCases:
             enable_emotional_analysis=False,
             enable_prosodic_modeling=False,
             enable_context_adaptation=False,
-            enable_dynamic_intonation=False
+            enable_dynamic_intonation=False,
         )
         enhancer = AudioQualityEnhancer(profile=profile)
         result = enhancer.enhance_audio_quality("Hello world")

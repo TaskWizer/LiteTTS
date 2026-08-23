@@ -20,9 +20,7 @@ class TestModelOptimizationConfig:
     def test_creation_custom(self):
         """Test creating config with custom values"""
         config = ModelOptimizationConfig(
-            target_mel_bins=80,
-            enable_quantization=False,
-            short_text_threshold=30
+            target_mel_bins=80, enable_quantization=False, short_text_threshold=30
         )
         assert config.target_mel_bins == 80
         assert config.enable_quantization is False

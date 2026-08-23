@@ -10,6 +10,7 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+
 class InternalConfig:
     """Internal configuration system for technical settings"""
 
@@ -46,8 +47,8 @@ class InternalConfig:
                     "can't": "cannot",
                     "shouldn't": "should not",
                     "wouldn't": "would not",
-                    "couldn't": "could not"
-                }
+                    "couldn't": "could not",
+                },
             },
             "proper_name_handling": {
                 "enabled": True,
@@ -57,7 +58,7 @@ class InternalConfig:
                     "Joy": "JOI",
                     "Bezos": "BAY-zohss",
                     "Musk": "MUHSK",
-                    "Zuckerberg": "ZUHK-er-berg"
+                    "Zuckerberg": "ZUHK-er-berg",
                 },
                 "word_pronunciations": {
                     "acquisition": "ak-wih-ZISH-un",
@@ -66,9 +67,9 @@ class InternalConfig:
                     "epitome": "ih-PIT-oh-mee",
                     "cache": "KASH",
                     "niche": "NEESH",
-                    "suite": "SWEET"
-                }
-            }
+                    "suite": "SWEET",
+                },
+            },
         }
 
     def _get_acronym_handling(self) -> dict[str, Any]:
@@ -78,8 +79,37 @@ class InternalConfig:
             "spell_out_financial_symbols": True,
             "spell_out_technical_acronyms": True,
             "preserve_common_acronyms": ["NASA", "FBI", "CIA", "USA", "UK"],
-            "financial_symbols": ["TSLA", "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "SPY", "QQQ"],
-            "exclusions": ["THE", "AND", "FOR", "ARE", "BUT", "NOT", "YOU", "ALL", "CAN", "HER", "WAS", "ONE", "OUR", "HAD", "BUT", "HIS", "HAS", "HIM"]
+            "financial_symbols": [
+                "TSLA",
+                "AAPL",
+                "MSFT",
+                "GOOGL",
+                "AMZN",
+                "NVDA",
+                "META",
+                "SPY",
+                "QQQ",
+            ],
+            "exclusions": [
+                "THE",
+                "AND",
+                "FOR",
+                "ARE",
+                "BUT",
+                "NOT",
+                "YOU",
+                "ALL",
+                "CAN",
+                "HER",
+                "WAS",
+                "ONE",
+                "OUR",
+                "HAD",
+                "BUT",
+                "HIS",
+                "HAS",
+                "HIM",
+            ],
         }
 
     def _get_text_processing_defaults(self) -> dict[str, Any]:
@@ -89,20 +119,20 @@ class InternalConfig:
                 "enabled": True,
                 "fix_hmm_pronunciation": True,
                 "expand_short_interjections": True,
-                "preserve_compound_interjections": True
+                "preserve_compound_interjections": True,
             },
             "symbol_processing": {
                 "fix_asterisk_pronunciation": True,
                 "normalize_quotation_marks": True,
                 "fix_apostrophe_handling": True,
-                "natural_ampersand_pronunciation": True
+                "natural_ampersand_pronunciation": True,
             },
             "punctuation_handling": {
                 "comma_pause_timing": "natural",
                 "question_intonation": True,
                 "exclamation_emphasis": True,
-                "parenthetical_voice_modulation": True
-            }
+                "parenthetical_voice_modulation": True,
+            },
         }
 
     def _get_performance_defaults(self) -> dict[str, Any]:
@@ -117,20 +147,20 @@ class InternalConfig:
                 "base_time_per_char": 0.006,
                 "min_synthesis_time": 0.04,
                 "batch_processing": True,
-                "async_processing": True
+                "async_processing": True,
             },
             "threading": {
                 "thread_pool_size": 2,
                 "io_thread_pool_size": 1,
                 "cpu_device_multiplier": 1.3,
-                "cuda_device_multiplier": 1.0
+                "cuda_device_multiplier": 1.0,
             },
             "caching": {
                 "cache_multiplier": 0.7,
                 "no_cache_multiplier": 1.1,
                 "intelligent_eviction": True,
-                "cache_compression": True
-            }
+                "cache_compression": True,
+            },
         }
 
     def _get_cache_defaults(self) -> dict[str, Any]:
@@ -139,12 +169,12 @@ class InternalConfig:
             "memory_management": {
                 "memory_cache_size_mb": 128,
                 "audio_memory_cache_mb": 96,
-                "text_memory_cache_mb": 32
+                "text_memory_cache_mb": 32,
             },
             "disk_management": {
                 "disk_cache_size_mb": 1024,
                 "audio_disk_cache_mb": 512,
-                "text_disk_cache_mb": 64
+                "text_disk_cache_mb": 64,
             },
             "cache_policies": {
                 "max_size": 100,
@@ -153,8 +183,8 @@ class InternalConfig:
                 "audio_cache_size": 120,
                 "text_cache_ttl": 43200,
                 "phoneme_cache_enabled": True,
-                "phoneme_cache_size": 500
-            }
+                "phoneme_cache_size": 500,
+            },
         }
 
     def get_config_section(self, section: str) -> dict[str, Any] | None:
@@ -177,19 +207,19 @@ class InternalConfig:
         """Load configuration overrides from environment variables"""
         # Format: KOKORO_INTERNAL_<SECTION>_<KEY>=value
         for env_var, value in os.environ.items():
-            if env_var.startswith('KOKORO_INTERNAL_'):
+            if env_var.startswith("KOKORO_INTERNAL_"):
                 try:
                     # Parse environment variable
-                    parts = env_var.replace('KOKORO_INTERNAL_', '').lower().split('_', 1)
+                    parts = env_var.replace("KOKORO_INTERNAL_", "").lower().split("_", 1)
                     if len(parts) == 2:
                         section, key = parts
 
                         # Convert string values to appropriate types
-                        if value.lower() in ('true', 'false'):
-                            value = value.lower() == 'true'
+                        if value.lower() in ("true", "false"):
+                            value = value.lower() == "true"
                         elif value.isdigit():
                             value = int(value)
-                        elif '.' in value and value.replace('.', '').isdigit():
+                        elif "." in value and value.replace(".", "").isdigit():
                             value = float(value)
 
                         self.override_setting(section, key, value)
@@ -201,15 +231,17 @@ class InternalConfig:
     def get_all_config(self) -> dict[str, Any]:
         """Get all internal configuration"""
         return {
-            'pronunciation_rules': self.pronunciation_rules,
-            'acronym_handling': self.acronym_handling,
-            'text_processing': self.text_processing,
-            'performance_optimization': self.performance_optimization,
-            'cache_optimization': self.cache_optimization
+            "pronunciation_rules": self.pronunciation_rules,
+            "acronym_handling": self.acronym_handling,
+            "text_processing": self.text_processing,
+            "performance_optimization": self.performance_optimization,
+            "cache_optimization": self.cache_optimization,
         }
+
 
 # Global instance
 _internal_config = None
+
 
 def get_internal_config() -> InternalConfig:
     """Get the global internal configuration instance"""
@@ -219,11 +251,13 @@ def get_internal_config() -> InternalConfig:
         _internal_config.load_overrides_from_env()
     return _internal_config
 
+
 def reload_internal_config():
     """Reload the internal configuration"""
     global _internal_config
     _internal_config = None
     return get_internal_config()
+
 
 # Example usage
 if __name__ == "__main__":
@@ -233,7 +267,13 @@ if __name__ == "__main__":
     print("=" * 40)
 
     # Show configuration sections
-    sections = ['pronunciation_rules', 'acronym_handling', 'text_processing', 'performance_optimization', 'cache_optimization']
+    sections = [
+        "pronunciation_rules",
+        "acronym_handling",
+        "text_processing",
+        "performance_optimization",
+        "cache_optimization",
+    ]
 
     for section in sections:
         section_config = config.get_config_section(section)
@@ -251,5 +291,5 @@ if __name__ == "__main__":
     print("Set KOKORO_INTERNAL_PERFORMANCE_CHUNK_SIZE=100 to test")
 
     # Test override
-    config.override_setting('performance_optimization', 'processing', {'chunk_size': 100})
+    config.override_setting("performance_optimization", "processing", {"chunk_size": 100})
     print("Override applied successfully")

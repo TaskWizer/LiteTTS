@@ -19,12 +19,14 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class ESpeakEvaluationResult:
     """Results from eSpeak evaluation"""
+
     espeak_available: bool
     espeak_version: str
     installation_size_mb: float
@@ -55,6 +57,7 @@ class ESpeakEvaluationResult:
     test_cases_total: int
     success_rate: float
 
+
 class ESpeakEvaluator:
     """
     eSpeak library integration evaluator
@@ -78,14 +81,15 @@ class ESpeakEvaluator:
             "Numbers: 123, 456, 789, one thousand.",
             "Abbreviations: Dr., Mr., Mrs., etc.",
             "Contractions: don't, won't, can't, shouldn't.",
-            "Technical terms: API, HTTP, JSON, XML."
+            "Technical terms: API, HTTP, JSON, XML.",
         ]
 
     def check_espeak_availability(self) -> tuple[bool, str]:
         """Check if eSpeak is available on the system"""
         try:
-            result = subprocess.run(['espeak', '--version'],
-                                  capture_output=True, text=True, timeout=5)
+            result = subprocess.run(
+                ["espeak", "--version"], capture_output=True, text=True, timeout=5
+            )
             if result.returncode == 0:
                 version = result.stdout.strip()
                 logger.info(f"eSpeak found: {version}")
@@ -101,14 +105,15 @@ class ESpeakEvaluator:
         """Estimate eSpeak installation size"""
         try:
             # Check if eSpeak is installed
-            result = subprocess.run(['dpkg', '-l', 'espeak*'],
-                                  capture_output=True, text=True, timeout=5)
+            result = subprocess.run(
+                ["dpkg", "-l", "espeak*"], capture_output=True, text=True, timeout=5
+            )
             if result.returncode == 0:
                 # Parse installed package sizes
-                lines = result.stdout.split('\n')
+                lines = result.stdout.split("\n")
                 total_size = 0
                 for line in lines:
-                    if 'espeak' in line and 'ii' in line:
+                    if "espeak" in line and "ii" in line:
                         # Estimate based on typical eSpeak installation
                         total_size += 2.5  # MB per package
                 return max(total_size, 5.0)  # Minimum 5MB
@@ -152,10 +157,7 @@ class ESpeakEvaluator:
         baseline_rtf = sum(rtf_results) / len(rtf_results) if rtf_results else 0
         baseline_memory = max(memory_usage) if memory_usage else 0
 
-        self.baseline_metrics = {
-            'rtf': baseline_rtf,
-            'memory': baseline_memory
-        }
+        self.baseline_metrics = {"rtf": baseline_rtf, "memory": baseline_memory}
 
         logger.info(f"Baseline RTF: {baseline_rtf:.3f}")
         logger.info(f"Baseline Memory: {baseline_memory:.1f}MB")
@@ -199,10 +201,7 @@ class ESpeakEvaluator:
         logger.info(f"eSpeak RTF: {espeak_rtf:.3f}")
         logger.info(f"eSpeak Memory: {espeak_memory:.1f}MB")
 
-        return {
-            'rtf': espeak_rtf,
-            'memory': espeak_memory
-        }
+        return {"rtf": espeak_rtf, "memory": espeak_memory}
 
     def _simulate_tts_processing(self, text: str):
         """Simulate baseline TTS processing"""
@@ -243,7 +242,7 @@ class ESpeakEvaluator:
             ("Dr.", 0.60, 0.85),
             ("don't", 0.85, 0.90),
             ("won't", 0.80, 0.88),
-            ("123", 0.70, 0.85)
+            ("123", 0.70, 0.85),
         ]
 
         baseline_avg = sum(case[1] for case in test_cases) / len(test_cases)
@@ -251,10 +250,10 @@ class ESpeakEvaluator:
         improvement = ((espeak_avg - baseline_avg) / baseline_avg) * 100
 
         return {
-            'baseline_accuracy': baseline_avg,
-            'espeak_accuracy': espeak_avg,
-            'improvement_percent': improvement,
-            'phoneme_accuracy': espeak_avg
+            "baseline_accuracy": baseline_avg,
+            "espeak_accuracy": espeak_avg,
+            "improvement_percent": improvement,
+            "phoneme_accuracy": espeak_avg,
         }
 
     def assess_compatibility(self, rtf_impact: float, memory_impact: float) -> dict[str, Any]:
@@ -281,12 +280,12 @@ class ESpeakEvaluator:
             complexity = "High"
 
         return {
-            'rtf_compatible': rtf_compatible,
-            'memory_compatible': memory_compatible,
-            'overall_compatible': overall_compatible,
-            'projected_rtf': projected_rtf,
-            'projected_memory': projected_memory,
-            'integration_complexity': complexity
+            "rtf_compatible": rtf_compatible,
+            "memory_compatible": memory_compatible,
+            "overall_compatible": overall_compatible,
+            "projected_rtf": projected_rtf,
+            "projected_memory": projected_memory,
+            "integration_complexity": complexity,
         }
 
     def run_comprehensive_evaluation(self) -> ESpeakEvaluationResult:
@@ -302,9 +301,11 @@ class ESpeakEvaluator:
         espeak_metrics = self.measure_espeak_performance()
 
         # Calculate impacts
-        rtf_impact = ((espeak_metrics['rtf'] - baseline_metrics['rtf']) / baseline_metrics['rtf']) * 100
-        memory_impact = espeak_metrics['memory'] - baseline_metrics['memory']
-        memory_impact_percent = (memory_impact / baseline_metrics['memory']) * 100
+        rtf_impact = (
+            (espeak_metrics["rtf"] - baseline_metrics["rtf"]) / baseline_metrics["rtf"]
+        ) * 100
+        memory_impact = espeak_metrics["memory"] - baseline_metrics["memory"]
+        memory_impact_percent = (memory_impact / baseline_metrics["memory"]) * 100
 
         # Evaluate quality
         quality_metrics = self.evaluate_pronunciation_quality()
@@ -314,9 +315,9 @@ class ESpeakEvaluator:
 
         # Determine recommendation
         recommended = (
-            compatibility['overall_compatible'] and
-            quality_metrics['improvement_percent'] > 5 and
-            abs(rtf_impact) < 15
+            compatibility["overall_compatible"]
+            and quality_metrics["improvement_percent"] > 5
+            and abs(rtf_impact) < 15
         )
 
         # Test results (simulated)
@@ -328,22 +329,22 @@ class ESpeakEvaluator:
             espeak_available=espeak_available,
             espeak_version=espeak_version,
             installation_size_mb=installation_size,
-            baseline_rtf=baseline_metrics['rtf'],
-            espeak_rtf=espeak_metrics['rtf'],
+            baseline_rtf=baseline_metrics["rtf"],
+            espeak_rtf=espeak_metrics["rtf"],
             rtf_impact_percent=rtf_impact,
-            baseline_memory_mb=baseline_metrics['memory'],
-            espeak_memory_mb=espeak_metrics['memory'],
+            baseline_memory_mb=baseline_metrics["memory"],
+            espeak_memory_mb=espeak_metrics["memory"],
             memory_impact_mb=memory_impact,
             memory_impact_percent=memory_impact_percent,
-            pronunciation_improvement=quality_metrics['improvement_percent'],
-            phoneme_accuracy=quality_metrics['phoneme_accuracy'],
+            pronunciation_improvement=quality_metrics["improvement_percent"],
+            phoneme_accuracy=quality_metrics["phoneme_accuracy"],
             language_support=50,  # eSpeak supports ~50 languages
-            compatible_with_targets=compatibility['overall_compatible'],
+            compatible_with_targets=compatibility["overall_compatible"],
             recommended_for_integration=recommended,
-            integration_complexity=compatibility['integration_complexity'],
+            integration_complexity=compatibility["integration_complexity"],
             test_cases_passed=test_cases_passed,
             test_cases_total=test_cases_total,
-            success_rate=success_rate
+            success_rate=success_rate,
         )
 
         logger.info("✅ eSpeak evaluation completed")
@@ -359,18 +360,30 @@ class ESpeakEvaluator:
         # Executive Summary
         report.append("## Executive Summary")
         if result.recommended_for_integration:
-            report.append("✅ **RECOMMENDED** - eSpeak integration provides significant pronunciation improvements with acceptable performance impact.")
+            report.append(
+                "✅ **RECOMMENDED** - eSpeak integration provides significant pronunciation improvements with acceptable performance impact."
+            )
         else:
-            report.append("❌ **NOT RECOMMENDED** - eSpeak integration does not meet performance or compatibility requirements.")
+            report.append(
+                "❌ **NOT RECOMMENDED** - eSpeak integration does not meet performance or compatibility requirements."
+            )
         report.append("")
 
         # Key Findings
         report.append("## Key Findings")
-        report.append(f"- **Availability**: {'✅ Available' if result.espeak_available else '❌ Not Available'}")
+        report.append(
+            f"- **Availability**: {'✅ Available' if result.espeak_available else '❌ Not Available'}"
+        )
         report.append(f"- **Performance Impact**: {result.rtf_impact_percent:+.1f}% RTF change")
-        report.append(f"- **Memory Impact**: {result.memory_impact_mb:+.1f}MB ({result.memory_impact_percent:+.1f}%)")
-        report.append(f"- **Quality Improvement**: {result.pronunciation_improvement:+.1f}% pronunciation accuracy")
-        report.append(f"- **Compatibility**: {'✅ Compatible' if result.compatible_with_targets else '❌ Incompatible'} with targets")
+        report.append(
+            f"- **Memory Impact**: {result.memory_impact_mb:+.1f}MB ({result.memory_impact_percent:+.1f}%)"
+        )
+        report.append(
+            f"- **Quality Improvement**: {result.pronunciation_improvement:+.1f}% pronunciation accuracy"
+        )
+        report.append(
+            f"- **Compatibility**: {'✅ Compatible' if result.compatible_with_targets else '❌ Incompatible'} with targets"
+        )
         report.append("")
 
         # Detailed Analysis
@@ -381,7 +394,9 @@ class ESpeakEvaluator:
         report.append(f"- **Baseline RTF**: {result.baseline_rtf:.3f}")
         report.append(f"- **eSpeak RTF**: {result.espeak_rtf:.3f}")
         report.append(f"- **RTF Impact**: {result.rtf_impact_percent:+.1f}%")
-        report.append(f"- **Target Compliance**: {'✅ Meets' if result.espeak_rtf < 0.25 else '❌ Exceeds'} RTF < 0.25 target")
+        report.append(
+            f"- **Target Compliance**: {'✅ Meets' if result.espeak_rtf < 0.25 else '❌ Exceeds'} RTF < 0.25 target"
+        )
         report.append("")
 
         report.append("### Memory Impact")
@@ -400,7 +415,9 @@ class ESpeakEvaluator:
         report.append("### Integration Assessment")
         report.append(f"- **Complexity**: {result.integration_complexity}")
         report.append(f"- **Test Success Rate**: {result.success_rate:.1%}")
-        report.append(f"- **Recommendation**: {'✅ Integrate' if result.recommended_for_integration else '❌ Do not integrate'}")
+        report.append(
+            f"- **Recommendation**: {'✅ Integrate' if result.recommended_for_integration else '❌ Do not integrate'}"
+        )
         report.append("")
 
         # Recommendations
@@ -424,6 +441,7 @@ class ESpeakEvaluator:
 
         return "\n".join(report)
 
+
 def main():
     """Main function"""
     evaluator = ESpeakEvaluator()
@@ -433,11 +451,12 @@ def main():
     report = evaluator.generate_evaluation_report(result)
 
     # Save report
-    with open("espeak_evaluation_report.md", 'w') as f:
+    with open("espeak_evaluation_report.md", "w") as f:
         f.write(report)
 
     print(report)
     logger.info("📊 Evaluation report saved to: espeak_evaluation_report.md")
+
 
 if __name__ == "__main__":
     main()

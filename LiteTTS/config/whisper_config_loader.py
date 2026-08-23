@@ -13,9 +13,11 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class WhisperSettings:
     """Whisper configuration settings"""
+
     # Core Whisper settings
     default_model: str = "distil-small.en"
     implementation: str = "faster-whisper"
@@ -49,6 +51,7 @@ class WhisperSettings:
     # Edge hardware profile
     edge_hardware_profile: str = "auto"
 
+
 class WhisperConfigLoader:
     """
     Configuration loader for Whisper settings with environment variable support
@@ -70,7 +73,7 @@ class WhisperConfigLoader:
 
         if config_path.exists():
             try:
-                with open(config_path, 'r') as f:
+                with open(config_path, "r") as f:
                     self.config_data = json.load(f)
                 logger.info(f"Loaded Whisper configuration from {config_path}")
             except Exception as e:
@@ -93,7 +96,7 @@ class WhisperConfigLoader:
                 # Convert environment variable to appropriate type
                 try:
                     if isinstance(default_value, bool):
-                        env_value = env_value.lower() in ('true', '1', 'yes', 'on')
+                        env_value = env_value.lower() in ("true", "1", "yes", "on")
                     elif isinstance(default_value, int):
                         env_value = int(env_value)
                     elif isinstance(default_value, float):
@@ -112,7 +115,7 @@ class WhisperConfigLoader:
         if not config_path:
             return
 
-        keys = config_path.split('.')
+        keys = config_path.split(".")
         current = self.config_data
 
         # Navigate to the parent of the target key
@@ -133,34 +136,68 @@ class WhisperConfigLoader:
         edge_config = self.config_data.get("edge_hardware", {})
 
         # Apply Whisper settings
-        self.settings.default_model = whisper_config.get("default_model", self.settings.default_model)
-        self.settings.implementation = whisper_config.get("implementation", self.settings.implementation)
+        self.settings.default_model = whisper_config.get(
+            "default_model", self.settings.default_model
+        )
+        self.settings.implementation = whisper_config.get(
+            "implementation", self.settings.implementation
+        )
         self.settings.quantization = whisper_config.get("quantization", self.settings.quantization)
         self.settings.cpu_threads = whisper_config.get("cpu_threads", self.settings.cpu_threads)
         self.settings.device = whisper_config.get("device", self.settings.device)
-        self.settings.fallback_model = whisper_config.get("fallback_model", self.settings.fallback_model)
-        self.settings.model_cache_dir = whisper_config.get("model_cache_dir", self.settings.model_cache_dir)
+        self.settings.fallback_model = whisper_config.get(
+            "fallback_model", self.settings.fallback_model
+        )
+        self.settings.model_cache_dir = whisper_config.get(
+            "model_cache_dir", self.settings.model_cache_dir
+        )
         self.settings.beam_size = whisper_config.get("beam_size", self.settings.beam_size)
         self.settings.language = whisper_config.get("language", self.settings.language)
-        self.settings.condition_on_previous_text = whisper_config.get("condition_on_previous_text", self.settings.condition_on_previous_text)
-        self.settings.enable_fallback = whisper_config.get("enable_fallback", self.settings.enable_fallback)
+        self.settings.condition_on_previous_text = whisper_config.get(
+            "condition_on_previous_text", self.settings.condition_on_previous_text
+        )
+        self.settings.enable_fallback = whisper_config.get(
+            "enable_fallback", self.settings.enable_fallback
+        )
 
         # Apply voice cloning settings
-        self.settings.max_audio_duration = voice_config.get("max_audio_duration", self.settings.max_audio_duration)
-        self.settings.max_segment_duration = voice_config.get("max_segment_duration", self.settings.max_segment_duration)
-        self.settings.segment_overlap = voice_config.get("segment_overlap", self.settings.segment_overlap)
-        self.settings.max_reference_clips = voice_config.get("max_reference_clips", self.settings.max_reference_clips)
-        self.settings.enable_enhanced_mode = voice_config.get("enable_enhanced_mode", self.settings.enable_enhanced_mode)
+        self.settings.max_audio_duration = voice_config.get(
+            "max_audio_duration", self.settings.max_audio_duration
+        )
+        self.settings.max_segment_duration = voice_config.get(
+            "max_segment_duration", self.settings.max_segment_duration
+        )
+        self.settings.segment_overlap = voice_config.get(
+            "segment_overlap", self.settings.segment_overlap
+        )
+        self.settings.max_reference_clips = voice_config.get(
+            "max_reference_clips", self.settings.max_reference_clips
+        )
+        self.settings.enable_enhanced_mode = voice_config.get(
+            "enable_enhanced_mode", self.settings.enable_enhanced_mode
+        )
 
         # Apply monitoring settings
-        self.settings.enable_monitoring = monitoring_config.get("enable_monitoring", self.settings.enable_monitoring)
-        self.settings.rtf_threshold = monitoring_config.get("rtf_threshold", self.settings.rtf_threshold)
-        self.settings.memory_threshold_mb = monitoring_config.get("memory_threshold_mb", self.settings.memory_threshold_mb)
-        self.settings.cpu_threshold_percent = monitoring_config.get("cpu_threshold_percent", self.settings.cpu_threshold_percent)
-        self.settings.log_performance_metrics = monitoring_config.get("log_performance_metrics", self.settings.log_performance_metrics)
+        self.settings.enable_monitoring = monitoring_config.get(
+            "enable_monitoring", self.settings.enable_monitoring
+        )
+        self.settings.rtf_threshold = monitoring_config.get(
+            "rtf_threshold", self.settings.rtf_threshold
+        )
+        self.settings.memory_threshold_mb = monitoring_config.get(
+            "memory_threshold_mb", self.settings.memory_threshold_mb
+        )
+        self.settings.cpu_threshold_percent = monitoring_config.get(
+            "cpu_threshold_percent", self.settings.cpu_threshold_percent
+        )
+        self.settings.log_performance_metrics = monitoring_config.get(
+            "log_performance_metrics", self.settings.log_performance_metrics
+        )
 
         # Apply filesystem monitoring settings
-        self.settings.enable_filesystem_monitoring = filesystem_config.get("enable_realtime", self.settings.enable_filesystem_monitoring)
+        self.settings.enable_filesystem_monitoring = filesystem_config.get(
+            "enable_realtime", self.settings.enable_filesystem_monitoring
+        )
 
         # Apply edge hardware settings
         profile = os.environ.get("EDGE_HARDWARE_PROFILE", edge_config.get("auto_detect", "auto"))
@@ -218,7 +255,7 @@ class WhisperConfigLoader:
             # Apply profile-specific settings
             self.settings.cpu_threads = min(
                 profile_config.get("cpu_threads", self.settings.cpu_threads),
-                self.settings.cpu_threads
+                self.settings.cpu_threads,
             )
 
             memory_limit = profile_config.get("memory_limit_mb", self.settings.memory_threshold_mb)
@@ -228,7 +265,9 @@ class WhisperConfigLoader:
             preferred_models = profile_config.get("preferred_models", [])
             if preferred_models and self.settings.default_model not in preferred_models:
                 self.settings.default_model = preferred_models[0]
-                logger.info(f"Switched to preferred model for {profile}: {self.settings.default_model}")
+                logger.info(
+                    f"Switched to preferred model for {profile}: {self.settings.default_model}"
+                )
 
             # Apply quantization preference
             preferred_quantization = profile_config.get("quantization", self.settings.quantization)
@@ -243,9 +282,12 @@ class WhisperConfigLoader:
         # Ensure CPU threads is reasonable
         try:
             import psutil
+
             max_threads = psutil.cpu_count(logical=False)
             if self.settings.cpu_threads > max_threads:
-                logger.warning(f"CPU threads ({self.settings.cpu_threads}) exceeds available cores ({max_threads})")
+                logger.warning(
+                    f"CPU threads ({self.settings.cpu_threads}) exceeds available cores ({max_threads})"
+                )
                 self.settings.cpu_threads = max_threads
         except Exception:
             pass
@@ -296,14 +338,16 @@ class WhisperConfigLoader:
         output_path = output_file or self.config_file
 
         try:
-            with open(output_path, 'w') as f:
+            with open(output_path, "w") as f:
                 json.dump(self.config_data, f, indent=2)
             logger.info(f"Configuration saved to {output_path}")
         except Exception as e:
             logger.error(f"Failed to save configuration: {e}")
 
+
 # Global configuration instance
 _config_loader = None
+
 
 def get_whisper_config(config_file: str | None = None) -> WhisperConfigLoader:
     """Get the global Whisper configuration loader"""
@@ -314,9 +358,11 @@ def get_whisper_config(config_file: str | None = None) -> WhisperConfigLoader:
 
     return _config_loader
 
+
 def get_whisper_settings() -> WhisperSettings:
     """Get the current Whisper settings"""
     return get_whisper_config().get_settings()
+
 
 # Example usage
 if __name__ == "__main__":
@@ -341,5 +387,7 @@ if __name__ == "__main__":
         print(f"\nModel Info for {settings.default_model}:")
         print(f"  Size: {model_info.get('size_mb', 'Unknown')}MB")
         print(f"  Parameters: {model_info.get('parameters', 'Unknown')}")
-        print(f"  Expected RTF (Pi4): {model_info.get('expected_rtf', {}).get('raspberry_pi_4', 'Unknown')}")
+        print(
+            f"  Expected RTF (Pi4): {model_info.get('expected_rtf', {}).get('raspberry_pi_4', 'Unknown')}"
+        )
         print(f"  Memory Usage: {model_info.get('memory_usage_mb', 'Unknown')}MB")

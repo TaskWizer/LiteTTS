@@ -15,8 +15,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from LiteTTS.audio.time_stretcher import StretchQuality, TimeStretchConfig, TimeStretcher
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 def test_time_stretcher_config():
     """Test time-stretcher configuration"""
@@ -33,12 +34,12 @@ def test_time_stretcher_config():
         ]
 
         for i, config_dict in enumerate(configs):
-            print(f"\nTest {i+1}: {config_dict}")
+            print(f"\nTest {i + 1}: {config_dict}")
 
             config = TimeStretchConfig(
                 enabled=config_dict["enabled"],
                 compress_playback_rate=config_dict["rate"],
-                correction_quality=StretchQuality(config_dict["quality"])
+                correction_quality=StretchQuality(config_dict["quality"]),
             )
 
             stretcher = TimeStretcher(config)
@@ -56,6 +57,7 @@ def test_time_stretcher_config():
 
     return True
 
+
 def test_config_integration():
     """Test integration with main config.json"""
     print("\nTesting Config Integration")
@@ -64,7 +66,7 @@ def test_config_integration():
     try:
         # Load main config
         config_path = project_root / "config.json"
-        with open(config_path, 'r') as f:
+        with open(config_path, "r") as f:
             config = json.load(f)
 
         # Check time-stretching section
@@ -86,6 +88,7 @@ def test_config_integration():
         print(f"❌ Config integration test failed: {e}")
         return False
 
+
 def test_text_processing_config():
     """Test expanded text processing configuration"""
     print("\nTesting Text Processing Configuration")
@@ -94,7 +97,7 @@ def test_text_processing_config():
     try:
         # Load main config
         config_path = project_root / "config.json"
-        with open(config_path, 'r') as f:
+        with open(config_path, "r") as f:
             config = json.load(f)
 
         # Check text processing section
@@ -115,7 +118,7 @@ def test_text_processing_config():
             "url_processing",
             "number_processing",
             "voice_modulation",
-            "advanced_features"
+            "advanced_features",
         ]
 
         found_sections = 0
@@ -139,6 +142,7 @@ def test_text_processing_config():
         print(f"❌ Text processing config test failed: {e}")
         return False
 
+
 def test_library_availability():
     """Test availability of time-stretching libraries"""
     print("\nTesting Library Availability")
@@ -148,24 +152,28 @@ def test_library_availability():
 
     try:
         import librosa  # noqa: F401
+
         libraries.append("librosa ✅")
     except ImportError:
         libraries.append("librosa ❌")
 
     try:
         import pyrubberband  # noqa: F401
+
         libraries.append("pyrubberband ✅")
     except ImportError:
         libraries.append("pyrubberband ❌")
 
     try:
         import soundfile  # noqa: F401
+
         libraries.append("soundfile ✅")
     except ImportError:
         libraries.append("soundfile ❌")
 
     try:
         import numpy  # noqa: F401
+
         libraries.append("numpy ✅")
     except ImportError:
         libraries.append("numpy ❌")
@@ -182,6 +190,7 @@ def test_library_availability():
     else:
         print("❌ Insufficient libraries for time-stretching")
         return False
+
 
 def main():
     """Run all tests"""
@@ -219,6 +228,7 @@ def main():
         print("⚠️  Some tests failed. Please review the issues above.")
 
     return passed == total
+
 
 if __name__ == "__main__":
     success = main()

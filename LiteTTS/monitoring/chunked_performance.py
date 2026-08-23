@@ -15,15 +15,19 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+
 class GenerationType(Enum):
     """Types of audio generation"""
+
     STANDARD = "standard"
     CHUNKED = "chunked"
     STREAMING = "streaming"
 
+
 @dataclass
 class PerformanceMetrics:
     """Performance metrics for a single generation"""
+
     generation_id: str
     generation_type: GenerationType
     text_length: int
@@ -57,9 +61,11 @@ class PerformanceMetrics:
 
     timestamp: float = field(default_factory=time.time)
 
+
 @dataclass
 class ComparisonReport:
     """Comparison report between generation types"""
+
     standard_metrics: list[PerformanceMetrics]
     chunked_metrics: list[PerformanceMetrics]
     streaming_metrics: list[PerformanceMetrics]
@@ -74,6 +80,7 @@ class ComparisonReport:
     perceived_responsiveness: dict[str, float]
 
     generation_time: float = field(default_factory=time.time)
+
 
 class ChunkedPerformanceMonitor:
     """Performance monitoring system for chunked audio generation"""
@@ -95,7 +102,7 @@ class ChunkedPerformanceMonitor:
             "standard_generations": 0,
             "streaming_generations": 0,
             "avg_rtf_last_100": 0.0,
-            "avg_latency_last_100": 0.0
+            "avg_latency_last_100": 0.0,
         }
 
         logger.info("ChunkedPerformanceMonitor initialized")
@@ -106,18 +113,18 @@ class ChunkedPerformanceMonitor:
         generation_type: GenerationType,
         text: str,
         voice_id: str,
-        chunk_count: int | None = None
+        chunk_count: int | None = None,
     ) -> str:
         """
         Start tracking a generation
-        
+
         Args:
             generation_id: Unique generation identifier
             generation_type: Type of generation
             text: Input text
             voice_id: Voice being used
             chunk_count: Number of chunks (for chunked generation)
-            
+
         Returns:
             Generation ID
         """
@@ -134,7 +141,7 @@ class ChunkedPerformanceMonitor:
             "chunk_times": [],
             "first_chunk_time": None,
             "memory_snapshots": [],
-            "cpu_snapshots": []
+            "cpu_snapshots": [],
         }
 
         self.active_generations[generation_id] = tracking_info
@@ -143,11 +150,7 @@ class ChunkedPerformanceMonitor:
         return generation_id
 
     def record_chunk_completion(
-        self,
-        generation_id: str,
-        chunk_id: int,
-        chunk_time: float,
-        audio_size: int
+        self, generation_id: str, chunk_id: int, chunk_time: float, audio_size: int
     ):
         """Record completion of a chunk"""
         if generation_id not in self.active_generations:
@@ -173,19 +176,16 @@ class ChunkedPerformanceMonitor:
         tracking_info["cpu_snapshots"].append(cpu_percent)
 
     def complete_generation_tracking(
-        self,
-        generation_id: str,
-        audio_size: int,
-        estimated_duration: float
+        self, generation_id: str, audio_size: int, estimated_duration: float
     ) -> PerformanceMetrics:
         """
         Complete tracking and calculate metrics
-        
+
         Args:
             generation_id: Generation to complete
             audio_size: Size of generated audio in bytes
             estimated_duration: Estimated audio duration in seconds
-            
+
         Returns:
             PerformanceMetrics object
         """
@@ -197,7 +197,9 @@ class ChunkedPerformanceMonitor:
 
         # Calculate timing metrics
         total_time = end_time - tracking_info["start_time"]
-        synthesis_time = sum(tracking_info["chunk_times"]) if tracking_info["chunk_times"] else total_time
+        synthesis_time = (
+            sum(tracking_info["chunk_times"]) if tracking_info["chunk_times"] else total_time
+        )
         processing_time = total_time - synthesis_time
 
         # Calculate RTF (Real-Time Factor)
@@ -220,9 +222,7 @@ class ChunkedPerformanceMonitor:
         # Calculate user experience metrics
         time_to_first_audio = tracking_info.get("first_chunk_time", total_time)
         perceived_latency = self._calculate_perceived_latency(
-            tracking_info["generation_type"],
-            time_to_first_audio,
-            total_time
+            tracking_info["generation_type"], time_to_first_audio, total_time
         )
 
         # Create metrics object
@@ -240,11 +240,13 @@ class ChunkedPerformanceMonitor:
             rtf=rtf,
             chunk_count=chunk_count,
             avg_chunk_time=avg_chunk_time,
-            chunk_times=tracking_info["chunk_times"].copy() if tracking_info["chunk_times"] else None,
+            chunk_times=tracking_info["chunk_times"].copy()
+            if tracking_info["chunk_times"]
+            else None,
             memory_usage=memory_usage,
             cpu_usage=cpu_usage,
             time_to_first_audio=time_to_first_audio,
-            perceived_latency=perceived_latency
+            perceived_latency=perceived_latency,
         )
 
         # Store metrics
@@ -262,19 +264,20 @@ class ChunkedPerformanceMonitor:
         # Cleanup
         del self.active_generations[generation_id]
 
-        logger.info(f"Completed tracking for generation {generation_id}: RTF={rtf:.3f}, Latency={time_to_first_audio:.3f}s")
+        logger.info(
+            f"Completed tracking for generation {generation_id}: RTF={rtf:.3f}, Latency={time_to_first_audio:.3f}s"
+        )
         return metrics
 
     def get_performance_comparison(
-        self,
-        time_window_hours: float | None = None
+        self, time_window_hours: float | None = None
     ) -> ComparisonReport:
         """
         Generate performance comparison report
-        
+
         Args:
             time_window_hours: Time window for analysis (None for all data)
-            
+
         Returns:
             ComparisonReport with detailed comparisons
         """
@@ -286,39 +289,45 @@ class ChunkedPerformanceMonitor:
             filtered_metrics = list(self.metrics_history)
 
         # Separate by generation type
-        standard_metrics = [m for m in filtered_metrics if m.generation_type == GenerationType.STANDARD]
-        chunked_metrics = [m for m in filtered_metrics if m.generation_type == GenerationType.CHUNKED]
-        streaming_metrics = [m for m in filtered_metrics if m.generation_type == GenerationType.STREAMING]
+        standard_metrics = [
+            m for m in filtered_metrics if m.generation_type == GenerationType.STANDARD
+        ]
+        chunked_metrics = [
+            m for m in filtered_metrics if m.generation_type == GenerationType.CHUNKED
+        ]
+        streaming_metrics = [
+            m for m in filtered_metrics if m.generation_type == GenerationType.STREAMING
+        ]
 
         # Calculate comparisons
         avg_rtf_comparison = self._calculate_avg_comparison(
             [standard_metrics, chunked_metrics, streaming_metrics],
             ["standard", "chunked", "streaming"],
-            lambda m: m.rtf
+            lambda m: m.rtf,
         )
 
         avg_latency_comparison = self._calculate_avg_comparison(
             [standard_metrics, chunked_metrics, streaming_metrics],
             ["standard", "chunked", "streaming"],
-            lambda m: m.time_to_first_audio
+            lambda m: m.time_to_first_audio,
         )
 
         avg_memory_comparison = self._calculate_avg_comparison(
             [standard_metrics, chunked_metrics, streaming_metrics],
             ["standard", "chunked", "streaming"],
-            lambda m: m.memory_usage or 0
+            lambda m: m.memory_usage or 0,
         )
 
         time_to_first_audio_comparison = self._calculate_avg_comparison(
             [standard_metrics, chunked_metrics, streaming_metrics],
             ["standard", "chunked", "streaming"],
-            lambda m: m.time_to_first_audio
+            lambda m: m.time_to_first_audio,
         )
 
         perceived_responsiveness = self._calculate_avg_comparison(
             [standard_metrics, chunked_metrics, streaming_metrics],
             ["standard", "chunked", "streaming"],
-            lambda m: 1.0 / max(m.perceived_latency, 0.1)  # Inverse of perceived latency
+            lambda m: 1.0 / max(m.perceived_latency, 0.1),  # Inverse of perceived latency
         )
 
         return ComparisonReport(
@@ -329,7 +338,7 @@ class ChunkedPerformanceMonitor:
             avg_latency_comparison=avg_latency_comparison,
             avg_memory_comparison=avg_memory_comparison,
             time_to_first_audio_comparison=time_to_first_audio_comparison,
-            perceived_responsiveness=perceived_responsiveness
+            perceived_responsiveness=perceived_responsiveness,
         )
 
     def get_real_time_stats(self) -> dict[str, Any]:
@@ -358,24 +367,21 @@ class ChunkedPerformanceMonitor:
                     "time_to_first_audio": m.time_to_first_audio,
                     "perceived_latency": m.perceived_latency,
                     "chunk_count": m.chunk_count,
-                    "timestamp": m.timestamp
+                    "timestamp": m.timestamp,
                 }
                 for m in self.metrics_history
             ],
             "current_stats": self.current_stats,
-            "export_time": time.time()
+            "export_time": time.time(),
         }
 
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             json.dump(export_data, f, indent=2)
 
         logger.info(f"Exported {len(self.metrics_history)} metrics to {filepath}")
 
     def _calculate_perceived_latency(
-        self,
-        generation_type: GenerationType,
-        time_to_first_audio: float,
-        total_time: float
+        self, generation_type: GenerationType, time_to_first_audio: float, total_time: float
     ) -> float:
         """Calculate perceived latency based on generation type"""
 
@@ -401,10 +407,7 @@ class ChunkedPerformanceMonitor:
             return "very_long"
 
     def _calculate_avg_comparison(
-        self,
-        metric_lists: list[list[PerformanceMetrics]],
-        labels: list[str],
-        value_func
+        self, metric_lists: list[list[PerformanceMetrics]], labels: list[str], value_func
     ) -> dict[str, float]:
         """Calculate average comparison between metric lists"""
         comparison = {}
@@ -449,8 +452,7 @@ class ChunkedPerformanceMonitor:
         # Clean main history
         original_count = len(self.metrics_history)
         self.metrics_history = deque(
-            [m for m in self.metrics_history if m.timestamp >= cutoff_time],
-            maxlen=self.max_history
+            [m for m in self.metrics_history if m.timestamp >= cutoff_time], maxlen=self.max_history
         )
 
         # Clean categorized metrics
@@ -466,7 +468,9 @@ class ChunkedPerformanceMonitor:
 
         for length_category in self.metrics_by_text_length:
             self.metrics_by_text_length[length_category] = [
-                m for m in self.metrics_by_text_length[length_category] if m.timestamp >= cutoff_time
+                m
+                for m in self.metrics_by_text_length[length_category]
+                if m.timestamp >= cutoff_time
             ]
 
         cleaned_count = original_count - len(self.metrics_history)

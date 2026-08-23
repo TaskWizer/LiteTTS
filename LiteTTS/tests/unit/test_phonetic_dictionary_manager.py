@@ -24,7 +24,7 @@ class TestPhoneticDictionaryManager:
         """Test looking up a word"""
         result = manager.lookup("hello")
         # Result can be None or DictionaryEntry
-        assert result is None or hasattr(result, 'word')
+        assert result is None or hasattr(result, "word")
 
     def test_get_statistics(self, manager):
         """Test getting statistics"""

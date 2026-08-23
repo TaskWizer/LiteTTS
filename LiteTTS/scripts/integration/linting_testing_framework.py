@@ -18,12 +18,14 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class LintingResult:
     """Linting result for a tool"""
+
     tool_name: str
     success: bool
     issues_found: int
@@ -33,9 +35,11 @@ class LintingResult:
     output: str
     error_message: str = ""
 
+
 @dataclass
 class TestResult:
     """Test execution result"""
+
     test_suite: str
     success: bool
     tests_run: int
@@ -47,9 +51,11 @@ class TestResult:
     output: str
     error_message: str = ""
 
+
 @dataclass
 class QualityConfiguration:
     """Code quality configuration"""
+
     enable_black: bool
     enable_isort: bool
     enable_flake8: bool
@@ -62,6 +68,7 @@ class QualityConfiguration:
     max_line_length: int
     exclude_patterns: list[str]
     test_directories: list[str]
+
 
 class LintingTestingManager:
     """Linting and testing framework manager"""
@@ -99,16 +106,17 @@ class LintingTestingManager:
                 "env",
                 "build",
                 "dist",
-                "*.egg-info"
+                "*.egg-info",
             ],
-            test_directories=["tests", "test"]
+            test_directories=["tests", "test"],
         )
 
     def check_tool_availability(self, tool_name: str) -> bool:
         """Check if a linting/testing tool is available"""
         try:
-            result = subprocess.run([tool_name, "--version"],
-                                  capture_output=True, text=True, timeout=10)
+            result = subprocess.run(
+                [tool_name, "--version"], capture_output=True, text=True, timeout=10
+            )
             return result.returncode == 0
         except (subprocess.TimeoutExpired, FileNotFoundError):
             return False
@@ -122,10 +130,7 @@ class LintingTestingManager:
             cmd = ["black"]
             if check_only:
                 cmd.extend(["--check", "--diff"])
-            cmd.extend([
-                "--line-length", str(self.config.max_line_length),
-                "."
-            ])
+            cmd.extend(["--line-length", str(self.config.max_line_length), "."])
 
             # Add exclusions
             for pattern in self.config.exclude_patterns:
@@ -146,7 +151,7 @@ class LintingTestingManager:
                 warnings=0,
                 execution_time=execution_time,
                 output=result.stdout,
-                error_message=result.stderr if result.returncode != 0 else ""
+                error_message=result.stderr if result.returncode != 0 else "",
             )
 
         except subprocess.TimeoutExpired:
@@ -158,7 +163,7 @@ class LintingTestingManager:
                 warnings=0,
                 execution_time=time.time() - start_time,
                 output="",
-                error_message="Black execution timed out"
+                error_message="Black execution timed out",
             )
         except Exception as e:
             return LintingResult(
@@ -169,7 +174,7 @@ class LintingTestingManager:
                 warnings=0,
                 execution_time=time.time() - start_time,
                 output="",
-                error_message=str(e)
+                error_message=str(e),
             )
 
     def run_isort(self, check_only: bool = True) -> LintingResult:
@@ -181,11 +186,9 @@ class LintingTestingManager:
             cmd = ["isort"]
             if check_only:
                 cmd.extend(["--check-only", "--diff"])
-            cmd.extend([
-                "--profile", "black",
-                "--line-length", str(self.config.max_line_length),
-                "."
-            ])
+            cmd.extend(
+                ["--profile", "black", "--line-length", str(self.config.max_line_length), "."]
+            )
 
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
 
@@ -202,7 +205,7 @@ class LintingTestingManager:
                 warnings=0,
                 execution_time=execution_time,
                 output=result.stdout,
-                error_message=result.stderr if result.returncode != 0 else ""
+                error_message=result.stderr if result.returncode != 0 else "",
             )
 
         except Exception as e:
@@ -214,7 +217,7 @@ class LintingTestingManager:
                 warnings=0,
                 execution_time=time.time() - start_time,
                 output="",
-                error_message=str(e)
+                error_message=str(e),
             )
 
     def run_flake8(self) -> LintingResult:
@@ -225,10 +228,13 @@ class LintingTestingManager:
         try:
             cmd = [
                 "flake8",
-                "--max-line-length", str(self.config.max_line_length),
-                "--extend-ignore", "E203,W503",  # Compatible with Black
-                "--exclude", ",".join(self.config.exclude_patterns),
-                "."
+                "--max-line-length",
+                str(self.config.max_line_length),
+                "--extend-ignore",
+                "E203,W503",  # Compatible with Black
+                "--exclude",
+                ",".join(self.config.exclude_patterns),
+                ".",
             ]
 
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
@@ -236,11 +242,11 @@ class LintingTestingManager:
             execution_time = time.time() - start_time
 
             # Parse output for issues
-            lines = result.stdout.strip().split('\n') if result.stdout.strip() else []
+            lines = result.stdout.strip().split("\n") if result.stdout.strip() else []
             issues_found = len([line for line in lines if line.strip()])
 
             # Count critical issues (errors) vs warnings
-            critical_issues = len([line for line in lines if ':E' in line])
+            critical_issues = len([line for line in lines if ":E" in line])
             warnings = issues_found - critical_issues
 
             return LintingResult(
@@ -251,7 +257,7 @@ class LintingTestingManager:
                 warnings=warnings,
                 execution_time=execution_time,
                 output=result.stdout,
-                error_message=result.stderr if result.returncode != 0 else ""
+                error_message=result.stderr if result.returncode != 0 else "",
             )
 
         except Exception as e:
@@ -263,7 +269,7 @@ class LintingTestingManager:
                 warnings=0,
                 execution_time=time.time() - start_time,
                 output="",
-                error_message=str(e)
+                error_message=str(e),
             )
 
     def run_pylint(self) -> LintingResult:
@@ -292,26 +298,32 @@ class LintingTestingManager:
                     warnings=0,
                     execution_time=time.time() - start_time,
                     output="No Python files found to lint",
-                    error_message=""
+                    error_message="",
                 )
 
-            cmd = [
-                "pylint",
-                "--max-line-length", str(self.config.max_line_length),
-                "--disable", "C0114,C0115,C0116",  # Disable docstring requirements for now
-                "--output-format", "text"
-            ] + filtered_files[:10]  # Limit to first 10 files for performance
+            cmd = (
+                [
+                    "pylint",
+                    "--max-line-length",
+                    str(self.config.max_line_length),
+                    "--disable",
+                    "C0114,C0115,C0116",  # Disable docstring requirements for now
+                    "--output-format",
+                    "text",
+                ]
+                + filtered_files[:10]
+            )  # Limit to first 10 files for performance
 
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
 
             execution_time = time.time() - start_time
 
             # Parse Pylint output
-            lines = result.stdout.strip().split('\n') if result.stdout.strip() else []
+            lines = result.stdout.strip().split("\n") if result.stdout.strip() else []
 
             # Count different types of issues
-            critical_issues = len([line for line in lines if ':E' in line or ':F' in line])
-            warnings = len([line for line in lines if ':W' in line or ':R' in line or ':C' in line])
+            critical_issues = len([line for line in lines if ":E" in line or ":F" in line])
+            warnings = len([line for line in lines if ":W" in line or ":R" in line or ":C" in line])
             issues_found = critical_issues + warnings
 
             return LintingResult(
@@ -322,7 +334,7 @@ class LintingTestingManager:
                 warnings=warnings,
                 execution_time=execution_time,
                 output=result.stdout,
-                error_message=result.stderr if result.returncode not in [0, 1, 2, 4, 8, 16] else ""
+                error_message=result.stderr if result.returncode not in [0, 1, 2, 4, 8, 16] else "",
             )
 
         except Exception as e:
@@ -334,7 +346,7 @@ class LintingTestingManager:
                 warnings=0,
                 execution_time=time.time() - start_time,
                 output="",
-                error_message=str(e)
+                error_message=str(e),
             )
 
     def run_mypy(self) -> LintingResult:
@@ -348,7 +360,7 @@ class LintingTestingManager:
                 "--ignore-missing-imports",
                 "--no-strict-optional",
                 "--show-error-codes",
-                "."
+                ".",
             ]
 
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
@@ -356,8 +368,8 @@ class LintingTestingManager:
             execution_time = time.time() - start_time
 
             # Parse MyPy output
-            lines = result.stdout.strip().split('\n') if result.stdout.strip() else []
-            issues_found = len([line for line in lines if 'error:' in line])
+            lines = result.stdout.strip().split("\n") if result.stdout.strip() else []
+            issues_found = len([line for line in lines if "error:" in line])
 
             # MyPy mostly reports errors, treat all as critical
             critical_issues = issues_found
@@ -371,7 +383,7 @@ class LintingTestingManager:
                 warnings=warnings,
                 execution_time=execution_time,
                 output=result.stdout,
-                error_message=result.stderr if result.returncode != 0 else ""
+                error_message=result.stderr if result.returncode != 0 else "",
             )
 
         except Exception as e:
@@ -383,7 +395,7 @@ class LintingTestingManager:
                 warnings=0,
                 execution_time=time.time() - start_time,
                 output="",
-                error_message=str(e)
+                error_message=str(e),
             )
 
     def run_bandit(self) -> LintingResult:
@@ -394,9 +406,12 @@ class LintingTestingManager:
         try:
             cmd = [
                 "bandit",
-                "-r", ".",
-                "-f", "json",
-                "--exclude", ",".join(self.config.exclude_patterns)
+                "-r",
+                ".",
+                "-f",
+                "json",
+                "--exclude",
+                ",".join(self.config.exclude_patterns),
             ]
 
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
@@ -410,8 +425,13 @@ class LintingTestingManager:
                     issues_found = len(bandit_data.get("results", []))
 
                     # Count by severity
-                    critical_issues = len([r for r in bandit_data.get("results", [])
-                                         if r.get("issue_severity") in ["HIGH", "MEDIUM"]])
+                    critical_issues = len(
+                        [
+                            r
+                            for r in bandit_data.get("results", [])
+                            if r.get("issue_severity") in ["HIGH", "MEDIUM"]
+                        ]
+                    )
                     warnings = issues_found - critical_issues
                 else:
                     issues_found = critical_issues = warnings = 0
@@ -426,7 +446,7 @@ class LintingTestingManager:
                 warnings=warnings,
                 execution_time=execution_time,
                 output=result.stdout,
-                error_message=result.stderr if result.returncode != 0 else ""
+                error_message=result.stderr if result.returncode != 0 else "",
             )
 
         except Exception as e:
@@ -438,7 +458,7 @@ class LintingTestingManager:
                 warnings=0,
                 execution_time=time.time() - start_time,
                 output="",
-                error_message=str(e)
+                error_message=str(e),
             )
 
     def run_pytest(self) -> TestResult:
@@ -483,28 +503,25 @@ def test_environment():
 ''')
                 test_dirs = ["tests"]
 
-            cmd = [
-                "pytest",
-                "-v",
-                "--tb=short",
-                "--strict-markers"
-            ] + test_dirs
+            cmd = ["pytest", "-v", "--tb=short", "--strict-markers"] + test_dirs
 
             # Add coverage if enabled
             if self.config.enable_coverage:
-                cmd.extend([
-                    "--cov=.",
-                    "--cov-report=term-missing",
-                    "--cov-report=json:coverage.json",
-                    f"--cov-fail-under={self.config.min_coverage_percentage}"
-                ])
+                cmd.extend(
+                    [
+                        "--cov=.",
+                        "--cov-report=term-missing",
+                        "--cov-report=json:coverage.json",
+                        f"--cov-fail-under={self.config.min_coverage_percentage}",
+                    ]
+                )
 
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
 
             execution_time = time.time() - start_time
 
             # Parse pytest output
-            output_lines = result.stdout.split('\n')
+            output_lines = result.stdout.split("\n")
 
             # Extract test counts
             tests_run = tests_passed = tests_failed = tests_skipped = 0
@@ -516,26 +533,28 @@ def test_environment():
                     parts = line.split()
                     for i, part in enumerate(parts):
                         if part == "passed" and i > 0:
-                            tests_passed = int(parts[i-1])
+                            tests_passed = int(parts[i - 1])
                         elif part == "failed" and i > 0:
-                            tests_failed = int(parts[i-1])
+                            tests_failed = int(parts[i - 1])
                         elif part == "skipped" and i > 0:
-                            tests_skipped = int(parts[i-1])
+                            tests_skipped = int(parts[i - 1])
                 elif "passed" in line and "failed" not in line:
                     # Parse line like "5 passed"
                     parts = line.split()
                     for i, part in enumerate(parts):
                         if part == "passed" and i > 0:
-                            tests_passed = int(parts[i-1])
+                            tests_passed = int(parts[i - 1])
 
             tests_run = tests_passed + tests_failed + tests_skipped
 
             # Extract coverage if available
             if self.config.enable_coverage and Path("coverage.json").exists():
                 try:
-                    with open("coverage.json", 'r') as f:
+                    with open("coverage.json", "r") as f:
                         coverage_data = json.load(f)
-                        coverage_percentage = coverage_data.get("totals", {}).get("percent_covered", 0.0)
+                        coverage_percentage = coverage_data.get("totals", {}).get(
+                            "percent_covered", 0.0
+                        )
                 except Exception:
                     coverage_percentage = 0.0
 
@@ -549,7 +568,7 @@ def test_environment():
                 coverage_percentage=coverage_percentage,
                 execution_time=execution_time,
                 output=result.stdout,
-                error_message=result.stderr if result.returncode != 0 else ""
+                error_message=result.stderr if result.returncode != 0 else "",
             )
 
         except Exception as e:
@@ -563,7 +582,7 @@ def test_environment():
                 coverage_percentage=0.0,
                 execution_time=time.time() - start_time,
                 output="",
-                error_message=str(e)
+                error_message=str(e),
             )
 
     def run_all_linting(self) -> dict[str, LintingResult]:
@@ -607,7 +626,7 @@ def test_environment():
 
     def generate_makefile(self) -> str:
         """Generate Makefile for quality checks"""
-        makefile_content = f'''# Kokoro TTS Quality Assurance Makefile
+        makefile_content = f"""# Kokoro TTS Quality Assurance Makefile
 
 .PHONY: help install-dev lint test format check-format security type-check all clean
 
@@ -666,11 +685,11 @@ clean:
 	rm -rf bandit-report.json
 	find . -type d -name __pycache__ -exec rm -rf {{}} + 2>/dev/null || true
 	find . -type f -name "*.pyc" -delete
-'''
+"""
 
         # Save Makefile
         makefile_path = Path("Makefile")
-        with open(makefile_path, 'w') as f:
+        with open(makefile_path, "w") as f:
             f.write(makefile_content)
 
         logger.info("Generated Makefile for quality checks")
@@ -708,7 +727,7 @@ clean:
             "generated_files": {
                 "config_files": list(config_files.keys()),
                 "pre_commit_config": ".pre-commit-config.yaml",
-                "makefile": "Makefile"
+                "makefile": "Makefile",
             },
             "summary": {
                 "total_linting_tools": len(linting_results),
@@ -719,24 +738,27 @@ clean:
                 "critical_issues": total_critical_issues,
                 "warnings": total_warnings,
                 "overall_success": (
-                    successful_linting_tools == len(linting_results) and
-                    successful_testing_tools == len(testing_results) and
-                    total_critical_issues == 0
-                )
+                    successful_linting_tools == len(linting_results)
+                    and successful_testing_tools == len(testing_results)
+                    and total_critical_issues == 0
+                ),
             },
-            "recommendations": self._generate_quality_recommendations(linting_results, testing_results)
+            "recommendations": self._generate_quality_recommendations(
+                linting_results, testing_results
+            ),
         }
 
         # Save complete results
         results_file = self.results_dir / f"quality_check_results_{int(time.time())}.json"
-        with open(results_file, 'w') as f:
+        with open(results_file, "w") as f:
             json.dump(results, f, indent=2, default=str)
 
         logger.info(f"Comprehensive quality check completed. Results saved to: {results_file}")
         return results
 
-    def _generate_quality_recommendations(self, linting_results: dict[str, LintingResult],
-                                        testing_results: dict[str, TestResult]) -> list[str]:
+    def _generate_quality_recommendations(
+        self, linting_results: dict[str, LintingResult], testing_results: dict[str, TestResult]
+    ) -> list[str]:
         """Generate quality improvement recommendations"""
         recommendations = []
 
@@ -745,25 +767,33 @@ clean:
             if not result.success:
                 recommendations.append(f"Fix {tool_name} configuration or installation issues")
             elif result.critical_issues > 0:
-                recommendations.append(f"Address {result.critical_issues} critical issues found by {tool_name}")
+                recommendations.append(
+                    f"Address {result.critical_issues} critical issues found by {tool_name}"
+                )
             elif result.warnings > 10:
-                recommendations.append(f"Consider addressing {result.warnings} warnings from {tool_name}")
+                recommendations.append(
+                    f"Consider addressing {result.warnings} warnings from {tool_name}"
+                )
 
         # Testing recommendations
         for test_name, result in testing_results.items():
             if not result.success:
                 recommendations.append(f"Fix {test_name} test failures")
             elif result.coverage_percentage < self.config.min_coverage_percentage:
-                recommendations.append(f"Increase test coverage from {result.coverage_percentage:.1f}% to {self.config.min_coverage_percentage}%")
+                recommendations.append(
+                    f"Increase test coverage from {result.coverage_percentage:.1f}% to {self.config.min_coverage_percentage}%"
+                )
 
         # General recommendations
-        recommendations.extend([
-            "Set up pre-commit hooks for automated quality checks",
-            "Integrate quality checks into CI/CD pipeline",
-            "Configure IDE with quality tool plugins",
-            "Establish code review process with quality requirements",
-            "Set up automated quality reporting and monitoring"
-        ])
+        recommendations.extend(
+            [
+                "Set up pre-commit hooks for automated quality checks",
+                "Integrate quality checks into CI/CD pipeline",
+                "Configure IDE with quality tool plugins",
+                "Establish code review process with quality requirements",
+                "Set up automated quality reporting and monitoring",
+            ]
+        )
 
         return recommendations
 
@@ -839,7 +869,7 @@ ignore_missing_imports = true
 
         # .flake8 configuration
         exclude_list = ",".join(self.config.exclude_patterns)
-        flake8_content = f'''[flake8]
+        flake8_content = f"""[flake8]
 max-line-length = {self.config.max_line_length}
 extend-ignore = E203, W503, E501
 exclude = {exclude_list}
@@ -847,14 +877,14 @@ per-file-ignores =
     __init__.py:F401
     tests/*:S101
 max-complexity = 10
-'''
+"""
 
         config_files[".flake8"] = flake8_content
 
         # Save all configuration files
         for filename, content in config_files.items():
             config_file = Path(filename)
-            with open(config_file, 'w') as f:
+            with open(config_file, "w") as f:
                 f.write(content)
             logger.info(f"Generated configuration file: {filename}")
 
@@ -864,7 +894,7 @@ max-complexity = 10
         """Generate pre-commit configuration"""
         logger.info("Generating pre-commit configuration...")
 
-        pre_commit_content = f'''# Pre-commit configuration for Kokoro TTS
+        pre_commit_content = f"""# Pre-commit configuration for Kokoro TTS
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
@@ -907,15 +937,16 @@ repos:
     hooks:
       - id: mypy
         args: [--ignore-missing-imports]
-'''
+"""
 
         # Save pre-commit configuration
         pre_commit_file = Path(".pre-commit-config.yaml")
-        with open(pre_commit_file, 'w') as f:
+        with open(pre_commit_file, "w") as f:
             f.write(pre_commit_content)
 
         logger.info("Generated pre-commit configuration: .pre-commit-config.yaml")
         return pre_commit_content
+
 
 def main():
     """Main function to run linting and testing framework"""
@@ -925,15 +956,19 @@ def main():
         # Run comprehensive quality check
         results = manager.run_comprehensive_quality_check()
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("LINTING AND TESTING FRAMEWORK SUMMARY")
-        print("="*80)
+        print("=" * 80)
 
         summary = results["summary"]
 
         print(f"Overall Success: {'✅' if summary['overall_success'] else '❌'}")
-        print(f"Linting Tools: {summary['successful_linting_tools']}/{summary['total_linting_tools']}")
-        print(f"Testing Tools: {summary['successful_testing_tools']}/{summary['total_testing_tools']}")
+        print(
+            f"Linting Tools: {summary['successful_linting_tools']}/{summary['total_linting_tools']}"
+        )
+        print(
+            f"Testing Tools: {summary['successful_testing_tools']}/{summary['total_testing_tools']}"
+        )
 
         print("\nIssue Summary:")
         print(f"  Total Issues: {summary['total_issues']}")
@@ -943,13 +978,21 @@ def main():
         print("\nLinting Results:")
         for tool_name, result_data in results["linting_results"].items():
             status = "✅" if result_data["success"] else "❌"
-            print(f"  {status} {tool_name}: {result_data['issues_found']} issues ({result_data['execution_time']:.2f}s)")
+            print(
+                f"  {status} {tool_name}: {result_data['issues_found']} issues ({result_data['execution_time']:.2f}s)"
+            )
 
         print("\nTesting Results:")
         for test_name, result_data in results["testing_results"].items():
             status = "✅" if result_data["success"] else "❌"
-            coverage = f" - {result_data['coverage_percentage']:.1f}% coverage" if result_data['coverage_percentage'] > 0 else ""
-            print(f"  {status} {test_name}: {result_data['tests_passed']}/{result_data['tests_run']} passed{coverage}")
+            coverage = (
+                f" - {result_data['coverage_percentage']:.1f}% coverage"
+                if result_data["coverage_percentage"] > 0
+                else ""
+            )
+            print(
+                f"  {status} {test_name}: {result_data['tests_passed']}/{result_data['tests_run']} passed{coverage}"
+            )
 
         print("\nGenerated Files:")
         for file_type, files in results["generated_files"].items():
@@ -965,12 +1008,14 @@ def main():
         if len(results["recommendations"]) > 5:
             print(f"  ... and {len(results['recommendations']) - 5} more recommendations")
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
 
     except Exception as e:
         logger.error(f"Quality check failed: {e}")
         import traceback
+
         logger.error(f"Full traceback: {traceback.format_exc()}")
+
 
 if __name__ == "__main__":
     main()

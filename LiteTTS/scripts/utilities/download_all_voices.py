@@ -15,16 +15,21 @@ from LiteTTS.voice.dynamic_manager import DynamicVoiceManager
 
 # Setup logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s | %(levelname)s | %(name)s | %(message)s'
+    level=logging.INFO, format="%(asctime)s | %(levelname)s | %(name)s | %(message)s"
 )
 logger = logging.getLogger(__name__)
 
+
 def progress_callback(progress: DownloadProgress):
     """Progress callback for downloads"""
-    print(f"\r{progress.filename}: {progress.percentage:.1f}% "
-          f"({progress.downloaded_bytes}/{progress.total_bytes} bytes) "
-          f"@ {progress.speed_mbps:.1f} MB/s", end="", flush=True)
+    print(
+        f"\r{progress.filename}: {progress.percentage:.1f}% "
+        f"({progress.downloaded_bytes}/{progress.total_bytes} bytes) "
+        f"@ {progress.speed_mbps:.1f} MB/s",
+        end="",
+        flush=True,
+    )
+
 
 def main():
     """Main function to download all voices"""
@@ -100,7 +105,9 @@ def main():
                 for voice_name in voice_names:
                     if voice_name in available_voices:
                         print(f"\nDownloading {voice_name}...")
-                        results[voice_name] = voice_manager.downloader.download_voice(voice_name, progress_callback)
+                        results[voice_name] = voice_manager.downloader.download_voice(
+                            voice_name, progress_callback
+                        )
                         print()  # New line after progress
                     else:
                         print(f"❌ Voice '{voice_name}' not found")
@@ -115,12 +122,14 @@ def main():
             download_info = voice_manager.downloader.get_download_info()
 
             for voice_name, info in download_info.items():
-                status = "✅ Downloaded" if info['downloaded'] else "❌ Missing"
-                size_mb = info['file_size'] / (1024 * 1024) if info['file_size'] > 0 else 0
-                expected_mb = info['expected_size'] / (1024 * 1024) if info['expected_size'] > 0 else 0
+                status = "✅ Downloaded" if info["downloaded"] else "❌ Missing"
+                size_mb = info["file_size"] / (1024 * 1024) if info["file_size"] > 0 else 0
+                expected_mb = (
+                    info["expected_size"] / (1024 * 1024) if info["expected_size"] > 0 else 0
+                )
 
                 print(f"   {voice_name}: {status}")
-                if info['downloaded']:
+                if info["downloaded"]:
                     print(f"      Size: {size_mb:.1f} MB")
                 else:
                     print(f"      Expected: {expected_mb:.1f} MB")
@@ -164,8 +173,10 @@ def main():
     except Exception as e:
         logger.error(f"Error during voice download: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

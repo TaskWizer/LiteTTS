@@ -11,8 +11,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
+
 
 def test_api_router_initialization():
     """Test that the API router can be initialized"""
@@ -31,7 +34,9 @@ def test_api_router_initialization():
 
         logger.info(f"Router type: {type(router)}")
         logger.info(f"Max file size: {router_instance.max_file_size / 1024 / 1024:.0f}MB")
-        logger.info(f"Max file size (extended): {router_instance.max_file_size_extended / 1024 / 1024:.0f}MB")
+        logger.info(
+            f"Max file size (extended): {router_instance.max_file_size_extended / 1024 / 1024:.0f}MB"
+        )
         logger.info(f"Supported formats: {router_instance.supported_formats}")
 
         # Check routes
@@ -40,7 +45,7 @@ def test_api_router_initialization():
 
         route_paths = []
         for route in routes:
-            if hasattr(route, 'path'):
+            if hasattr(route, "path"):
                 route_paths.append(f"{route.methods} {route.path}")
 
         logger.info("Available routes:")
@@ -60,6 +65,7 @@ def test_api_router_initialization():
     except Exception as e:
         logger.error(f"❌ VoiceCloningRouter test failed: {e}")
         return False
+
 
 def test_validation_methods():
     """Test the validation methods"""
@@ -97,6 +103,7 @@ def test_validation_methods():
         logger.error(f"❌ Validation methods test failed: {e}")
         return False
 
+
 def test_voice_cloner_integration():
     """Test integration with VoiceCloner"""
     try:
@@ -123,7 +130,7 @@ def test_voice_cloner_integration():
             sample_rate=24000,
             channels=1,
             quality_score=0.8,
-            voice_characteristics={"test": "data"}
+            voice_characteristics={"test": "data"},
         )
 
         suitability = router_instance._assess_suitability(test_analysis)
@@ -134,7 +141,7 @@ def test_voice_cloner_integration():
         logger.info(f"  Quality OK: {suitability['quality_ok']}")
         logger.info(f"  Recommended: {suitability['recommended']}")
 
-        if suitability['issues']:
+        if suitability["issues"]:
             logger.info(f"  Issues: {suitability['issues']}")
 
         # Test recommendations
@@ -148,6 +155,7 @@ def test_voice_cloner_integration():
         logger.error(f"❌ VoiceCloner integration test failed: {e}")
         return False
 
+
 def test_enhanced_features():
     """Test enhanced features specific to 120s support"""
     try:
@@ -159,10 +167,12 @@ def test_enhanced_features():
 
         # Test extended file size limits
         logger.info(f"Standard max file size: {router_instance.max_file_size / 1024 / 1024:.0f}MB")
-        logger.info(f"Extended max file size: {router_instance.max_file_size_extended / 1024 / 1024:.0f}MB")
+        logger.info(
+            f"Extended max file size: {router_instance.max_file_size_extended / 1024 / 1024:.0f}MB"
+        )
 
         # Check if extended validation method exists
-        if hasattr(router_instance, '_validate_audio_file_extended'):
+        if hasattr(router_instance, "_validate_audio_file_extended"):
             logger.info("✅ Extended audio file validation method found")
         else:
             logger.warning("⚠️ Extended audio file validation method not found")
@@ -176,7 +186,7 @@ def test_enhanced_features():
             sample_rate=24000,
             channels=1,
             quality_score=0.9,
-            voice_characteristics={"test": "data"}
+            voice_characteristics={"test": "data"},
         )
 
         suitability = router_instance._assess_suitability(long_analysis)
@@ -185,7 +195,7 @@ def test_enhanced_features():
         logger.info(f"  Duration OK: {suitability['duration_ok']}")
         logger.info(f"  Recommended: {suitability['recommended']}")
 
-        if suitability['duration_ok']:
+        if suitability["duration_ok"]:
             logger.info("✅ 120s audio duration supported")
         else:
             logger.warning("⚠️ 120s audio duration not supported")
@@ -196,6 +206,7 @@ def test_enhanced_features():
     except Exception as e:
         logger.error(f"❌ Enhanced features test failed: {e}")
         return False
+
 
 def main():
     """Run all API router tests"""
@@ -248,6 +259,7 @@ def main():
         logger.warning(f"⚠️ {total - passed} tests failed. Check the logs above.")
 
     return passed == total
+
 
 if __name__ == "__main__":
     success = main()

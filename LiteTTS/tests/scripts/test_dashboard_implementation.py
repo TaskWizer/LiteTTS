@@ -31,7 +31,7 @@ def test_dashboard_web_interface() -> bool:
                 "Kokoro ONNX TTS API Dashboard",
                 "Real-time monitoring",
                 "chart.js",
-                "dashboard-data"
+                "dashboard-data",
             ]
 
             missing_elements = []
@@ -56,6 +56,7 @@ def test_dashboard_web_interface() -> bool:
         print(f"❌ Dashboard test failed: {e}")
         return False
 
+
 def test_dashboard_data_api() -> bool:
     """Test that the dashboard data API returns valid data"""
 
@@ -70,15 +71,15 @@ def test_dashboard_data_api() -> bool:
 
             # Check for required data fields
             required_fields = [
-                'timestamp',
-                'requests_per_minute',
-                'response_time_stats',
-                'error_rates',
-                'voice_usage',
-                'concurrency',
-                'system_status',
-                'performance',
-                'tts_stats'
+                "timestamp",
+                "requests_per_minute",
+                "response_time_stats",
+                "error_rates",
+                "voice_usage",
+                "concurrency",
+                "system_status",
+                "performance",
+                "tts_stats",
             ]
 
             missing_fields = []
@@ -91,15 +92,15 @@ def test_dashboard_data_api() -> bool:
                 return False
 
             # Validate data structure
-            if not isinstance(data['requests_per_minute'], list):
+            if not isinstance(data["requests_per_minute"], list):
                 print("❌ requests_per_minute should be a list")
                 return False
 
-            if not isinstance(data['response_time_stats'], dict):
+            if not isinstance(data["response_time_stats"], dict):
                 print("❌ response_time_stats should be a dict")
                 return False
 
-            if not isinstance(data['concurrency'], dict):
+            if not isinstance(data["concurrency"], dict):
                 print("❌ concurrency should be a dict")
                 return False
 
@@ -117,6 +118,7 @@ def test_dashboard_data_api() -> bool:
         print(f"❌ Dashboard data API test failed: {e}")
         return False
 
+
 def test_analytics_data_collection() -> bool:
     """Test that analytics properly collect data from TTS requests"""
 
@@ -129,8 +131,10 @@ def test_analytics_data_collection() -> bool:
         initial_data = initial_response.json()
 
         # Check both dashboard analytics and performance monitor
-        initial_dashboard_requests = initial_data['system_status']['total_requests_all_time']
-        initial_performance_requests = initial_data.get('performance', {}).get('summary', {}).get('total_requests', 0)
+        initial_dashboard_requests = initial_data["system_status"]["total_requests_all_time"]
+        initial_performance_requests = (
+            initial_data.get("performance", {}).get("summary", {}).get("total_requests", 0)
+        )
 
         print(f"Initial dashboard request count: {initial_dashboard_requests}")
         print(f"Initial performance request count: {initial_performance_requests}")
@@ -139,14 +143,12 @@ def test_analytics_data_collection() -> bool:
         tts_payload = {
             "input": "Dashboard analytics test request",
             "voice": "af_heart",
-            "response_format": "mp3"
+            "response_format": "mp3",
         }
 
         print("Making test TTS request...")
         tts_response = requests.post(
-            "http://localhost:8354/v1/audio/speech",
-            json=tts_payload,
-            timeout=30
+            "http://localhost:8354/v1/audio/speech", json=tts_payload, timeout=30
         )
 
         if tts_response.status_code != 200:
@@ -162,8 +164,10 @@ def test_analytics_data_collection() -> bool:
         updated_response = requests.get("http://localhost:8354/dashboard/data", timeout=10)
         updated_data = updated_response.json()
 
-        updated_dashboard_requests = updated_data['system_status']['total_requests_all_time']
-        updated_performance_requests = updated_data.get('performance', {}).get('summary', {}).get('total_requests', 0)
+        updated_dashboard_requests = updated_data["system_status"]["total_requests_all_time"]
+        updated_performance_requests = (
+            updated_data.get("performance", {}).get("summary", {}).get("total_requests", 0)
+        )
 
         print(f"Updated dashboard request count: {updated_dashboard_requests}")
         print(f"Updated performance request count: {updated_performance_requests}")
@@ -179,18 +183,22 @@ def test_analytics_data_collection() -> bool:
                 print("✅ Performance monitor captured the request")
 
                 # Check if voice usage was tracked in performance data
-                voice_performance = updated_data.get('performance', {}).get('voice_performance', {})
-                if 'af_heart' in voice_performance:
-                    requests_count = voice_performance['af_heart'].get('requests', 0)
-                    print(f"✅ Voice usage tracked in performance: af_heart used {requests_count} times")
+                voice_performance = updated_data.get("performance", {}).get("voice_performance", {})
+                if "af_heart" in voice_performance:
+                    requests_count = voice_performance["af_heart"].get("requests", 0)
+                    print(
+                        f"✅ Voice usage tracked in performance: af_heart used {requests_count} times"
+                    )
 
             if dashboard_captured:
                 print("✅ Dashboard analytics captured the request")
 
                 # Check if voice usage was tracked in dashboard analytics
-                voice_usage = updated_data.get('voice_usage', {})
-                if 'af_heart' in voice_usage:
-                    print(f"✅ Voice usage tracked in dashboard: af_heart used {voice_usage['af_heart']} times")
+                voice_usage = updated_data.get("voice_usage", {})
+                if "af_heart" in voice_usage:
+                    print(
+                        f"✅ Voice usage tracked in dashboard: af_heart used {voice_usage['af_heart']} times"
+                    )
 
             return True
         else:
@@ -200,6 +208,7 @@ def test_analytics_data_collection() -> bool:
     except Exception as e:
         print(f"❌ Analytics data collection test failed: {e}")
         return False
+
 
 def test_real_time_metrics() -> bool:
     """Test that metrics update in real-time"""
@@ -211,7 +220,7 @@ def test_real_time_metrics() -> bool:
         # Get initial metrics
         response1 = requests.get("http://localhost:8354/dashboard/data", timeout=10)
         data1 = response1.json()
-        timestamp1 = data1['timestamp']
+        timestamp1 = data1["timestamp"]
 
         print(f"First timestamp: {timestamp1}")
 
@@ -221,7 +230,7 @@ def test_real_time_metrics() -> bool:
         # Get updated metrics
         response2 = requests.get("http://localhost:8354/dashboard/data", timeout=10)
         data2 = response2.json()
-        timestamp2 = data2['timestamp']
+        timestamp2 = data2["timestamp"]
 
         print(f"Second timestamp: {timestamp2}")
 
@@ -229,8 +238,8 @@ def test_real_time_metrics() -> bool:
             print("✅ Metrics are updating in real-time")
 
             # Check if uptime increased
-            uptime1 = data1['system_status']['uptime_seconds']
-            uptime2 = data2['system_status']['uptime_seconds']
+            uptime1 = data1["system_status"]["uptime_seconds"]
+            uptime2 = data2["system_status"]["uptime_seconds"]
 
             if uptime2 > uptime1:
                 print(f"✅ Uptime tracking working: {uptime1:.1f}s -> {uptime2:.1f}s")
@@ -244,6 +253,7 @@ def test_real_time_metrics() -> bool:
         print(f"❌ Real-time metrics test failed: {e}")
         return False
 
+
 def test_dashboard_comprehensive() -> dict[str, bool]:
     """Run comprehensive dashboard tests"""
 
@@ -255,12 +265,13 @@ def test_dashboard_comprehensive() -> dict[str, bool]:
     results = {}
 
     # Run all tests
-    results['web_interface'] = test_dashboard_web_interface()
-    results['data_api'] = test_dashboard_data_api()
-    results['analytics_collection'] = test_analytics_data_collection()
-    results['real_time_metrics'] = test_real_time_metrics()
+    results["web_interface"] = test_dashboard_web_interface()
+    results["data_api"] = test_dashboard_data_api()
+    results["analytics_collection"] = test_analytics_data_collection()
+    results["real_time_metrics"] = test_real_time_metrics()
 
     return results
+
 
 def main():
     """Main test execution"""
@@ -273,7 +284,7 @@ def main():
     all_passed = True
     for test_name, passed in results.items():
         status = "✅ PASS" if passed else "❌ FAIL"
-        test_display = test_name.replace('_', ' ').title()
+        test_display = test_name.replace("_", " ").title()
         print(f"   {test_display}: {status}")
         if not passed:
             all_passed = False
@@ -292,6 +303,7 @@ def main():
         print("Please check the failed tests and fix any issues")
 
     return 0 if all_passed else 1
+
 
 if __name__ == "__main__":
     exit(main())

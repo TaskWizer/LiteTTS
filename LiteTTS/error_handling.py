@@ -15,16 +15,20 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+
 class ErrorSeverity(Enum):
     """Error severity levels"""
+
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
 
+
 @dataclass
 class ErrorContext:
     """Context information for error handling"""
+
     operation: str
     user_input: str | None = None
     voice: str | None = None
@@ -36,31 +40,43 @@ class ErrorContext:
         if self.timestamp is None:
             self.timestamp = time.time()
 
+
 class TTSError(Exception):
     """Base TTS error with context"""
 
-    def __init__(self, message: str, severity: ErrorSeverity = ErrorSeverity.MEDIUM,
-                 context: ErrorContext | None = None, original_error: Exception | None = None):
+    def __init__(
+        self,
+        message: str,
+        severity: ErrorSeverity = ErrorSeverity.MEDIUM,
+        context: ErrorContext | None = None,
+        original_error: Exception | None = None,
+    ):
         super().__init__(message)
         self.severity = severity
         self.context = context
         self.original_error = original_error
         self.timestamp = time.time()
 
+
 class ModelLoadError(TTSError):
     """Error loading TTS model"""
+
 
 class VoiceNotFoundError(TTSError):
     """Voice not available"""
 
+
 class AudioGenerationError(TTSError):
     """Error generating audio"""
+
 
 class ValidationError(TTSError):
     """Input validation error"""
 
+
 class SystemResourceError(TTSError):
     """System resource exhaustion"""
+
 
 class ErrorHandler:
     """Comprehensive error handling system"""
@@ -79,7 +95,7 @@ class ErrorHandler:
                 message=str(error),
                 severity=self._determine_severity(error),
                 context=context,
-                original_error=error
+                original_error=error,
             )
         else:
             tts_error = error
@@ -101,20 +117,16 @@ class ErrorHandler:
         """Determine error severity"""
         error_type = type(error).__name__
 
-        critical_errors = [
-            "MemoryError", "SystemExit", "KeyboardInterrupt",
-            "OSError", "IOError"
-        ]
+        critical_errors = ["MemoryError", "SystemExit", "KeyboardInterrupt", "OSError", "IOError"]
 
         high_errors = [
-            "ModelLoadError", "SystemResourceError",
-            "FileNotFoundError", "PermissionError"
+            "ModelLoadError",
+            "SystemResourceError",
+            "FileNotFoundError",
+            "PermissionError",
         ]
 
-        medium_errors = [
-            "AudioGenerationError", "VoiceNotFoundError",
-            "ValueError", "RuntimeError"
-        ]
+        medium_errors = ["AudioGenerationError", "VoiceNotFoundError", "ValueError", "RuntimeError"]
 
         if error_type in critical_errors:
             return ErrorSeverity.CRITICAL
@@ -148,7 +160,9 @@ class ErrorHandler:
 
     def _track_error(self, error: TTSError):
         """Track error for pattern analysis"""
-        error_key = f"{type(error).__name__}:{error.context.operation if error.context else 'unknown'}"
+        error_key = (
+            f"{type(error).__name__}:{error.context.operation if error.context else 'unknown'}"
+        )
 
         if error_key not in self.error_counts:
             self.error_counts[error_key] = 0
@@ -159,7 +173,9 @@ class ErrorHandler:
     def _should_circuit_break(self, error: TTSError) -> bool:
         """Check if circuit breaker should activate"""
         if error.severity in [ErrorSeverity.CRITICAL, ErrorSeverity.HIGH]:
-            error_key = f"{type(error).__name__}:{error.context.operation if error.context else 'unknown'}"
+            error_key = (
+                f"{type(error).__name__}:{error.context.operation if error.context else 'unknown'}"
+            )
 
             # Circuit break if too many errors in short time
             if self.error_counts.get(error_key, 0) > 5:
@@ -176,7 +192,7 @@ class ErrorHandler:
             "message": "The service is experiencing issues and has been temporarily disabled for recovery",
             "severity": "high",
             "retry_after": 300,  # 5 minutes
-            "error_code": "CIRCUIT_BREAKER_ACTIVE"
+            "error_code": "CIRCUIT_BREAKER_ACTIVE",
         }
 
     def _generate_error_response(self, error: TTSError) -> dict[str, Any]:
@@ -184,7 +200,7 @@ class ErrorHandler:
         base_response = {
             "error": str(error),
             "severity": error.severity.value,
-            "timestamp": error.timestamp
+            "timestamp": error.timestamp,
         }
 
         # Add context if available
@@ -220,8 +236,10 @@ class ErrorHandler:
 
         return base_response
 
+
 def error_handler(operation: str):
     """Decorator for automatic error handling"""
+
     def decorator(func: Callable):
         @wraps(func)
         async def async_wrapper(*args, **kwargs):
@@ -258,7 +276,7 @@ def error_handler(operation: str):
                     message=error_response["error"],
                     severity=ErrorSeverity(error_response["severity"]),
                     context=context,
-                    original_error=e
+                    original_error=e,
                 )
 
         # Return appropriate wrapper based on function type
@@ -268,6 +286,7 @@ def error_handler(operation: str):
             return sync_wrapper
 
     return decorator
+
 
 class GracefulDegradation:
     """Graceful degradation strategies"""
@@ -282,14 +301,14 @@ class GracefulDegradation:
         requested_lower = requested_voice.lower()
 
         # Same gender fallback
-        if requested_lower.startswith('af_'):  # American female
-            fallbacks = [v for v in available_voices if v.lower().startswith('af_')]
-        elif requested_lower.startswith('am_'):  # American male
-            fallbacks = [v for v in available_voices if v.lower().startswith('am_')]
-        elif requested_lower.startswith('bf_'):  # British female
-            fallbacks = [v for v in available_voices if v.lower().startswith('bf_')]
-        elif requested_lower.startswith('bm_'):  # British male
-            fallbacks = [v for v in available_voices if v.lower().startswith('bm_')]
+        if requested_lower.startswith("af_"):  # American female
+            fallbacks = [v for v in available_voices if v.lower().startswith("af_")]
+        elif requested_lower.startswith("am_"):  # American male
+            fallbacks = [v for v in available_voices if v.lower().startswith("am_")]
+        elif requested_lower.startswith("bf_"):  # British female
+            fallbacks = [v for v in available_voices if v.lower().startswith("bf_")]
+        elif requested_lower.startswith("bm_"):  # British male
+            fallbacks = [v for v in available_voices if v.lower().startswith("bm_")]
         else:
             fallbacks = available_voices
 
@@ -316,12 +335,12 @@ class GracefulDegradation:
         import re
 
         # Remove complex punctuation
-        simplified = re.sub(r'[^\w\s\.,!?;:\'"()-]', '', text)
+        simplified = re.sub(r'[^\w\s\.,!?;:\'"()-]', "", text)
 
         # Limit sentence length
-        sentences = simplified.split('.')
+        sentences = simplified.split(".")
         if len(sentences) > 3:
-            simplified = '. '.join(sentences[:3]) + '.'
+            simplified = ". ".join(sentences[:3]) + "."
 
         # Fallback to very simple text
         if len(simplified) > 200:

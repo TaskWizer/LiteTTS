@@ -20,6 +20,7 @@ from LiteTTS.performance.monitor import PerformanceMonitor, TTSPerformanceData
 # Skip - performance tests that may fail due to timing/environment issues
 pytestmark = pytest.mark.skip(reason="Performance tests with timing/environment issues")
 
+
 class TestPerformanceMonitoring:
     """Test performance monitoring system"""
 
@@ -43,7 +44,7 @@ class TestPerformanceMonitoring:
             generation_time=0.5,
             rtf=0.25,
             cache_hit=False,
-            format="mp3"
+            format="mp3",
         )
 
         monitor.record_tts_performance(perf_data)
@@ -62,7 +63,7 @@ class TestPerformanceMonitoring:
             generation_time=0.003,
             rtf=0.003,
             cache_hit=True,
-            format="wav"
+            format="wav",
         )
 
         monitor.record_tts_performance(perf_data)
@@ -82,7 +83,7 @@ class TestPerformanceMonitoring:
                 generation_time=0.3 + i * 0.1,
                 rtf=0.2 + i * 0.05,
                 cache_hit=i % 2 == 0,
-                format="mp3"
+                format="mp3",
             )
             monitor.record_tts_performance(perf_data)
 
@@ -106,7 +107,7 @@ class TestPerformanceMonitoring:
                 generation_time=0.4,
                 rtf=0.2,
                 cache_hit=False,
-                format="mp3"
+                format="mp3",
             )
             monitor.record_tts_performance(perf_data)
 
@@ -118,6 +119,7 @@ class TestPerformanceMonitoring:
             assert voice in voice_perf
             assert voice_perf[voice]["requests"] == 1
             assert voice_perf[voice]["avg_rtf"] == 0.2
+
 
 class TestCachePreloader:
     """Test intelligent cache preloader system"""
@@ -131,12 +133,13 @@ class TestCachePreloader:
             common_phrases=["Thank you", "How are you?"],
             warm_on_startup=False,  # Disable for testing
             warm_during_idle=False,
-            idle_threshold_seconds=1.0
+            idle_threshold_seconds=1.0,
         )
 
     @pytest.fixture
     def mock_tts_app(self):
         """Create mock TTS app for testing"""
+
         class MockTTSApp:
             def __init__(self):
                 self.model = MockModel()
@@ -145,6 +148,7 @@ class TestCachePreloader:
             def create(self, text, voice, speed, lang):
                 # Simulate audio generation
                 import numpy as np
+
                 audio_length = len(text) * 100  # Simulate audio based on text length
                 audio = np.random.random(audio_length).astype(np.float32)
                 return audio, 24000
@@ -165,7 +169,9 @@ class TestCachePreloader:
         preloader._schedule_startup_warming()
 
         # Should have tasks for instant words and common phrases for both voices
-        expected_tasks = len(config.instant_words + config.common_phrases) * len(config.primary_voices)
+        expected_tasks = len(config.instant_words + config.common_phrases) * len(
+            config.primary_voices
+        )
         assert len(preloader.warming_queue) == expected_tasks
 
         # Check task priorities
@@ -219,6 +225,7 @@ class TestCachePreloader:
         assert "Hello" in stats["top_phrases"]
         assert stats["voice_usage"]["af_heart"] == 7
 
+
 class TestPerformanceRegression:
     """Test for performance regressions"""
 
@@ -232,7 +239,9 @@ class TestPerformanceRegression:
         # In a real test, this would measure actual TTS generation
         simulated_rtf = 0.25  # Our current performance
 
-        assert simulated_rtf < acceptable_rtf, f"RTF {simulated_rtf} exceeds threshold {acceptable_rtf}"
+        assert simulated_rtf < acceptable_rtf, (
+            f"RTF {simulated_rtf} exceeds threshold {acceptable_rtf}"
+        )
 
     def test_cache_hit_latency_threshold(self):
         """Test that cache hits stay within latency bounds"""
@@ -246,7 +255,9 @@ class TestPerformanceRegression:
 
         latency_ms = (end_time - start_time) * 1000
 
-        assert latency_ms < acceptable_latency_ms, f"Cache hit latency {latency_ms}ms exceeds threshold"
+        assert latency_ms < acceptable_latency_ms, (
+            f"Cache hit latency {latency_ms}ms exceeds threshold"
+        )
 
     def test_memory_usage_threshold(self):
         """Test that memory usage stays within bounds"""
@@ -268,7 +279,10 @@ class TestPerformanceRegression:
         startup_threshold_seconds = 30  # 30 second threshold
         simulated_startup_time = 8  # Our current performance
 
-        assert simulated_startup_time < startup_threshold_seconds, f"Startup time {simulated_startup_time}s exceeds threshold"
+        assert simulated_startup_time < startup_threshold_seconds, (
+            f"Startup time {simulated_startup_time}s exceeds threshold"
+        )
+
 
 class TestConcurrencyAndStress:
     """Test concurrent access and stress scenarios"""
@@ -286,7 +300,7 @@ class TestConcurrencyAndStress:
                     generation_time=0.3,
                     rtf=0.2,
                     cache_hit=i % 2 == 0,
-                    format="mp3"
+                    format="mp3",
                 )
                 monitor.record_tts_performance(perf_data)
 
@@ -320,7 +334,7 @@ class TestConcurrencyAndStress:
                 generation_time=0.2,
                 rtf=0.2,
                 cache_hit=True,  # All cache hits for speed
-                format="mp3"
+                format="mp3",
             )
             monitor.record_tts_performance(perf_data)
 

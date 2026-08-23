@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class AudioQualityMetrics:
     """Container for audio quality metrics"""
+
     wer: float = 0.0  # Word Error Rate
     mos_prediction: float = 0.0  # Mean Opinion Score prediction
     prosody_score: float = 0.0  # Prosody naturalness score
@@ -53,6 +54,7 @@ class AudioQualityMetrics:
 @dataclass
 class AudioTestCase:
     """Represents a single audio quality test case"""
+
     test_id: str
     input_text: str
     expected_transcription: str
@@ -90,13 +92,16 @@ class AudioQualityTester:
         self.enable_external_asr = self.asr_config.get("enabled", False)
 
         # Quality thresholds
-        self.quality_thresholds = self.audio_config.get("quality_thresholds", {
-            "min_mos_score": 3.0,
-            "max_wer": 0.1,
-            "min_pronunciation_accuracy": 0.9,
-            "max_rtf": 0.25,
-            "min_prosody_score": 0.7
-        })
+        self.quality_thresholds = self.audio_config.get(
+            "quality_thresholds",
+            {
+                "min_mos_score": 3.0,
+                "max_wer": 0.1,
+                "min_pronunciation_accuracy": 0.9,
+                "max_rtf": 0.25,
+                "min_prosody_score": 0.7,
+            },
+        )
 
         # Performance settings
         self.max_concurrent_tests = self.audio_config.get("max_concurrent_tests", 3)
@@ -127,9 +132,10 @@ class AudioQualityTester:
             if self.asr_config.get("deepgram", {}).get("enabled", False):
                 try:
                     from .asr_integrations.deepgram_client import DeepgramASRClient
+
                     self.asr_services["deepgram"] = DeepgramASRClient(
                         api_key=self.asr_config["deepgram"].get("api_key"),
-                        config=self.asr_config["deepgram"]
+                        config=self.asr_config["deepgram"],
                     )
                     logger.info("Deepgram ASR service initialized")
                 except ImportError:
@@ -139,10 +145,11 @@ class AudioQualityTester:
             if self.asr_config.get("azure_speech", {}).get("enabled", False):
                 try:
                     from .asr_integrations.azure_speech_client import AzureSpeechASRClient
+
                     self.asr_services["azure"] = AzureSpeechASRClient(
                         subscription_key=self.asr_config["azure_speech"].get("subscription_key"),
                         region=self.asr_config["azure_speech"].get("region"),
-                        config=self.asr_config["azure_speech"]
+                        config=self.asr_config["azure_speech"],
                     )
                     logger.info("Azure Speech ASR service initialized")
                 except ImportError:
@@ -152,9 +159,10 @@ class AudioQualityTester:
             if self.asr_config.get("google_stt", {}).get("enabled", False):
                 try:
                     from .asr_integrations.google_stt_client import GoogleSTTClient
+
                     self.asr_services["google"] = GoogleSTTClient(
                         credentials_path=self.asr_config["google_stt"].get("credentials_path"),
-                        config=self.asr_config["google_stt"]
+                        config=self.asr_config["google_stt"],
                     )
                     logger.info("Google Speech-to-Text service initialized")
                 except ImportError:
@@ -166,7 +174,7 @@ class AudioQualityTester:
     async def generate_audio(self, test_case: AudioTestCase) -> tuple[bytes, float]:
         """
         Generate audio using the Kokoro TTS API
-        
+
         Returns:
             Tuple of (audio_bytes, processing_time)
         """
@@ -177,16 +185,19 @@ class AudioQualityTester:
             "input": test_case.input_text,
             "voice": test_case.voice_model,
             "response_format": "wav",  # Use WAV for better analysis
-            "speed": 1.0
+            "speed": 1.0,
         }
 
         start_time = time.perf_counter()
 
-        async with aiohttp.ClientSession() as session, session.post(
-            f"{self.api_base_url}/v1/audio/speech",
-            json=payload,
-            timeout=aiohttp.ClientTimeout(total=self.api_timeout)
-        ) as response:
+        async with (
+            aiohttp.ClientSession() as session,
+            session.post(
+                f"{self.api_base_url}/v1/audio/speech",
+                json=payload,
+                timeout=aiohttp.ClientTimeout(total=self.api_timeout),
+            ) as response,
+        ):
             if response.status == 200:
                 audio_data = await response.read()
                 processing_time = time.perf_counter() - start_time
@@ -206,14 +217,14 @@ class AudioQualityTester:
                 return {"duration": 0.0, "sample_rate": 22050, "frames": 0}
 
             # Check for WAV header
-            if not audio_data.startswith(b'RIFF'):
+            if not audio_data.startswith(b"RIFF"):
                 logger.warning("Audio data does not appear to be WAV format")
                 # Estimate duration based on data size (fallback)
                 estimated_duration = len(audio_data) / (22050 * 2)  # Assume 22kHz, 16-bit
                 return {
                     "duration": estimated_duration,
                     "sample_rate": 22050,
-                    "frames": int(estimated_duration * 22050)
+                    "frames": int(estimated_duration * 22050),
                 }
 
             # Save audio to temporary file for analysis
@@ -222,7 +233,7 @@ class AudioQualityTester:
                 temp_path = temp_file.name
 
             # Analyze audio properties
-            with wave.open(temp_path, 'rb') as wav_file:
+            with wave.open(temp_path, "rb") as wav_file:
                 frames = wav_file.getnframes()
                 sample_rate = wav_file.getframerate()
                 duration = frames / sample_rate if sample_rate > 0 else 0.0
@@ -233,7 +244,7 @@ class AudioQualityTester:
                     "sample_rate": sample_rate,
                     "frames": frames,
                     "channels": wav_file.getnchannels(),
-                    "sample_width": wav_file.getsampwidth()
+                    "sample_width": wav_file.getsampwidth(),
                 }
 
             # Clean up temporary file
@@ -247,13 +258,13 @@ class AudioQualityTester:
             return {
                 "duration": len(audio_data) / (22050 * 2),  # Estimate
                 "sample_rate": 22050,
-                "frames": len(audio_data) // 2
+                "frames": len(audio_data) // 2,
             }
 
     async def transcribe_audio(self, audio_data: bytes, service: str = "auto") -> tuple[str, float]:
         """
         Transcribe audio using external ASR services
-        
+
         Returns:
             Tuple of (transcription, confidence_score)
         """
@@ -299,10 +310,10 @@ class AudioQualityTester:
 
         for i in range(1, len(ref_words) + 1):
             for j in range(1, len(hyp_words) + 1):
-                if ref_words[i-1] == hyp_words[j-1]:
-                    d[i][j] = d[i-1][j-1]
+                if ref_words[i - 1] == hyp_words[j - 1]:
+                    d[i][j] = d[i - 1][j - 1]
                 else:
-                    d[i][j] = min(d[i-1][j], d[i][j-1], d[i-1][j-1]) + 1
+                    d[i][j] = min(d[i - 1][j], d[i][j - 1], d[i - 1][j - 1]) + 1
 
         return d[len(ref_words)][len(hyp_words)] / len(ref_words)
 
@@ -366,11 +377,15 @@ class AudioQualityTester:
                     accuracy_scores.append(1.0)
                 else:
                     accuracy_scores.append(0.0)
-                    logger.warning(f"Expected pronunciation '{expected_pronunciation}' for '{symbol}' not found in transcription")
+                    logger.warning(
+                        f"Expected pronunciation '{expected_pronunciation}' for '{symbol}' not found in transcription"
+                    )
 
         return statistics.mean(accuracy_scores) if accuracy_scores else 1.0
 
-    def analyze_symbol_processing_accuracy(self, test_case: AudioTestCase, transcription: str) -> float:
+    def analyze_symbol_processing_accuracy(
+        self, test_case: AudioTestCase, transcription: str
+    ) -> float:
         """
         Analyze symbol processing accuracy for our eSpeak integration improvements
         """
@@ -387,7 +402,7 @@ class AudioQualityTester:
             "&": "and",
             "@": "at",
             "%": "percent",
-            "$": "dollar"
+            "$": "dollar",
         }
 
         for symbol in test_case.expected_symbols:
@@ -397,7 +412,9 @@ class AudioQualityTester:
                     accuracy_scores.append(1.0)
                 else:
                     accuracy_scores.append(0.0)
-                    logger.warning(f"Symbol '{symbol}' not properly processed - expected '{expected_word}' in transcription")
+                    logger.warning(
+                        f"Symbol '{symbol}' not properly processed - expected '{expected_word}' in transcription"
+                    )
 
         return statistics.mean(accuracy_scores) if accuracy_scores else 1.0
 
@@ -416,7 +433,7 @@ class AudioQualityTester:
             duration = audio_props.get("duration", 0)
 
             # Calculate RTF
-            rtf = processing_time / duration if duration > 0 else float('inf')
+            rtf = processing_time / duration if duration > 0 else float("inf")
 
             # Transcribe audio (if external ASR is available)
             transcription = ""
@@ -434,7 +451,9 @@ class AudioQualityTester:
             pronunciation_accuracy = self.analyze_pronunciation_accuracy(test_case, transcription)
 
             # Analyze symbol processing accuracy
-            symbol_processing_accuracy = self.analyze_symbol_processing_accuracy(test_case, transcription)
+            symbol_processing_accuracy = self.analyze_symbol_processing_accuracy(
+                test_case, transcription
+            )
 
             # Calculate prosody score (heuristic based on speaking rate and duration)
             words = len(test_case.input_text.split())
@@ -455,10 +474,12 @@ class AudioQualityTester:
                 symbol_processing_accuracy=symbol_processing_accuracy,
                 voice_model=test_case.voice_model,
                 text_length=len(test_case.input_text),
-                test_category=test_case.test_category
+                test_category=test_case.test_category,
             )
 
-            logger.info(f"Test completed: {test_case.test_id} - MOS: {mos_prediction:.2f}, WER: {wer:.3f}, RTF: {rtf:.3f}")
+            logger.info(
+                f"Test completed: {test_case.test_id} - MOS: {mos_prediction:.2f}, WER: {wer:.3f}, RTF: {rtf:.3f}"
+            )
             return metrics
 
         except Exception as e:
@@ -469,13 +490,13 @@ class AudioQualityTester:
                 mos_prediction=1.0,  # Minimum quality
                 prosody_score=0.0,
                 pronunciation_accuracy=0.0,
-                processing_time=float('inf'),
+                processing_time=float("inf"),
                 audio_duration=0.0,
-                rtf=float('inf'),
+                rtf=float("inf"),
                 confidence_score=0.0,
                 voice_model=test_case.voice_model,
                 text_length=len(test_case.input_text),
-                test_category=test_case.test_category
+                test_category=test_case.test_category,
             )
 
     async def run_test_suite(self, test_cases: list[AudioTestCase]) -> dict[str, Any]:
@@ -514,11 +535,17 @@ class AudioQualityTester:
         total_time = time.perf_counter() - start_time
         summary = self._calculate_test_summary(test_results, failed_tests, total_time)
 
-        logger.info(f"Test suite completed in {total_time:.2f}s - {len(test_results)} passed, {len(failed_tests)} failed")
+        logger.info(
+            f"Test suite completed in {total_time:.2f}s - {len(test_results)} passed, {len(failed_tests)} failed"
+        )
         return summary
 
-    def _calculate_test_summary(self, test_results: list[tuple[AudioTestCase, AudioQualityMetrics]],
-                               failed_tests: list[str], total_time: float) -> dict[str, Any]:
+    def _calculate_test_summary(
+        self,
+        test_results: list[tuple[AudioTestCase, AudioQualityMetrics]],
+        failed_tests: list[str],
+        total_time: float,
+    ) -> dict[str, Any]:
         """
         Calculate summary statistics for test results
         """
@@ -530,7 +557,7 @@ class AudioQualityTester:
                 "success_rate": 0.0,
                 "total_time": total_time,
                 "average_metrics": {},
-                "quality_assessment": "FAILED"
+                "quality_assessment": "FAILED",
             }
 
         # Extract metrics
@@ -541,17 +568,23 @@ class AudioQualityTester:
             "wer": statistics.mean([m.wer for m in metrics_list]),
             "mos_prediction": statistics.mean([m.mos_prediction for m in metrics_list]),
             "prosody_score": statistics.mean([m.prosody_score for m in metrics_list]),
-            "pronunciation_accuracy": statistics.mean([m.pronunciation_accuracy for m in metrics_list]),
-            "rtf": statistics.mean([m.rtf for m in metrics_list if m.rtf != float('inf')]),
+            "pronunciation_accuracy": statistics.mean(
+                [m.pronunciation_accuracy for m in metrics_list]
+            ),
+            "rtf": statistics.mean([m.rtf for m in metrics_list if m.rtf != float("inf")]),
             "processing_time": statistics.mean([m.processing_time for m in metrics_list]),
-            "symbol_processing_accuracy": statistics.mean([m.symbol_processing_accuracy for m in metrics_list])
+            "symbol_processing_accuracy": statistics.mean(
+                [m.symbol_processing_accuracy for m in metrics_list]
+            ),
         }
 
         # Assess overall quality
         quality_assessment = self._assess_overall_quality(avg_metrics)
 
         # Calculate pass/fail based on thresholds
-        passed_tests = sum(1 for _, metrics in test_results if self._meets_quality_thresholds(metrics))
+        passed_tests = sum(
+            1 for _, metrics in test_results if self._meets_quality_thresholds(metrics)
+        )
 
         return {
             "total_tests": len(test_results) + len(failed_tests),
@@ -562,7 +595,7 @@ class AudioQualityTester:
             "average_metrics": avg_metrics,
             "quality_assessment": quality_assessment,
             "failed_test_ids": failed_tests,
-            "detailed_results": test_results
+            "detailed_results": test_results,
         }
 
     def _meets_quality_thresholds(self, metrics: AudioQualityMetrics) -> bool:
@@ -572,11 +605,11 @@ class AudioQualityTester:
         thresholds = self.quality_thresholds
 
         return (
-            metrics.mos_prediction >= thresholds.get("min_mos_score", 3.0) and
-            metrics.wer <= thresholds.get("max_wer", 0.1) and
-            metrics.pronunciation_accuracy >= thresholds.get("min_pronunciation_accuracy", 0.9) and
-            metrics.rtf <= thresholds.get("max_rtf", 0.25) and
-            metrics.prosody_score >= thresholds.get("min_prosody_score", 0.7)
+            metrics.mos_prediction >= thresholds.get("min_mos_score", 3.0)
+            and metrics.wer <= thresholds.get("max_wer", 0.1)
+            and metrics.pronunciation_accuracy >= thresholds.get("min_pronunciation_accuracy", 0.9)
+            and metrics.rtf <= thresholds.get("max_rtf", 0.25)
+            and metrics.prosody_score >= thresholds.get("min_prosody_score", 0.7)
         )
 
     def _assess_overall_quality(self, avg_metrics: dict[str, float]) -> str:
@@ -601,9 +634,9 @@ class AudioQualityTester:
         total_checks += 2
 
         # RTF assessment
-        if avg_metrics.get("rtf", float('inf')) <= 0.15:
+        if avg_metrics.get("rtf", float("inf")) <= 0.15:
             score += 2
-        elif avg_metrics.get("rtf", float('inf')) <= 0.25:
+        elif avg_metrics.get("rtf", float("inf")) <= 0.25:
             score += 1
         total_checks += 2
 
@@ -642,7 +675,7 @@ class AudioQualityTester:
             f"- Total Time: {summary['total_time']:.2f}s",
             f"- Quality Assessment: {summary['quality_assessment']}",
             "",
-            "**Average Metrics:**"
+            "**Average Metrics:**",
         ]
 
         avg_metrics = summary.get("average_metrics", {})
@@ -650,19 +683,13 @@ class AudioQualityTester:
             if isinstance(value, float):
                 report_lines.append(f"- {metric.replace('_', ' ').title()}: {value:.3f}")
 
-        report_lines.extend([
-            "",
-            "**Quality Thresholds:**"
-        ])
+        report_lines.extend(["", "**Quality Thresholds:**"])
 
         for threshold, value in self.quality_thresholds.items():
             report_lines.append(f"- {threshold.replace('_', ' ').title()}: {value}")
 
         if summary.get("failed_test_ids"):
-            report_lines.extend([
-                "",
-                "**Failed Tests:**"
-            ])
+            report_lines.extend(["", "**Failed Tests:**"])
             for test_id in summary["failed_test_ids"]:
                 report_lines.append(f"- {test_id}")
 
@@ -686,10 +713,10 @@ class AudioQualityTester:
             "average_metrics": summary.get("average_metrics", {}),
             "quality_assessment": summary.get("quality_assessment", ""),
             "success_rate": summary.get("success_rate", 0.0),
-            "quality_thresholds": self.quality_thresholds
+            "quality_thresholds": self.quality_thresholds,
         }
 
-        with open(baseline_path, 'w') as f:
+        with open(baseline_path, "w") as f:
             json.dump(baseline_data, f, indent=2)
 
         logger.info(f"Baseline metrics saved to: {baseline_path}")
@@ -706,7 +733,7 @@ class AudioQualityTester:
             return None
 
         try:
-            with open(baseline_path, 'r') as f:
+            with open(baseline_path, "r") as f:
                 baseline_data = json.load(f)
 
             logger.info(f"Baseline metrics loaded from: {baseline_path}")

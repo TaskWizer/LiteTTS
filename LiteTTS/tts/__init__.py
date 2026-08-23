@@ -5,9 +5,4 @@ from .emotion_controller import EmotionController
 from .engine import KokoroTTSEngine
 from .synthesizer import TTSSynthesizer
 
-__all__ = [
-    'ChunkProcessor',
-    'EmotionController',
-    'KokoroTTSEngine',
-    'TTSSynthesizer'
-]
+__all__ = ["ChunkProcessor", "EmotionController", "KokoroTTSEngine", "TTSSynthesizer"]

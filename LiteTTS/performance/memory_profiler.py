@@ -26,9 +26,11 @@ import psutil
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class MemorySnapshot:
     """Memory usage snapshot"""
+
     timestamp: float
     rss_mb: float  # Resident Set Size
     vms_mb: float  # Virtual Memory Size
@@ -39,9 +41,11 @@ class MemorySnapshot:
     gc_objects: int = 0
     metadata: dict[str, Any] = field(default_factory=dict)
 
+
 @dataclass
 class MemoryLeak:
     """Memory leak detection result"""
+
     component: str
     leak_rate_mb_per_sec: float
     total_leaked_mb: float
@@ -49,12 +53,13 @@ class MemoryLeak:
     evidence: list[str] = field(default_factory=list)
     recommendations: list[str] = field(default_factory=list)
 
+
 class MemoryProfiler:
     """Specialized memory profiler for TTS operations"""
 
     def __init__(self, enable_tracemalloc: bool = True, snapshot_interval: float = 1.0):
         """Initialize memory profiler
-        
+
         Args:
             enable_tracemalloc: Enable detailed memory tracking
             snapshot_interval: Interval between memory snapshots (seconds)
@@ -165,7 +170,7 @@ class MemoryProfiler:
             available_mb=system_memory.available / (1024 * 1024),
             tracemalloc_current_mb=tracemalloc_current,
             tracemalloc_peak_mb=tracemalloc_peak,
-            gc_objects=gc_objects
+            gc_objects=gc_objects,
         )
 
     def _get_current_memory_usage(self) -> float:
@@ -178,7 +183,7 @@ class MemoryProfiler:
 
     def track_component_memory(self, component_name: str, memory_mb: float):
         """Track memory usage for a specific component
-        
+
         Args:
             component_name: Name of the component
             memory_mb: Memory usage in MB
@@ -190,11 +195,13 @@ class MemoryProfiler:
 
         # Keep only recent data (last 100 measurements)
         if len(self._leak_detection_data[component_name]) > 100:
-            self._leak_detection_data[component_name] = self._leak_detection_data[component_name][-100:]
+            self._leak_detection_data[component_name] = self._leak_detection_data[component_name][
+                -100:
+            ]
 
     def track_voice_model_memory(self, voice_name: str, memory_mb: float):
         """Track memory usage for voice models
-        
+
         Args:
             voice_name: Name of the voice
             memory_mb: Memory usage in MB
@@ -204,7 +211,7 @@ class MemoryProfiler:
 
     def track_cache_memory(self, cache_name: str, memory_mb: float):
         """Track memory usage for caches
-        
+
         Args:
             cache_name: Name of the cache
             memory_mb: Memory usage in MB
@@ -240,11 +247,13 @@ class MemoryProfiler:
 
                 # Flag potential leak if growth > 1 MB per minute
                 if slope_mb_per_sec > 1.0 / 60:
-                    logger.warning(f"Potential memory leak detected: {slope_mb_per_sec:.3f} MB/sec growth")
+                    logger.warning(
+                        f"Potential memory leak detected: {slope_mb_per_sec:.3f} MB/sec growth"
+                    )
 
     def detect_memory_leaks(self) -> list[MemoryLeak]:
         """Detect memory leaks in tracked components
-        
+
         Returns:
             List of detected memory leaks
         """
@@ -277,13 +286,13 @@ class MemoryProfiler:
                             confidence=confidence,
                             evidence=[
                                 f"Memory growth: {memory_growth:.2f} MB over {time_span:.1f} seconds",
-                                f"Growth rate: {growth_rate * 60:.3f} MB/minute"
+                                f"Growth rate: {growth_rate * 60:.3f} MB/minute",
                             ],
                             recommendations=[
                                 f"Review {component} for unreleased resources",
                                 "Check for circular references or unclosed files",
-                                "Implement proper cleanup in {component}"
-                            ]
+                                "Implement proper cleanup in {component}",
+                            ],
                         )
 
                         leaks.append(leak)
@@ -292,46 +301,48 @@ class MemoryProfiler:
 
     def get_memory_summary(self) -> dict[str, Any]:
         """Get comprehensive memory usage summary
-        
+
         Returns:
             Memory usage summary
         """
         if not self.snapshots:
-            return {'error': 'No memory snapshots available'}
+            return {"error": "No memory snapshots available"}
 
         # Calculate statistics from snapshots
         rss_values = [s.rss_mb for s in self.snapshots]
 
         summary = {
-            'monitoring_duration_sec': self.snapshots[-1].timestamp - self.snapshots[0].timestamp if len(self.snapshots) > 1 else 0,
-            'snapshot_count': len(self.snapshots),
-            'baseline_memory_mb': self._baseline_memory or 0,
-            'current_memory_mb': rss_values[-1] if rss_values else 0,
-            'peak_memory_mb': max(rss_values) if rss_values else 0,
-            'min_memory_mb': min(rss_values) if rss_values else 0,
-            'avg_memory_mb': sum(rss_values) / len(rss_values) if rss_values else 0,
-            'memory_growth_mb': (rss_values[-1] - rss_values[0]) if len(rss_values) > 1 else 0,
-            'voice_models': dict(self.voice_model_memory),
-            'caches': dict(self.cache_memory),
-            'component_memory': {
+            "monitoring_duration_sec": self.snapshots[-1].timestamp - self.snapshots[0].timestamp
+            if len(self.snapshots) > 1
+            else 0,
+            "snapshot_count": len(self.snapshots),
+            "baseline_memory_mb": self._baseline_memory or 0,
+            "current_memory_mb": rss_values[-1] if rss_values else 0,
+            "peak_memory_mb": max(rss_values) if rss_values else 0,
+            "min_memory_mb": min(rss_values) if rss_values else 0,
+            "avg_memory_mb": sum(rss_values) / len(rss_values) if rss_values else 0,
+            "memory_growth_mb": (rss_values[-1] - rss_values[0]) if len(rss_values) > 1 else 0,
+            "voice_models": dict(self.voice_model_memory),
+            "caches": dict(self.cache_memory),
+            "component_memory": {
                 component: {
-                    'current_mb': values[-1] if values else 0,
-                    'peak_mb': max(values) if values else 0,
-                    'avg_mb': sum(values) / len(values) if values else 0
+                    "current_mb": values[-1] if values else 0,
+                    "peak_mb": max(values) if values else 0,
+                    "avg_mb": sum(values) / len(values) if values else 0,
                 }
                 for component, values in self.component_memory.items()
             },
-            'detected_leaks': len(self.detect_memory_leaks())
+            "detected_leaks": len(self.detect_memory_leaks()),
         }
 
         return summary
 
     def save_memory_report(self, filename: str = None) -> Path:
         """Save memory profiling report
-        
+
         Args:
             filename: Optional filename
-            
+
         Returns:
             Path to saved report
         """
@@ -343,37 +354,37 @@ class MemoryProfiler:
 
         # Prepare report data
         report_data = {
-            'summary': self.get_memory_summary(),
-            'snapshots': [
+            "summary": self.get_memory_summary(),
+            "snapshots": [
                 {
-                    'timestamp': s.timestamp,
-                    'rss_mb': s.rss_mb,
-                    'vms_mb': s.vms_mb,
-                    'percent': s.percent,
-                    'available_mb': s.available_mb,
-                    'tracemalloc_current_mb': s.tracemalloc_current_mb,
-                    'tracemalloc_peak_mb': s.tracemalloc_peak_mb,
-                    'gc_objects': s.gc_objects
+                    "timestamp": s.timestamp,
+                    "rss_mb": s.rss_mb,
+                    "vms_mb": s.vms_mb,
+                    "percent": s.percent,
+                    "available_mb": s.available_mb,
+                    "tracemalloc_current_mb": s.tracemalloc_current_mb,
+                    "tracemalloc_peak_mb": s.tracemalloc_peak_mb,
+                    "gc_objects": s.gc_objects,
                 }
                 for s in self.snapshots
             ],
-            'detected_leaks': [
+            "detected_leaks": [
                 {
-                    'component': leak.component,
-                    'leak_rate_mb_per_sec': leak.leak_rate_mb_per_sec,
-                    'total_leaked_mb': leak.total_leaked_mb,
-                    'confidence': leak.confidence,
-                    'evidence': leak.evidence,
-                    'recommendations': leak.recommendations
+                    "component": leak.component,
+                    "leak_rate_mb_per_sec": leak.leak_rate_mb_per_sec,
+                    "total_leaked_mb": leak.total_leaked_mb,
+                    "confidence": leak.confidence,
+                    "evidence": leak.evidence,
+                    "recommendations": leak.recommendations,
                 }
                 for leak in self.detect_memory_leaks()
             ],
-            'component_memory': dict(self.component_memory),
-            'voice_model_memory': self.voice_model_memory,
-            'cache_memory': self.cache_memory
+            "component_memory": dict(self.component_memory),
+            "voice_model_memory": self.voice_model_memory,
+            "cache_memory": self.cache_memory,
         }
 
-        with open(report_path, 'w', encoding='utf-8') as f:
+        with open(report_path, "w", encoding="utf-8") as f:
             json.dump(report_data, f, indent=2, ensure_ascii=False)
 
         logger.info(f"Memory report saved: {report_path}")
@@ -381,7 +392,7 @@ class MemoryProfiler:
 
     def force_garbage_collection(self) -> dict[str, int]:
         """Force garbage collection and return statistics
-        
+
         Returns:
             Garbage collection statistics
         """
@@ -395,17 +406,19 @@ class MemoryProfiler:
         post_gc_objects = len(gc.get_objects())
 
         stats = {
-            'objects_before': pre_gc_objects,
-            'objects_after': post_gc_objects,
-            'objects_collected': collected,
-            'objects_freed': pre_gc_objects - post_gc_objects
+            "objects_before": pre_gc_objects,
+            "objects_after": post_gc_objects,
+            "objects_collected": collected,
+            "objects_freed": pre_gc_objects - post_gc_objects,
         }
 
         logger.info(f"Garbage collection: {stats}")
         return stats
 
+
 # Global memory profiler instance
 _memory_profiler: MemoryProfiler | None = None
+
 
 def get_memory_profiler() -> MemoryProfiler:
     """Get the global memory profiler instance"""
@@ -414,17 +427,21 @@ def get_memory_profiler() -> MemoryProfiler:
         _memory_profiler = MemoryProfiler()
     return _memory_profiler
 
+
 def track_component_memory(component_name: str, memory_mb: float):
     """Track memory usage for a component"""
     get_memory_profiler().track_component_memory(component_name, memory_mb)
+
 
 def track_voice_memory(voice_name: str, memory_mb: float):
     """Track memory usage for a voice model"""
     get_memory_profiler().track_voice_model_memory(voice_name, memory_mb)
 
+
 def track_cache_memory(cache_name: str, memory_mb: float):
     """Track memory usage for a cache"""
     get_memory_profiler().track_cache_memory(cache_name, memory_mb)
+
 
 # Example usage
 if __name__ == "__main__":

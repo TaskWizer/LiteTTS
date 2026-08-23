@@ -14,6 +14,7 @@ from ..models import AudioGenerationError, ModelLoadError, TTSError, VoiceNotFou
 
 logger = logging.getLogger(__name__)
 
+
 class ErrorHandler:
     """Handles errors and exceptions in the TTS API"""
 
@@ -30,7 +31,7 @@ class ErrorHandler:
                 status_code=404,
                 error_code="VOICE_NOT_FOUND",
                 message=error.message,
-                details=error.details
+                details=error.details,
             )
 
         elif isinstance(error, ModelLoadError):
@@ -38,7 +39,7 @@ class ErrorHandler:
                 status_code=503,
                 error_code="MODEL_LOAD_ERROR",
                 message=error.message,
-                details=error.details
+                details=error.details,
             )
 
         elif isinstance(error, AudioGenerationError):
@@ -46,7 +47,7 @@ class ErrorHandler:
                 status_code=500,
                 error_code="AUDIO_GENERATION_ERROR",
                 message=error.message,
-                details=error.details
+                details=error.details,
             )
 
         elif isinstance(error, TTSError):
@@ -54,7 +55,7 @@ class ErrorHandler:
                 status_code=500,
                 error_code=error.error_code,
                 message=error.message,
-                details=error.details
+                details=error.details,
             )
 
         else:
@@ -62,7 +63,7 @@ class ErrorHandler:
                 status_code=500,
                 error_code="SYNTHESIS_ERROR",
                 message="An error occurred during synthesis",
-                details={"original_error": str(error)}
+                details={"original_error": str(error)},
             )
 
     def handle_validation_error(self, errors: list) -> JSONResponse:
@@ -73,7 +74,7 @@ class ErrorHandler:
             status_code=400,
             error_code="VALIDATION_ERROR",
             message="Request validation failed",
-            details={"validation_errors": errors}
+            details={"validation_errors": errors},
         )
 
     def handle_rate_limit_error(self, retry_after: int = 60) -> JSONResponse:
@@ -86,12 +87,10 @@ class ErrorHandler:
                 "error": {
                     "code": "RATE_LIMIT_EXCEEDED",
                     "message": "Too many requests",
-                    "details": {
-                        "retry_after_seconds": retry_after
-                    }
+                    "details": {"retry_after_seconds": retry_after},
                 }
             },
-            headers={"Retry-After": str(retry_after)}
+            headers={"Retry-After": str(retry_after)},
         )
 
     def handle_timeout_error(self, timeout_seconds: float) -> JSONResponse:
@@ -102,18 +101,17 @@ class ErrorHandler:
             status_code=408,
             error_code="REQUEST_TIMEOUT",
             message="Request timed out",
-            details={"timeout_seconds": timeout_seconds}
+            details={"timeout_seconds": timeout_seconds},
         )
 
-    def handle_service_unavailable(self, reason: str = "Service temporarily unavailable") -> JSONResponse:
+    def handle_service_unavailable(
+        self, reason: str = "Service temporarily unavailable"
+    ) -> JSONResponse:
         """Handle service unavailable errors"""
         logger.error(f"Service unavailable: {reason}")
 
         return self._create_error_response(
-            status_code=503,
-            error_code="SERVICE_UNAVAILABLE",
-            message=reason,
-            details={}
+            status_code=503, error_code="SERVICE_UNAVAILABLE", message=reason, details={}
         )
 
     def handle_generic_error(self, error: Exception) -> JSONResponse:
@@ -124,7 +122,7 @@ class ErrorHandler:
             status_code=500,
             error_code="INTERNAL_ERROR",
             message="An internal error occurred",
-            details={"error_type": type(error).__name__}
+            details={"error_type": type(error).__name__},
         )
 
     def handle_not_found_error(self, resource: str, identifier: str) -> JSONResponse:
@@ -135,7 +133,7 @@ class ErrorHandler:
             status_code=404,
             error_code="RESOURCE_NOT_FOUND",
             message=f"{resource} not found",
-            details={"resource": resource, "identifier": identifier}
+            details={"resource": resource, "identifier": identifier},
         )
 
     def handle_method_not_allowed(self, method: str, path: str) -> JSONResponse:
@@ -146,11 +144,12 @@ class ErrorHandler:
             status_code=405,
             error_code="METHOD_NOT_ALLOWED",
             message=f"Method {method} not allowed for {path}",
-            details={"method": method, "path": path}
+            details={"method": method, "path": path},
         )
 
-    def _create_error_response(self, status_code: int, error_code: str,
-                              message: str, details: dict[str, Any]) -> JSONResponse:
+    def _create_error_response(
+        self, status_code: int, error_code: str, message: str, details: dict[str, Any]
+    ) -> JSONResponse:
         """Create standardized error response"""
         # Track error counts
         self.error_counts[error_code] = self.error_counts.get(error_code, 0) + 1
@@ -160,14 +159,11 @@ class ErrorHandler:
                 "code": error_code,
                 "message": message,
                 "details": details,
-                "timestamp": self._get_timestamp()
+                "timestamp": self._get_timestamp(),
             }
         }
 
-        return JSONResponse(
-            status_code=status_code,
-            content=error_response
-        )
+        return JSONResponse(status_code=status_code, content=error_response)
 
     def _log_error(self, error: Exception):
         """Log error with appropriate level"""
@@ -186,6 +182,7 @@ class ErrorHandler:
     def _get_timestamp(self) -> float:
         """Get current timestamp"""
         import time
+
         return time.time()
 
     def get_error_stats(self) -> dict[str, Any]:
@@ -195,13 +192,16 @@ class ErrorHandler:
         return {
             "total_errors": total_errors,
             "error_counts": self.error_counts.copy(),
-            "most_common_error": max(self.error_counts.items(), key=lambda x: x[1])[0] if self.error_counts else None
+            "most_common_error": max(self.error_counts.items(), key=lambda x: x[1])[0]
+            if self.error_counts
+            else None,
         }
 
     def reset_error_stats(self):
         """Reset error statistics"""
         self.error_counts.clear()
         logger.info("Error statistics reset")
+
 
 class APIExceptionHandler:
     """Global exception handler for the API"""
@@ -218,9 +218,9 @@ class APIExceptionHandler:
                     "code": f"HTTP_{exc.status_code}",
                     "message": exc.detail,
                     "details": {},
-                    "timestamp": self.error_handler._get_timestamp()
+                    "timestamp": self.error_handler._get_timestamp(),
                 }
-            }
+            },
         )
 
     async def handle_generic_exception(self, request, exc: Exception):
@@ -234,9 +234,9 @@ class APIExceptionHandler:
         """Handle Pydantic validation exceptions"""
         errors = []
 
-        if hasattr(exc, 'errors'):
+        if hasattr(exc, "errors"):
             for error in exc.errors():
-                field = " -> ".join(str(loc) for loc in error['loc'])
+                field = " -> ".join(str(loc) for loc in error["loc"])
                 errors.append(f"{field}: {error['msg']}")
         else:
             errors.append(str(exc))

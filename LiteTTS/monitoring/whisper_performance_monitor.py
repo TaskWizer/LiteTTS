@@ -20,9 +20,11 @@ import psutil
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class PerformanceMetrics:
     """Performance metrics for Whisper inference"""
+
     timestamp: datetime
     model_name: str
     audio_duration: float
@@ -35,9 +37,11 @@ class PerformanceMetrics:
     error_occurred: bool = False
     error_message: str | None = None
 
+
 @dataclass
 class AlertThresholds:
     """Alert thresholds for performance monitoring"""
+
     max_rtf: float = 1.0
     max_memory_mb: float = 3000
     max_cpu_percent: float = 90
@@ -45,15 +49,18 @@ class AlertThresholds:
     max_error_rate: float = 0.05  # 5% error rate
     max_response_time_ms: float = 30000  # 30 seconds
 
+
 @dataclass
 class OptimizationRecommendation:
     """Optimization recommendation"""
+
     priority: str  # 'high', 'medium', 'low'
     category: str  # 'model', 'hardware', 'configuration'
     description: str
     action: str
     expected_improvement: str
     implementation_effort: str
+
 
 class PerformanceDatabase:
     """SQLite database for performance metrics storage"""
@@ -93,28 +100,32 @@ class PerformanceDatabase:
     def store_metrics(self, metrics: PerformanceMetrics):
         """Store performance metrics"""
         with sqlite3.connect(self.db_path) as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT INTO performance_metrics (
                     timestamp, model_name, audio_duration, processing_time, rtf,
                     memory_usage_mb, cpu_usage_percent, queue_size, concurrent_requests,
                     error_occurred, error_message
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                metrics.timestamp.isoformat(),
-                metrics.model_name,
-                metrics.audio_duration,
-                metrics.processing_time,
-                metrics.rtf,
-                metrics.memory_usage_mb,
-                metrics.cpu_usage_percent,
-                metrics.queue_size,
-                metrics.concurrent_requests,
-                metrics.error_occurred,
-                metrics.error_message
-            ))
+            """,
+                (
+                    metrics.timestamp.isoformat(),
+                    metrics.model_name,
+                    metrics.audio_duration,
+                    metrics.processing_time,
+                    metrics.rtf,
+                    metrics.memory_usage_mb,
+                    metrics.cpu_usage_percent,
+                    metrics.queue_size,
+                    metrics.concurrent_requests,
+                    metrics.error_occurred,
+                    metrics.error_message,
+                ),
+            )
 
-    def get_metrics(self, start_time: datetime, end_time: datetime,
-                   model_name: str | None = None) -> list[PerformanceMetrics]:
+    def get_metrics(
+        self, start_time: datetime, end_time: datetime, model_name: str | None = None
+    ) -> list[PerformanceMetrics]:
         """Retrieve performance metrics for time range"""
         query = """
             SELECT * FROM performance_metrics 
@@ -147,8 +158,9 @@ class PerformanceDatabase:
             queue_size=row[8],
             concurrent_requests=row[9],
             error_occurred=bool(row[10]),
-            error_message=row[11]
+            error_message=row[11],
         )
+
 
 class AlertManager:
     """Manages performance alerts and notifications"""
@@ -168,43 +180,51 @@ class AlertManager:
 
         # RTF threshold
         if metrics.rtf > self.thresholds.max_rtf:
-            alerts.append({
-                'type': 'rtf_exceeded',
-                'severity': 'high',
-                'message': f"RTF {metrics.rtf:.3f} exceeds threshold {self.thresholds.max_rtf}",
-                'value': metrics.rtf,
-                'threshold': self.thresholds.max_rtf
-            })
+            alerts.append(
+                {
+                    "type": "rtf_exceeded",
+                    "severity": "high",
+                    "message": f"RTF {metrics.rtf:.3f} exceeds threshold {self.thresholds.max_rtf}",
+                    "value": metrics.rtf,
+                    "threshold": self.thresholds.max_rtf,
+                }
+            )
 
         # Memory threshold
         if metrics.memory_usage_mb > self.thresholds.max_memory_mb:
-            alerts.append({
-                'type': 'memory_exceeded',
-                'severity': 'high',
-                'message': f"Memory usage {metrics.memory_usage_mb:.1f}MB exceeds threshold {self.thresholds.max_memory_mb}MB",
-                'value': metrics.memory_usage_mb,
-                'threshold': self.thresholds.max_memory_mb
-            })
+            alerts.append(
+                {
+                    "type": "memory_exceeded",
+                    "severity": "high",
+                    "message": f"Memory usage {metrics.memory_usage_mb:.1f}MB exceeds threshold {self.thresholds.max_memory_mb}MB",
+                    "value": metrics.memory_usage_mb,
+                    "threshold": self.thresholds.max_memory_mb,
+                }
+            )
 
         # CPU threshold
         if metrics.cpu_usage_percent > self.thresholds.max_cpu_percent:
-            alerts.append({
-                'type': 'cpu_exceeded',
-                'severity': 'medium',
-                'message': f"CPU usage {metrics.cpu_usage_percent:.1f}% exceeds threshold {self.thresholds.max_cpu_percent}%",
-                'value': metrics.cpu_usage_percent,
-                'threshold': self.thresholds.max_cpu_percent
-            })
+            alerts.append(
+                {
+                    "type": "cpu_exceeded",
+                    "severity": "medium",
+                    "message": f"CPU usage {metrics.cpu_usage_percent:.1f}% exceeds threshold {self.thresholds.max_cpu_percent}%",
+                    "value": metrics.cpu_usage_percent,
+                    "threshold": self.thresholds.max_cpu_percent,
+                }
+            )
 
         # Queue size threshold
         if metrics.queue_size > self.thresholds.max_queue_size:
-            alerts.append({
-                'type': 'queue_exceeded',
-                'severity': 'medium',
-                'message': f"Queue size {metrics.queue_size} exceeds threshold {self.thresholds.max_queue_size}",
-                'value': metrics.queue_size,
-                'threshold': self.thresholds.max_queue_size
-            })
+            alerts.append(
+                {
+                    "type": "queue_exceeded",
+                    "severity": "medium",
+                    "message": f"Queue size {metrics.queue_size} exceeds threshold {self.thresholds.max_queue_size}",
+                    "value": metrics.queue_size,
+                    "threshold": self.thresholds.max_queue_size,
+                }
+            )
 
         # Process alerts
         for alert in alerts:
@@ -213,10 +233,10 @@ class AlertManager:
     def _trigger_alert(self, alert: dict[str, Any], metrics: PerformanceMetrics):
         """Trigger alert notifications"""
         alert_data = {
-            'timestamp': metrics.timestamp.isoformat(),
-            'model_name': metrics.model_name,
-            'alert': alert,
-            'metrics': asdict(metrics)
+            "timestamp": metrics.timestamp.isoformat(),
+            "model_name": metrics.model_name,
+            "alert": alert,
+            "metrics": asdict(metrics),
         }
 
         self.alert_history.append(alert_data)
@@ -224,9 +244,10 @@ class AlertManager:
         # Notify callbacks
         for callback in self.alert_callbacks:
             try:
-                callback(alert['type'], alert['severity'], alert_data)
+                callback(alert["type"], alert["severity"], alert_data)
             except Exception as e:
                 logger.error(f"Alert callback failed: {e}")
+
 
 class OptimizationEngine:
     """Analyzes performance data and provides optimization recommendations"""
@@ -242,7 +263,7 @@ class OptimizationEngine:
         metrics = self.db.get_metrics(start_time, end_time)
 
         if not metrics:
-            return {'error': 'No metrics available for analysis'}
+            return {"error": "No metrics available for analysis"}
 
         # Calculate statistics
         rtfs = [m.rtf for m in metrics if not m.error_occurred]
@@ -252,86 +273,98 @@ class OptimizationEngine:
         error_rate = sum(1 for m in metrics if m.error_occurred) / len(metrics)
 
         analysis = {
-            'time_period': f"{hours} hours",
-            'total_requests': len(metrics),
-            'error_rate': error_rate,
-            'rtf_stats': {
-                'mean': np.mean(rtfs) if rtfs else 0,
-                'median': np.median(rtfs) if rtfs else 0,
-                'p95': np.percentile(rtfs, 95) if rtfs else 0,
-                'p99': np.percentile(rtfs, 99) if rtfs else 0,
-                'max': np.max(rtfs) if rtfs else 0
+            "time_period": f"{hours} hours",
+            "total_requests": len(metrics),
+            "error_rate": error_rate,
+            "rtf_stats": {
+                "mean": np.mean(rtfs) if rtfs else 0,
+                "median": np.median(rtfs) if rtfs else 0,
+                "p95": np.percentile(rtfs, 95) if rtfs else 0,
+                "p99": np.percentile(rtfs, 99) if rtfs else 0,
+                "max": np.max(rtfs) if rtfs else 0,
             },
-            'memory_stats': {
-                'mean': np.mean(memory_usage) if memory_usage else 0,
-                'median': np.median(memory_usage) if memory_usage else 0,
-                'p95': np.percentile(memory_usage, 95) if memory_usage else 0,
-                'max': np.max(memory_usage) if memory_usage else 0
+            "memory_stats": {
+                "mean": np.mean(memory_usage) if memory_usage else 0,
+                "median": np.median(memory_usage) if memory_usage else 0,
+                "p95": np.percentile(memory_usage, 95) if memory_usage else 0,
+                "max": np.max(memory_usage) if memory_usage else 0,
             },
-            'processing_time_stats': {
-                'mean': np.mean(processing_times) if processing_times else 0,
-                'median': np.median(processing_times) if processing_times else 0,
-                'p95': np.percentile(processing_times, 95) if processing_times else 0
-            }
+            "processing_time_stats": {
+                "mean": np.mean(processing_times) if processing_times else 0,
+                "median": np.median(processing_times) if processing_times else 0,
+                "p95": np.percentile(processing_times, 95) if processing_times else 0,
+            },
         }
 
         return analysis
 
-    def generate_recommendations(self, analysis: dict[str, Any]) -> list[OptimizationRecommendation]:
+    def generate_recommendations(
+        self, analysis: dict[str, Any]
+    ) -> list[OptimizationRecommendation]:
         """Generate optimization recommendations based on analysis"""
         recommendations = []
 
         # RTF recommendations
-        if analysis.get('rtf_stats', {}).get('p95', 0) > 1.0:
-            recommendations.append(OptimizationRecommendation(
-                priority='high',
-                category='model',
-                description='RTF P95 exceeds 1.0, indicating performance issues',
-                action='Consider switching to faster model variant or enable quantization',
-                expected_improvement='30-50% RTF reduction',
-                implementation_effort='medium'
-            ))
+        if analysis.get("rtf_stats", {}).get("p95", 0) > 1.0:
+            recommendations.append(
+                OptimizationRecommendation(
+                    priority="high",
+                    category="model",
+                    description="RTF P95 exceeds 1.0, indicating performance issues",
+                    action="Consider switching to faster model variant or enable quantization",
+                    expected_improvement="30-50% RTF reduction",
+                    implementation_effort="medium",
+                )
+            )
 
         # Memory recommendations
-        if analysis.get('memory_stats', {}).get('p95', 0) > 2500:
-            recommendations.append(OptimizationRecommendation(
-                priority='high',
-                category='model',
-                description='Memory usage approaching limits',
-                action='Enable INT8 quantization or use smaller model',
-                expected_improvement='40-60% memory reduction',
-                implementation_effort='low'
-            ))
+        if analysis.get("memory_stats", {}).get("p95", 0) > 2500:
+            recommendations.append(
+                OptimizationRecommendation(
+                    priority="high",
+                    category="model",
+                    description="Memory usage approaching limits",
+                    action="Enable INT8 quantization or use smaller model",
+                    expected_improvement="40-60% memory reduction",
+                    implementation_effort="low",
+                )
+            )
 
         # Error rate recommendations
-        if analysis.get('error_rate', 0) > 0.02:
-            recommendations.append(OptimizationRecommendation(
-                priority='high',
-                category='configuration',
-                description='Error rate above acceptable threshold',
-                action='Investigate error patterns and adjust timeout/retry settings',
-                expected_improvement='Reduce error rate to <1%',
-                implementation_effort='medium'
-            ))
+        if analysis.get("error_rate", 0) > 0.02:
+            recommendations.append(
+                OptimizationRecommendation(
+                    priority="high",
+                    category="configuration",
+                    description="Error rate above acceptable threshold",
+                    action="Investigate error patterns and adjust timeout/retry settings",
+                    expected_improvement="Reduce error rate to <1%",
+                    implementation_effort="medium",
+                )
+            )
 
         # Processing time recommendations
-        if analysis.get('processing_time_stats', {}).get('p95', 0) > 20:
-            recommendations.append(OptimizationRecommendation(
-                priority='medium',
-                category='hardware',
-                description='Processing times indicate potential CPU bottleneck',
-                action='Consider CPU upgrade or enable multi-threading',
-                expected_improvement='20-40% processing time reduction',
-                implementation_effort='high'
-            ))
+        if analysis.get("processing_time_stats", {}).get("p95", 0) > 20:
+            recommendations.append(
+                OptimizationRecommendation(
+                    priority="medium",
+                    category="hardware",
+                    description="Processing times indicate potential CPU bottleneck",
+                    action="Consider CPU upgrade or enable multi-threading",
+                    expected_improvement="20-40% processing time reduction",
+                    implementation_effort="high",
+                )
+            )
 
         return recommendations
+
 
 class WhisperPerformanceMonitor:
     """Main performance monitoring system for Whisper alternatives"""
 
-    def __init__(self, db_path: str = "whisper_performance.db",
-                 thresholds: AlertThresholds | None = None):
+    def __init__(
+        self, db_path: str = "whisper_performance.db", thresholds: AlertThresholds | None = None
+    ):
         self.db = PerformanceDatabase(db_path)
         self.thresholds = thresholds or AlertThresholds()
         self.alert_manager = AlertManager(self.thresholds)
@@ -347,11 +380,17 @@ class WhisperPerformanceMonitor:
 
         logger.info("WhisperPerformanceMonitor initialized")
 
-    def record_inference(self, model_name: str, audio_duration: float,
-                        processing_time: float, memory_usage_mb: float,
-                        error_occurred: bool = False, error_message: str | None = None):
+    def record_inference(
+        self,
+        model_name: str,
+        audio_duration: float,
+        processing_time: float,
+        memory_usage_mb: float,
+        error_occurred: bool = False,
+        error_message: str | None = None,
+    ):
         """Record inference performance metrics"""
-        rtf = processing_time / audio_duration if audio_duration > 0 else float('inf')
+        rtf = processing_time / audio_duration if audio_duration > 0 else float("inf")
 
         # Get current system metrics
         cpu_usage = psutil.cpu_percent()
@@ -367,7 +406,7 @@ class WhisperPerformanceMonitor:
             queue_size=self.request_queue_size,
             concurrent_requests=self.current_requests,
             error_occurred=error_occurred,
-            error_message=error_message
+            error_message=error_message,
         )
 
         # Store metrics
@@ -376,7 +415,9 @@ class WhisperPerformanceMonitor:
         # Check for alerts
         self.alert_manager.check_metrics(metrics)
 
-        logger.debug(f"Recorded metrics: {model_name}, RTF={rtf:.3f}, Memory={memory_usage_mb:.1f}MB")
+        logger.debug(
+            f"Recorded metrics: {model_name}, RTF={rtf:.3f}, Memory={memory_usage_mb:.1f}MB"
+        )
 
     def start_request(self):
         """Mark start of a new request"""
@@ -400,15 +441,15 @@ class WhisperPerformanceMonitor:
         recommendations = self.optimization_engine.generate_recommendations(analysis)
 
         return {
-            'analysis': analysis,
-            'recommendations': [asdict(rec) for rec in recommendations],
-            'current_status': {
-                'active_requests': self.current_requests,
-                'queue_size': self.request_queue_size,
-                'monitoring_active': self.monitoring
+            "analysis": analysis,
+            "recommendations": [asdict(rec) for rec in recommendations],
+            "current_status": {
+                "active_requests": self.current_requests,
+                "queue_size": self.request_queue_size,
+                "monitoring_active": self.monitoring,
             },
-            'thresholds': asdict(self.thresholds),
-            'generated_at': datetime.now().isoformat()
+            "thresholds": asdict(self.thresholds),
+            "generated_at": datetime.now().isoformat(),
         }
 
     def start_continuous_monitoring(self, interval_seconds: int = 60):
@@ -422,11 +463,13 @@ class WhisperPerformanceMonitor:
                     report = self.get_performance_report(hours=1)
 
                     # Log summary
-                    analysis = report['analysis']
-                    if 'rtf_stats' in analysis:
-                        logger.info(f"Performance summary - RTF P95: {analysis['rtf_stats']['p95']:.3f}, "
-                                  f"Memory P95: {analysis['memory_stats']['p95']:.1f}MB, "
-                                  f"Error rate: {analysis['error_rate']:.3f}")
+                    analysis = report["analysis"]
+                    if "rtf_stats" in analysis:
+                        logger.info(
+                            f"Performance summary - RTF P95: {analysis['rtf_stats']['p95']:.3f}, "
+                            f"Memory P95: {analysis['memory_stats']['p95']:.1f}MB, "
+                            f"Error rate: {analysis['error_rate']:.3f}"
+                        )
 
                     time.sleep(interval_seconds)
                 except Exception as e:
@@ -441,10 +484,12 @@ class WhisperPerformanceMonitor:
         self.monitoring = False
         logger.info("Continuous monitoring stopped")
 
+
 # Example alert callback
 def log_alert(alert_type: str, severity: str, alert_data: dict[str, Any]):
     """Example alert callback that logs alerts"""
     logger.warning(f"ALERT [{severity.upper()}] {alert_type}: {alert_data['alert']['message']}")
+
 
 # Example usage
 def example_usage():
@@ -467,6 +512,7 @@ def example_usage():
 
     # Stop monitoring
     monitor.stop_monitoring()
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)

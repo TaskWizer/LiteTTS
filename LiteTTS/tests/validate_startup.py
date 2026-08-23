@@ -24,6 +24,7 @@ async def main():
         print(f"❌ Startup failed: {e}")
         return 1
 
+
 if __name__ == "__main__":
     exit_code = asyncio.run(main())
     sys.exit(exit_code)

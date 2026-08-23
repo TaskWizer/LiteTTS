@@ -20,10 +20,10 @@ from LiteTTS.testing.comprehensive_audio_quality_suite import (
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
+
 
 class AudioQualityTestRunner:
     """Main test runner for comprehensive audio quality testing"""
@@ -62,7 +62,9 @@ class AudioQualityTestRunner:
 
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(f"{self.test_suite.api_base_url}/health", timeout=5) as response:
+                async with session.get(
+                    f"{self.test_suite.api_base_url}/health", timeout=5
+                ) as response:
                     if response.status == 200:
                         logger.info(f"✅ TTS server available at {self.test_suite.api_base_url}")
                     else:
@@ -105,16 +107,20 @@ class AudioQualityTestRunner:
             # Show average metrics if available
             if category_result.get("avg_metrics"):
                 metrics = category_result["avg_metrics"]
-                logger.info(f"    📈 Avg Metrics: RTF={metrics.get('rtf', 0):.3f}, "
-                          f"WER={metrics.get('wer', 0):.3f}, "
-                          f"MOS={metrics.get('mos_prediction', 0):.2f}")
+                logger.info(
+                    f"    📈 Avg Metrics: RTF={metrics.get('rtf', 0):.3f}, "
+                    f"WER={metrics.get('wer', 0):.3f}, "
+                    f"MOS={metrics.get('mos_prediction', 0):.2f}"
+                )
 
         # Quality thresholds status
         logger.info("\n🎯 Quality Thresholds:")
         thresholds = self.test_suite.quality_thresholds
         logger.info(f"  • Min MOS Score: {thresholds.get('min_mos_score', 3.0)}")
         logger.info(f"  • Max WER: {thresholds.get('max_wer', 0.1)}")
-        logger.info(f"  • Min Pronunciation Accuracy: {thresholds.get('min_pronunciation_accuracy', 0.9)}")
+        logger.info(
+            f"  • Min Pronunciation Accuracy: {thresholds.get('min_pronunciation_accuracy', 0.9)}"
+        )
         logger.info(f"  • Max RTF: {thresholds.get('max_rtf', 0.25)}")
         logger.info(f"  • Min Prosody Score: {thresholds.get('min_prosody_score', 0.7)}")
 
@@ -135,7 +141,9 @@ class AudioQualityTestRunner:
             min_pass_rate = config.get("min_pass_rate", 0.9)
 
             if pass_rate < min_pass_rate:
-                logger.error(f"❌ Failing build due to low pass rate: {pass_rate:.2f} < {min_pass_rate}")
+                logger.error(
+                    f"❌ Failing build due to low pass rate: {pass_rate:.2f} < {min_pass_rate}"
+                )
                 sys.exit(1)
 
             logger.info("✅ CI/CD checks passed")
@@ -156,13 +164,15 @@ class AudioQualityTestRunner:
                 passed_tests=category_result["passed"],
                 failed_tests=category_result["failed"],
                 skipped_tests=category_result["skipped"],
-                overall_score=category_result["passed"] / category_result["total"] * 100 if category_result["total"] > 0 else 0,
+                overall_score=category_result["passed"] / category_result["total"] * 100
+                if category_result["total"] > 0
+                else 0,
                 category_results={category: category_result},
                 performance_metrics={},
                 quality_metrics={},
                 regression_detected=False,
                 execution_time=results.execution_time,
-                timestamp=results.timestamp
+                timestamp=results.timestamp,
             )
             return filtered_results
         else:
@@ -197,12 +207,15 @@ class AudioQualityTestRunner:
         # For now, just log the regression detection
         logger.info("Regression report would be generated here with detailed analysis")
 
+
 async def main():
     """Main entry point"""
     parser = argparse.ArgumentParser(description="Comprehensive Audio Quality Test Runner")
     parser.add_argument("--config", "-c", help="Configuration file path")
     parser.add_argument("--category", help="Run tests for specific category only")
-    parser.add_argument("--performance", action="store_true", help="Run performance validation tests")
+    parser.add_argument(
+        "--performance", action="store_true", help="Run performance validation tests"
+    )
     parser.add_argument("--regression", action="store_true", help="Run regression detection tests")
     parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose logging")
 
@@ -239,6 +252,7 @@ async def main():
     except Exception as e:
         logger.error(f"Test run failed: {e}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     asyncio.run(main())

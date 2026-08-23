@@ -22,8 +22,7 @@ from LiteTTS.testing.espeak_integration_tests import EspeakIntegrationTestSuite
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -39,11 +38,16 @@ class AudioQualityTestRunner:
             # Try to use centralized configuration
             try:
                 from ...config import config as app_config
-                self.config = app_config.to_dict() if hasattr(app_config, 'to_dict') else {}
+
+                self.config = app_config.to_dict() if hasattr(app_config, "to_dict") else {}
                 self.config_path = None  # Using centralized config
             except ImportError:
                 # Fallback to default config file
-                self.config_path = Path("config/settings.json") if Path("config/settings.json").exists() else Path("config.json")
+                self.config_path = (
+                    Path("config/settings.json")
+                    if Path("config/settings.json").exists()
+                    else Path("config.json")
+                )
                 self.config = self._load_config()
         else:
             self.config_path = config_path
@@ -67,7 +71,7 @@ class AudioQualityTestRunner:
             return {}  # Already loaded from centralized config
 
         try:
-            with open(self.config_path, 'r', encoding='utf-8') as f:
+            with open(self.config_path, "r", encoding="utf-8") as f:
                 config = json.load(f)
         except FileNotFoundError:
             logger.warning(f"Config file not found: {self.config_path}, using defaults")
@@ -87,7 +91,7 @@ class AudioQualityTestRunner:
                     "max_wer": 0.1,
                     "min_pronunciation_accuracy": 0.9,
                     "max_rtf": 0.25,
-                    "min_prosody_score": 0.7
+                    "min_prosody_score": 0.7,
                 },
                 "asr_services": {
                     "enabled": False,  # Disabled by default
@@ -95,18 +99,11 @@ class AudioQualityTestRunner:
                         "enabled": False,
                         "api_key": "",
                         "model": "nova-2",
-                        "language": "en-US"
+                        "language": "en-US",
                     },
-                    "azure_speech": {
-                        "enabled": False,
-                        "subscription_key": "",
-                        "region": "eastus"
-                    },
-                    "google_stt": {
-                        "enabled": False,
-                        "credentials_path": ""
-                    }
-                }
+                    "azure_speech": {"enabled": False, "subscription_key": "", "region": "eastus"},
+                    "google_stt": {"enabled": False, "credentials_path": ""},
+                },
             }
 
         return config
@@ -171,17 +168,19 @@ class AudioQualityTestRunner:
             comparison = self._compare_with_baseline(beta_disabled_summary, baseline_metrics)
             logger.info(f"📈 Baseline Comparison: {comparison['status']}")
 
-            if comparison['regressions']:
+            if comparison["regressions"]:
                 logger.warning("⚠️  Detected regressions:")
-                for regression in comparison['regressions']:
+                for regression in comparison["regressions"]:
                     logger.warning(f"   - {regression}")
 
         return {
             "beta_disabled": beta_disabled_summary,
-            "baseline_comparison": comparison if baseline_metrics else None
+            "baseline_comparison": comparison if baseline_metrics else None,
         }
 
-    def _compare_with_baseline(self, current: dict[str, Any], baseline: dict[str, Any]) -> dict[str, Any]:
+    def _compare_with_baseline(
+        self, current: dict[str, Any], baseline: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Compare current results with baseline metrics
         """
@@ -197,7 +196,7 @@ class AudioQualityTestRunner:
             "wer": 0.02,  # 2% increase in error rate
             "pronunciation_accuracy": -0.05,  # 5% decrease
             "rtf": 0.05,  # 5% increase in processing time
-            "prosody_score": -0.1  # 0.1 point decrease
+            "prosody_score": -0.1,  # 0.1 point decrease
         }
 
         for metric, current_value in current_metrics.items():
@@ -209,9 +208,13 @@ class AudioQualityTestRunner:
                     threshold = regression_thresholds[metric]
 
                     if change < threshold:
-                        regressions.append(f"{metric}: {current_value:.3f} vs {baseline_value:.3f} (change: {change:.3f})")
+                        regressions.append(
+                            f"{metric}: {current_value:.3f} vs {baseline_value:.3f} (change: {change:.3f})"
+                        )
                     elif change > abs(threshold):
-                        improvements.append(f"{metric}: {current_value:.3f} vs {baseline_value:.3f} (change: +{change:.3f})")
+                        improvements.append(
+                            f"{metric}: {current_value:.3f} vs {baseline_value:.3f} (change: +{change:.3f})"
+                        )
 
         status = "REGRESSION" if regressions else ("IMPROVEMENT" if improvements else "STABLE")
 
@@ -220,7 +223,7 @@ class AudioQualityTestRunner:
             "regressions": regressions,
             "improvements": improvements,
             "current_quality": current.get("quality_assessment", "UNKNOWN"),
-            "baseline_quality": baseline.get("quality_assessment", "UNKNOWN")
+            "baseline_quality": baseline.get("quality_assessment", "UNKNOWN"),
         }
 
     async def run_performance_validation(self) -> dict[str, Any]:
@@ -239,7 +242,7 @@ class AudioQualityTestRunner:
                 test_category="performance",
                 description="Short text performance test",
                 max_rtf=0.15,  # Stricter RTF for short text
-                priority="critical"
+                priority="critical",
             ),
             AudioTestCase(
                 test_id="perf_medium_text",
@@ -248,7 +251,7 @@ class AudioQualityTestRunner:
                 test_category="performance",
                 description="Medium text performance test",
                 max_rtf=0.2,
-                priority="high"
+                priority="high",
             ),
             AudioTestCase(
                 test_id="perf_long_text",
@@ -257,8 +260,8 @@ class AudioQualityTestRunner:
                 test_category="performance",
                 description="Long text performance test",
                 max_rtf=0.25,
-                priority="normal"
-            )
+                priority="normal",
+            ),
         ]
 
         # Run performance tests
@@ -267,22 +270,23 @@ class AudioQualityTestRunner:
         # Analyze performance metrics
         avg_metrics = summary.get("average_metrics", {})
         performance_assessment = {
-            "rtf_performance": "EXCELLENT" if avg_metrics.get("rtf", 1.0) < 0.15 else
-                              "GOOD" if avg_metrics.get("rtf", 1.0) < 0.2 else
-                              "ACCEPTABLE" if avg_metrics.get("rtf", 1.0) < 0.25 else "POOR",
+            "rtf_performance": "EXCELLENT"
+            if avg_metrics.get("rtf", 1.0) < 0.15
+            else "GOOD"
+            if avg_metrics.get("rtf", 1.0) < 0.2
+            else "ACCEPTABLE"
+            if avg_metrics.get("rtf", 1.0) < 0.25
+            else "POOR",
             "processing_time": avg_metrics.get("processing_time", 0),
             "average_rtf": avg_metrics.get("rtf", 0),
-            "meets_targets": avg_metrics.get("rtf", 1.0) < 0.25
+            "meets_targets": avg_metrics.get("rtf", 1.0) < 0.25,
         }
 
         logger.info(f"📊 Performance Assessment: {performance_assessment['rtf_performance']}")
         logger.info(f"   Average RTF: {performance_assessment['average_rtf']:.3f}")
         logger.info(f"   Meets Targets: {performance_assessment['meets_targets']}")
 
-        return {
-            "summary": summary,
-            "performance_assessment": performance_assessment
-        }
+        return {"summary": summary, "performance_assessment": performance_assessment}
 
     async def run_comprehensive_test_suite(self) -> dict[str, Any]:
         """
@@ -313,13 +317,13 @@ class AudioQualityTestRunner:
             results["overall"] = {
                 "total_time": total_time,
                 "assessment": overall_assessment,
-                "timestamp": time.time()
+                "timestamp": time.time(),
             }
 
             # Save comprehensive results
             timestamp = time.strftime("%Y%m%d_%H%M%S")
             results_path = self.results_dir / f"comprehensive_results_{timestamp}.json"
-            with open(results_path, 'w') as f:
+            with open(results_path, "w") as f:
                 json.dump(results, f, indent=2, default=str)
 
             logger.info("\n🎉 Comprehensive Test Suite Completed!")
@@ -332,6 +336,7 @@ class AudioQualityTestRunner:
         except Exception as e:
             logger.error(f"❌ Comprehensive test suite failed: {e}")
             import traceback
+
             traceback.print_exc()
             return {"error": str(e), "results": results}
 
@@ -370,10 +375,18 @@ async def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Automated Audio Quality Testing for Kokoro TTS")
-    parser.add_argument("--test-type", choices=["espeak", "config", "performance", "comprehensive"],
-                       default="comprehensive", help="Type of tests to run")
-    parser.add_argument("--filter", choices=["all", "critical", "symbols", "regression"],
-                       default="all", help="Test filter for eSpeak tests")
+    parser.add_argument(
+        "--test-type",
+        choices=["espeak", "config", "performance", "comprehensive"],
+        default="comprehensive",
+        help="Type of tests to run",
+    )
+    parser.add_argument(
+        "--filter",
+        choices=["all", "critical", "symbols", "regression"],
+        default="all",
+        help="Test filter for eSpeak tests",
+    )
     parser.add_argument("--config", type=Path, help="Path to config.json file")
 
     args = parser.parse_args()

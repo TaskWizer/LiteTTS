@@ -11,10 +11,11 @@ import sys
 import requests
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 BASE_URL = "http://localhost:8354"
+
 
 class APIEndpointValidator:
     """Comprehensive API endpoint validator"""
@@ -47,14 +48,14 @@ class APIEndpointValidator:
                     "success": True,
                     "status_code": response.status_code,
                     "response_data": health_data,
-                    "missing_fields": missing_fields
+                    "missing_fields": missing_fields,
                 }
             else:
                 logger.error(f"   ❌ FAILED: HTTP {response.status_code}")
                 return {
                     "success": False,
                     "status_code": response.status_code,
-                    "error": f"HTTP {response.status_code}"
+                    "error": f"HTTP {response.status_code}",
                 }
 
         except Exception as e:
@@ -86,14 +87,14 @@ class APIEndpointValidator:
                     "success": True,
                     "status_code": response.status_code,
                     "voice_count": len(voices),
-                    "sample_voices": voices[:5] if voices else []
+                    "sample_voices": voices[:5] if voices else [],
                 }
             else:
                 logger.error(f"   ❌ FAILED: HTTP {response.status_code}")
                 return {
                     "success": False,
                     "status_code": response.status_code,
-                    "error": f"HTTP {response.status_code}"
+                    "error": f"HTTP {response.status_code}",
                 }
 
         except Exception as e:
@@ -108,7 +109,7 @@ class APIEndpointValidator:
         valid_payload = {
             "input": "Hello, this is a test of the speech endpoint.",
             "voice": "af_heart",
-            "response_format": "mp3"
+            "response_format": "mp3",
         }
 
         try:
@@ -116,7 +117,7 @@ class APIEndpointValidator:
                 f"{self.base_url}/v1/audio/speech",
                 json=valid_payload,
                 headers={"Content-Type": "application/json"},
-                timeout=30
+                timeout=30,
             )
 
             if response.status_code == 200:
@@ -128,14 +129,14 @@ class APIEndpointValidator:
                     "success": True,
                     "status_code": response.status_code,
                     "audio_size": audio_size,
-                    "content_type": content_type
+                    "content_type": content_type,
                 }
             else:
                 logger.error(f"   ❌ FAILED: HTTP {response.status_code}")
                 return {
                     "success": False,
                     "status_code": response.status_code,
-                    "error": f"HTTP {response.status_code}"
+                    "error": f"HTTP {response.status_code}",
                 }
 
         except Exception as e:
@@ -149,7 +150,7 @@ class APIEndpointValidator:
         payload = {
             "input": "This is a test of the streaming endpoint functionality.",
             "voice": "af_heart",
-            "response_format": "mp3"
+            "response_format": "mp3",
         }
 
         try:
@@ -158,7 +159,7 @@ class APIEndpointValidator:
                 json=payload,
                 headers={"Content-Type": "application/json"},
                 timeout=30,
-                stream=True
+                stream=True,
             )
 
             if response.status_code == 200:
@@ -175,14 +176,14 @@ class APIEndpointValidator:
                     "success": True,
                     "status_code": response.status_code,
                     "chunk_count": chunk_count,
-                    "total_size": total_size
+                    "total_size": total_size,
                 }
             else:
                 logger.error(f"   ❌ FAILED: HTTP {response.status_code}")
                 return {
                     "success": False,
                     "status_code": response.status_code,
-                    "error": f"HTTP {response.status_code}"
+                    "error": f"HTTP {response.status_code}",
                 }
 
         except Exception as e:
@@ -194,36 +195,28 @@ class APIEndpointValidator:
         logger.info("🚨 Testing error handling...")
 
         error_test_cases = [
-            {
-                "name": "Missing input",
-                "payload": {"voice": "af_heart"},
-                "expected_status": 400
-            },
-            {
-                "name": "Missing voice",
-                "payload": {"input": "Test"},
-                "expected_status": 400
-            },
+            {"name": "Missing input", "payload": {"voice": "af_heart"}, "expected_status": 400},
+            {"name": "Missing voice", "payload": {"input": "Test"}, "expected_status": 400},
             {
                 "name": "Invalid voice",
                 "payload": {"input": "Test", "voice": "nonexistent_voice"},
-                "expected_status": 400
+                "expected_status": 400,
             },
             {
                 "name": "Empty input",
                 "payload": {"input": "", "voice": "af_heart"},
-                "expected_status": 400
+                "expected_status": 400,
             },
             {
                 "name": "Invalid format",
                 "payload": {"input": "Test", "voice": "af_heart", "response_format": "invalid"},
-                "expected_status": 400
+                "expected_status": 400,
             },
             {
                 "name": "Invalid speed",
                 "payload": {"input": "Test", "voice": "af_heart", "speed": "invalid"},
-                "expected_status": 400
-            }
+                "expected_status": 400,
+            },
         ]
 
         results = {}
@@ -236,7 +229,7 @@ class APIEndpointValidator:
                     f"{self.base_url}/v1/audio/speech",
                     json=test_case["payload"],
                     headers={"Content-Type": "application/json"},
-                    timeout=30
+                    timeout=30,
                 )
 
                 if response.status_code == test_case["expected_status"]:
@@ -244,23 +237,22 @@ class APIEndpointValidator:
                     results[test_case["name"]] = {
                         "success": True,
                         "status_code": response.status_code,
-                        "expected_status": test_case["expected_status"]
+                        "expected_status": test_case["expected_status"],
                     }
                 else:
-                    logger.warning(f"      ⚠️ UNEXPECTED: Expected {test_case['expected_status']}, got {response.status_code}")
+                    logger.warning(
+                        f"      ⚠️ UNEXPECTED: Expected {test_case['expected_status']}, got {response.status_code}"
+                    )
                     results[test_case["name"]] = {
                         "success": False,
                         "status_code": response.status_code,
                         "expected_status": test_case["expected_status"],
-                        "note": "Unexpected status code"
+                        "note": "Unexpected status code",
                     }
 
             except Exception as e:
                 logger.error(f"      ❌ EXCEPTION: {e}")
-                results[test_case["name"]] = {
-                    "success": False,
-                    "error": str(e)
-                }
+                results[test_case["name"]] = {"success": False, "error": str(e)}
 
         successful_tests = sum(1 for r in results.values() if r.get("success", False))
 
@@ -268,7 +260,7 @@ class APIEndpointValidator:
             "success": successful_tests > 0,
             "total_tests": len(error_test_cases),
             "successful_tests": successful_tests,
-            "test_results": results
+            "test_results": results,
         }
 
     def test_request_schemas(self):
@@ -279,7 +271,7 @@ class APIEndpointValidator:
             {
                 "name": "Minimal valid request",
                 "payload": {"input": "Test", "voice": "af_heart"},
-                "should_succeed": True
+                "should_succeed": True,
             },
             {
                 "name": "Complete valid request",
@@ -287,27 +279,27 @@ class APIEndpointValidator:
                     "input": "Test",
                     "voice": "af_heart",
                     "response_format": "mp3",
-                    "speed": 1.0
+                    "speed": 1.0,
                 },
-                "should_succeed": True
+                "should_succeed": True,
             },
             {
                 "name": "Extra fields",
                 "payload": {
                     "input": "Test",
                     "voice": "af_heart",
-                    "extra_field": "should_be_ignored"
+                    "extra_field": "should_be_ignored",
                 },
-                "should_succeed": True
+                "should_succeed": True,
             },
             {
                 "name": "Wrong data types",
                 "payload": {
                     "input": 123,  # Should be string
-                    "voice": "af_heart"
+                    "voice": "af_heart",
                 },
-                "should_succeed": False
-            }
+                "should_succeed": False,
+            },
         ]
 
         results = {}
@@ -320,7 +312,7 @@ class APIEndpointValidator:
                     f"{self.base_url}/v1/audio/speech",
                     json=test_case["payload"],
                     headers={"Content-Type": "application/json"},
-                    timeout=30
+                    timeout=30,
                 )
 
                 success = (response.status_code == 200) == test_case["should_succeed"]
@@ -330,22 +322,21 @@ class APIEndpointValidator:
                     results[test_case["name"]] = {
                         "success": True,
                         "status_code": response.status_code,
-                        "expected_success": test_case["should_succeed"]
+                        "expected_success": test_case["should_succeed"],
                     }
                 else:
-                    logger.warning(f"      ⚠️ UNEXPECTED: Expected {'success' if test_case['should_succeed'] else 'failure'}, got {response.status_code}")
+                    logger.warning(
+                        f"      ⚠️ UNEXPECTED: Expected {'success' if test_case['should_succeed'] else 'failure'}, got {response.status_code}"
+                    )
                     results[test_case["name"]] = {
                         "success": False,
                         "status_code": response.status_code,
-                        "expected_success": test_case["should_succeed"]
+                        "expected_success": test_case["should_succeed"],
                     }
 
             except Exception as e:
                 logger.error(f"      ❌ EXCEPTION: {e}")
-                results[test_case["name"]] = {
-                    "success": False,
-                    "error": str(e)
-                }
+                results[test_case["name"]] = {"success": False, "error": str(e)}
 
         successful_tests = sum(1 for r in results.values() if r.get("success", False))
 
@@ -353,7 +344,7 @@ class APIEndpointValidator:
             "success": successful_tests > 0,
             "total_tests": len(schema_test_cases),
             "successful_tests": successful_tests,
-            "test_results": results
+            "test_results": results,
         }
 
     def test_response_headers(self):
@@ -365,7 +356,7 @@ class APIEndpointValidator:
                 f"{self.base_url}/v1/audio/speech",
                 json={"input": "Test headers", "voice": "af_heart", "response_format": "mp3"},
                 headers={"Content-Type": "application/json"},
-                timeout=30
+                timeout=30,
             )
 
             if response.status_code == 200:
@@ -375,7 +366,7 @@ class APIEndpointValidator:
                 header_checks = {
                     "content-type": headers.get("content-type", "").startswith("audio/"),
                     "content-disposition": "content-disposition" in headers,
-                    "access-control-allow-origin": "access-control-allow-origin" in headers
+                    "access-control-allow-origin": "access-control-allow-origin" in headers,
                 }
 
                 passed_checks = sum(header_checks.values())
@@ -387,14 +378,14 @@ class APIEndpointValidator:
                     "success": passed_checks > 0,
                     "status_code": response.status_code,
                     "header_checks": header_checks,
-                    "headers": headers
+                    "headers": headers,
                 }
             else:
                 logger.error(f"   ❌ FAILED: HTTP {response.status_code}")
                 return {
                     "success": False,
                     "status_code": response.status_code,
-                    "error": f"HTTP {response.status_code}"
+                    "error": f"HTTP {response.status_code}",
                 }
 
         except Exception as e:
@@ -405,15 +396,12 @@ class APIEndpointValidator:
         """Test OpenWebUI compatibility routes"""
         logger.info("🔗 Testing OpenWebUI compatibility routes...")
 
-        compatibility_routes = [
-            "/v1/audio/stream/audio/speech",
-            "/v1/audio/speech/audio/speech"
-        ]
+        compatibility_routes = ["/v1/audio/stream/audio/speech", "/v1/audio/speech/audio/speech"]
 
         payload = {
             "input": "Testing compatibility routes",
             "voice": "af_heart",
-            "response_format": "mp3"
+            "response_format": "mp3",
         }
 
         results = {}
@@ -426,7 +414,7 @@ class APIEndpointValidator:
                     f"{self.base_url}{route}",
                     json=payload,
                     headers={"Content-Type": "application/json"},
-                    timeout=30
+                    timeout=30,
                 )
 
                 if response.status_code == 200:
@@ -434,22 +422,19 @@ class APIEndpointValidator:
                     results[route] = {
                         "success": True,
                         "status_code": response.status_code,
-                        "audio_size": audio_size
+                        "audio_size": audio_size,
                     }
                     logger.info(f"      ✅ SUCCESS: {audio_size} bytes")
                 else:
                     results[route] = {
                         "success": False,
                         "status_code": response.status_code,
-                        "error": f"HTTP {response.status_code}"
+                        "error": f"HTTP {response.status_code}",
                     }
                     logger.error(f"      ❌ FAILED: HTTP {response.status_code}")
 
             except Exception as e:
-                results[route] = {
-                    "success": False,
-                    "error": str(e)
-                }
+                results[route] = {"success": False, "error": str(e)}
                 logger.error(f"      ❌ EXCEPTION: {e}")
 
         successful_routes = sum(1 for r in results.values() if r.get("success", False))
@@ -458,7 +443,7 @@ class APIEndpointValidator:
             "success": successful_routes > 0,
             "total_routes": len(compatibility_routes),
             "successful_routes": successful_routes,
-            "route_results": results
+            "route_results": results,
         }
 
     def run_comprehensive_validation(self):
@@ -486,13 +471,13 @@ class APIEndpointValidator:
             ("Error Handling", self.test_error_handling),
             ("Request Schemas", self.test_request_schemas),
             ("Response Headers", self.test_response_headers),
-            ("Compatibility Routes", self.test_openwebui_compatibility_routes)
+            ("Compatibility Routes", self.test_openwebui_compatibility_routes),
         ]
 
         test_results = {}
 
         for test_name, test_func in tests:
-            logger.info(f"\n{'='*20} {test_name} {'='*20}")
+            logger.info(f"\n{'=' * 20} {test_name} {'=' * 20}")
             try:
                 result = test_func()
                 test_results[test_name] = result
@@ -516,7 +501,7 @@ class APIEndpointValidator:
             "success": len(self.passed_tests) > len(self.failed_tests),
             "test_results": test_results,
             "passed_tests": self.passed_tests,
-            "failed_tests": self.failed_tests
+            "failed_tests": self.failed_tests,
         }
 
     def generate_validation_summary(self, test_results):
@@ -532,7 +517,7 @@ class APIEndpointValidator:
         logger.info(f"Total Tests: {total_tests}")
         logger.info(f"Passed: {passed_tests}")
         logger.info(f"Failed: {failed_tests}")
-        logger.info(f"Success Rate: {(passed_tests/total_tests)*100:.1f}%")
+        logger.info(f"Success Rate: {(passed_tests / total_tests) * 100:.1f}%")
 
         if self.passed_tests:
             logger.info("\n✅ PASSED TESTS:")
@@ -557,6 +542,7 @@ class APIEndpointValidator:
 
         logger.info("=" * 70)
 
+
 def main():
     """Main validation function"""
     validator = APIEndpointValidator()
@@ -573,6 +559,7 @@ def main():
         sys.exit(0)
     else:
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

@@ -21,6 +21,7 @@ from typing import Any
 @dataclass
 class RequestMetric:
     """Individual request metric"""
+
     timestamp: datetime
     method: str
     path: str
@@ -32,18 +33,21 @@ class RequestMetric:
     text_length: int | None = None
     cache_hit: bool = False
 
+
 @dataclass
 class ConcurrencyMetric:
     """Concurrency tracking metric"""
+
     timestamp: datetime
     active_connections: int
     queue_size: int
     processing_requests: int
 
+
 class DashboardAnalytics:
     """
     Real-time analytics collector for the dashboard
-    
+
     Tracks all API requests, performance metrics, and system status
     for display in the web dashboard.
     """
@@ -73,16 +77,18 @@ class DashboardAnalytics:
         # Start background cleanup task
         self._start_cleanup_task()
 
-    def record_request(self,
-                      method: str,
-                      path: str,
-                      status_code: int,
-                      response_time: float,
-                      client_ip: str,
-                      user_agent: str,
-                      voice: str | None = None,
-                      text_length: int | None = None,
-                      cache_hit: bool = False):
+    def record_request(
+        self,
+        method: str,
+        path: str,
+        status_code: int,
+        response_time: float,
+        client_ip: str,
+        user_agent: str,
+        voice: str | None = None,
+        text_length: int | None = None,
+        cache_hit: bool = False,
+    ):
         """Record a completed request"""
 
         with self.lock:
@@ -96,7 +102,7 @@ class DashboardAnalytics:
                 user_agent=user_agent,
                 voice=voice,
                 text_length=text_length,
-                cache_hit=cache_hit
+                cache_hit=cache_hit,
             )
 
             self.request_metrics.append(metric)
@@ -110,7 +116,9 @@ class DashboardAnalytics:
             if voice:
                 self.voice_usage[voice] += 1
 
-    def update_concurrency(self, active_connections: int, queue_size: int, processing_requests: int):
+    def update_concurrency(
+        self, active_connections: int, queue_size: int, processing_requests: int
+    ):
         """Update concurrency metrics"""
 
         with self.lock:
@@ -122,7 +130,7 @@ class DashboardAnalytics:
                 timestamp=datetime.now(),
                 active_connections=active_connections,
                 queue_size=queue_size,
-                processing_requests=processing_requests
+                processing_requests=processing_requests,
             )
 
             self.concurrency_metrics.append(metric)
@@ -144,10 +152,7 @@ class DashboardAnalytics:
             # Convert to list format
             result = []
             for minute in sorted(minute_counts.keys()):
-                result.append({
-                    'timestamp': minute.isoformat(),
-                    'requests': minute_counts[minute]
-                })
+                result.append({"timestamp": minute.isoformat(), "requests": minute_counts[minute]})
 
             return result
 
@@ -164,14 +169,7 @@ class DashboardAnalytics:
             ]
 
             if not response_times:
-                return {
-                    'avg': 0.0,
-                    'min': 0.0,
-                    'max': 0.0,
-                    'p50': 0.0,
-                    'p95': 0.0,
-                    'p99': 0.0
-                }
+                return {"avg": 0.0, "min": 0.0, "max": 0.0, "p50": 0.0, "p95": 0.0, "p99": 0.0}
 
             response_times.sort()
             count = len(response_times)
@@ -183,12 +181,18 @@ class DashboardAnalytics:
             import math
 
             return {
-                'avg': avg_time if math.isfinite(avg_time) else 0.0,
-                'min': response_times[0] if math.isfinite(response_times[0]) else 0.0,
-                'max': response_times[-1] if math.isfinite(response_times[-1]) else 0.0,
-                'p50': response_times[int(count * 0.5)] if math.isfinite(response_times[int(count * 0.5)]) else 0.0,
-                'p95': response_times[int(count * 0.95)] if math.isfinite(response_times[int(count * 0.95)]) else 0.0,
-                'p99': response_times[int(count * 0.99)] if math.isfinite(response_times[int(count * 0.99)]) else 0.0
+                "avg": avg_time if math.isfinite(avg_time) else 0.0,
+                "min": response_times[0] if math.isfinite(response_times[0]) else 0.0,
+                "max": response_times[-1] if math.isfinite(response_times[-1]) else 0.0,
+                "p50": response_times[int(count * 0.5)]
+                if math.isfinite(response_times[int(count * 0.5)])
+                else 0.0,
+                "p95": response_times[int(count * 0.95)]
+                if math.isfinite(response_times[int(count * 0.95)])
+                else 0.0,
+                "p99": response_times[int(count * 0.99)]
+                if math.isfinite(response_times[int(count * 0.99)])
+                else 0.0,
             }
 
     def get_error_rates(self, minutes: int = 60) -> dict[str, Any]:
@@ -213,14 +217,15 @@ class DashboardAnalytics:
 
             # Ensure error rate is finite
             import math
+
             if not math.isfinite(error_rate):
                 error_rate = 0.0
 
             return {
-                'total_requests': total_requests,
-                'error_requests': error_requests,
-                'error_rate_percent': round(error_rate, 2),
-                'status_code_distribution': dict(status_counts)
+                "total_requests": total_requests,
+                "error_requests": error_requests,
+                "error_rate_percent": round(error_rate, 2),
+                "status_code_distribution": dict(status_counts),
             }
 
     def get_voice_usage_stats(self, minutes: int = 60) -> dict[str, int]:
@@ -242,37 +247,37 @@ class DashboardAnalytics:
 
         with self.lock:
             return {
-                'current': {
-                    'active_connections': self.active_connections,
-                    'queue_size': self.queue_size,
-                    'processing_requests': self.processing_requests
+                "current": {
+                    "active_connections": self.active_connections,
+                    "queue_size": self.queue_size,
+                    "processing_requests": self.processing_requests,
                 },
-                'history': [
+                "history": [
                     {
-                        'timestamp': metric.timestamp.isoformat(),
-                        'active_connections': metric.active_connections,
-                        'queue_size': metric.queue_size,
-                        'processing_requests': metric.processing_requests
+                        "timestamp": metric.timestamp.isoformat(),
+                        "active_connections": metric.active_connections,
+                        "queue_size": metric.queue_size,
+                        "processing_requests": metric.processing_requests,
                     }
                     for metric in list(self.concurrency_metrics)[-100:]  # Last 100 data points
-                ]
+                ],
             }
 
     def get_dashboard_data(self) -> dict[str, Any]:
         """Get comprehensive dashboard data"""
 
         return {
-            'timestamp': datetime.now().isoformat(),
-            'requests_per_minute': self.get_requests_per_minute(60),
-            'response_time_stats': self.get_response_time_stats(60),
-            'error_rates': self.get_error_rates(60),
-            'voice_usage': self.get_voice_usage_stats(60),
-            'concurrency': self.get_concurrency_stats(),
-            'system_status': {
-                'uptime_seconds': time.time() - getattr(self, 'start_time', time.time()),
-                'total_requests_all_time': len(self.request_metrics),
-                'total_errors_all_time': sum(self.error_counts.values())
-            }
+            "timestamp": datetime.now().isoformat(),
+            "requests_per_minute": self.get_requests_per_minute(60),
+            "response_time_stats": self.get_response_time_stats(60),
+            "error_rates": self.get_error_rates(60),
+            "voice_usage": self.get_voice_usage_stats(60),
+            "concurrency": self.get_concurrency_stats(),
+            "system_status": {
+                "uptime_seconds": time.time() - getattr(self, "start_time", time.time()),
+                "total_requests_all_time": len(self.request_metrics),
+                "total_errors_all_time": sum(self.error_counts.values()),
+            },
         }
 
     def _start_cleanup_task(self):
@@ -288,13 +293,16 @@ class DashboardAnalytics:
 
                     with self.lock:
                         # Clean up old request metrics
-                        while (self.request_metrics and
-                               self.request_metrics[0].timestamp < cutoff_time):
+                        while (
+                            self.request_metrics and self.request_metrics[0].timestamp < cutoff_time
+                        ):
                             self.request_metrics.popleft()
 
                         # Clean up old concurrency metrics
-                        while (self.concurrency_metrics and
-                               self.concurrency_metrics[0].timestamp < cutoff_time):
+                        while (
+                            self.concurrency_metrics
+                            and self.concurrency_metrics[0].timestamp < cutoff_time
+                        ):
                             self.concurrency_metrics.popleft()
 
                 except Exception as e:
@@ -302,6 +310,7 @@ class DashboardAnalytics:
 
         cleanup_thread = threading.Thread(target=cleanup_worker, daemon=True)
         cleanup_thread.start()
+
 
 # Global analytics instance
 dashboard_analytics = DashboardAnalytics()

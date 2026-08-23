@@ -22,15 +22,24 @@ def test_config_validation():
 
     if config_file:
         try:
-            with open(config_file, 'r') as f:
+            with open(config_file, "r") as f:
                 config_data = json.load(f)
             print("✅ JSON config file is valid")
 
             # Check for required sections
             required_sections = [
-                "model", "voice", "audio", "server", "performance",
-                "repository", "paths", "tokenizer", "cache", "monitoring",
-                "endpoints", "application"
+                "model",
+                "voice",
+                "audio",
+                "server",
+                "performance",
+                "repository",
+                "paths",
+                "tokenizer",
+                "cache",
+                "monitoring",
+                "endpoints",
+                "application",
             ]
 
             missing_sections = []
@@ -46,9 +55,13 @@ def test_config_validation():
             # Check new configuration values
             new_values = {
                 "voice.default_voices": config_data.get("voice", {}).get("default_voices"),
-                "audio.compression_threshold": config_data.get("audio", {}).get("compression_threshold"),
-                "performance.base_time_per_char": config_data.get("performance", {}).get("base_time_per_char"),
-                "tokenizer.character_set": config_data.get("tokenizer", {}).get("character_set")
+                "audio.compression_threshold": config_data.get("audio", {}).get(
+                    "compression_threshold"
+                ),
+                "performance.base_time_per_char": config_data.get("performance", {}).get(
+                    "base_time_per_char"
+                ),
+                "tokenizer.character_set": config_data.get("tokenizer", {}).get("character_set"),
             }
 
             print("\n🔍 New configuration values:")
@@ -68,6 +81,7 @@ def test_config_validation():
     # Test 2: Python config loading
     try:
         from LiteTTS.config import config
+
         print("\n🐍 Python config loading:")
         print("   ✅ Config loaded successfully")
         print(f"   📊 Default voice: {config.voice.default_voice}")
@@ -75,13 +89,13 @@ def test_config_validation():
         print(f"   📊 Max text length: {config.performance.max_text_length}")
 
         # Test new values
-        if hasattr(config, 'tokenizer'):
+        if hasattr(config, "tokenizer"):
             print("   ✅ Tokenizer config available")
             print(f"   📊 Character set length: {len(config.tokenizer.character_set)}")
         else:
             print("   ❌ Tokenizer config missing")
 
-        if hasattr(config.audio, 'compression_threshold'):
+        if hasattr(config.audio, "compression_threshold"):
             print("   ✅ Audio compression config available")
             print(f"   📊 Compression threshold: {config.audio.compression_threshold}")
         else:
@@ -90,7 +104,9 @@ def test_config_validation():
     except Exception as e:
         print(f"❌ Error loading Python config: {e}")
         import traceback
+
         traceback.print_exc()
+
 
 def test_hardcoded_values():
     """Check for remaining hardcoded values"""
@@ -109,6 +125,7 @@ def test_hardcoded_values():
         print(f"   - {category}: {values}")
 
     print("   ✅ These values are now configurable in config.json")
+
 
 if __name__ == "__main__":
     print("🚀 Starting Configuration Validation Test")

@@ -13,15 +13,18 @@ from ..models import AudioSegment
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class TextChunk:
     """Represents a chunk of text for processing"""
+
     text: str
     chunk_index: int
     total_chunks: int
     is_sentence_boundary: bool = False
     is_paragraph_boundary: bool = False
     pause_after: float = 0.0
+
 
 class ChunkProcessor:
     """Processes long text by splitting into manageable chunks"""
@@ -33,37 +36,39 @@ class ChunkProcessor:
 
         # Sentence boundary patterns
         self.sentence_patterns = [
-            re.compile(r'[.!?]+\s+'),  # Sentence endings
-            re.compile(r'[.!?]+$'),    # End of text
+            re.compile(r"[.!?]+\s+"),  # Sentence endings
+            re.compile(r"[.!?]+$"),  # End of text
         ]
 
         # Paragraph boundary patterns
         self.paragraph_patterns = [
-            re.compile(r'\n\s*\n'),    # Double newlines
-            re.compile(r'\r\n\s*\r\n'), # Windows line endings
+            re.compile(r"\n\s*\n"),  # Double newlines
+            re.compile(r"\r\n\s*\r\n"),  # Windows line endings
         ]
 
         # Phrase boundary patterns (for better chunking)
         self.phrase_patterns = [
-            re.compile(r',\s+'),       # Commas
-            re.compile(r';\s+'),       # Semicolons
-            re.compile(r':\s+'),       # Colons
-            re.compile(r'\s+and\s+'),  # Conjunctions
-            re.compile(r'\s+but\s+'),
-            re.compile(r'\s+or\s+'),
-            re.compile(r'\s+so\s+'),
+            re.compile(r",\s+"),  # Commas
+            re.compile(r";\s+"),  # Semicolons
+            re.compile(r":\s+"),  # Colons
+            re.compile(r"\s+and\s+"),  # Conjunctions
+            re.compile(r"\s+but\s+"),
+            re.compile(r"\s+or\s+"),
+            re.compile(r"\s+so\s+"),
         ]
 
     def chunk_text(self, text: str) -> list[TextChunk]:
         """Split text into processable chunks"""
         if len(text) <= self.max_chunk_length:
-            return [TextChunk(
-                text=text,
-                chunk_index=0,
-                total_chunks=1,
-                is_sentence_boundary=True,
-                is_paragraph_boundary=True
-            )]
+            return [
+                TextChunk(
+                    text=text,
+                    chunk_index=0,
+                    total_chunks=1,
+                    is_sentence_boundary=True,
+                    is_paragraph_boundary=True,
+                )
+            ]
 
         logger.debug(f"Chunking text of length {len(text)}")
 
@@ -87,7 +92,9 @@ class ChunkProcessor:
                     total_chunks=0,  # Will be set later
                     is_sentence_boundary=self._ends_with_sentence_boundary(chunk_text),
                     is_paragraph_boundary=is_last_chunk_in_para,
-                    pause_after=self._calculate_pause_duration(chunk_text, is_last_chunk_in_para, is_last_para)
+                    pause_after=self._calculate_pause_duration(
+                        chunk_text, is_last_chunk_in_para, is_last_para
+                    ),
                 )
 
                 all_chunks.append(chunk)
@@ -104,7 +111,7 @@ class ChunkProcessor:
     def _split_by_paragraphs(self, text: str) -> list[str]:
         """Split text by paragraph boundaries"""
         # Split by double newlines
-        paragraphs = re.split(r'\n\s*\n', text)
+        paragraphs = re.split(r"\n\s*\n", text)
 
         # Clean up paragraphs
         paragraphs = [para.strip() for para in paragraphs if para.strip()]
@@ -161,7 +168,7 @@ class ChunkProcessor:
                 return matches[-1].end()
 
         # Look for word boundaries (low priority)
-        word_boundary = text.rfind(' ', 0, max_search_length)
+        word_boundary = text.rfind(" ", 0, max_search_length)
         if word_boundary > max_search_length // 2:  # Don't split too early
             return word_boundary + 1
 
@@ -171,9 +178,11 @@ class ChunkProcessor:
     def _ends_with_sentence_boundary(self, text: str) -> bool:
         """Check if text ends with a sentence boundary"""
         text = text.strip()
-        return bool(re.search(r'[.!?]+$', text))
+        return bool(re.search(r"[.!?]+$", text))
 
-    def _calculate_pause_duration(self, text: str, is_paragraph_end: bool, is_last_para: bool) -> float:
+    def _calculate_pause_duration(
+        self, text: str, is_paragraph_end: bool, is_last_para: bool
+    ) -> float:
         """Calculate pause duration after chunk"""
         if is_last_para:
             return 0.0  # No pause after last chunk
@@ -186,9 +195,14 @@ class ChunkProcessor:
 
         return 0.2  # Short pause for other chunks
 
-    def process_chunks_to_audio(self, chunks: list[TextChunk],
-                               synthesize_func, voice: str, speed: float = 1.0,
-                               **synthesis_kwargs) -> AudioSegment:
+    def process_chunks_to_audio(
+        self,
+        chunks: list[TextChunk],
+        synthesize_func,
+        voice: str,
+        speed: float = 1.0,
+        **synthesis_kwargs,
+    ) -> AudioSegment:
         """Process text chunks and combine into single audio"""
         logger.debug(f"Processing {len(chunks)} chunks to audio")
 
@@ -219,13 +233,16 @@ class ChunkProcessor:
         if len(audio_segments) == 1:
             combined_audio = audio_segments[0]
         else:
-            combined_audio = self.audio_processor.apply_crossfade(audio_segments, fade_duration=0.05)
+            combined_audio = self.audio_processor.apply_crossfade(
+                audio_segments, fade_duration=0.05
+            )
 
         logger.debug(f"Combined audio duration: {combined_audio.duration:.2f}s")
         return combined_audio
 
-    def estimate_processing_time(self, chunks: list[TextChunk],
-                                base_time_per_char: float = 0.01) -> float:
+    def estimate_processing_time(
+        self, chunks: list[TextChunk], base_time_per_char: float = 0.01
+    ) -> float:
         """Estimate total processing time for chunks"""
         total_chars = sum(len(chunk.text) for chunk in chunks)
         total_pauses = sum(chunk.pause_after for chunk in chunks)
@@ -249,15 +266,15 @@ class ChunkProcessor:
         paragraph_boundaries = sum(1 for chunk in chunks if chunk.is_paragraph_boundary)
 
         return {
-            'total_chunks': len(chunks),
-            'total_characters': sum(chunk_lengths),
-            'average_chunk_length': sum(chunk_lengths) / len(chunks),
-            'min_chunk_length': min(chunk_lengths),
-            'max_chunk_length': max(chunk_lengths),
-            'total_pause_duration': total_pauses,
-            'sentence_boundaries': sentence_boundaries,
-            'paragraph_boundaries': paragraph_boundaries,
-            'estimated_audio_duration': self._estimate_audio_duration(chunks)
+            "total_chunks": len(chunks),
+            "total_characters": sum(chunk_lengths),
+            "average_chunk_length": sum(chunk_lengths) / len(chunks),
+            "min_chunk_length": min(chunk_lengths),
+            "max_chunk_length": max(chunk_lengths),
+            "total_pause_duration": total_pauses,
+            "sentence_boundaries": sentence_boundaries,
+            "paragraph_boundaries": paragraph_boundaries,
+            "estimated_audio_duration": self._estimate_audio_duration(chunks),
         }
 
     def _estimate_audio_duration(self, chunks: list[TextChunk]) -> float:
@@ -290,7 +307,7 @@ class ChunkProcessor:
                 total_chunks=chunk.total_chunks,
                 is_sentence_boundary=chunk.is_sentence_boundary,
                 is_paragraph_boundary=chunk.is_paragraph_boundary,
-                pause_after=chunk.pause_after
+                pause_after=chunk.pause_after,
             )
 
             optimized_chunks.append(optimized_chunk)
@@ -300,15 +317,15 @@ class ChunkProcessor:
     def _optimize_chunk_text(self, text: str) -> str:
         """Optimize individual chunk text"""
         # Remove excessive whitespace
-        text = re.sub(r'\s+', ' ', text)
+        text = re.sub(r"\s+", " ", text)
 
         # Ensure proper spacing after punctuation
-        text = re.sub(r'([.!?])([A-Z])', r'\1 \2', text)
+        text = re.sub(r"([.!?])([A-Z])", r"\1 \2", text)
 
         # Clean up quotes and parentheses
-        text = re.sub(r'\s+([,.!?;:])', r'\1', text)
-        text = re.sub(r'([(\["])\s+', r'\1', text)
-        text = re.sub(r'\s+([)\]"])', r'\1', text)
+        text = re.sub(r"\s+([,.!?;:])", r"\1", text)
+        text = re.sub(r'([(\["])\s+', r"\1", text)
+        text = re.sub(r'\s+([)\]"])', r"\1", text)
 
         return text.strip()
 
@@ -339,8 +356,9 @@ class ChunkProcessor:
 
         return issues
 
-    def merge_small_chunks(self, chunks: list[TextChunk],
-                          min_chunk_length: int = 50) -> list[TextChunk]:
+    def merge_small_chunks(
+        self, chunks: list[TextChunk], min_chunk_length: int = 50
+    ) -> list[TextChunk]:
         """Merge chunks that are too small"""
         if not chunks:
             return chunks
@@ -365,7 +383,7 @@ class ChunkProcessor:
                         chunk_index=len(merged_chunks),
                         total_chunks=0,  # Will be updated later
                         is_sentence_boundary=self._ends_with_sentence_boundary(current_chunk_text),
-                        is_paragraph_boundary=chunk.is_paragraph_boundary
+                        is_paragraph_boundary=chunk.is_paragraph_boundary,
                     )
                     merged_chunks.append(merged_chunk)
 
@@ -379,7 +397,7 @@ class ChunkProcessor:
                 chunk_index=len(merged_chunks),
                 total_chunks=0,
                 is_sentence_boundary=self._ends_with_sentence_boundary(current_chunk_text),
-                is_paragraph_boundary=True
+                is_paragraph_boundary=True,
             )
             merged_chunks.append(merged_chunk)
 

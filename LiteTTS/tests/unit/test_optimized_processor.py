@@ -43,4 +43,4 @@ class TestOptimizedAudioProcessor:
     def test_processing_stats_initialized(self, processor):
         """Test processing stats are initialized"""
         assert processor.processing_stats is not None
-        assert 'total_requests' in processor.processing_stats
+        assert "total_requests" in processor.processing_stats

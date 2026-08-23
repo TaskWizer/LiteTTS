@@ -13,6 +13,7 @@ from fastapi import Request
 
 logger = logging.getLogger(__name__)
 
+
 class DebugMiddleware:
     """Enhanced debugging middleware for OpenWebUI integration"""
 
@@ -56,7 +57,7 @@ class DebugMiddleware:
         if is_openwebui:
             logger.debug("   📋 Headers:")
             for name, value in request.headers.items():
-                if name.lower() not in ['authorization', 'cookie']:  # Skip sensitive headers
+                if name.lower() not in ["authorization", "cookie"]:  # Skip sensitive headers
                     logger.debug(f"      {name}: {value}")
 
         # Capture request body for POST requests
@@ -76,7 +77,7 @@ class DebugMiddleware:
                 return {
                     "type": "http.request",
                     "body": json.dumps(request_body).encode(),
-                    "more_body": False
+                    "more_body": False,
                 }
             else:
                 return await receive()
@@ -126,28 +127,34 @@ class DebugMiddleware:
                 logger.info(f"   📏 Response Size: {len(response_body)} bytes")
 
                 # Store OpenWebUI request for analysis
-                self.openwebui_requests.append({
-                    "request_id": request_id,
-                    "timestamp": start_time,
-                    "duration": duration,
-                    "method": method,
-                    "url": url,
-                    "client_ip": client_ip,
-                    "user_agent": user_agent,
-                    "request_body": request_body,
-                    "response_status": response_status,
-                    "response_size": len(response_body),
-                    "response_headers": response_headers
-                })
+                self.openwebui_requests.append(
+                    {
+                        "request_id": request_id,
+                        "timestamp": start_time,
+                        "duration": duration,
+                        "method": method,
+                        "url": url,
+                        "client_ip": client_ip,
+                        "user_agent": user_agent,
+                        "request_body": request_body,
+                        "response_status": response_status,
+                        "response_size": len(response_body),
+                        "response_headers": response_headers,
+                    }
+                )
 
                 # Keep only last 50 OpenWebUI requests
                 if len(self.openwebui_requests) > 50:
                     self.openwebui_requests = self.openwebui_requests[-50:]
 
                 # Check for potential issues
-                self._analyze_openwebui_request(request_id, response_status, len(response_body), duration)
+                self._analyze_openwebui_request(
+                    request_id, response_status, len(response_body), duration
+                )
             else:
-                logger.debug(f"📝 [REQ-{request_id}] Request COMPLETE: {response_status} in {duration:.3f}s")
+                logger.debug(
+                    f"📝 [REQ-{request_id}] Request COMPLETE: {response_status} in {duration:.3f}s"
+                )
 
         except Exception as e:
             duration = time.time() - start_time
@@ -160,33 +167,25 @@ class DebugMiddleware:
         user_agent_lower = user_agent.lower()
 
         # Check for OpenWebUI user agents
-        openwebui_indicators = [
-            'openwebui',
-            'open-webui',
-            'open_webui',
-            'webui'
-        ]
+        openwebui_indicators = ["openwebui", "open-webui", "open_webui", "webui"]
 
         for indicator in openwebui_indicators:
             if indicator in user_agent_lower:
                 return True
 
         # Check for mobile browsers that might be OpenWebUI
-        mobile_indicators = [
-            'mobile',
-            'iphone',
-            'android',
-            'ipad'
-        ]
+        mobile_indicators = ["mobile", "iphone", "android", "ipad"]
 
         # If it's a mobile browser accessing TTS endpoints, likely OpenWebUI
         if any(indicator in user_agent_lower for indicator in mobile_indicators):
-            if '/audio/' in url:
+            if "/audio/" in url:
                 return True
 
         return False
 
-    def _analyze_openwebui_request(self, request_id: int, status: int, response_size: int, duration: float):
+    def _analyze_openwebui_request(
+        self, request_id: int, status: int, response_size: int, duration: float
+    ):
         """Analyze OpenWebUI request for potential issues"""
         issues = []
 
@@ -204,7 +203,9 @@ class DebugMiddleware:
 
         # Check for very fast responses (might indicate cached/error)
         if duration < 0.1 and response_size > 10000:
-            issues.append(f"Suspiciously fast large response: {duration:.3f}s for {response_size} bytes")
+            issues.append(
+                f"Suspiciously fast large response: {duration:.3f}s for {response_size} bytes"
+            )
 
         if issues:
             logger.warning(f"🚨 [REQ-{request_id}] OpenWebUI Request Issues:")
@@ -219,32 +220,39 @@ class DebugMiddleware:
             return {"message": "No OpenWebUI requests recorded"}
 
         total_requests = len(self.openwebui_requests)
-        successful_requests = sum(1 for req in self.openwebui_requests if req["response_status"] < 400)
+        successful_requests = sum(
+            1 for req in self.openwebui_requests if req["response_status"] < 400
+        )
         failed_requests = total_requests - successful_requests
 
         durations = [req["duration"] for req in self.openwebui_requests]
         avg_duration = sum(durations) / len(durations)
 
-        response_sizes = [req["response_size"] for req in self.openwebui_requests if req["response_status"] < 400]
+        response_sizes = [
+            req["response_size"] for req in self.openwebui_requests if req["response_status"] < 400
+        ]
         avg_response_size = sum(response_sizes) / len(response_sizes) if response_sizes else 0
 
         return {
             "total_requests": total_requests,
             "successful_requests": successful_requests,
             "failed_requests": failed_requests,
-            "success_rate": f"{(successful_requests/total_requests)*100:.1f}%",
+            "success_rate": f"{(successful_requests / total_requests) * 100:.1f}%",
             "average_duration": f"{avg_duration:.3f}s",
             "average_response_size": f"{avg_response_size:.0f} bytes",
-            "recent_requests": self.openwebui_requests[-5:]  # Last 5 requests
+            "recent_requests": self.openwebui_requests[-5:],  # Last 5 requests
         }
+
 
 # Global debug middleware instance
 _debug_middleware = None
+
 
 def get_debug_middleware():
     """Get global debug middleware instance"""
     global _debug_middleware
     return _debug_middleware
+
 
 def set_debug_middleware(middleware):
     """Set global debug middleware instance"""

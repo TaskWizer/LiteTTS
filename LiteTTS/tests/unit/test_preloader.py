@@ -21,9 +21,7 @@ class TestCacheWarmingConfig:
     def test_creation_custom(self):
         """Test creating config with custom values"""
         config = CacheWarmingConfig(
-            primary_voices=["am_puck"],
-            instant_words=["Hello", "Goodbye"],
-            warm_on_startup=False
+            primary_voices=["am_puck"], instant_words=["Hello", "Goodbye"], warm_on_startup=False
         )
         assert config.primary_voices == ["am_puck"]
         assert config.warm_on_startup is False
@@ -34,11 +32,7 @@ class TestWarmingTask:
 
     def test_creation(self):
         """Test creating warming task"""
-        task = WarmingTask(
-            text="Hello world",
-            voice="af_heart",
-            priority=1
-        )
+        task = WarmingTask(text="Hello world", voice="af_heart", priority=1)
         assert task.text == "Hello world"
         assert task.voice == "af_heart"
         assert task.priority == 1

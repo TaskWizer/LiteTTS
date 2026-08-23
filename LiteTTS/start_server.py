@@ -15,11 +15,9 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 # Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 def check_and_run_hardware_optimization():
     """Check if hardware optimization is needed and run it"""
@@ -33,7 +31,8 @@ def check_and_run_hardware_optimization():
     if override_path.exists():
         try:
             import json
-            with open(override_path, 'r') as f:
+
+            with open(override_path, "r") as f:
                 config = json.load(f)
 
             # Check if this is an auto-generated config
@@ -50,6 +49,7 @@ def check_and_run_hardware_optimization():
         logger.info("🔧 No hardware optimization found, running automatic optimization...")
         try:
             from LiteTTS.hardware_optimizer import run_hardware_optimization
+
             success = run_hardware_optimization(force=False)
             if success:
                 logger.info("✅ Hardware optimization completed successfully")
@@ -59,46 +59,30 @@ def check_and_run_hardware_optimization():
             logger.warning(f"⚠️  Hardware optimization failed: {e}")
             logger.info("ℹ️  Continuing with default settings")
 
+
 def main():
     """Start the Kokoro ONNX TTS API server with proper configuration"""
     parser = argparse.ArgumentParser(
         description="Start Kokoro ONNX TTS API server",
-        formatter_class=argparse.RawDescriptionHelpFormatter
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
-    parser.add_argument(
-        "--host",
-        type=str,
-        default=None,
-        help="Host to bind to (overrides config)"
-    )
+    parser.add_argument("--host", type=str, default=None, help="Host to bind to (overrides config)")
+
+    parser.add_argument("--port", type=int, default=None, help="Port to bind to (overrides config)")
 
     parser.add_argument(
-        "--port",
-        type=int,
-        default=None,
-        help="Port to bind to (overrides config)"
+        "--workers", type=int, default=1, help="Number of worker processes (default: 1)"
     )
 
-    parser.add_argument(
-        "--workers",
-        type=int,
-        default=1,
-        help="Number of worker processes (default: 1)"
-    )
-
-    parser.add_argument(
-        "--reload",
-        action="store_true",
-        help="Enable auto-reload for development"
-    )
+    parser.add_argument("--reload", action="store_true", help="Enable auto-reload for development")
 
     parser.add_argument(
         "--log-level",
         type=str,
         default="info",
         choices=["debug", "info", "warning", "error"],
-        help="Log level (default: info)"
+        help="Log level (default: info)",
     )
 
     args = parser.parse_args()
@@ -122,15 +106,17 @@ def main():
         # Check base config
         if Path("config.json").exists():
             config_sources.append("config.json")
-            with open("config.json", 'r') as f:
+            with open("config.json", "r") as f:
                 base_config = json.load(f)
-            logger.info(f"   📄 Base config: port={base_config.get('server', {}).get('port', 'unknown')}")
+            logger.info(
+                f"   📄 Base config: port={base_config.get('server', {}).get('port', 'unknown')}"
+            )
 
         # Check override config
         override_path = Path("override.json")
         if override_path.exists():
             try:
-                with open(override_path, 'r') as f:
+                with open(override_path, "r") as f:
                     override_data = json.load(f)
                 config_sources.append("override.json")
                 if "server" in override_data and "port" in override_data["server"]:
@@ -197,14 +183,16 @@ def main():
             log_level=args.log_level,
             access_log=not args.reload,  # Disable access log in dev mode
             server_header=False,  # Disable server header for security
-            date_header=False  # Disable date header for performance
+            date_header=False,  # Disable date header for performance
         )
 
     except Exception as e:
         logger.error(f"Failed to start server: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

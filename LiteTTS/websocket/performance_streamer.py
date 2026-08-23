@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class PerformanceMetrics:
     """Performance metrics snapshot"""
+
     timestamp: float
     rtf: float
     memory_usage_mb: float
@@ -40,6 +41,7 @@ class PerformanceMetrics:
 @dataclass
 class SystemStatus:
     """System status information"""
+
     timestamp: float
     status: str  # "healthy", "warning", "error"
     server_uptime: float
@@ -57,18 +59,20 @@ class SystemStatus:
 class PerformanceStreamer:
     """
     Real-time performance metrics streamer for WebSocket clients.
-    
+
     Collects system and application performance metrics and streams
     them to connected dashboard clients via WebSocket.
     """
 
-    def __init__(self,
-                 websocket_manager: WebSocketManager,
-                 update_interval: float = 1.0,
-                 history_size: int = 300):
+    def __init__(
+        self,
+        websocket_manager: WebSocketManager,
+        update_interval: float = 1.0,
+        history_size: int = 300,
+    ):
         """
         Initialize PerformanceStreamer.
-        
+
         Args:
             websocket_manager: WebSocket manager instance
             update_interval: Metrics update interval in seconds
@@ -95,7 +99,7 @@ class PerformanceStreamer:
             "queue_size": 0,
             "voices_loaded": 0,
             "error_rate": 0.0,
-            "last_error": None
+            "last_error": None,
         }
 
         # System info
@@ -143,7 +147,7 @@ class PerformanceStreamer:
     def update_app_metrics(self, **metrics):
         """
         Update application-specific metrics.
-        
+
         Args:
             **metrics: Metric name-value pairs to update
         """
@@ -179,9 +183,12 @@ class PerformanceStreamer:
             # Simple error rate calculation with safe division
             if self.app_metrics["total_requests"] > 0:
                 from LiteTTS.utils.json_sanitizer import safe_division
-                error_count = getattr(self, '_error_count', 0) + 1
+
+                error_count = getattr(self, "_error_count", 0) + 1
                 self._error_count = error_count
-                self.app_metrics["error_rate"] = safe_division(error_count, self.app_metrics["total_requests"], 0.0)
+                self.app_metrics["error_rate"] = safe_division(
+                    error_count, self.app_metrics["total_requests"], 0.0
+                )
 
     def _collect_system_metrics(self) -> PerformanceMetrics:
         """Collect current system performance metrics."""
@@ -219,7 +226,7 @@ class PerformanceStreamer:
             queue_size=app_metrics_copy["queue_size"],
             uptime_seconds=current_time - self.start_time,
             voices_loaded=app_metrics_copy["voices_loaded"],
-            system_load=system_load
+            system_load=system_load,
         )
 
         return metrics
@@ -235,7 +242,7 @@ class PerformanceStreamer:
 
         # Disk usage
         try:
-            disk = psutil.disk_usage('/')
+            disk = psutil.disk_usage("/")
             disk_usage_percent = (disk.used / disk.total) * 100
         except:
             disk_usage_percent = 0.0
@@ -258,6 +265,7 @@ class PerformanceStreamer:
         gpu_memory_mb = None
         try:
             import GPUtil
+
             gpus = GPUtil.getGPUs()
             if gpus:
                 gpu_available = True
@@ -292,7 +300,7 @@ class PerformanceStreamer:
             gpu_memory_mb=gpu_memory_mb,
             active_connections=active_connections,
             error_rate=error_rate,
-            last_error=last_error
+            last_error=last_error,
         )
 
         return status_info
@@ -314,13 +322,11 @@ class PerformanceStreamer:
                 performance_message = WebSocketMessage(
                     type=MessageType.PERFORMANCE_UPDATE,
                     data=asdict(metrics),
-                    timestamp=metrics.timestamp
+                    timestamp=metrics.timestamp,
                 )
 
                 status_message = WebSocketMessage(
-                    type=MessageType.SYSTEM_STATUS,
-                    data=asdict(status),
-                    timestamp=status.timestamp
+                    type=MessageType.SYSTEM_STATUS, data=asdict(status), timestamp=status.timestamp
                 )
 
                 # Broadcast to dashboard clients
@@ -347,10 +353,10 @@ class PerformanceStreamer:
     def get_metrics_history(self, limit: int | None = None) -> list[PerformanceMetrics]:
         """
         Get historical performance metrics.
-        
+
         Args:
             limit: Maximum number of metrics to return
-            
+
         Returns:
             List of PerformanceMetrics in chronological order
         """
@@ -362,29 +368,32 @@ class PerformanceStreamer:
     def get_dashboard_data(self) -> dict[str, Any]:
         """
         Get comprehensive dashboard data.
-        
+
         Returns:
             Dictionary with current metrics, status, and recent history
         """
         return {
             "current_metrics": asdict(self.current_metrics) if self.current_metrics else None,
             "current_status": asdict(self.current_status) if self.current_status else None,
-            "recent_history": [asdict(m) for m in self.get_metrics_history(60)],  # Last 60 data points
+            "recent_history": [
+                asdict(m) for m in self.get_metrics_history(60)
+            ],  # Last 60 data points
             "websocket_stats": self.websocket_manager.get_stats(),
             "update_interval": self.update_interval,
-            "history_size": self.history_size
+            "history_size": self.history_size,
         }
 
 
-def create_performance_streamer(websocket_manager: WebSocketManager,
-                              update_interval: float = 1.0) -> PerformanceStreamer:
+def create_performance_streamer(
+    websocket_manager: WebSocketManager, update_interval: float = 1.0
+) -> PerformanceStreamer:
     """
     Factory function to create PerformanceStreamer instance.
-    
+
     Args:
         websocket_manager: WebSocket manager instance
         update_interval: Metrics update interval in seconds
-        
+
     Returns:
         Configured PerformanceStreamer instance
     """

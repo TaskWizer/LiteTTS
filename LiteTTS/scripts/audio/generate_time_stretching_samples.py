@@ -15,19 +15,18 @@ from typing import Any
 import numpy as np
 
 # Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 try:
     import librosa
     import soundfile as sf
+
     AUDIO_LIBS_AVAILABLE = True
 except ImportError:
     AUDIO_LIBS_AVAILABLE = False
     logger.warning("Audio libraries not available - will generate synthetic samples")
+
 
 class TimeStretchingSampleGenerator:
     """Generate time-stretching test samples"""
@@ -64,10 +63,10 @@ class TimeStretchingSampleGenerator:
 
         # Generate speech-like signal
         signal = (
-            0.4 * np.sin(2 * np.pi * f1 * t) +
-            0.3 * np.sin(2 * np.pi * f2 * t) +
-            0.2 * np.sin(2 * np.pi * f3 * t) +
-            0.1 * np.random.normal(0, 0.1, len(t))  # Add some noise
+            0.4 * np.sin(2 * np.pi * f1 * t)
+            + 0.3 * np.sin(2 * np.pi * f2 * t)
+            + 0.2 * np.sin(2 * np.pi * f3 * t)
+            + 0.1 * np.random.normal(0, 0.1, len(t))  # Add some noise
         )
 
         # Apply amplitude envelope (simulates speech rhythm)
@@ -79,7 +78,9 @@ class TimeStretchingSampleGenerator:
 
         return signal.astype(np.float32)
 
-    def apply_time_stretching(self, audio: np.ndarray, stretch_ratio: float, method: str = "librosa") -> np.ndarray:
+    def apply_time_stretching(
+        self, audio: np.ndarray, stretch_ratio: float, method: str = "librosa"
+    ) -> np.ndarray:
         """Apply time-stretching to audio"""
         if AUDIO_LIBS_AVAILABLE and method == "librosa":
             # Use librosa for high-quality time-stretching
@@ -142,20 +143,24 @@ class TimeStretchingSampleGenerator:
         rtf_stretched = total_time / corrected_duration
 
         metrics = {
-            'rate_percent': rate,
-            'speed_multiplier': speed_multiplier,
-            'original_duration': original_duration,
-            'fast_duration': fast_duration,
-            'corrected_duration': corrected_duration,
-            'generation_time': generation_time,
-            'stretch_time': stretch_time,
-            'total_time': total_time,
-            'rtf_original': rtf_original,
-            'rtf_stretched': rtf_stretched,
-            'improvement_percent': ((rtf_original - rtf_stretched) / rtf_original * 100) if rtf_original > 0 else 0
+            "rate_percent": rate,
+            "speed_multiplier": speed_multiplier,
+            "original_duration": original_duration,
+            "fast_duration": fast_duration,
+            "corrected_duration": corrected_duration,
+            "generation_time": generation_time,
+            "stretch_time": stretch_time,
+            "total_time": total_time,
+            "rtf_original": rtf_original,
+            "rtf_stretched": rtf_stretched,
+            "improvement_percent": ((rtf_original - rtf_stretched) / rtf_original * 100)
+            if rtf_original > 0
+            else 0,
         }
 
-        logger.info(f"Rate {rate}%: RTF {rtf_original:.3f} → {rtf_stretched:.3f} ({metrics['improvement_percent']:.1f}% improvement)")
+        logger.info(
+            f"Rate {rate}%: RTF {rtf_original:.3f} → {rtf_stretched:.3f} ({metrics['improvement_percent']:.1f}% improvement)"
+        )
 
         return metrics
 
@@ -167,7 +172,7 @@ class TimeStretchingSampleGenerator:
         # Convert float32 to int16
         audio_int16 = (audio * 32767).astype(np.int16)
 
-        with wave.open(str(path), 'wb') as wav_file:
+        with wave.open(str(path), "wb") as wav_file:
             wav_file.setnchannels(1)  # Mono
             wav_file.setsampwidth(2)  # 16-bit
             wav_file.setframerate(sample_rate)
@@ -229,12 +234,19 @@ class TimeStretchingSampleGenerator:
         """Generate CSV benchmark report"""
         csv_path = self.output_dir / "reports" / "benchmark_results.csv"
 
-        with open(csv_path, 'w', newline='') as csvfile:
+        with open(csv_path, "w", newline="") as csvfile:
             fieldnames = [
-                'Rate_%', 'Speed_Multiplier', 'RTF_Original', 'RTF_Stretched',
-                'Generation_Time_ms', 'Stretch_Time_ms', 'Total_Time_ms',
-                'Original_Duration_s', 'Fast_Duration_s', 'Corrected_Duration_s',
-                'Improvement_%'
+                "Rate_%",
+                "Speed_Multiplier",
+                "RTF_Original",
+                "RTF_Stretched",
+                "Generation_Time_ms",
+                "Stretch_Time_ms",
+                "Total_Time_ms",
+                "Original_Duration_s",
+                "Fast_Duration_s",
+                "Corrected_Duration_s",
+                "Improvement_%",
             ]
 
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -242,19 +254,21 @@ class TimeStretchingSampleGenerator:
 
             for rate in sorted(self.results.keys()):
                 metrics = self.results[rate]
-                writer.writerow({
-                    'Rate_%': rate,
-                    'Speed_Multiplier': f"{metrics['speed_multiplier']:.2f}",
-                    'RTF_Original': f"{metrics['rtf_original']:.4f}",
-                    'RTF_Stretched': f"{metrics['rtf_stretched']:.4f}",
-                    'Generation_Time_ms': f"{metrics['generation_time'] * 1000:.1f}",
-                    'Stretch_Time_ms': f"{metrics['stretch_time'] * 1000:.1f}",
-                    'Total_Time_ms': f"{metrics['total_time'] * 1000:.1f}",
-                    'Original_Duration_s': f"{metrics['original_duration']:.2f}",
-                    'Fast_Duration_s': f"{metrics['fast_duration']:.2f}",
-                    'Corrected_Duration_s': f"{metrics['corrected_duration']:.2f}",
-                    'Improvement_%': f"{metrics['improvement_percent']:.1f}"
-                })
+                writer.writerow(
+                    {
+                        "Rate_%": rate,
+                        "Speed_Multiplier": f"{metrics['speed_multiplier']:.2f}",
+                        "RTF_Original": f"{metrics['rtf_original']:.4f}",
+                        "RTF_Stretched": f"{metrics['rtf_stretched']:.4f}",
+                        "Generation_Time_ms": f"{metrics['generation_time'] * 1000:.1f}",
+                        "Stretch_Time_ms": f"{metrics['stretch_time'] * 1000:.1f}",
+                        "Total_Time_ms": f"{metrics['total_time'] * 1000:.1f}",
+                        "Original_Duration_s": f"{metrics['original_duration']:.2f}",
+                        "Fast_Duration_s": f"{metrics['fast_duration']:.2f}",
+                        "Corrected_Duration_s": f"{metrics['corrected_duration']:.2f}",
+                        "Improvement_%": f"{metrics['improvement_percent']:.1f}",
+                    }
+                )
 
         logger.info(f"CSV report saved: {csv_path}")
 
@@ -276,21 +290,27 @@ class TimeStretchingSampleGenerator:
         # Summary table
         report.append("## Performance Summary")
         report.append("")
-        report.append("| Rate % | Speed | RTF Original | RTF Stretched | Improvement % | Generation (ms) | Stretch (ms) | Total (ms) |")
-        report.append("|--------|-------|--------------|---------------|---------------|-----------------|--------------|------------|")
+        report.append(
+            "| Rate % | Speed | RTF Original | RTF Stretched | Improvement % | Generation (ms) | Stretch (ms) | Total (ms) |"
+        )
+        report.append(
+            "|--------|-------|--------------|---------------|---------------|-----------------|--------------|------------|"
+        )
 
         for rate in sorted(self.results.keys()):
             metrics = self.results[rate]
-            report.append(f"| {rate:6d} | {metrics['speed_multiplier']:5.1f}x | "
-                         f"{metrics['rtf_original']:12.3f} | {metrics['rtf_stretched']:13.3f} | "
-                         f"{metrics['improvement_percent']:13.1f} | {metrics['generation_time']*1000:15.1f} | "
-                         f"{metrics['stretch_time']*1000:12.1f} | {metrics['total_time']*1000:10.1f} |")
+            report.append(
+                f"| {rate:6d} | {metrics['speed_multiplier']:5.1f}x | "
+                f"{metrics['rtf_original']:12.3f} | {metrics['rtf_stretched']:13.3f} | "
+                f"{metrics['improvement_percent']:13.1f} | {metrics['generation_time'] * 1000:15.1f} | "
+                f"{metrics['stretch_time'] * 1000:12.1f} | {metrics['total_time'] * 1000:10.1f} |"
+            )
 
         report.append("")
 
         # Analysis
         if self.results:
-            best_rate = min(self.results.keys(), key=lambda r: self.results[r]['rtf_stretched'])
+            best_rate = min(self.results.keys(), key=lambda r: self.results[r]["rtf_stretched"])
             best_metrics = self.results[best_rate]
 
             report.append("## Analysis")
@@ -303,15 +323,21 @@ class TimeStretchingSampleGenerator:
             report.append("## Recommendations")
             report.append("")
 
-            if best_metrics['rtf_stretched'] < 0.8:
-                report.append("✅ **Recommended:** Time-stretching shows significant latency improvement")
+            if best_metrics["rtf_stretched"] < 0.8:
+                report.append(
+                    "✅ **Recommended:** Time-stretching shows significant latency improvement"
+                )
                 report.append(f"   - Use rate: {best_rate}%")
-                report.append(f"   - Expected RTF improvement: {best_metrics['rtf_original']:.3f} → {best_metrics['rtf_stretched']:.3f}")
-            elif best_metrics['rtf_stretched'] < 1.0:
+                report.append(
+                    f"   - Expected RTF improvement: {best_metrics['rtf_original']:.3f} → {best_metrics['rtf_stretched']:.3f}"
+                )
+            elif best_metrics["rtf_stretched"] < 1.0:
                 report.append("⚠️  **Marginal:** Time-stretching shows modest improvement")
                 report.append("   - Consider enabling for longer texts only")
             else:
-                report.append("❌ **Not Recommended:** Time-stretching adds overhead without benefit")
+                report.append(
+                    "❌ **Not Recommended:** Time-stretching adds overhead without benefit"
+                )
                 report.append("   - Keep feature disabled")
 
         report.append("")
@@ -321,12 +347,12 @@ class TimeStretchingSampleGenerator:
         report.append("- `original.wav` - Original synthetic audio")
 
         for rate in sorted(self.results.keys()):
-            report.append(f"- `raw_{rate}p.wav` - Audio generated at {1 + rate/100:.1f}x speed")
+            report.append(f"- `raw_{rate}p.wav` - Audio generated at {1 + rate / 100:.1f}x speed")
             report.append(f"- `corrected_{rate}p.wav` - Time-stretched back to normal speed")
 
         # Save report
         report_path = self.output_dir / "reports" / "benchmark_report.md"
-        with open(report_path, 'w') as f:
+        with open(report_path, "w") as f:
             f.write("\n".join(report))
 
         logger.info(f"Markdown report saved: {report_path}")
@@ -339,14 +365,14 @@ class TimeStretchingSampleGenerator:
                 "duration_seconds": self.duration,
                 "sample_rate": self.sample_rate,
                 "test_rates": self.test_rates,
-                "generated_at": time.strftime('%Y-%m-%d %H:%M:%S'),
-                "audio_libraries_available": AUDIO_LIBS_AVAILABLE
+                "generated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+                "audio_libraries_available": AUDIO_LIBS_AVAILABLE,
             },
-            "results": self.results
+            "results": self.results,
         }
 
         json_path = self.output_dir / "reports" / "benchmark_results.json"
-        with open(json_path, 'w') as f:
+        with open(json_path, "w") as f:
             json.dump(json_data, f, indent=2)
 
         logger.info(f"JSON report saved: {json_path}")
@@ -357,14 +383,16 @@ class TimeStretchingSampleGenerator:
             print("❌ No test results available")
             return
 
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("🎯 TIME-STRETCHING TEST SUMMARY")
-        print("="*60)
+        print("=" * 60)
 
-        print(f"\n📊 Tested {len(self.results)} rates: {', '.join(map(str, sorted(self.results.keys())))}%")
+        print(
+            f"\n📊 Tested {len(self.results)} rates: {', '.join(map(str, sorted(self.results.keys())))}%"
+        )
 
         # Find best rate
-        best_rate = min(self.results.keys(), key=lambda r: self.results[r]['rtf_stretched'])
+        best_rate = min(self.results.keys(), key=lambda r: self.results[r]["rtf_stretched"])
         best_metrics = self.results[best_rate]
 
         print(f"\n🏆 Best Rate: {best_rate}%")
@@ -372,10 +400,10 @@ class TimeStretchingSampleGenerator:
         print(f"   Improvement: {best_metrics['improvement_percent']:.1f}%")
 
         # Recommendation
-        if best_metrics['rtf_stretched'] < 0.8:
+        if best_metrics["rtf_stretched"] < 0.8:
             print("\n✅ RECOMMENDATION: Enable time-stretching")
             print("   Significant latency improvement achieved")
-        elif best_metrics['rtf_stretched'] < 1.0:
+        elif best_metrics["rtf_stretched"] < 1.0:
             print("\n⚠️  RECOMMENDATION: Consider for longer texts")
             print("   Modest improvement, test with real workloads")
         else:
@@ -383,7 +411,8 @@ class TimeStretchingSampleGenerator:
             print("   No significant benefit observed")
 
         print(f"\n📁 Results saved to: {self.output_dir}")
-        print("="*60)
+        print("=" * 60)
+
 
 def main():
     """Main execution function"""
@@ -400,8 +429,10 @@ def main():
     except Exception as e:
         logger.error(f"Sample generation failed: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

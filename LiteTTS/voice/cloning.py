@@ -15,9 +15,11 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class VoiceCloneResult:
     """Result of voice cloning operation"""
+
     success: bool
     voice_name: str
     voice_file_path: str | None = None
@@ -26,9 +28,11 @@ class VoiceCloneResult:
     error_message: str | None = None
     similarity_score: float | None = None
 
+
 @dataclass
 class AudioAnalysisResult:
     """Result of audio analysis for voice cloning"""
+
     success: bool
     duration: float
     sample_rate: int
@@ -36,6 +40,7 @@ class AudioAnalysisResult:
     quality_score: float
     voice_characteristics: dict[str, Any]
     error_message: str | None = None
+
 
 class VoiceCloner:
     """Voice cloning system that extracts speaker embeddings from audio samples"""
@@ -52,7 +57,9 @@ class VoiceCloner:
         self.num_style_vectors = 510
 
         # Enhanced mode support (backward compatibility)
-        self.enhanced_mode_enabled = os.environ.get('VOICE_CLONING_ENHANCED_MODE', 'true').lower() == 'true'
+        self.enhanced_mode_enabled = (
+            os.environ.get("VOICE_CLONING_ENHANCED_MODE", "true").lower() == "true"
+        )
         if not self.enhanced_mode_enabled:
             self.max_audio_duration = 30.0  # Fallback to original limit
             logger.info("Enhanced voice cloning mode disabled, using 30s limit")
@@ -62,10 +69,10 @@ class VoiceCloner:
     def analyze_audio(self, audio_file_path: str) -> AudioAnalysisResult:
         """
         Analyze uploaded audio file for voice cloning suitability
-        
+
         Args:
             audio_file_path: Path to the audio file
-            
+
         Returns:
             AudioAnalysisResult with analysis information
         """
@@ -95,7 +102,7 @@ class VoiceCloner:
                 sample_rate=sample_rate,
                 channels=channels,
                 quality_score=quality_score,
-                voice_characteristics=voice_characteristics
+                voice_characteristics=voice_characteristics,
             )
 
         except Exception as e:
@@ -107,19 +114,20 @@ class VoiceCloner:
                 channels=0,
                 quality_score=0.0,
                 voice_characteristics={},
-                error_message=str(e)
+                error_message=str(e),
             )
 
-    def clone_voice(self, audio_file_path: str, voice_name: str,
-                   description: str = "") -> VoiceCloneResult:
+    def clone_voice(
+        self, audio_file_path: str, voice_name: str, description: str = ""
+    ) -> VoiceCloneResult:
         """
         Clone a voice from an audio sample
-        
+
         Args:
             audio_file_path: Path to the audio file
             voice_name: Name for the cloned voice
             description: Optional description
-            
+
         Returns:
             VoiceCloneResult with cloning information
         """
@@ -130,7 +138,7 @@ class VoiceCloner:
                 return VoiceCloneResult(
                     success=False,
                     voice_name=voice_name,
-                    error_message=f"Audio analysis failed: {analysis.error_message}"
+                    error_message=f"Audio analysis failed: {analysis.error_message}",
                 )
 
             # Validate audio quality
@@ -138,21 +146,21 @@ class VoiceCloner:
                 return VoiceCloneResult(
                     success=False,
                     voice_name=voice_name,
-                    error_message=f"Audio too short: {analysis.duration:.1f}s (minimum: {self.min_audio_duration}s)"
+                    error_message=f"Audio too short: {analysis.duration:.1f}s (minimum: {self.min_audio_duration}s)",
                 )
 
             if analysis.duration > self.max_audio_duration:
                 return VoiceCloneResult(
                     success=False,
                     voice_name=voice_name,
-                    error_message=f"Audio too long: {analysis.duration:.1f}s (maximum: {self.max_audio_duration}s)"
+                    error_message=f"Audio too long: {analysis.duration:.1f}s (maximum: {self.max_audio_duration}s)",
                 )
 
             if analysis.quality_score < 0.5:
                 return VoiceCloneResult(
                     success=False,
                     voice_name=voice_name,
-                    error_message=f"Audio quality too low: {analysis.quality_score:.2f} (minimum: 0.5)"
+                    error_message=f"Audio quality too low: {analysis.quality_score:.2f} (minimum: 0.5)",
                 )
 
             # Extract voice embedding
@@ -161,7 +169,7 @@ class VoiceCloner:
                 return VoiceCloneResult(
                     success=False,
                     voice_name=voice_name,
-                    error_message="Failed to extract voice embedding"
+                    error_message="Failed to extract voice embedding",
                 )
 
             # Generate BIN file
@@ -170,22 +178,22 @@ class VoiceCloner:
                 return VoiceCloneResult(
                     success=False,
                     voice_name=voice_name,
-                    error_message="Failed to generate BIN voice file"
+                    error_message="Failed to generate BIN voice file",
                 )
 
             # Create metadata
             metadata = {
-                'voice_name': voice_name,
-                'description': description,
-                'created_at': datetime.now().isoformat(),
-                'source_audio': {
-                    'duration': analysis.duration,
-                    'sample_rate': analysis.sample_rate,
-                    'quality_score': analysis.quality_score,
-                    'characteristics': analysis.voice_characteristics
+                "voice_name": voice_name,
+                "description": description,
+                "created_at": datetime.now().isoformat(),
+                "source_audio": {
+                    "duration": analysis.duration,
+                    "sample_rate": analysis.sample_rate,
+                    "quality_score": analysis.quality_score,
+                    "characteristics": analysis.voice_characteristics,
                 },
-                'embedding_shape': embedding_data.shape,
-                'cloning_method': 'simple_speaker_embedding'
+                "embedding_shape": embedding_data.shape,
+                "cloning_method": "simple_speaker_embedding",
             }
 
             # Calculate similarity score (placeholder for now)
@@ -197,27 +205,23 @@ class VoiceCloner:
                 voice_file_path=voice_file_path,
                 embedding_data=embedding_data,
                 metadata=metadata,
-                similarity_score=similarity_score
+                similarity_score=similarity_score,
             )
 
         except Exception as e:
             logger.error(f"Voice cloning failed: {e}")
-            return VoiceCloneResult(
-                success=False,
-                voice_name=voice_name,
-                error_message=str(e)
-            )
+            return VoiceCloneResult(success=False, voice_name=voice_name, error_message=str(e))
 
     def _assess_audio_quality(self, audio_data: np.ndarray, sample_rate: int) -> float:
         """
         Assess audio quality for voice cloning
-        
+
         Returns:
             Quality score between 0.0 and 1.0
         """
         try:
             # Signal-to-noise ratio estimation
-            signal_power = np.mean(audio_data ** 2)
+            signal_power = np.mean(audio_data**2)
             if signal_power == 0:
                 return 0.0
 
@@ -252,23 +256,24 @@ class VoiceCloner:
             logger.warning(f"Quality assessment failed: {e}")
             return 0.5  # Default moderate quality
 
-    def _analyze_voice_characteristics(self, audio_data: np.ndarray,
-                                     sample_rate: int) -> dict[str, Any]:
+    def _analyze_voice_characteristics(
+        self, audio_data: np.ndarray, sample_rate: int
+    ) -> dict[str, Any]:
         """
         Analyze voice characteristics from audio
-        
+
         Returns:
             Dictionary with voice characteristics
         """
         try:
             # Basic spectral analysis
             fft = np.fft.fft(audio_data)
-            freqs = np.fft.fftfreq(len(fft), 1/sample_rate)
+            freqs = np.fft.fftfreq(len(fft), 1 / sample_rate)
             magnitude = np.abs(fft)
 
             # Find dominant frequencies
-            positive_freqs = freqs[:len(freqs)//2]
-            positive_magnitude = magnitude[:len(magnitude)//2]
+            positive_freqs = freqs[: len(freqs) // 2]
+            positive_magnitude = magnitude[: len(magnitude) // 2]
 
             # Fundamental frequency estimation (very basic)
             peak_idx = np.argmax(positive_magnitude[1:]) + 1  # Skip DC component
@@ -276,11 +281,20 @@ class VoiceCloner:
 
             # Voice characteristics
             characteristics = {
-                'fundamental_frequency': float(fundamental_freq),
-                'spectral_centroid': float(np.sum(positive_freqs * positive_magnitude) / np.sum(positive_magnitude)),
-                'spectral_bandwidth': float(np.sqrt(np.sum(((positive_freqs - fundamental_freq) ** 2) * positive_magnitude) / np.sum(positive_magnitude))),
-                'energy': float(np.mean(audio_data ** 2)),
-                'zero_crossing_rate': float(np.sum(np.diff(np.sign(audio_data)) != 0) / len(audio_data))
+                "fundamental_frequency": float(fundamental_freq),
+                "spectral_centroid": float(
+                    np.sum(positive_freqs * positive_magnitude) / np.sum(positive_magnitude)
+                ),
+                "spectral_bandwidth": float(
+                    np.sqrt(
+                        np.sum(((positive_freqs - fundamental_freq) ** 2) * positive_magnitude)
+                        / np.sum(positive_magnitude)
+                    )
+                ),
+                "energy": float(np.mean(audio_data**2)),
+                "zero_crossing_rate": float(
+                    np.sum(np.diff(np.sign(audio_data)) != 0) / len(audio_data)
+                ),
             }
 
             return characteristics
@@ -288,20 +302,20 @@ class VoiceCloner:
         except Exception as e:
             logger.warning(f"Voice characteristics analysis failed: {e}")
             return {
-                'fundamental_frequency': 150.0,  # Default values
-                'spectral_centroid': 1000.0,
-                'spectral_bandwidth': 500.0,
-                'energy': 0.1,
-                'zero_crossing_rate': 0.1
+                "fundamental_frequency": 150.0,  # Default values
+                "spectral_centroid": 1000.0,
+                "spectral_bandwidth": 500.0,
+                "energy": 0.1,
+                "zero_crossing_rate": 0.1,
             }
 
     def _extract_voice_embedding(self, audio_file_path: str) -> np.ndarray | None:
         """
         Extract voice embedding from audio file
-        
+
         This is a simplified implementation. In a production system,
         you would use a pre-trained speaker encoder like resemblyzer.
-        
+
         Returns:
             Voice embedding array with shape (510, 256) or None if failed
         """
@@ -323,7 +337,7 @@ class VoiceCloner:
                 audio_data = np.interp(
                     np.linspace(0, len(audio_data), new_length),
                     np.arange(len(audio_data)),
-                    audio_data
+                    audio_data,
                 )
 
             # Extract features (simplified approach)
@@ -339,12 +353,12 @@ class VoiceCloner:
     def _simple_speaker_embedding(self, audio_data: np.ndarray) -> np.ndarray:
         """
         Simple speaker embedding extraction (placeholder implementation)
-        
+
         In production, replace this with a proper speaker encoder like:
         - resemblyzer
         - SpeechBrain speaker verification models
         - wav2vec2-based speaker encoders
-        
+
         Returns:
             Embedding array with shape (510, 256)
         """
@@ -366,11 +380,11 @@ class VoiceCloner:
         if len(mel_features) >= 128:
             base_embedding[:128] = mel_features[:128]
         else:
-            base_embedding[:len(mel_features)] = mel_features
+            base_embedding[: len(mel_features)] = mel_features
 
         # Add temporal features
         temporal_features = self._extract_temporal_features(audio_data)
-        base_embedding[128:128+len(temporal_features)] = temporal_features[:128]
+        base_embedding[128 : 128 + len(temporal_features)] = temporal_features[:128]
 
         # Normalize embedding
         base_embedding = base_embedding / (np.linalg.norm(base_embedding) + 1e-8)
@@ -393,7 +407,7 @@ class VoiceCloner:
         """Extract mel-scale features (simplified implementation)"""
         # Simple spectral features as placeholder for mel features
         fft = np.fft.fft(audio_data)
-        magnitude = np.abs(fft[:len(fft)//2])
+        magnitude = np.abs(fft[: len(fft) // 2])
 
         # Downsample to n_mels features
         if len(magnitude) > n_mels:
@@ -417,10 +431,10 @@ class VoiceCloner:
         hop_size = 512
 
         for i in range(0, len(audio_data) - frame_size, hop_size):
-            frame = audio_data[i:i + frame_size]
+            frame = audio_data[i : i + frame_size]
 
             # Frame energy
-            energy = np.sum(frame ** 2)
+            energy = np.sum(frame**2)
             features.append(energy)
 
             # Zero crossing rate
@@ -444,18 +458,20 @@ class VoiceCloner:
     def _generate_bin_file(self, voice_name: str, embedding_data: np.ndarray) -> str | None:
         """
         Generate BIN voice file compatible with LiteTTS
-        
+
         Args:
             voice_name: Name of the voice
             embedding_data: Voice embedding with shape (510, 256)
-            
+
         Returns:
             Path to generated BIN file or None if failed
         """
         try:
             # Ensure embedding has correct shape
             if embedding_data.shape != (self.num_style_vectors, self.embedding_dim):
-                logger.error(f"Invalid embedding shape: {embedding_data.shape}, expected: ({self.num_style_vectors}, {self.embedding_dim})")
+                logger.error(
+                    f"Invalid embedding shape: {embedding_data.shape}, expected: ({self.num_style_vectors}, {self.embedding_dim})"
+                )
                 return None
 
             # Generate file path
@@ -474,7 +490,7 @@ class VoiceCloner:
     def list_custom_voices(self) -> dict[str, dict[str, Any]]:
         """
         List all custom voices created through cloning
-        
+
         Returns:
             Dictionary of custom voice information
         """
@@ -483,10 +499,26 @@ class VoiceCloner:
         try:
             # Look for custom voice files (those not in the standard set)
             standard_voices = {
-                'af_heart', 'af_alloy', 'af_aoede', 'af_bella', 'af_jessica',
-                'af_kore', 'af_nicole', 'af_nova', 'af_river', 'af_sarah', 'af_sky',
-                'am_adam', 'am_echo', 'am_eric', 'am_fenrir', 'am_liam',
-                'am_michael', 'am_onyx', 'am_puck', 'am_santa'
+                "af_heart",
+                "af_alloy",
+                "af_aoede",
+                "af_bella",
+                "af_jessica",
+                "af_kore",
+                "af_nicole",
+                "af_nova",
+                "af_river",
+                "af_sarah",
+                "af_sky",
+                "am_adam",
+                "am_echo",
+                "am_eric",
+                "am_fenrir",
+                "am_liam",
+                "am_michael",
+                "am_onyx",
+                "am_puck",
+                "am_santa",
             }
 
             for bin_file in self.voices_dir.glob("*.bin"):
@@ -500,12 +532,12 @@ class VoiceCloner:
                 stat = bin_file.stat()
 
                 custom_voices[voice_name] = {
-                    'name': voice_name,
-                    'file_path': str(bin_file),
-                    'file_size': stat.st_size,
-                    'created_at': datetime.fromtimestamp(stat.st_ctime).isoformat(),
-                    'modified_at': datetime.fromtimestamp(stat.st_mtime).isoformat(),
-                    'is_custom': True
+                    "name": voice_name,
+                    "file_path": str(bin_file),
+                    "file_size": stat.st_size,
+                    "created_at": datetime.fromtimestamp(stat.st_ctime).isoformat(),
+                    "modified_at": datetime.fromtimestamp(stat.st_mtime).isoformat(),
+                    "is_custom": True,
                 }
 
             return custom_voices
@@ -548,8 +580,9 @@ class VoiceCloner:
         try:
             # Clear from voice discovery cache
             from .discovery import VoiceDiscovery
+
             discovery = VoiceDiscovery(str(self.voices_dir))
-            if hasattr(discovery, 'voice_cache') and voice_name in discovery.voice_cache:
+            if hasattr(discovery, "voice_cache") and voice_name in discovery.voice_cache:
                 del discovery.voice_cache[voice_name]
                 discovery._save_cache()
                 logger.info(f"Removed {voice_name} from discovery cache")
@@ -557,9 +590,9 @@ class VoiceCloner:
             # Clear from voice manager cache if available
             try:
                 # Try to get existing voice manager instance
-                if hasattr(self, '_voice_manager'):
+                if hasattr(self, "_voice_manager"):
                     voice_manager = self._voice_manager
-                    if hasattr(voice_manager, 'cache'):
+                    if hasattr(voice_manager, "cache"):
                         voice_manager.cache.evict_voice(voice_name)
                         logger.info(f"Evicted {voice_name} from voice manager cache")
             except Exception as e:
@@ -569,21 +602,30 @@ class VoiceCloner:
             try:
                 # Clear any cached audio for this voice
                 # This would require access to the audio cache instance
-                logger.debug(f"Audio cache invalidation for {voice_name} - would need cache instance")
+                logger.debug(
+                    f"Audio cache invalidation for {voice_name} - would need cache instance"
+                )
             except Exception as e:
                 logger.debug(f"Could not clear audio cache: {e}")
 
             # CRITICAL FIX: Recreate combined_voices.npz file to remove deleted voice
             try:
                 from .simple_combiner import SimplifiedVoiceCombiner
+
                 combiner = SimplifiedVoiceCombiner(str(self.voices_dir))
                 if not combiner.disabled:
-                    logger.info(f"Recreating combined_voices.npz to remove deleted voice: {voice_name}")
+                    logger.info(
+                        f"Recreating combined_voices.npz to remove deleted voice: {voice_name}"
+                    )
                     success = combiner.create_combined_file()
                     if success:
-                        logger.info(f"Successfully updated combined_voices.npz after deleting {voice_name}")
+                        logger.info(
+                            f"Successfully updated combined_voices.npz after deleting {voice_name}"
+                        )
                     else:
-                        logger.error(f"Failed to update combined_voices.npz after deleting {voice_name}")
+                        logger.error(
+                            f"Failed to update combined_voices.npz after deleting {voice_name}"
+                        )
                 else:
                     logger.info("Combined voice file usage is disabled, skipping NPZ update")
             except Exception as e:
@@ -592,6 +634,7 @@ class VoiceCloner:
             # CRITICAL FIX: Force metadata file cleanup
             try:
                 from .metadata import VoiceMetadataManager
+
                 metadata_manager = VoiceMetadataManager()
                 metadata_manager.remove_voice(voice_name)
                 logger.info(f"Force-removed {voice_name} from metadata manager")

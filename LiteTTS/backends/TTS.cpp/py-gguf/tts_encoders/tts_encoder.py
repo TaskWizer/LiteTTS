@@ -18,6 +18,7 @@ class TTSEncoder(abc.ABC):
     The purpose of this class is to standardize the tensor encoding and model configuration pattern for preparing
     a GGUF file from a pytorch TTS model.
     """
+
     def __init__(self, model_path: Path | str, architecture: str):
         """
         :param Path or str model_path: the path to save the gguf tensors and configuration.
@@ -41,8 +42,13 @@ class TTSEncoder(abc.ABC):
         for determining and assigning general model configuration to the GGUF file.
         """
 
-    def set_tensor(self, name: str, tensor: torch.Tensor | nn.Parameter | np.ndarray,
-                    dtype: any = np.float32, gguf_dtype: gguf.GGMLQuantizationType = gguf.GGMLQuantizationType.F32):
+    def set_tensor(
+        self,
+        name: str,
+        tensor: torch.Tensor | nn.Parameter | np.ndarray,
+        dtype: any = np.float32,
+        gguf_dtype: gguf.GGMLQuantizationType = gguf.GGMLQuantizationType.F32,
+    ):
         """
         Adds a torch.Tensor, torch.nn.Parameter or a NumPy array to the GGUF writer with the assigned
         named and GGUF quantization type.

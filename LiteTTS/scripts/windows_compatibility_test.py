@@ -18,7 +18,8 @@ from pathlib import Path
 from typing import Any
 
 # Add project root to path
-sys.path.insert(0, '.')
+sys.path.insert(0, ".")
+
 
 class WindowsCompatibilityTester:
     """Comprehensive Windows compatibility testing"""
@@ -35,10 +36,8 @@ class WindowsCompatibilityTester:
         """Setup logging to capture warnings and test output"""
         logging.basicConfig(
             level=logging.DEBUG,
-            format='%(asctime)s | %(levelname)-8s | %(name)-25s | %(message)s',
-            handlers=[
-                logging.StreamHandler(sys.stdout)
-            ]
+            format="%(asctime)s | %(levelname)-8s | %(name)-25s | %(message)s",
+            handlers=[logging.StreamHandler(sys.stdout)],
         )
 
         # Capture warnings
@@ -56,7 +55,7 @@ class WindowsCompatibilityTester:
             "passed": passed,
             "details": details,
             "error": error,
-            "timestamp": time.time()
+            "timestamp": time.time(),
         }
         self.test_results.append(result)
 
@@ -80,7 +79,7 @@ class WindowsCompatibilityTester:
                 "Platform Detection",
                 is_windows,
                 f"Platform: {platform.system()}, Version: {version}",
-                "" if is_windows else "Not running on Windows"
+                "" if is_windows else "Not running on Windows",
             )
             return is_windows
         except Exception as e:
@@ -96,8 +95,8 @@ class WindowsCompatibilityTester:
             has_encoding_issues = is_windows_with_encoding_issues()
 
             # Test emoji encoding
-            test_emoji = '🚀'
-            stdout_encoding = getattr(sys.stdout, 'encoding', 'unknown')
+            test_emoji = "🚀"
+            stdout_encoding = getattr(sys.stdout, "encoding", "unknown")
 
             try:
                 test_emoji.encode(stdout_encoding)
@@ -110,7 +109,7 @@ class WindowsCompatibilityTester:
                 True,  # Always pass if function works
                 f"Encoding issues detected: {has_encoding_issues}, "
                 f"Stdout encoding: {stdout_encoding}, "
-                f"Can encode emoji: {can_encode}"
+                f"Can encode emoji: {can_encode}",
             )
             return True
 
@@ -137,7 +136,7 @@ class WindowsCompatibilityTester:
             self.log_test_result(
                 "Console Configuration",
                 result and console_output_works,
-                f"Configuration result: {result}, Console output works: {console_output_works}"
+                f"Configuration result: {result}, Console output works: {console_output_works}",
             )
             return result and console_output_works
 
@@ -151,12 +150,14 @@ class WindowsCompatibilityTester:
             # Test writing and reading UTF-8 files
             test_content = "Test content with Unicode: 🚀 📋 ✅ 中文 العربية"
 
-            with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', delete=False, suffix='.txt') as f:
+            with tempfile.NamedTemporaryFile(
+                mode="w", encoding="utf-8", delete=False, suffix=".txt"
+            ) as f:
                 f.write(test_content)
                 temp_file = f.name
 
             # Test reading the file
-            with open(temp_file, 'r', encoding='utf-8') as f:
+            with open(temp_file, "r", encoding="utf-8") as f:
                 read_content = f.read()
 
             # Clean up
@@ -167,7 +168,7 @@ class WindowsCompatibilityTester:
             self.log_test_result(
                 "File Encoding Operations",
                 success,
-                f"Content match: {success}, Length: {len(read_content)}"
+                f"Content match: {success}, Length: {len(read_content)}",
             )
             return success
 
@@ -182,15 +183,17 @@ class WindowsCompatibilityTester:
             test_data = {
                 "message": "Test with Unicode: 🚀 📋 ✅",
                 "languages": ["English", "中文", "العربية", "Русский"],
-                "emoji": "🎉"
+                "emoji": "🎉",
             }
 
-            with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', delete=False, suffix='.json') as f:
+            with tempfile.NamedTemporaryFile(
+                mode="w", encoding="utf-8", delete=False, suffix=".json"
+            ) as f:
                 json.dump(test_data, f, ensure_ascii=False, indent=2)
                 temp_file = f.name
 
             # Test reading the JSON file
-            with open(temp_file, 'r', encoding='utf-8') as f:
+            with open(temp_file, "r", encoding="utf-8") as f:
                 read_data = json.load(f)
 
             # Clean up
@@ -201,7 +204,7 @@ class WindowsCompatibilityTester:
             self.log_test_result(
                 "JSON File Operations",
                 success,
-                f"Data match: {success}, Keys: {list(read_data.keys())}"
+                f"Data match: {success}, Keys: {list(read_data.keys())}",
             )
             return success
 
@@ -224,7 +227,7 @@ class WindowsCompatibilityTester:
                 pass
 
             # Check for pkg_resources warnings
-            pkg_warnings = [w for w in self.warnings_captured if 'pkg_resources' in w.lower()]
+            pkg_warnings = [w for w in self.warnings_captured if "pkg_resources" in w.lower()]
 
             success = len(pkg_warnings) == 0
 
@@ -232,7 +235,7 @@ class WindowsCompatibilityTester:
                 "Warning Suppression",
                 success,
                 f"Total warnings: {len(self.warnings_captured)}, "
-                f"pkg_resources warnings: {len(pkg_warnings)}"
+                f"pkg_resources warnings: {len(pkg_warnings)}",
             )
             return success
 
@@ -253,13 +256,11 @@ class WindowsCompatibilityTester:
             logger = logging.getLogger("test_logger")
 
             # This should not raise UnicodeEncodeError
-            logger.info(format_log_message('rocket', 'Test message with emoji'))
+            logger.info(format_log_message("rocket", "Test message with emoji"))
             logger.info("Direct emoji test: 🚀 📋 ✅")
 
             self.log_test_result(
-                "Logging System",
-                True,
-                "Logging with emojis completed without errors"
+                "Logging System", True, "Logging with emojis completed without errors"
             )
             return True
 
@@ -271,10 +272,10 @@ class WindowsCompatibilityTester:
         """Test that core LiteTTS modules can be imported"""
         try:
             modules_to_test = [
-                'LiteTTS.config',
-                'LiteTTS.utils.platform_emojis',
-                'LiteTTS.startup',
-                'LiteTTS.logging_config'
+                "LiteTTS.config",
+                "LiteTTS.utils.platform_emojis",
+                "LiteTTS.startup",
+                "LiteTTS.logging_config",
             ]
 
             imported_modules = []
@@ -293,7 +294,7 @@ class WindowsCompatibilityTester:
                 "Import System",
                 success,
                 f"Imported: {len(imported_modules)}, Failed: {len(failed_imports)}",
-                "; ".join(failed_imports) if failed_imports else ""
+                "; ".join(failed_imports) if failed_imports else "",
             )
             return success
 
@@ -317,20 +318,20 @@ class WindowsCompatibilityTester:
             self.test_json_file_operations,
             self.test_warning_suppression,
             self.test_logging_system,
-            self.test_import_system
+            self.test_import_system,
         ]
 
         for test in tests:
             try:
                 test()
             except Exception as e:
-                test_name = test.__name__.replace('test_', '').replace('_', ' ').title()
+                test_name = test.__name__.replace("test_", "").replace("_", " ").title()
                 self.log_test_result(test_name, False, "", f"Test execution failed: {e}")
             print()  # Add spacing between tests
 
         # Generate summary
         total_tests = len(self.test_results)
-        passed_tests = len([r for r in self.test_results if r['passed']])
+        passed_tests = len([r for r in self.test_results if r["passed"]])
         failed_tests = total_tests - passed_tests
 
         success = failed_tests == 0
@@ -342,7 +343,7 @@ class WindowsCompatibilityTester:
             "failed_tests": failed_tests,
             "failed_test_names": self.failed_tests,
             "warnings_captured": self.warnings_captured,
-            "test_results": self.test_results
+            "test_results": self.test_results,
         }
 
         print("=" * 60)
@@ -351,7 +352,7 @@ class WindowsCompatibilityTester:
         print(f"Total Tests: {total_tests}")
         print(f"Passed: {passed_tests}")
         print(f"Failed: {failed_tests}")
-        print(f"Success Rate: {(passed_tests/total_tests)*100:.1f}%")
+        print(f"Success Rate: {(passed_tests / total_tests) * 100:.1f}%")
         print()
 
         if success:
@@ -371,9 +372,10 @@ class WindowsCompatibilityTester:
 
         return success, summary
 
+
 def main():
     """Main test execution"""
-    if len(sys.argv) > 1 and sys.argv[1] == '--help':
+    if len(sys.argv) > 1 and sys.argv[1] == "--help":
         print(__doc__)
         return
 
@@ -384,13 +386,14 @@ def main():
     results_file = Path("test_results") / "windows_compatibility_results.json"
     results_file.parent.mkdir(exist_ok=True)
 
-    with open(results_file, 'w', encoding='utf-8') as f:
+    with open(results_file, "w", encoding="utf-8") as f:
         json.dump(summary, f, indent=2, ensure_ascii=False, default=str)
 
     print(f"\n📄 Detailed results saved to: {results_file}")
 
     # Exit with appropriate code
     sys.exit(0 if success else 1)
+
 
 if __name__ == "__main__":
     main()

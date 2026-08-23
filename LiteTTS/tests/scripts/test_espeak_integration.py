@@ -27,7 +27,7 @@ def test_question_mark_fix():
             "espeak_enhanced_processing": {
                 "enabled": True,
                 "fix_question_mark_pronunciation": True,
-                "punctuation_mode": "some"
+                "punctuation_mode": "some",
             }
         }
     }
@@ -44,10 +44,7 @@ def test_question_mark_fix():
     ]
 
     # Create processing options
-    options = ProcessingOptions(
-        mode=ProcessingMode.ENHANCED,
-        use_espeak_enhanced_symbols=True
-    )
+    options = ProcessingOptions(mode=ProcessingMode.ENHANCED, use_espeak_enhanced_symbols=True)
 
     print("📝 Testing text processing with eSpeak enhancements:")
 
@@ -58,7 +55,9 @@ def test_question_mark_fix():
             result = processor.process_text(test_text, options)
 
             print(f"   ✅ Output: '{result.processed_text}'")
-            print(f"   🔧 Changes: {', '.join(result.changes_made) if result.changes_made else 'None'}")
+            print(
+                f"   🔧 Changes: {', '.join(result.changes_made) if result.changes_made else 'None'}"
+            )
             print(f"   📊 Stages: {', '.join(result.stages_completed)}")
             print(f"   ⏱️  Time: {result.processing_time:.3f}s")
 
@@ -72,6 +71,7 @@ def test_question_mark_fix():
             print(f"   ❌ Error: {e}")
 
     return True
+
 
 def main():
     """Main test function"""
@@ -90,10 +90,12 @@ def main():
     except Exception as e:
         print(f"\n❌ Test failed with error: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
     return True
+
 
 if __name__ == "__main__":
     success = main()

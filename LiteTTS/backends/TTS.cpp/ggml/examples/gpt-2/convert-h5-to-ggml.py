@@ -37,16 +37,21 @@ def bytes_to_unicode():
     To avoid that, we want lookup tables between utf-8 bytes and unicode strings.
     And avoids mapping to whitespace/control characters the bpe code barfs on.
     """
-    bs = list(range(ord("!"), ord("~")+1))+list(range(ord("¡"), ord("¬")+1))+list(range(ord("®"), ord("ÿ")+1))
+    bs = (
+        list(range(ord("!"), ord("~") + 1))
+        + list(range(ord("¡"), ord("¬") + 1))
+        + list(range(ord("®"), ord("ÿ") + 1))
+    )
     cs = bs[:]
     n = 0
     for b in range(2**8):
         if b not in bs:
             bs.append(b)
-            cs.append(2**8+n)
+            cs.append(2**8 + n)
             n += 1
     cs = [chr(n) for n in cs]
     return dict(zip(bs, cs))
+
 
 if len(sys.argv) < 2:
     print("Usage: convert-h5-to-ggml.py dir-model [use-f32]\n")
@@ -72,24 +77,24 @@ if len(sys.argv) > 2:
     fname_out = sys.argv[1] + "/ggml-model-f32.bin"
 
 model = GPT2Model.from_pretrained(dir_model, low_cpu_mem_usage=True)
-#print (model)
+# print (model)
 
 list_vars = model.state_dict()
-#print (list_vars)
+# print (list_vars)
 
 fout = open(fname_out, "wb")
 
-fout.write(struct.pack("i", 0x67676d6c)) # magic: ggml in hex
+fout.write(struct.pack("i", 0x67676D6C))  # magic: ggml in hex
 fout.write(struct.pack("i", hparams["vocab_size"]))
 fout.write(struct.pack("i", hparams["n_positions"]))
 fout.write(struct.pack("i", hparams["n_embd"]))
 fout.write(struct.pack("i", hparams["n_head"]))
 fout.write(struct.pack("i", hparams["n_layer"]))
-#fout.write(struct.pack("i", hparams["rotary_dim"]))
+# fout.write(struct.pack("i", hparams["rotary_dim"]))
 fout.write(struct.pack("i", use_f16))
 
 byte_encoder = bytes_to_unicode()
-byte_decoder = {v:k for k, v in byte_encoder.items()}
+byte_decoder = {v: k for k, v in byte_encoder.items()}
 
 fout.write(struct.pack("i", len(encoder) + len(encoder_added)))
 
@@ -112,10 +117,9 @@ for name in list_vars.keys():
         print("  Skipping variable: " + name)
         continue
 
-    n_dims = len(data.shape);
-
+    n_dims = len(data.shape)
     # ftype == 0 -> float32, ftype == 1 -> float16
-    ftype = 0;
+    ftype = 0
     if use_f16:
         if name[-7:] == ".weight" and n_dims == 2:
             print("  Converting to float16")
@@ -180,13 +184,12 @@ for name in list_vars.keys():
     else:
         print("Unrecognized variable name. %s", name)
 
-    str = name.encode('utf-8')
+    str = name.encode("utf-8")
 
     fout.write(struct.pack("iii", n_dims, len(str), ftype))
     for i in range(n_dims):
         fout.write(struct.pack("i", data.shape[n_dims - 1 - i]))
-    fout.write(str);
-
+    fout.write(str)
     # data
     data.tofile(fout)
 

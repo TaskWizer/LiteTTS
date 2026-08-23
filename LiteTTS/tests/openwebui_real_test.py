@@ -23,7 +23,7 @@ def test_openwebui_real_scenario():
         "model": "tts-1",
         "input": "Hello, this is a test of the OpenWebUI text-to-speech integration. The system should generate complete audio without truncation.",
         "voice": "alloy",
-        "response_format": "mp3"
+        "response_format": "mp3",
     }
 
     try:
@@ -34,7 +34,7 @@ def test_openwebui_real_scenario():
             f"{base_url}/v1/audio/speech",
             json=payload,
             timeout=30,
-            stream=False  # OpenWebUI doesn't use streaming
+            stream=False,  # OpenWebUI doesn't use streaming
         )
 
         print(f"   Status Code: {response.status_code}")
@@ -49,7 +49,11 @@ def test_openwebui_real_scenario():
             print("   ✅ Audio saved to: openwebui_test_standard.mp3")
 
             # Check if audio is valid MP3
-            if response.content.startswith(b'\xff\xf3') or response.content.startswith(b'\xff\xfb') or response.content.startswith(b'ID3'):
+            if (
+                response.content.startswith(b"\xff\xf3")
+                or response.content.startswith(b"\xff\xfb")
+                or response.content.startswith(b"ID3")
+            ):
                 print("   ✅ Valid MP3 format detected")
             else:
                 print(f"   ⚠️ Invalid MP3 format - first bytes: {response.content[:10].hex()}")
@@ -68,7 +72,7 @@ def test_openwebui_real_scenario():
             f"{base_url}/v1/audio/stream",
             json=payload,
             timeout=30,
-            stream=True  # Test streaming
+            stream=True,  # Test streaming
         )
 
         print(f"   Status Code: {response.status_code}")
@@ -92,7 +96,11 @@ def test_openwebui_real_scenario():
             print("   ✅ Streaming audio saved to: openwebui_test_streaming.mp3")
 
             # Check if audio is valid MP3
-            if audio_data.startswith(b'\xff\xf3') or audio_data.startswith(b'\xff\xfb') or audio_data.startswith(b'ID3'):
+            if (
+                audio_data.startswith(b"\xff\xf3")
+                or audio_data.startswith(b"\xff\xfb")
+                or audio_data.startswith(b"ID3")
+            ):
                 print("   ✅ Valid MP3 format detected")
             else:
                 print(f"   ⚠️ Invalid MP3 format - first bytes: {audio_data[:10].hex()}")
@@ -112,11 +120,7 @@ def test_openwebui_real_scenario():
         test_payload["response_format"] = fmt
 
         try:
-            response = requests.post(
-                f"{base_url}/v1/audio/speech",
-                json=test_payload,
-                timeout=30
-            )
+            response = requests.post(f"{base_url}/v1/audio/speech", json=test_payload, timeout=30)
 
             if response.status_code == 200:
                 print(f"     ✅ {fmt}: {len(response.content)} bytes")
@@ -147,11 +151,7 @@ def test_openwebui_real_scenario():
             test_payload["speed"] = test["speed"]
 
         try:
-            response = requests.post(
-                f"{base_url}/v1/audio/speech",
-                json=test_payload,
-                timeout=30
-            )
+            response = requests.post(f"{base_url}/v1/audio/speech", json=test_payload, timeout=30)
 
             if response.status_code == 200:
                 print(f"     ✅ {len(response.content)} bytes")
@@ -184,9 +184,9 @@ def test_openwebui_real_scenario():
             # Check for common MP3 issues
             if len(mp3_data) < 1000:
                 print("     ⚠️ File is very small - possible truncation")
-            elif mp3_data[:2] == b'\xff\xf3':
+            elif mp3_data[:2] == b"\xff\xf3":
                 print("     ✅ Valid MP3 header detected")
-            elif mp3_data[:3] == b'ID3':
+            elif mp3_data[:3] == b"ID3":
                 print("     ✅ Valid MP3 with ID3 tag detected")
             else:
                 print("     ⚠️ Unexpected file format")
@@ -199,7 +199,12 @@ def test_openwebui_real_scenario():
     print("\n📊 Test Summary")
     print("=" * 30)
     print("Check the generated audio files:")
-    for filename in ["openwebui_test_standard.mp3", "openwebui_test_streaming.mp3", "openwebui_test_wav.wav", "openwebui_test_opus.opus"]:
+    for filename in [
+        "openwebui_test_standard.mp3",
+        "openwebui_test_streaming.mp3",
+        "openwebui_test_wav.wav",
+        "openwebui_test_opus.opus",
+    ]:
         if os.path.exists(filename):
             size = os.path.getsize(filename)
             print(f"  {filename}: {size} bytes")
@@ -209,6 +214,7 @@ def test_openwebui_real_scenario():
     print("2. Check if OpenWebUI is using the correct endpoint")
     print("3. Verify that OpenWebUI is not expecting streaming responses")
     print("4. Ensure proper Content-Type headers are set")
+
 
 if __name__ == "__main__":
     test_openwebui_real_scenario()

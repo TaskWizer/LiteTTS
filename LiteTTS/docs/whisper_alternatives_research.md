@@ -103,35 +103,27 @@ Snapdragon 660:
 from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor
 import torch
 
+
 class DistilWhisperProcessor:
     def __init__(self, model_id="distil-whisper/distil-small.en"):
         self.model = AutoModelForSpeechSeq2Seq.from_pretrained(
             model_id,
             torch_dtype=torch.float16,  # Use FP16 for memory efficiency
             low_cpu_mem_usage=True,
-            use_safetensors=True
+            use_safetensors=True,
         )
         self.processor = AutoProcessor.from_pretrained(model_id)
-        
+
     def transcribe(self, audio_array, sample_rate=16000):
-        inputs = self.processor(
-            audio_array, 
-            sampling_rate=sample_rate, 
-            return_tensors="pt"
-        )
-        
+        inputs = self.processor(audio_array, sampling_rate=sample_rate, return_tensors="pt")
+
         with torch.no_grad():
             predicted_ids = self.model.generate(
-                inputs["input_features"],
-                max_new_tokens=128,
-                do_sample=False
+                inputs["input_features"], max_new_tokens=128, do_sample=False
             )
-            
-        transcription = self.processor.batch_decode(
-            predicted_ids, 
-            skip_special_tokens=True
-        )[0]
-        
+
+        transcription = self.processor.batch_decode(predicted_ids, skip_special_tokens=True)[0]
+
         return transcription
 ```
 
@@ -198,24 +190,18 @@ Faster-Whisper provides significant performance improvements through:
 ```python
 from faster_whisper import WhisperModel
 
+
 class FasterWhisperProcessor:
     def __init__(self, model_size="base", compute_type="int8"):
         self.model = WhisperModel(
-            model_size, 
-            device="cpu",
-            compute_type=compute_type,
-            cpu_threads=4,
-            num_workers=1
+            model_size, device="cpu", compute_type=compute_type, cpu_threads=4, num_workers=1
         )
-        
+
     def transcribe(self, audio_path):
         segments, info = self.model.transcribe(
-            audio_path,
-            beam_size=5,
-            language="en",
-            condition_on_previous_text=False
+            audio_path, beam_size=5, language="en", condition_on_previous_text=False
         )
-        
+
         return " ".join([segment.text for segment in segments])
 ```
 
@@ -283,7 +269,7 @@ async def create_voice_extended(
     audio_files: List[UploadFile],  # Multiple files up to 120s each
     voice_name: str,
     enable_segmentation: bool = True,
-    quality_threshold: float = 0.7
+    quality_threshold: float = 0.7,
 ):
     # Process with enhanced cloning system
     pass

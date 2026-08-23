@@ -9,6 +9,7 @@ import re
 
 logger = logging.getLogger(__name__)
 
+
 class EnhancedContractionProcessor:
     """Advanced contraction processing for natural TTS pronunciation"""
 
@@ -18,20 +19,22 @@ class EnhancedContractionProcessor:
         self.problematic_contractions = self._load_problematic_contractions()
         self.phonetic_contractions = self._load_phonetic_contractions()
         self.contraction_modes = {
-            'natural': self._process_natural_mode,
-            'phonetic': self._process_phonetic_mode,
-            'expanded': self._process_expanded_mode,
-            'hybrid': self._process_hybrid_mode
+            "natural": self._process_natural_mode,
+            "phonetic": self._process_phonetic_mode,
+            "expanded": self._process_expanded_mode,
+            "hybrid": self._process_hybrid_mode,
         }
 
         # Configuration
-        self.mode = 'hybrid'  # Default to hybrid mode
+        self.mode = "hybrid"  # Default to hybrid mode
         self.preserve_natural_speech = True
 
     def _should_expand_contractions(self) -> bool:
         """Check if contractions should be expanded based on config"""
         # Check the main expand_contractions setting
-        expand_contractions = self.config.get('text_processing', {}).get('expand_contractions', False)
+        expand_contractions = self.config.get("text_processing", {}).get(
+            "expand_contractions", False
+        )
 
         # If expand_contractions is explicitly False, don't expand
         if expand_contractions is False:
@@ -82,14 +85,11 @@ class EnhancedContractionProcessor:
         return {
             # ONLY the most problematic contractions that cause severe pronunciation issues
             # These are contractions where the phonemizer consistently fails
-
             # Keep "wasn't" expansion as it was specifically reported as problematic
-            "wasn't": "was not",    # User reported: "waaasant" pronunciation
-
+            "wasn't": "was not",  # User reported: "waaasant" pronunciation
             # REMOVED: Most contractions should be preserved for natural speech
             # The original approach of expanding everything removes apostrophe sounds
             # which is worse than minor pronunciation variations
-
             # NOTE: "I'll", "won't", "can't" etc. are REMOVED from this list
             # They should be preserved with their apostrophes for natural pronunciation
             # The phonemizer should handle these correctly with the apostrophe present
@@ -121,7 +121,7 @@ class EnhancedContractionProcessor:
 
         if mode not in self.contraction_modes:
             logger.warning(f"Unknown contraction mode: {mode}, using hybrid")
-            mode = 'hybrid'
+            mode = "hybrid"
 
         logger.debug(f"Processing contractions in {mode} mode: {text[:100]}...")
 
@@ -137,9 +137,7 @@ class EnhancedContractionProcessor:
     def _normalize_apostrophes(self, text: str) -> str:
         """Normalize different apostrophe types to prevent pronunciation issues"""
         # Replace various apostrophe types with standard apostrophe
-        apostrophe_variants = [
-            "'", "'", "`", "´", "ʼ", "ʻ", "′"
-        ]
+        apostrophe_variants = ["'", "'", "`", "´", "ʼ", "ʻ", "′"]
 
         for variant in apostrophe_variants:
             text = text.replace(variant, "'")
@@ -159,7 +157,7 @@ class EnhancedContractionProcessor:
     def _process_phonetic_mode(self, text: str) -> str:
         """Use phonetic representations for better pronunciation"""
         for contraction, phonetic in self.phonetic_contractions.items():
-            pattern = r'\b' + re.escape(contraction) + r'\b'
+            pattern = r"\b" + re.escape(contraction) + r"\b"
             text = re.sub(pattern, phonetic, text, flags=re.IGNORECASE)
         return text
 
@@ -189,7 +187,7 @@ class EnhancedContractionProcessor:
         all_expansions = {**expanded_contractions, **self.problematic_contractions}
 
         for contraction, expansion in all_expansions.items():
-            pattern = r'\b' + re.escape(contraction) + r'\b'
+            pattern = r"\b" + re.escape(contraction) + r"\b"
             text = re.sub(pattern, expansion, text, flags=re.IGNORECASE)
 
         return text
@@ -204,7 +202,7 @@ class EnhancedContractionProcessor:
 
         # Expand only the problematic contractions that cause pronunciation issues
         for contraction, expansion in self.problematic_contractions.items():
-            pattern = r'\b' + re.escape(contraction) + r'\b'
+            pattern = r"\b" + re.escape(contraction) + r"\b"
             text = re.sub(pattern, expansion, text, flags=re.IGNORECASE)
 
         # Keep natural contractions as-is (they're already normalized)
@@ -213,9 +211,9 @@ class EnhancedContractionProcessor:
     def get_contraction_info(self, text: str) -> dict[str, list[str]]:
         """Analyze contractions in text and return information"""
         info = {
-            'natural_contractions': [],
-            'problematic_contractions': [],
-            'unknown_contractions': []
+            "natural_contractions": [],
+            "problematic_contractions": [],
+            "unknown_contractions": [],
         }
 
         # Find all contractions in text
@@ -225,11 +223,11 @@ class EnhancedContractionProcessor:
         for contraction in contractions:
             contraction_lower = contraction.lower()
             if contraction_lower in self.natural_contractions:
-                info['natural_contractions'].append(contraction)
+                info["natural_contractions"].append(contraction)
             elif contraction_lower in self.problematic_contractions:
-                info['problematic_contractions'].append(contraction)
+                info["problematic_contractions"].append(contraction)
             else:
-                info['unknown_contractions'].append(contraction)
+                info["unknown_contractions"].append(contraction)
 
         return info
 
@@ -239,7 +237,9 @@ class EnhancedContractionProcessor:
             self.mode = mode
             logger.info(f"Contraction processing mode set to: {mode}")
         else:
-            logger.warning(f"Invalid mode: {mode}. Available modes: {list(self.contraction_modes.keys())}")
+            logger.warning(
+                f"Invalid mode: {mode}. Available modes: {list(self.contraction_modes.keys())}"
+            )
 
     def get_supported_modes(self) -> list[str]:
         """Get list of supported contraction processing modes"""

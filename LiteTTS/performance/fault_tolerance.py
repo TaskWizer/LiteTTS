@@ -13,10 +13,16 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+
 class CircuitBreaker:
     """Circuit breaker pattern for fault tolerance"""
 
-    def __init__(self, failure_threshold: int = 5, recovery_timeout: int = 60, expected_exception: type = Exception):
+    def __init__(
+        self,
+        failure_threshold: int = 5,
+        recovery_timeout: int = 60,
+        expected_exception: type = Exception,
+    ):
         self.failure_threshold = failure_threshold
         self.recovery_timeout = recovery_timeout
         self.expected_exception = expected_exception
@@ -50,8 +56,8 @@ class CircuitBreaker:
     def _should_attempt_reset(self) -> bool:
         """Check if enough time has passed to attempt reset"""
         return (
-            self.last_failure_time is not None and
-            time.time() - self.last_failure_time >= self.recovery_timeout
+            self.last_failure_time is not None
+            and time.time() - self.last_failure_time >= self.recovery_timeout
         )
 
     def _on_success(self):
@@ -70,6 +76,7 @@ class CircuitBreaker:
             self.state = "OPEN"
             logger.warning("⚠️ Circuit breaker OPEN (failure threshold reached)")
 
+
 class RetryManager:
     """Retry logic with exponential backoff"""
 
@@ -79,9 +86,10 @@ class RetryManager:
         base_delay: float = 1.0,
         max_delay: float = 60.0,
         backoff_factor: float = 2.0,
-        exceptions: tuple = (Exception,)
+        exceptions: tuple = (Exception,),
     ):
         """Decorator for retry with exponential backoff"""
+
         def decorator(func: Callable) -> Callable:
             @wraps(func)
             def wrapper(*args, **kwargs):
@@ -94,10 +102,12 @@ class RetryManager:
                         last_exception = e
 
                         if attempt == max_retries:
-                            logger.error(f"❌ {func.__name__} failed after {max_retries} retries: {e}")
+                            logger.error(
+                                f"❌ {func.__name__} failed after {max_retries} retries: {e}"
+                            )
                             raise e
 
-                        delay = min(base_delay * (backoff_factor ** attempt), max_delay)
+                        delay = min(base_delay * (backoff_factor**attempt), max_delay)
                         logger.warning(f"⚠️ {func.__name__} attempt {attempt + 1} failed: {e}")
                         logger.info(f"🔄 Retrying in {delay:.1f}s...")
                         time.sleep(delay)
@@ -105,7 +115,9 @@ class RetryManager:
                 raise last_exception
 
             return wrapper
+
         return decorator
+
 
 class HealthChecker:
     """Health checking system for components"""
@@ -122,7 +134,7 @@ class HealthChecker:
                 "func": check_func,
                 "interval": interval,
                 "last_check": 0,
-                "enabled": True
+                "enabled": True,
             }
             logger.info(f"🏥 Registered health check: {name}")
 
@@ -142,7 +154,7 @@ class HealthChecker:
                 self.last_results[name] = {
                     "status": result,
                     "timestamp": time.time(),
-                    "error": None
+                    "error": None,
                 }
             return result
         except Exception as e:
@@ -151,7 +163,7 @@ class HealthChecker:
                 self.last_results[name] = {
                     "status": False,
                     "timestamp": time.time(),
-                    "error": str(e)
+                    "error": str(e),
                 }
             return False
 
@@ -185,7 +197,7 @@ class HealthChecker:
         return {
             "healthy": all(results.values()),
             "checks": results,
-            "details": self.last_results.copy()
+            "details": self.last_results.copy(),
         }
 
     def enable_check(self, name: str):
@@ -199,6 +211,7 @@ class HealthChecker:
         if name in self.checks:
             self.checks[name]["enabled"] = False
             logger.info(f"⏸️ Disabled health check: {name}")
+
 
 class GracefulDegradation:
     """Graceful degradation when components fail"""
@@ -254,42 +267,51 @@ class GracefulDegradation:
         else:
             raise Exception(f"No fallback available for failed component: {component}")
 
+
 # Global instances
 health_checker = HealthChecker()
 graceful_degradation = GracefulDegradation()
+
 
 def get_health_checker():
     """Get health checker instance"""
     return health_checker
 
+
 def get_graceful_degradation():
     """Get graceful degradation instance"""
     return graceful_degradation
+
 
 # Common health checks
 def check_model_file_exists(model_path: str) -> bool:
     """Health check for model file existence"""
     return Path(model_path).exists()
 
+
 def check_voices_directory(voices_dir: str) -> bool:
     """Health check for voices directory"""
     voices_path = Path(voices_dir)
     return voices_path.exists() and any(voices_path.glob("*.bin"))
 
+
 def check_disk_space(path: str, min_gb: float = 1.0) -> bool:
     """Health check for available disk space"""
     try:
         import shutil
+
         free_bytes = shutil.disk_usage(path).free
-        free_gb = free_bytes / (1024 ** 3)
+        free_gb = free_bytes / (1024**3)
         return free_gb >= min_gb
     except Exception:
         return False
+
 
 def check_memory_usage(max_percent: float = 90.0) -> bool:
     """Health check for memory usage"""
     try:
         import psutil
+
         memory = psutil.virtual_memory()
         return memory.percent <= max_percent
     except ImportError:

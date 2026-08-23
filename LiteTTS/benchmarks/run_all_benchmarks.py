@@ -21,6 +21,7 @@ import psutil
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
+
 def run_all_benchmark_scripts():
     """Run all individual benchmark scripts"""
     benchmark_dir = Path(__file__).parent
@@ -29,7 +30,7 @@ def run_all_benchmark_scripts():
         "performance_analysis.py",
         "run_benchmark.py",
         "run_performance_regression_tests.py",
-        "accurate_performance_analysis.py"
+        "accurate_performance_analysis.py",
     ]
 
     print("🚀 Running All Benchmark Scripts")
@@ -41,12 +42,13 @@ def run_all_benchmark_scripts():
         if script_path.exists():
             print(f"\n📊 Running {script}...")
             try:
-                result = subprocess.run([sys.executable, str(script_path)],
-                                      capture_output=True, text=True, timeout=300)
+                result = subprocess.run(
+                    [sys.executable, str(script_path)], capture_output=True, text=True, timeout=300
+                )
                 results[script] = {
                     "success": result.returncode == 0,
                     "stdout": result.stdout,
-                    "stderr": result.stderr
+                    "stderr": result.stderr,
                 }
                 if result.returncode == 0:
                     print(f"✅ {script} completed successfully")
@@ -63,9 +65,11 @@ def run_all_benchmark_scripts():
 
     return results
 
+
 @dataclass
 class BenchmarkResult:
     """Individual benchmark result"""
+
     model_name: str
     model_path: str
     model_size_mb: float
@@ -95,6 +99,7 @@ class BenchmarkResult:
     # Metadata
     timestamp: str = ""
     benchmark_version: str = "1.0"
+
 
 class SystemMonitor:
     """Monitor system resources during benchmarking"""
@@ -147,6 +152,7 @@ class SystemMonitor:
             except Exception:
                 break
 
+
 class AudioQualityAnalyzer:
     """Analyze audio quality metrics"""
 
@@ -168,9 +174,9 @@ class AudioQualityAnalyzer:
             # Calculate various quality metrics
 
             # 1. Signal-to-noise ratio estimate
-            signal_power = np.mean(audio ** 2)
+            signal_power = np.mean(audio**2)
             noise_floor = np.percentile(np.abs(audio), 10)  # Estimate noise floor
-            snr = 10 * np.log10(signal_power / (noise_floor ** 2 + 1e-10))
+            snr = 10 * np.log10(signal_power / (noise_floor**2 + 1e-10))
             snr_score = min(100, max(0, (snr + 20) * 2))  # Scale to 0-100
 
             # 2. Dynamic range
@@ -180,9 +186,11 @@ class AudioQualityAnalyzer:
             # 3. Frequency content (spectral centroid)
             if len(audio) > 1024:
                 fft = np.fft.fft(audio[:1024])
-                freqs = np.fft.fftfreq(1024, 1/sample_rate)
+                freqs = np.fft.fftfreq(1024, 1 / sample_rate)
                 magnitude = np.abs(fft)
-                spectral_centroid = np.sum(freqs[:512] * magnitude[:512]) / (np.sum(magnitude[:512]) + 1e-10)
+                spectral_centroid = np.sum(freqs[:512] * magnitude[:512]) / (
+                    np.sum(magnitude[:512]) + 1e-10
+                )
                 # Good speech typically has centroid around 1000-3000 Hz
                 centroid_score = 100 - min(100, abs(spectral_centroid - 2000) / 50)
             else:
@@ -196,10 +204,7 @@ class AudioQualityAnalyzer:
 
             # Combine scores with weights
             quality_score = (
-                snr_score * 0.4 +
-                dr_score * 0.2 +
-                centroid_score * 0.2 +
-                zcr_score * 0.2
+                snr_score * 0.4 + dr_score * 0.2 + centroid_score * 0.2 + zcr_score * 0.2
             )
 
             return max(0, min(100, quality_score))
@@ -207,6 +212,7 @@ class AudioQualityAnalyzer:
         except Exception as e:
             logging.warning(f"Audio quality analysis failed: {e}")
             return 50.0  # Default score if analysis fails
+
 
 class ModelBenchmarker:
     """Comprehensive model benchmarking system"""
@@ -217,7 +223,7 @@ class ModelBenchmarker:
             "Hello, world!",
             "This is a test of the text-to-speech system.",
             "The quick brown fox jumps over the lazy dog. This sentence contains every letter of the alphabet.",
-            "In a hole in the ground there lived a hobbit. Not a nasty, dirty, wet hole filled with the ends of worms and an oozy smell, nor yet a dry, bare, sandy hole with nothing in it to sit down on or to eat."
+            "In a hole in the ground there lived a hobbit. Not a nasty, dirty, wet hole filled with the ends of worms and an oozy smell, nor yet a dry, bare, sandy hole with nothing in it to sit down on or to eat.",
         ]
         self.test_voices = ["af_heart", "am_puck"]
         self.results: list[BenchmarkResult] = []
@@ -255,8 +261,9 @@ class ModelBenchmarker:
 
         return results
 
-    def _benchmark_single_case(self, model_name: str, model_path: str,
-                              model_size_mb: float, text: str, voice: str) -> BenchmarkResult:
+    def _benchmark_single_case(
+        self, model_name: str, model_path: str, model_size_mb: float, text: str, voice: str
+    ) -> BenchmarkResult:
         """Benchmark a single test case"""
         self.logger.info(f"  📝 Testing: '{text[:30]}...' with voice '{voice}'")
 
@@ -280,7 +287,7 @@ class ModelBenchmarker:
             avg_cpu_percent=0,
             audio_quality_score=0,
             success=False,
-            timestamp=datetime.now().isoformat()
+            timestamp=datetime.now().isoformat(),
         )
 
         monitor = SystemMonitor()
@@ -294,6 +301,7 @@ class ModelBenchmarker:
 
             # Import kokoro_onnx and create model
             import kokoro_onnx
+
             model = kokoro_onnx.Kokoro(model_path, "LiteTTS/voices")
 
             load_time = (time.time() - load_start) * 1000
@@ -319,11 +327,15 @@ class ModelBenchmarker:
             result.avg_cpu_percent = avg_cpu
 
             # Analyze audio quality
-            result.audio_quality_score = AudioQualityAnalyzer.analyze_audio_quality(audio, sample_rate)
+            result.audio_quality_score = AudioQualityAnalyzer.analyze_audio_quality(
+                audio, sample_rate
+            )
 
             result.success = len(audio) > 0
 
-            self.logger.info(f"    ✅ Success: {len(audio)} samples, RTF: {result.rtf:.3f}, Quality: {result.audio_quality_score:.1f}")
+            self.logger.info(
+                f"    ✅ Success: {len(audio)} samples, RTF: {result.rtf:.3f}, Quality: {result.audio_quality_score:.1f}"
+            )
 
         except Exception as e:
             monitor.stop_monitoring()
@@ -366,8 +378,8 @@ class ModelBenchmarker:
                 "total_tests": len(all_results),
                 "models_tested": len(models),
                 "test_texts": len(self.test_texts),
-                "test_voices": len(self.test_voices)
-            }
+                "test_voices": len(self.test_voices),
+            },
         }
 
     def _generate_summary(self, results: list[BenchmarkResult], duration: float) -> dict[str, Any]:
@@ -395,7 +407,8 @@ class ModelBenchmarker:
             model_summary[model_name] = {
                 "model_size_mb": model_results[0].model_size_mb,
                 "tests_run": len(model_results),
-                "success_rate": len(model_results) / len([r for r in results if r.model_name == model_name]),
+                "success_rate": len(model_results)
+                / len([r for r in results if r.model_name == model_name]),
                 "avg_rtf": sum(rtfs) / len(rtfs),
                 "min_rtf": min(rtfs),
                 "max_rtf": max(rtfs),
@@ -404,7 +417,7 @@ class ModelBenchmarker:
                 "max_latency_ms": max(latencies),
                 "avg_quality_score": sum(qualities) / len(qualities),
                 "avg_memory_mb": sum(memories) / len(memories),
-                "load_time_ms": model_results[0].load_time_ms
+                "load_time_ms": model_results[0].load_time_ms,
             }
 
         return {
@@ -414,10 +427,17 @@ class ModelBenchmarker:
             "success_rate": len(successful_results) / len(results),
             "model_performance": model_summary,
             "best_rtf_model": min(model_summary.keys(), key=lambda k: model_summary[k]["avg_rtf"]),
-            "best_quality_model": max(model_summary.keys(), key=lambda k: model_summary[k]["avg_quality_score"]),
-            "fastest_model": min(model_summary.keys(), key=lambda k: model_summary[k]["avg_latency_ms"]),
-            "most_efficient_model": min(model_summary.keys(), key=lambda k: model_summary[k]["avg_memory_mb"])
+            "best_quality_model": max(
+                model_summary.keys(), key=lambda k: model_summary[k]["avg_quality_score"]
+            ),
+            "fastest_model": min(
+                model_summary.keys(), key=lambda k: model_summary[k]["avg_latency_ms"]
+            ),
+            "most_efficient_model": min(
+                model_summary.keys(), key=lambda k: model_summary[k]["avg_memory_mb"]
+            ),
         }
+
 
 class BenchmarkReporter:
     """Generate reports from benchmark results"""
@@ -462,11 +482,21 @@ Lower RTF values indicate better real-time performance (RTF < 1.0 = faster than 
 """
 
         # RTF analysis
-        rtf_models = [(name, stats["avg_rtf"]) for name, stats in summary["model_performance"].items()]
+        rtf_models = [
+            (name, stats["avg_rtf"]) for name, stats in summary["model_performance"].items()
+        ]
         rtf_models.sort(key=lambda x: x[1])
 
         for i, (model, rtf) in enumerate(rtf_models, 1):
-            status = "🟢 Excellent" if rtf < 0.3 else "🟡 Good" if rtf < 0.6 else "🟠 Fair" if rtf < 1.0 else "🔴 Slow"
+            status = (
+                "🟢 Excellent"
+                if rtf < 0.3
+                else "🟡 Good"
+                if rtf < 0.6
+                else "🟠 Fair"
+                if rtf < 1.0
+                else "🔴 Slow"
+            )
             report += f"{i}. **{model}**: {rtf:.3f} {status}\n"
 
         report += """
@@ -526,13 +556,13 @@ Based on the benchmark results:
 
         # Save JSON data
         json_file = output_path / f"benchmark_results_{timestamp}.json"
-        with open(json_file, 'w') as f:
+        with open(json_file, "w") as f:
             json.dump(benchmark_data, f, indent=2)
 
         # Save markdown report
         markdown_file = output_path / f"benchmark_report_{timestamp}.md"
         markdown_report = BenchmarkReporter.generate_markdown_report(benchmark_data)
-        with open(markdown_file, 'w') as f:
+        with open(markdown_file, "w") as f:
             f.write(markdown_report)
 
         # Save latest symlinks
@@ -551,15 +581,13 @@ Based on the benchmark results:
             "json_file": str(json_file),
             "markdown_file": str(markdown_file),
             "latest_json": str(latest_json),
-            "latest_markdown": str(latest_md)
+            "latest_markdown": str(latest_md),
         }
+
 
 def main():
     """Main benchmarking function"""
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s | %(levelname)s | %(message)s'
-    )
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s")
 
     benchmarker = ModelBenchmarker()
 
@@ -579,15 +607,22 @@ def main():
         # Print summary
         summary = results["summary"]
         print("\n📈 Quick Summary:")
-        print(f"   Best RTF: {summary['best_rtf_model']} ({summary['model_performance'][summary['best_rtf_model']]['avg_rtf']:.3f})")
-        print(f"   Best Quality: {summary['best_quality_model']} ({summary['model_performance'][summary['best_quality_model']]['avg_quality_score']:.1f}/100)")
-        print(f"   Fastest: {summary['fastest_model']} ({summary['model_performance'][summary['fastest_model']]['avg_latency_ms']:.0f}ms)")
+        print(
+            f"   Best RTF: {summary['best_rtf_model']} ({summary['model_performance'][summary['best_rtf_model']]['avg_rtf']:.3f})"
+        )
+        print(
+            f"   Best Quality: {summary['best_quality_model']} ({summary['model_performance'][summary['best_quality_model']]['avg_quality_score']:.1f}/100)"
+        )
+        print(
+            f"   Fastest: {summary['fastest_model']} ({summary['model_performance'][summary['fastest_model']]['avg_latency_ms']:.0f}ms)"
+        )
 
     except Exception as e:
         logging.error(f"Benchmark failed: {e}")
         return 1
 
     return 0
+
 
 def main_with_all_scripts():
     """Main function that runs all benchmark scripts plus comprehensive benchmark"""
@@ -617,6 +652,7 @@ def main_with_all_scripts():
     else:
         print("\n⚠️  Some benchmarks failed. Check output above for details.")
         return 1
+
 
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "--comprehensive-only":

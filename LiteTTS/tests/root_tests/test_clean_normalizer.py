@@ -24,33 +24,27 @@ def test_clean_normalizer():
         ("you'll see", "you will see"),
         ("I'd like that", "I would like that"),
         ("I'm here", "I am here"),
-
         # Symbols
         ("The * symbol", "The asterisk symbol"),
         ("Use & for and", "Use and for and"),
-
         # Currency
         ("$568.91", "five hundred sixty eight dollars and ninety one cents"),
         ("$5,681.52", "five thousand six hundred eighty one dollars and fifty two cents"),
         ("~$100.50", "approximately one hundred dollars and fifty cents"),
-
         # Dates (the critical ISO format issue)
         ("2023-05-12", "May twelfth, two thousand twenty three"),
         ("12/18/2013", "December eighteenth, two thousand thirteen"),
         ("05/06/19", "May sixth, two thousand nineteen"),
-
         # Abbreviations
         ("FAQ section", "F-A-Q section"),
         ("ASAP please", "A-S-A-P please"),
         ("e.g. this example", "for example this example"),
-
         # Pronunciations
         ("Asterisk pronunciation", "AS-ter-isk pronunciation"),
         ("TSLA stock", "T-S-L-A stock"),  # Corrected: spell out ticker symbols
         ("AAPL shares", "A-A-P-L shares"),  # Additional ticker test
         ("Elon Musk", "EE-lahn Musk"),
         ("hmm, let me think", "hum, let me think"),
-
         # HTML entities
         ("John&#x27;s car", "John's car"),
         ("&quot;Hello&quot;", "Hello"),
@@ -83,5 +77,6 @@ def test_clean_normalizer():
             print(f"❌ ERROR processing '{input_text}': {e}")
             print("-" * 60)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     test_clean_normalizer()

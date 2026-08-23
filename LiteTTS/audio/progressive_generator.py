@@ -18,15 +18,19 @@ from .chunking import ChunkingConfig, ChunkingStrategy, TextChunk, TextChunker
 
 logger = logging.getLogger(__name__)
 
+
 class GenerationMode(Enum):
     """Audio generation modes"""
-    STANDARD = "standard"      # Generate complete audio at once
-    CHUNKED = "chunked"        # Generate audio in chunks
-    STREAMING = "streaming"    # Stream audio as it's generated
+
+    STANDARD = "standard"  # Generate complete audio at once
+    CHUNKED = "chunked"  # Generate audio in chunks
+    STREAMING = "streaming"  # Stream audio as it's generated
+
 
 @dataclass
 class ChunkResult:
     """Result of generating audio for a single chunk"""
+
     chunk_id: int
     audio_data: bytes
     duration: float
@@ -35,9 +39,11 @@ class ChunkResult:
     is_final: bool = False
     metadata: dict[str, Any] | None = None
 
+
 @dataclass
 class ProgressiveGenerationConfig:
     """Configuration for progressive audio generation"""
+
     mode: GenerationMode = GenerationMode.CHUNKED
     chunking_config: ChunkingConfig | None = None
     max_concurrent_chunks: int = 3
@@ -46,6 +52,7 @@ class ProgressiveGenerationConfig:
     enable_prosody_continuity: bool = True
     buffer_size: int = 8192
     streaming_delay: float = 0.1  # Delay between chunk deliveries
+
 
 class ProgressiveAudioGenerator:
     """Progressive audio generation system for real-time TTS"""
@@ -68,18 +75,18 @@ class ProgressiveAudioGenerator:
         voice: str,
         response_format: str = "mp3",
         speed: float = 1.0,
-        generation_id: str | None = None
+        generation_id: str | None = None,
     ) -> AsyncIterator[ChunkResult]:
         """
         Generate audio progressively in chunks
-        
+
         Args:
             text: Input text to synthesize
             voice: Voice to use for synthesis
             response_format: Audio format (mp3, wav, etc.)
             speed: Speech speed multiplier
             generation_id: Optional ID for tracking this generation
-            
+
         Yields:
             ChunkResult objects as they become available
         """
@@ -104,7 +111,7 @@ class ProgressiveAudioGenerator:
                 "chunks": chunks,
                 "completed": 0,
                 "total": len(chunks),
-                "start_time": time.time()
+                "start_time": time.time(),
             }
 
             # Generate chunks progressively
@@ -128,12 +135,7 @@ class ProgressiveAudioGenerator:
                 del self.active_generations[generation_id]
 
     async def _generate_single_chunk(
-        self,
-        text: str,
-        voice: str,
-        response_format: str,
-        speed: float,
-        generation_id: str
+        self, text: str, voice: str, response_format: str, speed: float, generation_id: str
     ) -> AsyncIterator[ChunkResult]:
         """Generate audio as a single chunk"""
         start_time = time.time()
@@ -156,8 +158,8 @@ class ProgressiveAudioGenerator:
                 metadata={
                     "mode": "single",
                     "generation_id": generation_id,
-                    "text_length": len(text)
-                }
+                    "text_length": len(text),
+                },
             )
 
         except Exception as e:
@@ -170,7 +172,7 @@ class ProgressiveAudioGenerator:
         voice: str,
         response_format: str,
         speed: float,
-        generation_id: str
+        generation_id: str,
     ) -> AsyncIterator[ChunkResult]:
         """Generate audio chunks sequentially"""
 
@@ -182,9 +184,7 @@ class ProgressiveAudioGenerator:
                 chunk_text = self._prepare_chunk_text(chunk)
 
                 # Generate audio for this chunk
-                audio_data = await self._synthesize_chunk(
-                    chunk_text, voice, response_format, speed
-                )
+                audio_data = await self._synthesize_chunk(chunk_text, voice, response_format, speed)
 
                 generation_time = time.time() - start_time
 
@@ -208,8 +208,8 @@ class ProgressiveAudioGenerator:
                         "chunk_position": i + 1,
                         "total_chunks": len(chunks),
                         "is_sentence_boundary": chunk.is_sentence_boundary,
-                        "is_paragraph_boundary": chunk.is_paragraph_boundary
-                    }
+                        "is_paragraph_boundary": chunk.is_paragraph_boundary,
+                    },
                 )
 
                 # Add small delay for streaming effect
@@ -227,7 +227,7 @@ class ProgressiveAudioGenerator:
         voice: str,
         response_format: str,
         speed: float,
-        generation_id: str
+        generation_id: str,
     ) -> AsyncIterator[ChunkResult]:
         """Generate audio chunks with concurrent processing"""
 
@@ -258,8 +258,8 @@ class ProgressiveAudioGenerator:
                             "mode": "streaming",
                             "generation_id": generation_id,
                             "chunk_position": index + 1,
-                            "total_chunks": len(chunks)
-                        }
+                            "total_chunks": len(chunks),
+                        },
                     )
 
                 except Exception as e:
@@ -268,8 +268,7 @@ class ProgressiveAudioGenerator:
 
         # Start all chunk generations concurrently
         tasks = [
-            asyncio.create_task(generate_chunk_async(chunk, i))
-            for i, chunk in enumerate(chunks)
+            asyncio.create_task(generate_chunk_async(chunk, i)) for i, chunk in enumerate(chunks)
         ]
 
         # Yield results as they complete, but maintain order
@@ -279,9 +278,7 @@ class ProgressiveAudioGenerator:
         while tasks:
             # Wait for next completion
             done, pending = await asyncio.wait(
-                tasks,
-                return_when=asyncio.FIRST_COMPLETED,
-                timeout=self.config.chunk_timeout
+                tasks, return_when=asyncio.FIRST_COMPLETED, timeout=self.config.chunk_timeout
             )
 
             # Process completed tasks
@@ -314,11 +311,7 @@ class ProgressiveAudioGenerator:
                     await asyncio.sleep(self.config.streaming_delay)
 
     async def _synthesize_chunk(
-        self,
-        text: str,
-        voice: str,
-        response_format: str,
-        speed: float
+        self, text: str, voice: str, response_format: str, speed: float
     ) -> bytes:
         """Synthesize audio for a single chunk"""
 
@@ -332,9 +325,7 @@ class ProgressiveAudioGenerator:
             # Use the TTS engine to generate audio
             # This is a placeholder - actual implementation depends on TTS engine interface
             audio_data = await asyncio.get_event_loop().run_in_executor(
-                None,
-                self._sync_synthesize,
-                text, voice, response_format, speed
+                None, self._sync_synthesize, text, voice, response_format, speed
             )
 
             # Cache the result
@@ -358,7 +349,7 @@ class ProgressiveAudioGenerator:
         # Placeholder implementation
         try:
             # Call the TTS engine's synthesis method
-            if hasattr(self.tts_engine, 'synthesize'):
+            if hasattr(self.tts_engine, "synthesize"):
                 return self.tts_engine.synthesize(text, voice, speed)
             else:
                 # Fallback for different engine interfaces
@@ -372,9 +363,7 @@ class ProgressiveAudioGenerator:
         text = chunk.text
 
         # Add overlap text if available and prosody continuity is enabled
-        if (self.config.enable_prosody_continuity and
-            chunk.overlap_text and
-            not chunk.chunk_id == 0):
+        if self.config.enable_prosody_continuity and chunk.overlap_text and not chunk.chunk_id == 0:
             text = chunk.overlap_text + " " + text
 
         return text.strip()
@@ -410,7 +399,8 @@ class ProgressiveAudioGenerator:
             "total_chunks": state["total"],
             "progress_percentage": (state["completed"] / state["total"]) * 100,
             "elapsed_time": elapsed_time,
-            "estimated_remaining": (elapsed_time / max(state["completed"], 1)) * (state["total"] - state["completed"])
+            "estimated_remaining": (elapsed_time / max(state["completed"], 1))
+            * (state["total"] - state["completed"]),
         }
 
     def cancel_generation(self, generation_id: str) -> bool:
@@ -431,5 +421,5 @@ class ProgressiveAudioGenerator:
         return {
             "cache_size": len(self.chunk_cache),
             "cache_memory_estimate": sum(len(data) for data in self.chunk_cache.values()),
-            "active_generations": len(self.active_generations)
+            "active_generations": len(self.active_generations),
         }

@@ -40,6 +40,7 @@ from .voice_modulation_system import VoiceModulationSystem
 # Import Phase 6 enhancements (optional)
 try:
     from .phase6_text_processor import Phase6ProcessingResult, Phase6TextProcessor
+
     PHASE6_AVAILABLE = True
 except ImportError:
     PHASE6_AVAILABLE = False
@@ -55,16 +56,20 @@ logger = logging.getLogger(__name__)
 if not PHASE6_AVAILABLE:
     logger.warning("Phase 6 text processor not available, advanced text processing will be limited")
 
+
 class ProcessingMode(Enum):
     """Text processing modes"""
-    BASIC = "basic"                    # Basic normalization only
-    STANDARD = "standard"              # Standard TTS processing
-    ENHANCED = "enhanced"              # Enhanced with advanced processors
-    PREMIUM = "premium"                # Full pipeline with all enhancements
+
+    BASIC = "basic"  # Basic normalization only
+    STANDARD = "standard"  # Standard TTS processing
+    ENHANCED = "enhanced"  # Enhanced with advanced processors
+    PREMIUM = "premium"  # Full pipeline with all enhancements
+
 
 @dataclass
 class ProcessingOptions:
     """Unified processing options"""
+
     mode: ProcessingMode = ProcessingMode.ENHANCED
 
     # Core processing options
@@ -77,11 +82,13 @@ class ProcessingOptions:
     use_advanced_currency: bool = True
     use_enhanced_datetime: bool = True
     use_advanced_symbols: bool = True
-    use_espeak_enhanced_symbols: bool = True  # eSpeak-enhanced symbol processing (fixes "?" pronunciation)
+    use_espeak_enhanced_symbols: bool = (
+        True  # eSpeak-enhanced symbol processing (fixes "?" pronunciation)
+    )
     use_clean_normalizer: bool = True
     use_phonetic_contractions: bool = False  # Legacy expansion mode (disabled by default)
-    use_interjection_fixes: bool = True     # Fix interjection pronunciation (Hmm→hmmm)
-    use_pronunciation_rules: bool = True    # Natural contraction pronunciation rules (NEW DEFAULT)
+    use_interjection_fixes: bool = True  # Fix interjection pronunciation (Hmm→hmmm)
+    use_pronunciation_rules: bool = True  # Natural contraction pronunciation rules (NEW DEFAULT)
     use_ticker_symbol_processing: bool = True  # Fix TSLA→TEE-SLAW to T-S-L-A
     use_proper_name_pronunciation: bool = True  # Fix Elon→alon, Joy→joie, acquisition→ek-wah-zi·shn
 
@@ -105,9 +112,11 @@ class ProcessingOptions:
     enable_parallel_processing: bool = False
     max_processing_time: float = 30.0  # seconds
 
+
 @dataclass
 class ProcessingResult:
     """Result of unified text processing"""
+
     processed_text: str
     original_text: str
     processing_time: float
@@ -129,6 +138,7 @@ class ProcessingResult:
 
     # Performance metrics
     stage_timings: dict[str, float] = field(default_factory=dict)
+
 
 class UnifiedTextProcessor:
     """Unified text processing pipeline integrating all processors"""
@@ -166,6 +176,7 @@ class UnifiedTextProcessor:
         try:
             import json
             from pathlib import Path
+
             config_path = Path("config.json")
             if config_path.exists():
                 with open(config_path) as f:
@@ -225,7 +236,9 @@ class UnifiedTextProcessor:
         self.symbol_processor = AdvancedSymbolProcessor()
 
         # Initialize eSpeak-enhanced symbol processor
-        espeak_config = self.config.get("symbol_processing", {}).get("espeak_enhanced_processing", {})
+        espeak_config = self.config.get("symbol_processing", {}).get(
+            "espeak_enhanced_processing", {}
+        )
         self.espeak_symbol_processor = EspeakEnhancedSymbolProcessor(espeak_config)
 
         self.phonetic_contraction_processor = PhoneticContractionProcessor(config=self.config)
@@ -287,7 +300,7 @@ class UnifiedTextProcessor:
             processed_text=text,
             original_text=original_text,
             processing_time=0.0,
-            mode_used=options.mode
+            mode_used=options.mode,
         )
 
         try:
@@ -320,7 +333,9 @@ class UnifiedTextProcessor:
 
             return result
 
-    def _process_basic(self, text: str, options: ProcessingOptions, result: ProcessingResult) -> str:
+    def _process_basic(
+        self, text: str, options: ProcessingOptions, result: ProcessingResult
+    ) -> str:
         """Basic processing pipeline"""
         stage_start = time.perf_counter()
 
@@ -334,12 +349,16 @@ class UnifiedTextProcessor:
         result.stage_timings["basic"] = time.perf_counter() - stage_start
         return text
 
-    def _process_standard(self, text: str, options: ProcessingOptions, result: ProcessingResult) -> str:
+    def _process_standard(
+        self, text: str, options: ProcessingOptions, result: ProcessingResult
+    ) -> str:
         """Standard processing pipeline"""
         stage_start = time.perf_counter()
 
         # Phonemizer preprocessing
-        preprocessing_result = phonemizer_preprocessor.preprocess_text(text, preserve_word_count=True)
+        preprocessing_result = phonemizer_preprocessor.preprocess_text(
+            text, preserve_word_count=True
+        )
         text = preprocessing_result.processed_text
         if preprocessing_result.changes_made:
             result.changes_made.extend(preprocessing_result.changes_made)
@@ -378,7 +397,9 @@ class UnifiedTextProcessor:
         result.stage_timings["standard"] = time.perf_counter() - stage_start
         return text
 
-    def _process_enhanced(self, text: str, options: ProcessingOptions, result: ProcessingResult) -> str:
+    def _process_enhanced(
+        self, text: str, options: ProcessingOptions, result: ProcessingResult
+    ) -> str:
         """
         Enhanced processing pipeline with advanced processors.
 
@@ -417,8 +438,12 @@ class UnifiedTextProcessor:
             return text
 
         # Phase 6 processing (FIRST - comprehensive text enhancement)
-        if (hasattr(options, 'use_phase6_processing') and options.use_phase6_processing and
-            self.phase6_processor and self._is_section_enabled("text_processing")):
+        if (
+            hasattr(options, "use_phase6_processing")
+            and options.use_phase6_processing
+            and self.phase6_processor
+            and self._is_section_enabled("text_processing")
+        ):
             phase6_start = time.perf_counter()
             original_text = text
             phase6_result = self.phase6_processor.process_text(text)
@@ -427,9 +452,13 @@ class UnifiedTextProcessor:
             result.phase6_enhancements = phase6_result.total_changes
 
             if phase6_result.total_changes > 0:
-                result.changes_made.append(f"Applied Phase 6 enhancements: {phase6_result.total_changes} total changes")
+                result.changes_made.append(
+                    f"Applied Phase 6 enhancements: {phase6_result.total_changes} total changes"
+                )
                 result.stages_completed.append("phase6_processing")
-                logger.debug(f"Phase 6 processing: {phase6_result.total_changes} enhancements applied in {phase6_result.processing_time:.3f}s")
+                logger.debug(
+                    f"Phase 6 processing: {phase6_result.total_changes} enhancements applied in {phase6_result.processing_time:.3f}s"
+                )
 
                 # Add detailed changes by category
                 for category, count in phase6_result.changes_by_category.items():
@@ -441,59 +470,90 @@ class UnifiedTextProcessor:
             result.stage_timings["phase6_processing"] = time.perf_counter() - phase6_start
 
         # Pronunciation rules processing (FIRST - natural contraction pronunciation)
-        if (hasattr(options, 'use_pronunciation_rules') and options.use_pronunciation_rules and
-            self._is_feature_enabled("text_processing", "pronunciation_fixes")):
+        if (
+            hasattr(options, "use_pronunciation_rules")
+            and options.use_pronunciation_rules
+            and self._is_feature_enabled("text_processing", "pronunciation_fixes")
+        ):
             original_text = text
             text = self.pronunciation_rules_processor.process_pronunciation_rules(text)
             if text != original_text:
                 result.changes_made.append("Applied natural pronunciation rules")
                 result.stages_completed.append("pronunciation_rules")
-                logger.debug(f"Pronunciation rules processing: {len(text) - len(original_text)} character change")
+                logger.debug(
+                    f"Pronunciation rules processing: {len(text) - len(original_text)} character change"
+                )
 
         # Legacy phonetic contraction processing (OPTIONAL - only if explicitly enabled)
-        if (hasattr(options, 'use_phonetic_contractions') and options.use_phonetic_contractions and
-            self._is_feature_enabled("text_processing", "expand_contractions")):
+        if (
+            hasattr(options, "use_phonetic_contractions")
+            and options.use_phonetic_contractions
+            and self._is_feature_enabled("text_processing", "expand_contractions")
+        ):
             original_text = text
-            text = self.phonetic_contraction_processor.process_contractions(text, mode="phonetic_expansion")
+            text = self.phonetic_contraction_processor.process_contractions(
+                text, mode="phonetic_expansion"
+            )
             if text != original_text:
                 result.changes_made.append("Applied legacy contraction expansion")
                 result.stages_completed.append("phonetic_contractions")
-                logger.debug(f"Legacy contraction processing: {len(text) - len(original_text)} character change")
+                logger.debug(
+                    f"Legacy contraction processing: {len(text) - len(original_text)} character change"
+                )
 
         # Interjection pronunciation fixes (SECOND - after contractions)
-        if (hasattr(options, 'use_interjection_fixes') and options.use_interjection_fixes and
-            self._is_section_enabled("interjection_handling")):
+        if (
+            hasattr(options, "use_interjection_fixes")
+            and options.use_interjection_fixes
+            and self._is_section_enabled("interjection_handling")
+        ):
             original_text = text
             text = self.interjection_processor.fix_interjection_pronunciation(text)
             if text != original_text:
                 result.changes_made.append("Applied interjection pronunciation fixes")
                 result.stages_completed.append("interjection_fixes")
-                logger.debug(f"Interjection processing: {len(text) - len(original_text)} character change")
+                logger.debug(
+                    f"Interjection processing: {len(text) - len(original_text)} character change"
+                )
 
         # Ticker symbol processing (THIRD - fix TSLA→TEE-SLAW to T-S-L-A)
-        if (hasattr(options, 'use_ticker_symbol_processing') and options.use_ticker_symbol_processing and
-            self._is_section_enabled("pronunciation_dictionary")):
+        if (
+            hasattr(options, "use_ticker_symbol_processing")
+            and options.use_ticker_symbol_processing
+            and self._is_section_enabled("pronunciation_dictionary")
+        ):
             original_text = text
             ticker_result = self.ticker_symbol_processor.process_ticker_symbols(text)
             text = ticker_result.processed_text
             if text != original_text:
-                result.changes_made.append(f"Applied ticker symbol processing: {', '.join(ticker_result.tickers_found)}")
+                result.changes_made.append(
+                    f"Applied ticker symbol processing: {', '.join(ticker_result.tickers_found)}"
+                )
                 result.stages_completed.append("ticker_symbols")
-                logger.debug(f"Ticker symbol processing: {len(ticker_result.tickers_found)} symbols processed")
+                logger.debug(
+                    f"Ticker symbol processing: {len(ticker_result.tickers_found)} symbols processed"
+                )
 
         # Proper name pronunciation processing (FOURTH - fix Elon→alon, Joy→joie, etc.)
-        if (hasattr(options, 'use_proper_name_pronunciation') and options.use_proper_name_pronunciation and
-            self._is_section_enabled("pronunciation_dictionary")):
+        if (
+            hasattr(options, "use_proper_name_pronunciation")
+            and options.use_proper_name_pronunciation
+            and self._is_section_enabled("pronunciation_dictionary")
+        ):
             original_text = text
             text = self.proper_name_processor.process_proper_name_pronunciation(text)
             if text != original_text:
                 result.changes_made.append("Applied proper name pronunciation fixes")
                 result.stages_completed.append("proper_name_pronunciation")
-                logger.debug(f"Proper name pronunciation processing: {len(text) - len(original_text)} character change")
+                logger.debug(
+                    f"Proper name pronunciation processing: {len(text) - len(original_text)} character change"
+                )
 
         # Phonemizer preprocessing (second step) - only if text processing enabled
         if self._is_section_enabled("text_processing"):
-            preprocessing_result = phonemizer_preprocessor.preprocess_text(text, preserve_word_count=True)
+            preprocessing_result = phonemizer_preprocessor.preprocess_text(
+                text, preserve_word_count=True
+            )
             text = preprocessing_result.processed_text
             if preprocessing_result.changes_made:
                 result.changes_made.extend(preprocessing_result.changes_made)
@@ -529,20 +589,27 @@ class UnifiedTextProcessor:
                 result.stages_completed.append("advanced_symbols")
 
         # eSpeak-enhanced symbol processing (CRITICAL FIX for "?" pronunciation)
-        if (hasattr(options, 'use_espeak_enhanced_symbols') and options.use_espeak_enhanced_symbols and
-            self._is_feature_enabled("symbol_processing", "espeak_enhanced_processing")):
+        if (
+            hasattr(options, "use_espeak_enhanced_symbols")
+            and options.use_espeak_enhanced_symbols
+            and self._is_feature_enabled("symbol_processing", "espeak_enhanced_processing")
+        ):
             # Check if espeak_enhanced_processing subsection is enabled
-            espeak_config = self.config.get("symbol_processing", {}).get("espeak_enhanced_processing", {})
+            espeak_config = self.config.get("symbol_processing", {}).get(
+                "espeak_enhanced_processing", {}
+            )
             if espeak_config.get("enabled", False):
                 original_text = text
                 espeak_result = self.espeak_symbol_processor.process_symbols(text)
                 text = espeak_result.processed_text
                 if text != original_text:
-                    result.changes_made.append(f"Applied eSpeak-enhanced symbol processing: {', '.join(espeak_result.changes_made[:3])}")
+                    result.changes_made.append(
+                        f"Applied eSpeak-enhanced symbol processing: {', '.join(espeak_result.changes_made[:3])}"
+                    )
                     result.stages_completed.append("espeak_enhanced_symbols")
-                    logger.debug(f"eSpeak symbol processing: {espeak_result.symbols_processed} symbols processed")
-
-
+                    logger.debug(
+                        f"eSpeak symbol processing: {espeak_result.symbols_processed} symbols processed"
+                    )
 
         # Core processing steps (AFTER enhanced processors)
         if options.handle_spell_functions:
@@ -590,7 +657,9 @@ class UnifiedTextProcessor:
         result.stage_timings["enhanced"] = time.perf_counter() - stage_start
         return text
 
-    def _process_premium(self, text: str, options: ProcessingOptions, result: ProcessingResult) -> str:
+    def _process_premium(
+        self, text: str, options: ProcessingOptions, result: ProcessingResult
+    ) -> str:
         """Premium processing pipeline with all enhancements"""
         # Start with enhanced processing
         text = self._process_enhanced(text, options, result)
@@ -629,13 +698,19 @@ class UnifiedTextProcessor:
         if options.use_dynamic_emotion and self.dynamic_emotion:
             try:
                 original_text = text
-                processed_text, intonation_markers = self.dynamic_emotion.process_emotion_intonation(text)
+                processed_text, intonation_markers = (
+                    self.dynamic_emotion.process_emotion_intonation(text)
+                )
                 if processed_text != original_text:
                     text = processed_text
                     result.audio_enhancements += 1
-                    result.changes_made.append(f"Applied dynamic emotion processing with {len(intonation_markers)} markers")
+                    result.changes_made.append(
+                        f"Applied dynamic emotion processing with {len(intonation_markers)} markers"
+                    )
                     result.stages_completed.append("dynamic_emotion_processing")
-                    logger.debug(f"Dynamic emotion processing applied {len(intonation_markers)} intonation markers")
+                    logger.debug(
+                        f"Dynamic emotion processing applied {len(intonation_markers)} intonation markers"
+                    )
                 else:
                     result.stages_completed.append("dynamic_emotion_no_changes")
             except Exception as e:
@@ -648,67 +723,68 @@ class UnifiedTextProcessor:
     def analyze_text_complexity(self, text: str) -> dict[str, Any]:
         """Analyze text to determine optimal processing mode"""
         analysis = {
-            'recommended_mode': ProcessingMode.STANDARD,
-            'complexity_score': 0,
-            'features_detected': [],
-            'processing_estimates': {}
+            "recommended_mode": ProcessingMode.STANDARD,
+            "complexity_score": 0,
+            "features_detected": [],
+            "processing_estimates": {},
         }
 
         # Currency analysis
         currency_analysis = self.currency_processor.analyze_currency_content(text)
-        if currency_analysis['currency_amounts']:
-            analysis['features_detected'].append('currency_amounts')
-            analysis['complexity_score'] += currency_analysis['complexity_score']
+        if currency_analysis["currency_amounts"]:
+            analysis["features_detected"].append("currency_amounts")
+            analysis["complexity_score"] += currency_analysis["complexity_score"]
 
         # Datetime analysis
-        datetime_patterns = ['\\d{4}-\\d{2}-\\d{2}', '\\d{1,2}:\\d{2}', 'January|February|March']
+        datetime_patterns = ["\\d{4}-\\d{2}-\\d{2}", "\\d{1,2}:\\d{2}", "January|February|March"]
         for pattern in datetime_patterns:
             import re
+
             if re.search(pattern, text, re.IGNORECASE):
-                analysis['features_detected'].append('datetime_patterns')
-                analysis['complexity_score'] += 2
+                analysis["features_detected"].append("datetime_patterns")
+                analysis["complexity_score"] += 2
                 break
 
         # Audio enhancement indicators
-        audio_indicators = ['(', ')', '*', '!', '?', 'AM', 'PM']
+        audio_indicators = ["(", ")", "*", "!", "?", "AM", "PM"]
         for indicator in audio_indicators:
             if indicator in text:
-                analysis['features_detected'].append('audio_enhancement_candidates')
-                analysis['complexity_score'] += 1
+                analysis["features_detected"].append("audio_enhancement_candidates")
+                analysis["complexity_score"] += 1
                 break
 
         # Recommend processing mode based on complexity
-        if analysis['complexity_score'] >= 10:
-            analysis['recommended_mode'] = ProcessingMode.PREMIUM
-        elif analysis['complexity_score'] >= 5:
-            analysis['recommended_mode'] = ProcessingMode.ENHANCED
-        elif analysis['complexity_score'] >= 2:
-            analysis['recommended_mode'] = ProcessingMode.STANDARD
+        if analysis["complexity_score"] >= 10:
+            analysis["recommended_mode"] = ProcessingMode.PREMIUM
+        elif analysis["complexity_score"] >= 5:
+            analysis["recommended_mode"] = ProcessingMode.ENHANCED
+        elif analysis["complexity_score"] >= 2:
+            analysis["recommended_mode"] = ProcessingMode.STANDARD
         else:
-            analysis['recommended_mode'] = ProcessingMode.BASIC
+            analysis["recommended_mode"] = ProcessingMode.BASIC
 
         return analysis
 
     def get_processing_capabilities(self) -> dict[str, bool]:
         """Get current processing capabilities"""
         return {
-            'basic_normalization': True,
-            'standard_processing': True,
-            'advanced_currency': True,
-            'enhanced_datetime': True,
-            'advanced_symbols': True,
-            'espeak_enhanced_symbols': True,  # NEW: eSpeak-enhanced symbol processing
-            'clean_normalization': True,
-            'voice_modulation': self.voice_modulation is not None,
-            'audio_quality_enhancement': True,
-            'dynamic_emotion': self.dynamic_emotion is not None,
-            'parallel_processing': False,  # Not implemented yet
+            "basic_normalization": True,
+            "standard_processing": True,
+            "advanced_currency": True,
+            "enhanced_datetime": True,
+            "advanced_symbols": True,
+            "espeak_enhanced_symbols": True,  # NEW: eSpeak-enhanced symbol processing
+            "clean_normalization": True,
+            "voice_modulation": self.voice_modulation is not None,
+            "audio_quality_enhancement": True,
+            "dynamic_emotion": self.dynamic_emotion is not None,
+            "parallel_processing": False,  # Not implemented yet
             # Phase 6 capabilities
-            'phase6_processing': self.phase6_processor is not None,
-            'enhanced_numbers': self.phase6_processor is not None,
-            'enhanced_units': self.phase6_processor is not None,
-            'enhanced_homographs': self.phase6_processor is not None,
-            'enhanced_contractions': self.phase6_processor is not None,
+            "phase6_processing": self.phase6_processor is not None,
+            "enhanced_numbers": self.phase6_processor is not None,
+            "enhanced_units": self.phase6_processor is not None,
+            "enhanced_homographs": self.phase6_processor is not None,
+            "enhanced_contractions": self.phase6_processor is not None,
         }
 
     def create_processing_options(self, mode: str | ProcessingMode, **kwargs) -> ProcessingOptions:

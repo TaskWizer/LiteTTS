@@ -17,6 +17,7 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
+
 class SimplifiedVoiceCombiner:
     """
     Simplified voice combiner that creates combined voices file from individual .bin files
@@ -31,7 +32,7 @@ class SimplifiedVoiceCombiner:
             "SimplifiedVoiceCombiner is deprecated. Use individual voice loading strategy instead. "
             "Combined voice files are no longer necessary for optimal performance.",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
 
         self.voices_dir = Path(voices_dir)
@@ -39,8 +40,10 @@ class SimplifiedVoiceCombiner:
         self.config = config
 
         # Check if combined file usage is disabled in configuration
-        if config and hasattr(config, 'voice') and not config.voice.use_combined_file:
-            logger.info("Combined voice file usage is disabled in configuration. Skipping combiner initialization.")
+        if config and hasattr(config, "voice") and not config.voice.use_combined_file:
+            logger.info(
+                "Combined voice file usage is disabled in configuration. Skipping combiner initialization."
+            )
             self.disabled = True
             return
 
@@ -48,7 +51,9 @@ class SimplifiedVoiceCombiner:
         self.combined_file = self.voices_dir / "combined_voices.npz"
         self.voice_index_file = self.voices_dir / "voice_index.json"
 
-        logger.warning("SimplifiedVoiceCombiner is deprecated. Consider using individual voice loading strategy.")
+        logger.warning(
+            "SimplifiedVoiceCombiner is deprecated. Consider using individual voice loading strategy."
+        )
 
     def _load_individual_voice(self, voice_name: str) -> np.ndarray | None:
         """Load an individual voice file"""
@@ -73,20 +78,28 @@ class SimplifiedVoiceCombiner:
             elif len(voice_data) == 512 * 256:
                 # Alternative format: 512 style vectors of 256 dimensions each
                 voice_data = voice_data.reshape(512, 256)
-                logger.debug(f"✅ Voice {voice_name} loaded with shape: {voice_data.shape} (512-vector format)")
+                logger.debug(
+                    f"✅ Voice {voice_name} loaded with shape: {voice_data.shape} (512-vector format)"
+                )
             elif len(voice_data) == 256:
                 # Single style vector - expand to expected format
                 voice_data = voice_data.reshape(1, 256)
                 # Repeat to create 510 style vectors (this is a fallback)
                 voice_data = np.repeat(voice_data, 510, axis=0)
-                logger.warning(f"⚠️ Voice {voice_name} had single vector, expanded to shape: {voice_data.shape}")
+                logger.warning(
+                    f"⚠️ Voice {voice_name} had single vector, expanded to shape: {voice_data.shape}"
+                )
             elif len(voice_data) % 256 == 0 and len(voice_data) >= 256:
                 # Generic format: any multiple of 256 that could be reshaped
                 num_vectors = len(voice_data) // 256
                 voice_data = voice_data.reshape(num_vectors, 256)
-                logger.info(f"✅ Voice {voice_name} loaded with shape: {voice_data.shape} ({num_vectors}-vector format)")
+                logger.info(
+                    f"✅ Voice {voice_name} loaded with shape: {voice_data.shape} ({num_vectors}-vector format)"
+                )
             else:
-                logger.error(f"❌ Unexpected voice data size for {voice_name}: {len(voice_data)} (expected multiple of 256)")
+                logger.error(
+                    f"❌ Unexpected voice data size for {voice_name}: {len(voice_data)} (expected multiple of 256)"
+                )
                 return None
 
             # Ensure the data is contiguous and in the right format
@@ -116,7 +129,9 @@ class SimplifiedVoiceCombiner:
             return True  # Return True to indicate no error, just skipped
 
         # Issue deprecation warning
-        logger.warning("create_combined_file() is deprecated. Individual voice loading is recommended.")
+        logger.warning(
+            "create_combined_file() is deprecated. Individual voice loading is recommended."
+        )
 
         try:
             available_voices = self._get_available_voices()
@@ -125,7 +140,9 @@ class SimplifiedVoiceCombiner:
                 logger.error("No voice files found to combine")
                 return False
 
-            logger.info(f"🔄 Creating combined voices file from {len(available_voices)} individual voices...")
+            logger.info(
+                f"🔄 Creating combined voices file from {len(available_voices)} individual voices..."
+            )
 
             # Load all voice data
             voice_data_dict = {}
@@ -153,7 +170,9 @@ class SimplifiedVoiceCombiner:
                 # Ensure each voice array has the correct shape and dtype
                 # Accept common formats: (510, 256), (512, 256), or other (N, 256) shapes
                 if len(voice_data.shape) != 2 or voice_data.shape[1] != 256:
-                    logger.warning(f"⚠️ Voice {voice_name} has unexpected shape {voice_data.shape}, expected (N, 256)")
+                    logger.warning(
+                        f"⚠️ Voice {voice_name} has unexpected shape {voice_data.shape}, expected (N, 256)"
+                    )
                 else:
                     logger.debug(f"✅ Voice {voice_name} has valid shape: {voice_data.shape}")
 
@@ -162,13 +181,15 @@ class SimplifiedVoiceCombiner:
                 logger.debug(f"✅ Added voice {voice_name} to NPZ with shape: {voice_data.shape}")
 
             logger.info(f"📦 Creating NPZ with {len(npz_data)} individual voice arrays")
-            logger.info(f"🔍 Voice shapes: {[(name, data.shape) for name, data in list(npz_data.items())[:3]]}")
+            logger.info(
+                f"🔍 Voice shapes: {[(name, data.shape) for name, data in list(npz_data.items())[:3]]}"
+            )
 
             # Save combined file with individual voice keys
             np.savez_compressed(self.combined_file, **npz_data)
 
             # Save voice index
-            with open(self.voice_index_file, 'w') as f:
+            with open(self.voice_index_file, "w") as f:
                 json.dump(voice_index, f, indent=2)
 
             logger.info(f"✅ Created combined voices file: {self.combined_file}")
@@ -180,6 +201,7 @@ class SimplifiedVoiceCombiner:
         except Exception as e:
             logger.error(f"❌ Failed to create combined voices file: {e}")
             import traceback
+
             logger.error(f"Full traceback: {traceback.format_exc()}")
             return False
 
@@ -213,7 +235,7 @@ class SimplifiedVoiceCombiner:
         """Get list of voices in the combined file"""
         if self.voice_index_file.exists():
             try:
-                with open(self.voice_index_file, 'r') as f:
+                with open(self.voice_index_file, "r") as f:
                     voice_index = json.load(f)
                 return sorted(voice_index.keys())
             except Exception as e:

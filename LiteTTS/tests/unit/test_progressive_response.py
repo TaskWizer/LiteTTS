@@ -12,6 +12,7 @@ class TestProgressiveResponseHandler:
     def test_initialization(self):
         """Test handler initializes correctly"""
         from LiteTTS.api.progressive_response import ProgressiveResponseHandler
+
         mock_generator = Mock()
         handler = ProgressiveResponseHandler(mock_generator)
         assert handler is not None

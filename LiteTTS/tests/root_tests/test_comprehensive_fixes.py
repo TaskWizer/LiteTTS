@@ -26,35 +26,30 @@ def test_critical_bug_fixes():
         ("The meaning of life", "The meaning of life", "No unit conversion"),
         ("meaning something", "meaning something", "No unit conversion"),
         ("Its inside us", "Its inside us", "No unit conversion"),
-
         # 2. "it" → "I-T" bug - should remain "it"
         ("behind it", "behind it", "Should not become 'behind I-T'"),
         ("with it", "with it", "Should not become 'with I-T'"),
         ("about it", "about it", "Should not become 'about I-T'"),
-
         # 3. Complex word pronunciations
         ("religions", "ri-LIJ-uhns", "Should not become 'really-gram-ions'"),
         ("existentialism", "eg-zi-STEN-shuhl-iz-uhm", "Should not become 'Exi-stential-ism'"),
-
         # 4. Contraction processing improvements
         ("she'd like that", "she would like that", "Should expand correctly"),
-
         # 5. Proper name pronunciation
         ("Carl Sagan", "Carl S-A-gan", "Systematic surname spelling"),
-
         # 6. Verify existing fixes remain functional
         ("joy", "JOY", "Should remain 'JOY'"),
         ("TSLA stock", "T-S-L-A stock", "Ticker symbol fix"),
         ("hmm, let me think", "hum, let me think", "Interjection handling"),
-
         # 7. HTML entity fixes
         ("John&#x27;s car", "John's car", "HTML entity decoding"),
         ("&quot;Hello&quot;", "Hello", "Quote removal"),
-
         # 8. Empty audio generation test case
-        ('"The Moon isn\'t out there. It\'s inside us."',
-         '"The Moon is not out there. It is inside us."',
-         "Should process without errors"),
+        (
+            "\"The Moon isn't out there. It's inside us.\"",
+            '"The Moon is not out there. It is inside us."',
+            "Should process without errors",
+        ),
     ]
 
     for input_text, expected_contains, description in critical_tests:
@@ -82,6 +77,7 @@ def test_critical_bug_fixes():
             print(f"❌ ERROR processing '{input_text}': {e}")
             print("-" * 70)
 
+
 def test_unit_processing_improvements():
     """Test improved unit processing with contextual awareness"""
     print("\n=== Testing Unit Processing Improvements ===\n")
@@ -97,7 +93,6 @@ def test_unit_processing_improvements():
         ("Height: 2m", "Height: 2 meters", "No-space unit processing"),
         ("Weight: 50g", "Weight: 50 grams", "No-space unit processing"),
         ("Length: 12in", "Length: 12 inches", "No-space unit processing"),
-
         # Should NOT process units in non-measurement contexts
         ("meaning", "meaning", "No false unit conversion"),
         ("something", "something", "No false unit conversion"),
@@ -105,7 +100,6 @@ def test_unit_processing_improvements():
         ("program", "program", "No false unit conversion"),
         ("diagram", "diagram", "No false unit conversion"),
         ("Instagram", "Instagram", "No false unit conversion"),
-
         # Edge cases
         ("The meaning is 5 m", "The meaning is 5 meters", "Mixed context"),
         ("programming in Python", "programming in Python", "Should not convert 'in'"),
@@ -130,6 +124,7 @@ def test_unit_processing_improvements():
         except Exception as e:
             print(f"❌ ERROR processing '{input_text}': {e}")
             print("-" * 50)
+
 
 def test_pronunciation_dictionary_additions():
     """Test new pronunciation dictionary additions"""
@@ -168,6 +163,7 @@ def test_pronunciation_dictionary_additions():
             print(f"❌ ERROR: {e}")
             print("-" * 40)
 
+
 def test_regression_prevention():
     """Test that previous fixes remain functional"""
     print("\n=== Testing Regression Prevention ===\n")
@@ -179,28 +175,22 @@ def test_regression_prevention():
         # Ticker symbols
         ("TSLA stock", "T-S-L-A stock"),
         ("AAPL shares", "A-A-P-L shares"),
-
         # Contractions
         ("I'll be there", "I will be there"),
         ("wasn't ready", "was not ready"),
         ("you'll see", "you will see"),
-
         # Currency
         ("$568.91", "five hundred sixty eight dollars and ninety one cents"),
         ("$5,681.52", "five thousand six hundred eighty one dollars and fifty two cents"),
-
         # Dates
         ("2023-05-12", "May twelfth, two thousand twenty three"),
-
         # Symbols
         ("Use & for and", "Use and for and"),
         ("The * symbol", "The asterisk symbol"),
-
         # Abbreviations
         ("FAQ section", "F-A-Q section"),
         ("ASAP please", "A-S-A-P please"),
         ("e.g. this example", "for example this example"),
-
         # Pronunciations
         ("joy", "JOY"),
         ("hmm, let me think", "hum, let me think"),
@@ -225,7 +215,8 @@ def test_regression_prevention():
             print(f"❌ ERROR: {e}")
             print("-" * 50)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     test_critical_bug_fixes()
     test_unit_processing_improvements()
     test_pronunciation_dictionary_additions()

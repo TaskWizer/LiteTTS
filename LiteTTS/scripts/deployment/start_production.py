@@ -15,11 +15,9 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 # Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 def main():
     """Start the Kokoro ONNX TTS API server optimized for production"""
@@ -36,28 +34,19 @@ Examples:
 
   # Start with custom host and port
   python LiteTTS/scripts/start_production.py --host 0.0.0.0 --port 8000
-        """
+        """,
     )
 
     parser.add_argument(
-        "--host",
-        type=str,
-        default="0.0.0.0",
-        help="Host to bind to (default: 0.0.0.0)"
+        "--host", type=str, default="0.0.0.0", help="Host to bind to (default: 0.0.0.0)"
     )
 
     parser.add_argument(
-        "--port",
-        type=int,
-        default=None,
-        help="Port to bind to (default: from config.json)"
+        "--port", type=int, default=None, help="Port to bind to (default: from config.json)"
     )
 
     parser.add_argument(
-        "--workers",
-        type=int,
-        default=1,
-        help="Number of worker processes (default: 1)"
+        "--workers", type=int, default=1, help="Number of worker processes (default: 1)"
     )
 
     parser.add_argument(
@@ -65,13 +54,13 @@ Examples:
         type=str,
         default="info",
         choices=["debug", "info", "warning", "error"],
-        help="Log level (default: info)"
+        help="Log level (default: info)",
     )
 
     parser.add_argument(
         "--no-auto-port",
         action="store_true",
-        help="Don't automatically find available port, use exact port specified"
+        help="Don't automatically find available port, use exact port specified",
     )
 
     args = parser.parse_args()
@@ -80,6 +69,7 @@ Examples:
         # Set AGGRESSIVE performance environment variables for maximum CPU utilization
         try:
             from LiteTTS.performance.cpu_optimizer import get_cpu_optimizer
+
             cpu_optimizer = get_cpu_optimizer()
 
             # Check thermal status for aggressive optimization safety
@@ -103,17 +93,26 @@ Examples:
             # Log detailed CPU information
             cpu_info = cpu_optimizer.cpu_info
             logger.info(f"Detected CPU: {cpu_info.model_name}")
-            logger.info(f"CPU cores: {cpu_info.physical_cores} physical, {cpu_info.logical_cores} logical")
+            logger.info(
+                f"CPU cores: {cpu_info.physical_cores} physical, {cpu_info.logical_cores} logical"
+            )
             logger.info(f"Hybrid architecture: {cpu_info.has_hybrid_architecture}")
             if cpu_info.has_hybrid_architecture:
-                logger.info(f"P-cores: {cpu_info.performance_cores}, E-cores: {cpu_info.efficiency_cores}")
-            logger.info(f"Hyperthreading: {'enabled' if cpu_info.has_hyperthreading else 'disabled'}")
-            logger.info(f"AVX support: AVX2={cpu_info.supports_avx2}, AVX512={cpu_info.supports_avx512}")
+                logger.info(
+                    f"P-cores: {cpu_info.performance_cores}, E-cores: {cpu_info.efficiency_cores}"
+                )
+            logger.info(
+                f"Hyperthreading: {'enabled' if cpu_info.has_hyperthreading else 'disabled'}"
+            )
+            logger.info(
+                f"AVX support: AVX2={cpu_info.supports_avx2}, AVX512={cpu_info.supports_avx512}"
+            )
             logger.info(f"NUMA nodes: {cpu_info.numa_nodes}")
 
             # Apply system-level optimizations
             try:
                 from LiteTTS.performance.system_optimizer import get_system_optimizer
+
                 system_optimizer = get_system_optimizer()
 
                 system_results = system_optimizer.apply_all_optimizations()
@@ -124,9 +123,11 @@ Examples:
                 logger.info(f"SIMD optimization level: {optimization_level}")
 
                 avx_support = simd_info.get("avx_family", {})
-                logger.info(f"AVX capabilities: AVX={avx_support.get('avx', False)}, "
-                           f"AVX2={avx_support.get('avx2', False)}, "
-                           f"AVX512={avx_support.get('avx512f', False)}")
+                logger.info(
+                    f"AVX capabilities: AVX={avx_support.get('avx', False)}, "
+                    f"AVX2={avx_support.get('avx2', False)}, "
+                    f"AVX512={avx_support.get('avx512f', False)}"
+                )
 
                 # Log memory optimizations
                 memory_result = system_results.get("memory", {})
@@ -207,14 +208,16 @@ Examples:
             date_header=False,
             # Production optimizations
             loop="uvloop" if sys.platform != "win32" else "asyncio",
-            http="httptools" if sys.platform != "win32" else "h11"
+            http="httptools" if sys.platform != "win32" else "h11",
         )
 
     except Exception as e:
         logger.error(f"Failed to start server: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

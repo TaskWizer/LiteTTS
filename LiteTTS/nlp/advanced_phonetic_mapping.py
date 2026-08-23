@@ -14,25 +14,30 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class PhoneticMapping:
     """Individual phonetic mapping entry"""
-    grapheme: str          # Written form
-    phoneme: str           # IPA phonetic representation
-    context_before: str    # Context before the grapheme
-    context_after: str     # Context after the grapheme
-    language: str          # Language code (en, en-US, etc.)
-    frequency: float       # Usage frequency (0.0-1.0)
-    confidence: float      # Mapping confidence (0.0-1.0)
+
+    grapheme: str  # Written form
+    phoneme: str  # IPA phonetic representation
+    context_before: str  # Context before the grapheme
+    context_after: str  # Context after the grapheme
+    language: str  # Language code (en, en-US, etc.)
+    frequency: float  # Usage frequency (0.0-1.0)
+    confidence: float  # Mapping confidence (0.0-1.0)
+
 
 @dataclass
 class PhoneticRule:
     """Context-aware phonetic rule"""
-    pattern: str           # Regex pattern to match
-    replacement: str       # IPA replacement
-    context: str           # Context description
-    priority: int          # Rule priority (higher = applied first)
+
+    pattern: str  # Regex pattern to match
+    replacement: str  # IPA replacement
+    context: str  # Context description
+    priority: int  # Rule priority (higher = applied first)
     conditions: list[str]  # Additional conditions
+
 
 class AdvancedPhoneticMapper:
     """Advanced phonetic mapping system with IPA support"""
@@ -66,12 +71,12 @@ class AdvancedPhoneticMapper:
             "ipa_notation_style": "standard",  # standard, simplified, custom
             "phoneme_similarity_threshold": 0.8,
             "context_window_size": 3,
-            "stress_prediction_method": "syllable_based"
+            "stress_prediction_method": "syllable_based",
         }
 
         if config_path and Path(config_path).exists():
             try:
-                with open(config_path, 'r') as f:
+                with open(config_path, "r") as f:
                     user_config = json.load(f)
                 default_config.update(user_config)
             except Exception as e:
@@ -87,25 +92,23 @@ class AdvancedPhoneticMapper:
         vowel_mappings = [
             # Monophthongs
             ("a", "æ", "", "", "en-US", 0.9, 0.95),  # cat, bat
-            ("e", "ɛ", "", "", "en-US", 0.8, 0.9),   # bed, red
+            ("e", "ɛ", "", "", "en-US", 0.8, 0.9),  # bed, red
             ("i", "ɪ", "", "", "en-US", 0.85, 0.9),  # bit, sit
             ("o", "ɑ", "", "", "en-US", 0.7, 0.85),  # hot, cot
-            ("u", "ʌ", "", "", "en-US", 0.75, 0.85), # but, cut
-
+            ("u", "ʌ", "", "", "en-US", 0.75, 0.85),  # but, cut
             # Long vowels
-            ("ee", "iː", "", "", "en-US", 0.9, 0.95), # see, tree
-            ("oo", "uː", "", "", "en-US", 0.85, 0.9), # food, mood
-            ("ar", "ɑr", "", "", "en-US", 0.9, 0.95), # car, far
-            ("or", "ɔr", "", "", "en-US", 0.85, 0.9), # for, more
+            ("ee", "iː", "", "", "en-US", 0.9, 0.95),  # see, tree
+            ("oo", "uː", "", "", "en-US", 0.85, 0.9),  # food, mood
+            ("ar", "ɑr", "", "", "en-US", 0.9, 0.95),  # car, far
+            ("or", "ɔr", "", "", "en-US", 0.85, 0.9),  # for, more
             ("er", "ɝ", "", "", "en-US", 0.9, 0.95),  # her, bird
-
             # Diphthongs
             ("ai", "eɪ", "", "", "en-US", 0.8, 0.9),  # rain, pain
-            ("ay", "eɪ", "", "", "en-US", 0.85, 0.9), # day, say
-            ("oi", "ɔɪ", "", "", "en-US", 0.9, 0.95), # boy, toy
-            ("oy", "ɔɪ", "", "", "en-US", 0.9, 0.95), # joy, employ
+            ("ay", "eɪ", "", "", "en-US", 0.85, 0.9),  # day, say
+            ("oi", "ɔɪ", "", "", "en-US", 0.9, 0.95),  # boy, toy
+            ("oy", "ɔɪ", "", "", "en-US", 0.9, 0.95),  # joy, employ
             ("ou", "aʊ", "", "", "en-US", 0.8, 0.9),  # house, mouse
-            ("ow", "aʊ", "", "", "en-US", 0.75, 0.85), # cow, how (context-dependent)
+            ("ow", "aʊ", "", "", "en-US", 0.75, 0.85),  # cow, how (context-dependent)
         ]
 
         for grapheme, phoneme, ctx_before, ctx_after, lang, freq, conf in vowel_mappings:
@@ -134,7 +137,6 @@ class AdvancedPhoneticMapper:
             ("w", "w", "", "", "en-US", 0.95, 0.98),
             ("y", "j", "", "", "en-US", 0.9, 0.95),
             ("z", "z", "", "", "en-US", 0.95, 0.98),
-
             # Digraphs and special combinations
             ("ch", "tʃ", "", "", "en-US", 0.95, 0.98),
             ("sh", "ʃ", "", "", "en-US", 0.95, 0.98),
@@ -142,7 +144,7 @@ class AdvancedPhoneticMapper:
             ("th", "ð", "", "", "en-US", 0.8, 0.85),  # this (voiced) - context-dependent
             ("ng", "ŋ", "", "", "en-US", 0.95, 0.98),
             ("ph", "f", "", "", "en-US", 0.9, 0.95),
-            ("gh", "f", "", "", "en-US", 0.7, 0.8),   # laugh, rough
+            ("gh", "f", "", "", "en-US", 0.7, 0.8),  # laugh, rough
             ("ck", "k", "", "", "en-US", 0.95, 0.98),
             ("qu", "kw", "", "", "en-US", 0.95, 0.98),
         ]
@@ -163,83 +165,80 @@ class AdvancedPhoneticMapper:
                 replacement="ɑ",
                 context="'a' before 'r'",
                 priority=100,
-                conditions=["not_in_unstressed_syllable"]
+                conditions=["not_in_unstressed_syllable"],
             ),
             PhoneticRule(
                 pattern=r"e(?=r)",
                 replacement="ɝ",
                 context="'e' before 'r'",
                 priority=100,
-                conditions=[]
+                conditions=[],
             ),
             PhoneticRule(
                 pattern=r"i(?=r)",
                 replacement="ɪr",
                 context="'i' before 'r'",
                 priority=100,
-                conditions=[]
+                conditions=[],
             ),
-
             # Consonant context rules
             PhoneticRule(
                 pattern=r"c(?=[eiy])",
                 replacement="s",
                 context="'c' before front vowels",
                 priority=90,
-                conditions=[]
+                conditions=[],
             ),
             PhoneticRule(
                 pattern=r"c(?=[aou])",
                 replacement="k",
                 context="'c' before back vowels",
                 priority=90,
-                conditions=[]
+                conditions=[],
             ),
             PhoneticRule(
                 pattern=r"g(?=[eiy])",
                 replacement="dʒ",
                 context="'g' before front vowels (soft g)",
                 priority=85,
-                conditions=["not_germanic_origin"]
+                conditions=["not_germanic_origin"],
             ),
-
             # Silent letter rules
             PhoneticRule(
                 pattern=r"(?<=\w)b$",
                 replacement="",
                 context="silent 'b' at word end",
                 priority=95,
-                conditions=["preceded_by_m"]
+                conditions=["preceded_by_m"],
             ),
             PhoneticRule(
                 pattern=r"k(?=n)",
                 replacement="",
                 context="silent 'k' before 'n'",
                 priority=95,
-                conditions=["word_initial"]
+                conditions=["word_initial"],
             ),
             PhoneticRule(
                 pattern=r"w(?=r)",
                 replacement="",
                 context="silent 'w' before 'r'",
                 priority=95,
-                conditions=["word_initial"]
+                conditions=["word_initial"],
             ),
-
             # Stress-dependent rules
             PhoneticRule(
                 pattern=r"a(?=\w*[aeiou]\w*$)",
                 replacement="ə",
                 context="'a' in unstressed syllable",
                 priority=80,
-                conditions=["unstressed_syllable"]
+                conditions=["unstressed_syllable"],
             ),
             PhoneticRule(
                 pattern=r"e(?=\w*[aeiou]\w*$)",
                 replacement="ə",
                 context="'e' in unstressed syllable",
                 priority=80,
-                conditions=["unstressed_syllable"]
+                conditions=["unstressed_syllable"],
             ),
         ]
 
@@ -247,46 +246,16 @@ class AdvancedPhoneticMapper:
         """Initialize homograph disambiguation rules"""
         return {
             # Word -> [(pronunciation1, context1, frequency1), ...]
-            "read": [
-                ("riːd", "present_tense", "0.6"),
-                ("rɛd", "past_tense", "0.4")
-            ],
-            "lead": [
-                ("liːd", "verb_or_metal", "0.7"),
-                ("lɛd", "past_tense_of_lead", "0.3")
-            ],
-            "tear": [
-                ("tɪr", "crying", "0.6"),
-                ("tɛr", "rip_apart", "0.4")
-            ],
-            "wind": [
-                ("wɪnd", "air_movement", "0.7"),
-                ("waɪnd", "to_twist", "0.3")
-            ],
-            "bow": [
-                ("boʊ", "archery_or_greeting", "0.6"),
-                ("baʊ", "front_of_ship", "0.4")
-            ],
-            "close": [
-                ("kloʊs", "near", "0.6"),
-                ("kloʊz", "to_shut", "0.4")
-            ],
-            "live": [
-                ("lɪv", "to_be_alive", "0.7"),
-                ("laɪv", "not_recorded", "0.3")
-            ],
-            "object": [
-                ("ˈɑbdʒɛkt", "noun", "0.6"),
-                ("əbˈdʒɛkt", "verb", "0.4")
-            ],
-            "present": [
-                ("ˈprɛzənt", "noun_or_adjective", "0.7"),
-                ("prɪˈzɛnt", "verb", "0.3")
-            ],
-            "record": [
-                ("ˈrɛkɔrd", "noun", "0.6"),
-                ("rɪˈkɔrd", "verb", "0.4")
-            ]
+            "read": [("riːd", "present_tense", "0.6"), ("rɛd", "past_tense", "0.4")],
+            "lead": [("liːd", "verb_or_metal", "0.7"), ("lɛd", "past_tense_of_lead", "0.3")],
+            "tear": [("tɪr", "crying", "0.6"), ("tɛr", "rip_apart", "0.4")],
+            "wind": [("wɪnd", "air_movement", "0.7"), ("waɪnd", "to_twist", "0.3")],
+            "bow": [("boʊ", "archery_or_greeting", "0.6"), ("baʊ", "front_of_ship", "0.4")],
+            "close": [("kloʊs", "near", "0.6"), ("kloʊz", "to_shut", "0.4")],
+            "live": [("lɪv", "to_be_alive", "0.7"), ("laɪv", "not_recorded", "0.3")],
+            "object": [("ˈɑbdʒɛkt", "noun", "0.6"), ("əbˈdʒɛkt", "verb", "0.4")],
+            "present": [("ˈprɛzənt", "noun_or_adjective", "0.7"), ("prɪˈzɛnt", "verb", "0.3")],
+            "record": [("ˈrɛkɔrd", "noun", "0.6"), ("rɪˈkɔrd", "verb", "0.4")],
         }
 
     def _initialize_language_mappings(self) -> dict[str, dict[str, str]]:
@@ -294,22 +263,22 @@ class AdvancedPhoneticMapper:
         return {
             "en-US": {
                 # American English specific
-                "r": "r",      # Rhotic
-                "a": "æ",      # Flat 'a'
-                "o": "ɑ",      # Open 'o'
+                "r": "r",  # Rhotic
+                "a": "æ",  # Flat 'a'
+                "o": "ɑ",  # Open 'o'
             },
             "en-GB": {
                 # British English specific
-                "r": "",       # Non-rhotic (context-dependent)
-                "a": "ɑː",     # Long 'a'
-                "o": "ɒ",      # Rounded 'o'
+                "r": "",  # Non-rhotic (context-dependent)
+                "a": "ɑː",  # Long 'a'
+                "o": "ɒ",  # Rounded 'o'
             },
             "en-AU": {
                 # Australian English specific
-                "a": "æ",      # Similar to American
-                "i": "ɪ",      # Centralized
-                "o": "ɔ",      # Rounded
-            }
+                "a": "æ",  # Similar to American
+                "i": "ɪ",  # Centralized
+                "o": "ɔ",  # Rounded
+            },
         }
 
     def _initialize_phoneme_similarities(self) -> dict[str, list[str]]:
@@ -326,7 +295,6 @@ class AdvancedPhoneticMapper:
             "ɔ": ["o", "ɑ", "ʊ"],
             "ʊ": ["u", "o", "ɔ"],
             "u": ["ʊ", "uː", "o"],
-
             # Consonant similarities
             "p": ["b", "f"],
             "b": ["p", "v", "m"],
@@ -351,7 +319,7 @@ class AdvancedPhoneticMapper:
             "r": ["l", "ɻ"],
             "j": ["i", "ɪ"],
             "w": ["u", "ʊ"],
-            "h": ["x", "ʔ"]
+            "h": ["x", "ʔ"],
         }
 
     def _initialize_stress_patterns(self) -> dict[str, list[str]]:
@@ -370,14 +338,14 @@ class AdvancedPhoneticMapper:
                 "-less": ["root_primary"],
                 "-ly": ["root_primary"],
                 "-ing": ["root_primary"],
-                "-ed": ["root_primary"]
+                "-ed": ["root_primary"],
             },
             "word_length": {
                 "1_syllable": ["primary"],
                 "2_syllables": ["first_primary"],
                 "3_syllables": ["first_or_second_primary"],
-                "4+_syllables": ["antepenultimate_or_penultimate_primary"]
-            }
+                "4+_syllables": ["antepenultimate_or_penultimate_primary"],
+            },
         }
 
     def map_to_ipa(self, text: str, language: str = "en-US") -> str:
@@ -411,10 +379,10 @@ class AdvancedPhoneticMapper:
         text = text.lower()
 
         # Normalize Unicode characters
-        text = unicodedata.normalize('NFKD', text)
+        text = unicodedata.normalize("NFKD", text)
 
         # Remove non-alphabetic characters (keep spaces and hyphens)
-        text = re.sub(r'[^a-z\s\-]', '', text)
+        text = re.sub(r"[^a-z\s\-]", "", text)
 
         return text.strip()
 
@@ -434,7 +402,12 @@ class AdvancedPhoneticMapper:
         """Check if rule conditions are met"""
         # Simplified condition checking
         for condition in rule.conditions:
-            if condition == "word_initial" and not re.search(r'\b' + rule.pattern, text) or condition == "word_final" and not re.search(rule.pattern + r'\b', text):
+            if (
+                condition == "word_initial"
+                and not re.search(r"\b" + rule.pattern, text)
+                or condition == "word_final"
+                and not re.search(rule.pattern + r"\b", text)
+            ):
                 return False
             # Add more condition checks as needed
 
@@ -456,7 +429,7 @@ class AdvancedPhoneticMapper:
             else:
                 resolved_words.append(word)
 
-        return ' '.join(resolved_words)
+        return " ".join(resolved_words)
 
     def _apply_phonetic_mappings(self, text: str, language: str) -> str:
         """Apply phonetic mappings to convert text to IPA"""
@@ -492,7 +465,7 @@ class AdvancedPhoneticMapper:
             else:
                 stressed_words.append(word)
 
-        return ' '.join(stressed_words)
+        return " ".join(stressed_words)
 
     def get_phoneme_alternatives(self, phoneme: str) -> list[str]:
         """Get alternative phonemes for error correction"""
@@ -503,20 +476,24 @@ class AdvancedPhoneticMapper:
         errors = []
 
         # Check for valid IPA characters
-        valid_ipa_chars = set("abcdefghijklmnopqrstuvwxyzæɑɒɔəɛɪʊʌaeiouɜɝɞɘɵɤɯɨʉɶœøɪ̈ʏɐɶ̃ɑ̃ɔ̃ə̃ɛ̃ɪ̃ʊ̃ʌ̃pbtkgfvθðszʃʒhmnŋlrjwʔˈˌːˑ̆ʰʷʲ. ")
+        valid_ipa_chars = set(
+            "abcdefghijklmnopqrstuvwxyzæɑɒɔəɛɪʊʌaeiouɜɝɞɘɵɤɯɨʉɶœøɪ̈ʏɐɶ̃ɑ̃ɔ̃ə̃ɛ̃ɪ̃ʊ̃ʌ̃pbtkgfvθðszʃʒhmnŋlrjwʔˈˌːˑ̆ʰʷʲ. "
+        )
 
         for char in ipa_string:
             if char not in valid_ipa_chars:
                 errors.append(f"Invalid IPA character: '{char}'")
 
         # Check stress marker placement
-        if re.search(r'ˈˈ|ˌˌ', ipa_string):
+        if re.search(r"ˈˈ|ˌˌ", ipa_string):
             errors.append("Consecutive stress markers found")
 
         return len(errors) == 0, errors
 
+
 # Global instance for easy access
 advanced_phonetic_mapper = AdvancedPhoneticMapper()
+
 
 def main():
     """Test the advanced phonetic mapping system"""
@@ -529,12 +506,12 @@ def main():
         "the quick brown fox",
         "read the book",  # homograph
         "I'll be there",  # contraction
-        "photograph",     # complex phonetics
-        "psychology",     # silent letters
-        "knight knows",   # silent letters
+        "photograph",  # complex phonetics
+        "psychology",  # silent letters
+        "knight knows",  # silent letters
         "through tough",  # irregular spellings
-        "record a record", # homograph pair
-        "wind the wind"    # homograph pair
+        "record a record",  # homograph pair
+        "wind the wind",  # homograph pair
     ]
 
     mapper = AdvancedPhoneticMapper()
@@ -564,6 +541,7 @@ def main():
         print(f"/{phoneme}/ alternatives: {alternatives}")
 
     print("\n✅ Advanced phonetic mapping system test completed!")
+
 
 if __name__ == "__main__":
     main()

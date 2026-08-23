@@ -11,6 +11,7 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+
 class CacheKeyGenerator:
     """Standardized cache key generator for consistent caching across the application"""
 
@@ -22,11 +23,11 @@ class CacheKeyGenerator:
         format: str = "mp3",
         language: str = "en-us",
         emotion: str | None = None,
-        emotion_strength: float = 1.0
+        emotion_strength: float = 1.0,
     ) -> str:
         """
         Generate standardized cache key for audio generation
-        
+
         This is the canonical cache key format used throughout the application.
         All other cache key generation should use this method to ensure consistency.
         """
@@ -46,7 +47,7 @@ class CacheKeyGenerator:
             "voice": voice,
             "speed": speed,
             "format": format,
-            "language": language
+            "language": language,
         }
 
         # Add optional components if present
@@ -55,10 +56,10 @@ class CacheKeyGenerator:
             key_components["emotion_strength"] = emotion_strength
 
         # Create deterministic JSON string (sorted keys)
-        key_string = json.dumps(key_components, sort_keys=True, separators=(',', ':'))
+        key_string = json.dumps(key_components, sort_keys=True, separators=(",", ":"))
 
         # Generate SHA256 hash for consistent, collision-resistant keys
-        cache_key = hashlib.sha256(key_string.encode('utf-8')).hexdigest()
+        cache_key = hashlib.sha256(key_string.encode("utf-8")).hexdigest()
 
         logger.debug(f"Generated cache key: {cache_key[:16]}... for text: '{text[:50]}...'")
         return cache_key
@@ -68,20 +69,22 @@ class CacheKeyGenerator:
         """Generate cache key for voice data"""
         voice = voice.lower().strip()
         key_string = f"voice:{voice}"
-        return hashlib.sha256(key_string.encode('utf-8')).hexdigest()
+        return hashlib.sha256(key_string.encode("utf-8")).hexdigest()
 
     @staticmethod
     def generate_model_cache_key(model_path: str, variant: str = "") -> str:
         """Generate cache key for model data"""
         key_string = f"model:{model_path}:{variant}"
-        return hashlib.sha256(key_string.encode('utf-8')).hexdigest()
+        return hashlib.sha256(key_string.encode("utf-8")).hexdigest()
 
     @staticmethod
-    def generate_text_preprocessing_cache_key(text: str, preprocessing_level: str = "standard") -> str:
+    def generate_text_preprocessing_cache_key(
+        text: str, preprocessing_level: str = "standard"
+    ) -> str:
         """Generate cache key for preprocessed text"""
         text = text.strip()
         key_string = f"text_preprocess:{preprocessing_level}:{text}"
-        return hashlib.sha256(key_string.encode('utf-8')).hexdigest()
+        return hashlib.sha256(key_string.encode("utf-8")).hexdigest()
 
     @staticmethod
     def generate_phoneme_cache_key(text: str, language: str = "en-us") -> str:
@@ -89,7 +92,8 @@ class CacheKeyGenerator:
         text = text.strip()
         language = language.lower().strip()
         key_string = f"phonemes:{language}:{text}"
-        return hashlib.sha256(key_string.encode('utf-8')).hexdigest()
+        return hashlib.sha256(key_string.encode("utf-8")).hexdigest()
+
 
 class CacheMetrics:
     """Cache performance metrics tracking"""
@@ -151,7 +155,7 @@ class CacheMetrics:
             "hit_rate": self.get_hit_rate(),
             "miss_rate": self.get_miss_rate(),
             "error_rate": self.get_error_rate(),
-            "cache_sizes": self.cache_sizes.copy()
+            "cache_sizes": self.cache_sizes.copy(),
         }
 
     def reset(self):
@@ -163,8 +167,10 @@ class CacheMetrics:
         self.cache_sizes.clear()
         logger.info("Cache metrics reset")
 
+
 # Global cache metrics instance
 cache_metrics = CacheMetrics()
+
 
 def validate_cache_key(cache_key: str) -> bool:
     """Validate that a cache key is properly formatted"""
@@ -181,16 +187,13 @@ def validate_cache_key(cache_key: str) -> bool:
     except ValueError:
         return False
 
+
 def normalize_cache_parameters(
-    text: str,
-    voice: str,
-    speed: float,
-    format: str,
-    language: str = "en-us"
+    text: str, voice: str, speed: float, format: str, language: str = "en-us"
 ) -> dict[str, Any]:
     """
     Normalize cache parameters to ensure consistency
-    
+
     This function ensures that equivalent requests generate the same cache key
     regardless of minor variations in input formatting.
     """
@@ -199,15 +202,12 @@ def normalize_cache_parameters(
         "voice": voice.lower().strip(),
         "speed": round(float(speed), 2),
         "format": format.lower().strip(),
-        "language": language.lower().strip()
+        "language": language.lower().strip(),
     }
 
+
 def debug_cache_key_generation(
-    text: str,
-    voice: str,
-    speed: float = 1.0,
-    format: str = "mp3",
-    language: str = "en-us"
+    text: str, voice: str, speed: float = 1.0, format: str = "mp3", language: str = "en-us"
 ) -> dict[str, str]:
     """
     Debug cache key generation by showing intermediate steps
@@ -220,15 +220,15 @@ def debug_cache_key_generation(
         "voice": normalized["voice"],
         "speed": normalized["speed"],
         "format": normalized["format"],
-        "language": normalized["language"]
+        "language": normalized["language"],
     }
 
-    key_string = json.dumps(key_components, sort_keys=True, separators=(',', ':'))
-    cache_key = hashlib.sha256(key_string.encode('utf-8')).hexdigest()
+    key_string = json.dumps(key_components, sort_keys=True, separators=(",", ":"))
+    cache_key = hashlib.sha256(key_string.encode("utf-8")).hexdigest()
 
     return {
         "normalized_params": str(normalized),
         "key_string": key_string,
         "cache_key": cache_key,
-        "cache_key_short": cache_key[:16] + "..."
+        "cache_key_short": cache_key[:16] + "...",
     }

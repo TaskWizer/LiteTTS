@@ -13,9 +13,11 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class CacheEntry:
     """Cache entry with metadata"""
+
     value: Any
     created_at: float
     last_accessed: float
@@ -32,6 +34,7 @@ class CacheEntry:
         """Update access metadata"""
         self.last_accessed = time.time()
         self.access_count += 1
+
 
 class LRUCache:
     """Thread-safe LRU cache implementation"""
@@ -77,12 +80,7 @@ class LRUCache:
             now = time.time()
             ttl = ttl or self.default_ttl
 
-            entry = CacheEntry(
-                value=value,
-                created_at=now,
-                last_accessed=now,
-                ttl=ttl
-            )
+            entry = CacheEntry(value=value, created_at=now, last_accessed=now, ttl=ttl)
 
             self._cache[key] = entry
             self._cache.move_to_end(key)
@@ -111,8 +109,9 @@ class LRUCache:
                 "hits": self._hits,
                 "misses": self._misses,
                 "hit_rate": hit_rate,
-                "total_requests": total_requests
+                "total_requests": total_requests,
             }
+
 
 class AudioCache(LRUCache):
     """Specialized cache for audio data"""
@@ -120,21 +119,31 @@ class AudioCache(LRUCache):
     def __init__(self, max_size: int = 50, default_ttl: float = 3600):
         super().__init__(max_size, default_ttl)
 
-    def get_audio(self, text: str, voice: str, speed: float = 1.0,
-                  response_format: str = "mp3") -> bytes | None:
+    def get_audio(
+        self, text: str, voice: str, speed: float = 1.0, response_format: str = "mp3"
+    ) -> bytes | None:
         """Get cached audio data"""
         key = self._generate_key(text, voice, speed, response_format)
         return self.get(key)
 
-    def put_audio(self, text: str, voice: str, audio_data: bytes,
-                  speed: float = 1.0, response_format: str = "mp3",
-                  ttl: float | None = None) -> None:
+    def put_audio(
+        self,
+        text: str,
+        voice: str,
+        audio_data: bytes,
+        speed: float = 1.0,
+        response_format: str = "mp3",
+        ttl: float | None = None,
+    ) -> None:
         """Cache audio data"""
         key = self._generate_key(text, voice, speed, response_format)
         self.put(key, audio_data, ttl)
 
-        logger.debug(f"Cached audio: text_len={len(text)}, voice={voice}, "
-                    f"audio_size={len(audio_data)}, key={key[:8]}...")
+        logger.debug(
+            f"Cached audio: text_len={len(text)}, voice={voice}, "
+            f"audio_size={len(audio_data)}, key={key[:8]}..."
+        )
+
 
 class VoiceCache(LRUCache):
     """Specialized cache for voice embeddings"""
@@ -151,11 +160,13 @@ class VoiceCache(LRUCache):
         self.put(voice_name, voice_embedding)
         logger.debug(f"Cached voice embedding: {voice_name}")
 
+
 class CacheManager:
     """Central cache management"""
 
-    def __init__(self, audio_cache_size: int = 50, voice_cache_size: int = 10,
-                 audio_ttl: float = 3600):
+    def __init__(
+        self, audio_cache_size: int = 50, voice_cache_size: int = 10, audio_ttl: float = 3600
+    ):
         self.audio_cache = AudioCache(audio_cache_size, audio_ttl)
         self.voice_cache = VoiceCache(voice_cache_size)
         self._enabled = True
@@ -185,8 +196,9 @@ class CacheManager:
         return {
             "enabled": self._enabled,
             "audio_cache": self.audio_cache.stats(),
-            "voice_cache": self.voice_cache.stats()
+            "voice_cache": self.voice_cache.stats(),
         }
+
 
 # Global cache manager instance
 cache_manager = CacheManager()

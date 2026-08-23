@@ -4,7 +4,6 @@ Comprehensive Test Suite for Kokoro ONNX TTS API
 Tests all API endpoints, performance optimizations, and production features
 """
 
-
 # Add project root to path
 import sys
 import time
@@ -20,6 +19,7 @@ from app import LiteTTSApplication as TTSApp
 # Skip entire test class - requires full server startup with model loading
 # Run manually with: pytest LiteTTS/tests/root_tests/test_comprehensive.py -v
 pytestmark = pytest.mark.skip(reason="Integration test - requires full server with model loading")
+
 
 class TestKokoroTTSAPI:
     """Comprehensive test suite for Kokoro ONNX TTS API"""
@@ -105,11 +105,7 @@ class TestKokoroTTSAPI:
         """Test basic TTS generation"""
         response = client.post(
             "/v1/audio/speech",
-            json={
-                "input": "Hello, world!",
-                "voice": "af_heart",
-                "response_format": "mp3"
-            }
+            json={"input": "Hello, world!", "voice": "af_heart", "response_format": "mp3"},
         )
         assert response.status_code == 200
         assert response.headers["content-type"].startswith("audio/")
@@ -125,8 +121,8 @@ class TestKokoroTTSAPI:
                 json={
                     "input": "Testing voice generation",
                     "voice": voice,
-                    "response_format": "mp3"
-                }
+                    "response_format": "mp3",
+                },
             )
             assert response.status_code == 200
             assert len(response.content) > 1000
@@ -138,11 +134,7 @@ class TestKokoroTTSAPI:
         for fmt in formats:
             response = client.post(
                 "/v1/audio/speech",
-                json={
-                    "input": "Testing audio format",
-                    "voice": "af_heart",
-                    "response_format": fmt
-                }
+                json={"input": "Testing audio format", "voice": "af_heart", "response_format": fmt},
             )
             assert response.status_code == 200
             assert response.headers["content-type"].startswith("audio/")
@@ -158,8 +150,8 @@ class TestKokoroTTSAPI:
                     "input": "Testing speed control",
                     "voice": "af_heart",
                     "response_format": "mp3",
-                    "speed": speed
-                }
+                    "speed": speed,
+                },
             )
             assert response.status_code == 200
             assert len(response.content) > 500
@@ -171,12 +163,7 @@ class TestKokoroTTSAPI:
         # First request (cold start)
         start_time = time.time()
         response1 = client.post(
-            "/v1/audio/speech",
-            json={
-                "input": text,
-                "voice": "af_heart",
-                "response_format": "mp3"
-            }
+            "/v1/audio/speech", json={"input": text, "voice": "af_heart", "response_format": "mp3"}
         )
         cold_time = time.time() - start_time
 
@@ -185,12 +172,7 @@ class TestKokoroTTSAPI:
         # Second request (should be cached)
         start_time = time.time()
         response2 = client.post(
-            "/v1/audio/speech",
-            json={
-                "input": text,
-                "voice": "af_heart",
-                "response_format": "mp3"
-            }
+            "/v1/audio/speech", json={"input": text, "voice": "af_heart", "response_format": "mp3"}
         )
         cache_time = time.time() - start_time
 
@@ -259,11 +241,7 @@ class TestKokoroTTSAPI:
         """Test error handling for invalid voice"""
         response = client.post(
             "/v1/audio/speech",
-            json={
-                "input": "Test text",
-                "voice": "invalid_voice",
-                "response_format": "mp3"
-            }
+            json={"input": "Test text", "voice": "invalid_voice", "response_format": "mp3"},
         )
         assert response.status_code == 400
 
@@ -273,12 +251,7 @@ class TestKokoroTTSAPI:
     def test_error_handling_empty_text(self, client):
         """Test error handling for empty text"""
         response = client.post(
-            "/v1/audio/speech",
-            json={
-                "input": "",
-                "voice": "af_heart",
-                "response_format": "mp3"
-            }
+            "/v1/audio/speech", json={"input": "", "voice": "af_heart", "response_format": "mp3"}
         )
         assert response.status_code == 400
 
@@ -286,11 +259,7 @@ class TestKokoroTTSAPI:
         """Test error handling for invalid audio format"""
         response = client.post(
             "/v1/audio/speech",
-            json={
-                "input": "Test text",
-                "voice": "af_heart",
-                "response_format": "invalid_format"
-            }
+            json={"input": "Test text", "voice": "af_heart", "response_format": "invalid_format"},
         )
         assert response.status_code == 400
 
@@ -302,22 +271,21 @@ class TestKokoroTTSAPI:
                 "input": "Test text",
                 "voice": "af_heart",
                 "response_format": "mp3",
-                "speed": -1.0  # Invalid speed
-            }
+                "speed": -1.0,  # Invalid speed
+            },
         )
         assert response.status_code == 400
 
     def test_long_text_generation(self, client):
         """Test generation with long text"""
-        long_text = "This is a very long text that should test the system's ability to handle extended input. " * 10
+        long_text = (
+            "This is a very long text that should test the system's ability to handle extended input. "
+            * 10
+        )
 
         response = client.post(
             "/v1/audio/speech",
-            json={
-                "input": long_text,
-                "voice": "af_heart",
-                "response_format": "mp3"
-            }
+            json={"input": long_text, "voice": "af_heart", "response_format": "mp3"},
         )
         assert response.status_code == 200
         assert len(response.content) > 5000  # Should generate substantial audio
@@ -332,11 +300,7 @@ class TestKokoroTTSAPI:
         def make_request():
             response = client.post(
                 "/v1/audio/speech",
-                json={
-                    "input": "Concurrent test",
-                    "voice": "af_heart",
-                    "response_format": "mp3"
-                }
+                json={"input": "Concurrent test", "voice": "af_heart", "response_format": "mp3"},
             )
             results.put(response.status_code)
 

@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 # Dynamic model and voice management - no hardcoded URLs or lists
 # All models and voices are now discovered automatically from HuggingFace
 
+
 def download_file(url: str, filepath: Path, description: str = "") -> bool:
     """Download a file with basic error handling"""
     try:
@@ -29,10 +30,10 @@ def download_file(url: str, filepath: Path, description: str = "") -> bool:
         response = requests.get(url, stream=True)
         response.raise_for_status()
 
-        total_size = int(response.headers.get('content-length', 0))
+        total_size = int(response.headers.get("content-length", 0))
         downloaded = 0
 
-        with open(filepath, 'wb') as f:
+        with open(filepath, "wb") as f:
             for chunk in response.iter_content(chunk_size=8192):
                 if chunk:
                     f.write(chunk)
@@ -40,7 +41,9 @@ def download_file(url: str, filepath: Path, description: str = "") -> bool:
                     if total_size > 0:
                         percent = (downloaded / total_size) * 100
                         if downloaded % (1024 * 1024) == 0:  # Log every MB
-                            logger.info(f"   Progress: {percent:.1f}% ({downloaded}/{total_size} bytes)")
+                            logger.info(
+                                f"   Progress: {percent:.1f}% ({downloaded}/{total_size} bytes)"
+                            )
 
         logger.info(f"✅ Downloaded {filepath.name} ({downloaded} bytes)")
         return True
@@ -50,6 +53,7 @@ def download_file(url: str, filepath: Path, description: str = "") -> bool:
         if filepath.exists():
             filepath.unlink()  # Remove partial file
         return False
+
 
 def ensure_model_files() -> bool:
     """Ensure model and essential voices are downloaded using dynamic discovery"""
@@ -100,10 +104,12 @@ def ensure_model_files() -> bool:
     except Exception as e:
         logger.error(f"❌ Failed to ensure model files: {e}")
         import traceback
+
         logger.error(f"Full traceback: {traceback.format_exc()}")
         success = False
 
     return success
+
 
 def get_available_voices():
     """Get list of available voices using dynamic discovery"""

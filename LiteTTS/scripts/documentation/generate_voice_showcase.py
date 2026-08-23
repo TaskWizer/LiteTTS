@@ -17,88 +17,68 @@ VOICE_CATEGORIES = {
     "American Female": {
         "prefix": "af_",
         "description": "American English female voices with diverse characteristics",
-        "voices": []
+        "voices": [],
     },
     "American Male": {
         "prefix": "am_",
         "description": "American English male voices with varied tones and styles",
-        "voices": []
+        "voices": [],
     },
     "British Female": {
         "prefix": "bf_",
         "description": "British English female voices with authentic accents",
-        "voices": []
+        "voices": [],
     },
     "British Male": {
         "prefix": "bm_",
         "description": "British English male voices with classic British pronunciation",
-        "voices": []
+        "voices": [],
     },
     "European Female": {
         "prefix": "ef_",
         "description": "European English female voices",
-        "voices": []
+        "voices": [],
     },
-    "European Male": {
-        "prefix": "em_",
-        "description": "European English male voices",
-        "voices": []
-    },
+    "European Male": {"prefix": "em_", "description": "European English male voices", "voices": []},
     "French Female": {
         "prefix": "ff_",
         "description": "French-accented female voices",
-        "voices": []
+        "voices": [],
     },
-    "Hindi Female": {
-        "prefix": "hf_",
-        "description": "Hindi-accented female voices",
-        "voices": []
-    },
-    "Hindi Male": {
-        "prefix": "hm_",
-        "description": "Hindi-accented male voices",
-        "voices": []
-    },
+    "Hindi Female": {"prefix": "hf_", "description": "Hindi-accented female voices", "voices": []},
+    "Hindi Male": {"prefix": "hm_", "description": "Hindi-accented male voices", "voices": []},
     "Italian Female": {
         "prefix": "if_",
         "description": "Italian-accented female voices",
-        "voices": []
+        "voices": [],
     },
-    "Italian Male": {
-        "prefix": "im_",
-        "description": "Italian-accented male voices",
-        "voices": []
-    },
+    "Italian Male": {"prefix": "im_", "description": "Italian-accented male voices", "voices": []},
     "Japanese Female": {
         "prefix": "jf_",
         "description": "Japanese female voices with authentic pronunciation",
-        "voices": []
+        "voices": [],
     },
-    "Japanese Male": {
-        "prefix": "jm_",
-        "description": "Japanese male voices",
-        "voices": []
-    },
+    "Japanese Male": {"prefix": "jm_", "description": "Japanese male voices", "voices": []},
     "Portuguese Female": {
         "prefix": "pf_",
         "description": "Portuguese-accented female voices",
-        "voices": []
+        "voices": [],
     },
     "Portuguese Male": {
         "prefix": "pm_",
         "description": "Portuguese-accented male voices",
-        "voices": []
+        "voices": [],
     },
     "Chinese Female": {
         "prefix": "zf_",
         "description": "Chinese female voices with Mandarin pronunciation",
-        "voices": []
+        "voices": [],
     },
     "Chinese Male": {
         "prefix": "zm_",
         "description": "Chinese male voices with Mandarin pronunciation",
-        "voices": []
-    }
+        "voices": [],
+    },
 }
 
 # Sample texts for different languages/accents
@@ -106,8 +86,9 @@ SAMPLE_TEXTS = {
     "english": "Hello, welcome to Kokoro TTS. This voice demonstrates natural speech synthesis with clear pronunciation and expressive delivery.",
     "japanese": "こんにちは、Kokoro TTSへようこそ。この音声は自然な音声合成を実演します。",
     "chinese": "你好，欢迎使用Kokoro TTS。这个声音展示了自然的语音合成技术。",
-    "multilingual": "Hello world! This is a demonstration of high-quality text-to-speech synthesis."
+    "multilingual": "Hello world! This is a demonstration of high-quality text-to-speech synthesis.",
 }
+
 
 def get_available_voices() -> list[str]:
     """Get list of available voices from API"""
@@ -123,15 +104,13 @@ def get_available_voices() -> list[str]:
         print(f"❌ Error getting voices: {e}")
         return []
 
+
 def categorize_voices(voices: list[str]) -> dict[str, Any]:
     """Categorize voices by their prefixes"""
     categorized = {}
 
     for category_name, category_info in VOICE_CATEGORIES.items():
-        categorized[category_name] = {
-            "description": category_info["description"],
-            "voices": []
-        }
+        categorized[category_name] = {"description": category_info["description"], "voices": []}
 
     # Categorize voices
     for voice in voices:
@@ -147,12 +126,13 @@ def categorize_voices(voices: list[str]) -> dict[str, Any]:
             if "Other" not in categorized:
                 categorized["Other"] = {
                     "description": "Other voices that don't fit standard categories",
-                    "voices": []
+                    "voices": [],
                 }
             categorized["Other"]["voices"].append(voice)
 
     # Remove empty categories
     return {k: v for k, v in categorized.items() if v["voices"]}
+
 
 def generate_audio_sample(voice: str, text: str, output_dir: str) -> str:
     """Generate audio sample for a voice"""
@@ -165,20 +145,12 @@ def generate_audio_sample(voice: str, text: str, output_dir: str) -> str:
         return filename
 
     try:
-        payload = {
-            "input": text,
-            "voice": voice,
-            "response_format": "mp3"
-        }
+        payload = {"input": text, "voice": voice, "response_format": "mp3"}
 
-        response = requests.post(
-            "http://localhost:8354/v1/audio/speech",
-            json=payload,
-            timeout=30
-        )
+        response = requests.post("http://localhost:8354/v1/audio/speech", json=payload, timeout=30)
 
         if response.status_code == 200:
-            with open(filepath, 'wb') as f:
+            with open(filepath, "wb") as f:
                 f.write(response.content)
             print(f"   ✅ Generated: {filename}")
             return filename
@@ -190,14 +162,16 @@ def generate_audio_sample(voice: str, text: str, output_dir: str) -> str:
         print(f"   ❌ Error: {voice} - {e}")
         return None
 
+
 def get_sample_text_for_voice(voice: str) -> str:
     """Get appropriate sample text based on voice characteristics"""
-    if voice.startswith(('jf_', 'jm_')):
+    if voice.startswith(("jf_", "jm_")):
         return SAMPLE_TEXTS["japanese"]
-    elif voice.startswith(('zf_', 'zm_')):
+    elif voice.startswith(("zf_", "zm_")):
         return SAMPLE_TEXTS["chinese"]
     else:
         return SAMPLE_TEXTS["english"]
+
 
 def generate_voice_showcase(output_dir: str = "docs/voices") -> bool:
     """Generate the complete voice showcase"""
@@ -230,7 +204,7 @@ def generate_voice_showcase(output_dir: str = "docs/voices") -> bool:
     for category_name, category_data in categorized_voices.items():
         print(f"\n📁 {category_name} ({len(category_data['voices'])} voices)")
 
-        for voice in category_data['voices']:
+        for voice in category_data["voices"]:
             sample_text = get_sample_text_for_voice(voice)
             filename = generate_audio_sample(voice, sample_text, output_dir)
             total_samples += 1
@@ -248,7 +222,7 @@ def generate_voice_showcase(output_dir: str = "docs/voices") -> bool:
 
     # Write markdown file
     markdown_path = os.path.join(output_dir, "README.md")
-    with open(markdown_path, 'w', encoding='utf-8') as f:
+    with open(markdown_path, "w", encoding="utf-8") as f:
         f.write(markdown_content)
 
     print(f"✅ Voice showcase generated: {markdown_path}")
@@ -258,6 +232,7 @@ def generate_voice_showcase(output_dir: str = "docs/voices") -> bool:
     update_main_readme()
 
     return True
+
 
 def generate_markdown(categorized_voices: dict[str, Any], output_dir: str) -> str:
     """Generate markdown content for voice showcase"""
@@ -308,7 +283,7 @@ curl -X POST "http://localhost:8354/v1/audio/speech" \\
         markdown += "|-------|--------|-------------|\n"
 
         # Add each voice
-        for voice in sorted(category_data['voices']):
+        for voice in sorted(category_data["voices"]):
             sample_file = f"{voice}_sample.mp3"
             sample_path = os.path.join(output_dir, sample_file)
 
@@ -365,37 +340,38 @@ All audio samples are generated using:
 
     return markdown
 
+
 def generate_voice_description(voice: str) -> str:
     """Generate a description for a voice based on its name"""
 
     # Extract the name part after the prefix
-    if '_' in voice:
-        prefix, name = voice.split('_', 1)
+    if "_" in voice:
+        prefix, name = voice.split("_", 1)
     else:
-        prefix, name = '', voice
+        prefix, name = "", voice
 
     # Special descriptions for known voices
     descriptions = {
-        'heart': 'Warm and expressive, perfect for emotional content',
-        'sky': 'Clear and bright, ideal for professional narration',
-        'bella': 'Elegant and sophisticated, great for formal presentations',
-        'sarah': 'Friendly and approachable, excellent for conversational content',
-        'nova': 'Modern and dynamic, suitable for tech and innovation topics',
-        'alloy': 'Strong and confident, perfect for authoritative content',
-        'echo': 'Resonant and memorable, ideal for announcements',
-        'onyx': 'Deep and rich, excellent for dramatic readings',
-        'adam': 'Classic and reliable, great for educational content',
-        'liam': 'Youthful and energetic, perfect for casual conversations',
-        'michael': 'Professional and clear, ideal for business communications',
-        'alice': 'Gentle and soothing, excellent for storytelling',
-        'emma': 'Bright and cheerful, perfect for upbeat content',
-        'daniel': 'Authoritative and clear, great for news and announcements',
-        'george': 'Distinguished and mature, ideal for formal presentations',
-        'santa': 'Jolly and warm, perfect for holiday content',
-        'alpha': 'Precise and technical, ideal for scientific content',
-        'beta': 'Experimental and unique, great for creative projects',
-        'omega': 'Powerful and commanding, perfect for dramatic content',
-        'psi': 'Mysterious and intriguing, ideal for storytelling'
+        "heart": "Warm and expressive, perfect for emotional content",
+        "sky": "Clear and bright, ideal for professional narration",
+        "bella": "Elegant and sophisticated, great for formal presentations",
+        "sarah": "Friendly and approachable, excellent for conversational content",
+        "nova": "Modern and dynamic, suitable for tech and innovation topics",
+        "alloy": "Strong and confident, perfect for authoritative content",
+        "echo": "Resonant and memorable, ideal for announcements",
+        "onyx": "Deep and rich, excellent for dramatic readings",
+        "adam": "Classic and reliable, great for educational content",
+        "liam": "Youthful and energetic, perfect for casual conversations",
+        "michael": "Professional and clear, ideal for business communications",
+        "alice": "Gentle and soothing, excellent for storytelling",
+        "emma": "Bright and cheerful, perfect for upbeat content",
+        "daniel": "Authoritative and clear, great for news and announcements",
+        "george": "Distinguished and mature, ideal for formal presentations",
+        "santa": "Jolly and warm, perfect for holiday content",
+        "alpha": "Precise and technical, ideal for scientific content",
+        "beta": "Experimental and unique, great for creative projects",
+        "omega": "Powerful and commanding, perfect for dramatic content",
+        "psi": "Mysterious and intriguing, ideal for storytelling",
     }
 
     # Return specific description if available, otherwise generate generic one
@@ -403,16 +379,17 @@ def generate_voice_description(voice: str) -> str:
         return descriptions[name]
     else:
         # Generate based on prefix
-        if prefix.startswith('a'):
-            return 'Natural American accent with clear pronunciation'
-        elif prefix.startswith('b'):
-            return 'Authentic British accent with classic pronunciation'
-        elif prefix.startswith('j'):
-            return 'Native Japanese pronunciation with natural intonation'
-        elif prefix.startswith('z'):
-            return 'Native Chinese pronunciation with Mandarin tones'
+        if prefix.startswith("a"):
+            return "Natural American accent with clear pronunciation"
+        elif prefix.startswith("b"):
+            return "Authentic British accent with classic pronunciation"
+        elif prefix.startswith("j"):
+            return "Native Japanese pronunciation with natural intonation"
+        elif prefix.startswith("z"):
+            return "Native Chinese pronunciation with Mandarin tones"
         else:
-            return 'High-quality voice with natural speech patterns'
+            return "High-quality voice with natural speech patterns"
+
 
 def update_main_readme():
     """Update the main README.md to include link to voice showcase"""
@@ -423,7 +400,7 @@ def update_main_readme():
         return
 
     try:
-        with open(readme_path, 'r', encoding='utf-8') as f:
+        with open(readme_path, "r", encoding="utf-8") as f:
             content = f.read()
 
         # Check if voice showcase link already exists
@@ -455,7 +432,7 @@ Featuring voices in multiple languages and accents:
 """
                 content = content[:next_section] + voice_showcase_section + content[next_section:]
 
-                with open(readme_path, 'w', encoding='utf-8') as f:
+                with open(readme_path, "w", encoding="utf-8") as f:
                     f.write(content)
 
                 print("✅ Added voice showcase link to main README")
@@ -466,6 +443,7 @@ Featuring voices in multiple languages and accents:
 
     except Exception as e:
         print(f"❌ Error updating README: {e}")
+
 
 if __name__ == "__main__":
     success = generate_voice_showcase()

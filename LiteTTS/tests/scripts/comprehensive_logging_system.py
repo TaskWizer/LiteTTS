@@ -20,9 +20,11 @@ from typing import Any
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
+
 @dataclass
 class LoggingConfiguration:
     """Logging configuration settings"""
+
     log_level: str
     log_format: str
     enable_file_logging: bool
@@ -39,9 +41,11 @@ class LoggingConfiguration:
     enable_security_logging: bool
     enable_api_logging: bool
 
+
 @dataclass
 class LogEntry:
     """Structured log entry"""
+
     timestamp: str
     level: str
     logger_name: str
@@ -52,6 +56,7 @@ class LogEntry:
     thread_id: int
     process_id: int
     extra_data: dict[str, Any]
+
 
 class StructuredFormatter(logging.Formatter):
     """Custom formatter for structured logging"""
@@ -67,7 +72,7 @@ class StructuredFormatter(logging.Formatter):
             "function": record.funcName,
             "line": record.lineno,
             "thread_id": record.thread,
-            "process_id": record.process
+            "process_id": record.process,
         }
 
         # Add exception information if present
@@ -75,22 +80,41 @@ class StructuredFormatter(logging.Formatter):
             log_entry["exception"] = {
                 "type": record.exc_info[0].__name__,
                 "message": str(record.exc_info[1]),
-                "traceback": traceback.format_exception(*record.exc_info)
+                "traceback": traceback.format_exception(*record.exc_info),
             }
 
         # Add extra fields
         extra_fields = {}
         for key, value in record.__dict__.items():
-            if key not in ['name', 'msg', 'args', 'levelname', 'levelno', 'pathname',
-                          'filename', 'module', 'lineno', 'funcName', 'created',
-                          'msecs', 'relativeCreated', 'thread', 'threadName',
-                          'processName', 'process', 'exc_info', 'exc_text', 'stack_info']:
+            if key not in [
+                "name",
+                "msg",
+                "args",
+                "levelname",
+                "levelno",
+                "pathname",
+                "filename",
+                "module",
+                "lineno",
+                "funcName",
+                "created",
+                "msecs",
+                "relativeCreated",
+                "thread",
+                "threadName",
+                "processName",
+                "process",
+                "exc_info",
+                "exc_text",
+                "stack_info",
+            ]:
                 extra_fields[key] = value
 
         if extra_fields:
             log_entry["extra"] = extra_fields
 
         return json.dumps(log_entry, default=str)
+
 
 class PerformanceLogger:
     """Performance logging utility"""
@@ -116,8 +140,8 @@ class PerformanceLogger:
                     "operation": operation_name,
                     "duration_seconds": round(duration, 4),
                     "operation_id": operation_id,
-                    **kwargs
-                }
+                    **kwargs,
+                },
             )
         else:
             self.logger.warning(f"Timer not found for operation: {operation_id}")
@@ -131,9 +155,10 @@ class PerformanceLogger:
                 "metric_name": metric_name,
                 "value": value,
                 "unit": unit,
-                **kwargs
-            }
+                **kwargs,
+            },
         )
+
 
 class SecurityLogger:
     """Security logging utility"""
@@ -141,7 +166,9 @@ class SecurityLogger:
     def __init__(self, logger: logging.Logger):
         self.logger = logger
 
-    def log_authentication_attempt(self, username: str, success: bool, ip_address: str = "", **kwargs):
+    def log_authentication_attempt(
+        self, username: str, success: bool, ip_address: str = "", **kwargs
+    ):
         """Log authentication attempt"""
         level = logging.INFO if success else logging.WARNING
         message = f"Authentication {'successful' if success else 'failed'} for user: {username}"
@@ -155,8 +182,8 @@ class SecurityLogger:
                 "username": username,
                 "success": success,
                 "ip_address": ip_address,
-                **kwargs
-            }
+                **kwargs,
+            },
         )
 
     def log_authorization_failure(self, username: str, resource: str, action: str, **kwargs):
@@ -169,8 +196,8 @@ class SecurityLogger:
                 "username": username,
                 "resource": resource,
                 "action": action,
-                **kwargs
-            }
+                **kwargs,
+            },
         )
 
     def log_suspicious_activity(self, activity_type: str, description: str, **kwargs):
@@ -182,9 +209,10 @@ class SecurityLogger:
                 "event_type": "suspicious_activity",
                 "activity_type": activity_type,
                 "description": description,
-                **kwargs
-            }
+                **kwargs,
+            },
         )
+
 
 class APILogger:
     """API request/response logging utility"""
@@ -192,9 +220,16 @@ class APILogger:
     def __init__(self, logger: logging.Logger):
         self.logger = logger
 
-    def log_request(self, method: str, path: str, status_code: int,
-                   duration_ms: float, request_size: int = 0,
-                   response_size: int = 0, **kwargs):
+    def log_request(
+        self,
+        method: str,
+        path: str,
+        status_code: int,
+        duration_ms: float,
+        request_size: int = 0,
+        response_size: int = 0,
+        **kwargs,
+    ):
         """Log API request"""
         self.logger.info(
             f"API {method} {path} - {status_code} ({duration_ms:.2f}ms)",
@@ -207,8 +242,8 @@ class APILogger:
                 "duration_ms": duration_ms,
                 "request_size": request_size,
                 "response_size": response_size,
-                **kwargs
-            }
+                **kwargs,
+            },
         )
 
     def log_error(self, method: str, path: str, error: str, **kwargs):
@@ -221,9 +256,10 @@ class APILogger:
                 "method": method,
                 "path": path,
                 "error": error,
-                **kwargs
-            }
+                **kwargs,
+            },
         )
+
 
 class ComprehensiveLoggingManager:
     """Comprehensive logging system manager"""
@@ -260,7 +296,7 @@ class ComprehensiveLoggingManager:
             remote_endpoint="",
             enable_performance_logging=True,
             enable_security_logging=True,
-            enable_api_logging=True
+            enable_api_logging=True,
         )
 
     def setup_logging(self, config: LoggingConfiguration | None = None) -> dict[str, Any]:
@@ -298,7 +334,7 @@ class ComprehensiveLoggingManager:
                 app_handler = logging.handlers.RotatingFileHandler(
                     app_log_file,
                     maxBytes=self.config.max_file_size_mb * 1024 * 1024,
-                    backupCount=self.config.backup_count
+                    backupCount=self.config.backup_count,
                 )
             else:
                 app_handler = logging.FileHandler(app_log_file)
@@ -314,7 +350,7 @@ class ComprehensiveLoggingManager:
             error_handler = logging.handlers.RotatingFileHandler(
                 error_log_file,
                 maxBytes=self.config.max_file_size_mb * 1024 * 1024,
-                backupCount=self.config.backup_count
+                backupCount=self.config.backup_count,
             )
             error_handler.setLevel(logging.ERROR)
             if self.config.enable_structured_logging:
@@ -329,9 +365,11 @@ class ComprehensiveLoggingManager:
                 perf_handler = logging.handlers.RotatingFileHandler(
                     perf_log_file,
                     maxBytes=self.config.max_file_size_mb * 1024 * 1024,
-                    backupCount=self.config.backup_count
+                    backupCount=self.config.backup_count,
                 )
-                perf_handler.addFilter(lambda record: hasattr(record, 'performance') or hasattr(record, 'metric'))
+                perf_handler.addFilter(
+                    lambda record: hasattr(record, "performance") or hasattr(record, "metric")
+                )
                 if self.config.enable_structured_logging:
                     perf_handler.setFormatter(StructuredFormatter())
                 else:
@@ -344,9 +382,9 @@ class ComprehensiveLoggingManager:
                 security_handler = logging.handlers.RotatingFileHandler(
                     security_log_file,
                     maxBytes=self.config.max_file_size_mb * 1024 * 1024,
-                    backupCount=self.config.backup_count
+                    backupCount=self.config.backup_count,
                 )
-                security_handler.addFilter(lambda record: hasattr(record, 'security'))
+                security_handler.addFilter(lambda record: hasattr(record, "security"))
                 if self.config.enable_structured_logging:
                     security_handler.setFormatter(StructuredFormatter())
                 else:
@@ -359,9 +397,9 @@ class ComprehensiveLoggingManager:
                 api_handler = logging.handlers.RotatingFileHandler(
                     api_log_file,
                     maxBytes=self.config.max_file_size_mb * 1024 * 1024,
-                    backupCount=self.config.backup_count
+                    backupCount=self.config.backup_count,
                 )
-                api_handler.addFilter(lambda record: hasattr(record, 'api'))
+                api_handler.addFilter(lambda record: hasattr(record, "api"))
                 if self.config.enable_structured_logging:
                     api_handler.setFormatter(StructuredFormatter())
                 else:
@@ -383,7 +421,7 @@ class ComprehensiveLoggingManager:
             "main": main_logger,
             "performance": self.performance_logger,
             "security": self.security_logger,
-            "api": self.api_logger
+            "api": self.api_logger,
         }
 
         setup_result = {
@@ -392,7 +430,7 @@ class ComprehensiveLoggingManager:
             "log_directory": str(log_dir),
             "log_level": self.config.log_level,
             "structured_logging": self.config.enable_structured_logging,
-            "specialized_loggers": list(self.loggers.keys())
+            "specialized_loggers": list(self.loggers.keys()),
         }
 
         main_logger.info("Comprehensive logging system initialized", extra={"setup": setup_result})
@@ -502,14 +540,14 @@ class LoggingMiddleware(BaseHTTPMiddleware):
 
         # Save middleware code
         middleware_file = self.results_dir / "logging_middleware.py"
-        with open(middleware_file, 'w') as f:
+        with open(middleware_file, "w") as f:
             f.write(middleware_code)
 
         return middleware_code
 
     def generate_logging_config_file(self) -> str:
         """Generate logging configuration file"""
-        config_content = f'''# Kokoro TTS Logging Configuration
+        config_content = f"""# Kokoro TTS Logging Configuration
 # This file configures the comprehensive logging system
 
 [loggers]
@@ -591,11 +629,11 @@ datefmt=%Y-%m-%d %H:%M:%S
 
 [formatter_structuredFormatter]
 class=scripts.comprehensive_logging_system.StructuredFormatter
-'''
+"""
 
         # Save configuration file
         config_file = self.results_dir / "logging.conf"
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             f.write(config_content)
 
         return config_content
@@ -694,7 +732,7 @@ echo "Summary report: $ANALYSIS_DIR/analysis_report.txt"
 
         # Save analysis script
         script_file = self.results_dir / "analyze_logs.sh"
-        with open(script_file, 'w') as f:
+        with open(script_file, "w") as f:
             f.write(analysis_script)
         os.chmod(script_file, 0o755)
 
@@ -711,7 +749,7 @@ echo "Summary report: $ANALYSIS_DIR/analysis_report.txt"
             "security_logging": False,
             "api_logging": False,
             "log_files_created": [],
-            "errors": []
+            "errors": [],
         }
 
         try:
@@ -740,7 +778,9 @@ echo "Summary report: $ANALYSIS_DIR/analysis_report.txt"
             if self.security_logger:
                 self.security_logger.log_authentication_attempt("test_user", True, "127.0.0.1")
                 self.security_logger.log_authorization_failure("test_user", "test_resource", "read")
-                self.security_logger.log_suspicious_activity("test_activity", "Test suspicious activity")
+                self.security_logger.log_suspicious_activity(
+                    "test_activity", "Test suspicious activity"
+                )
                 test_results["security_logging"] = True
 
             # Test API logging
@@ -789,55 +829,64 @@ echo "Summary report: $ANALYSIS_DIR/analysis_report.txt"
             "generated_files": {
                 "middleware": "logging_middleware.py",
                 "config": "logging.conf",
-                "analysis_script": "analyze_logs.sh"
+                "analysis_script": "analyze_logs.sh",
             },
             "specialized_loggers": {
                 "performance": self.performance_logger is not None,
                 "security": self.security_logger is not None,
-                "api": self.api_logger is not None
+                "api": self.api_logger is not None,
             },
             "setup_summary": self._generate_logging_summary(setup_result, test_results),
-            "next_steps": self._generate_logging_next_steps(test_results)
+            "next_steps": self._generate_logging_next_steps(test_results),
         }
 
         # Save complete configuration
         results_file = self.results_dir / f"logging_setup_results_{int(time.time())}.json"
-        with open(results_file, 'w') as f:
+        with open(results_file, "w") as f:
             json.dump(results, f, indent=2, default=str)
 
         main_logger = self.loggers.get("main")
         if main_logger:
-            main_logger.info(f"Comprehensive logging setup completed. Results saved to: {results_file}")
+            main_logger.info(
+                f"Comprehensive logging setup completed. Results saved to: {results_file}"
+            )
 
         return results
 
-    def _generate_logging_summary(self, setup_result: dict[str, Any],
-                                 test_results: dict[str, Any]) -> dict[str, Any]:
+    def _generate_logging_summary(
+        self, setup_result: dict[str, Any], test_results: dict[str, Any]
+    ) -> dict[str, Any]:
         """Generate logging setup summary"""
 
-        successful_tests = sum(1 for key, value in test_results.items()
-                             if key != "errors" and key != "log_files_created" and value is True)
-        total_tests = len([key for key in test_results
-                          if key != "errors" and key != "log_files_created"])
+        successful_tests = sum(
+            1
+            for key, value in test_results.items()
+            if key != "errors" and key != "log_files_created" and value is True
+        )
+        total_tests = len(
+            [key for key in test_results if key != "errors" and key != "log_files_created"]
+        )
 
         summary = {
             "setup_successful": setup_result.get("success", False),
             "handlers_configured": setup_result.get("handlers_configured", 0),
             "test_success_rate": f"{successful_tests}/{total_tests}",
-            "test_percentage": round((successful_tests / total_tests * 100), 1) if total_tests > 0 else 0,
+            "test_percentage": round((successful_tests / total_tests * 100), 1)
+            if total_tests > 0
+            else 0,
             "log_files_created": len(test_results.get("log_files_created", [])),
             "structured_logging_enabled": self.config.enable_structured_logging,
             "specialized_loggers_enabled": {
                 "performance": self.config.enable_performance_logging,
                 "security": self.config.enable_security_logging,
-                "api": self.config.enable_api_logging
+                "api": self.config.enable_api_logging,
             },
             "errors_encountered": len(test_results.get("errors", [])),
             "production_ready": (
-                setup_result.get("success", False) and
-                successful_tests >= total_tests * 0.8 and
-                len(test_results.get("errors", [])) == 0
-            )
+                setup_result.get("success", False)
+                and successful_tests >= total_tests * 0.8
+                and len(test_results.get("errors", [])) == 0
+            ),
         }
 
         return summary
@@ -854,7 +903,7 @@ echo "Summary report: $ANALYSIS_DIR/analysis_report.txt"
             "Implement log retention policies",
             "Configure secure log transmission for remote logging",
             "Test log analysis scripts with production data",
-            "Document logging procedures for operations team"
+            "Document logging procedures for operations team",
         ]
 
         # Add specific recommendations based on test results
@@ -872,6 +921,7 @@ echo "Summary report: $ANALYSIS_DIR/analysis_report.txt"
 
         return next_steps
 
+
 def main():
     """Main function to run comprehensive logging setup"""
     manager = ComprehensiveLoggingManager()
@@ -880,9 +930,9 @@ def main():
         # Run comprehensive logging setup
         results = manager.run_comprehensive_logging_setup()
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("COMPREHENSIVE LOGGING SYSTEM SUMMARY")
-        print("="*80)
+        print("=" * 80)
 
         summary = results["setup_summary"]
         config = results["logging_configuration"]
@@ -931,12 +981,14 @@ def main():
         if len(results["next_steps"]) > 5:
             print(f"  ... and {len(results['next_steps']) - 5} more steps")
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
 
     except Exception as e:
         print(f"Logging setup failed: {e}")
         import traceback
+
         print(f"Full traceback: {traceback.format_exc()}")
+
 
 if __name__ == "__main__":
     main()

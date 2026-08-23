@@ -17,16 +17,19 @@ _misaki_g2p = None
 _symbol_processor_instance = None
 _text_normalizer_instance = None
 
+
 def _get_symbol_processor():
     """Lazy load symbol processor"""
     global _symbol_processor_instance
     if _symbol_processor_instance is None:
         try:
             from LiteTTS.nlp.advanced_symbol_processor import AdvancedSymbolProcessor
+
             _symbol_processor_instance = AdvancedSymbolProcessor()
         except ImportError:
             pass
     return _symbol_processor_instance
+
 
 def _get_text_normalizer():
     """Lazy load text normalizer"""
@@ -34,10 +37,12 @@ def _get_text_normalizer():
     if _text_normalizer_instance is None:
         try:
             from LiteTTS.nlp.text_normalizer import TextNormalizer
+
             _text_normalizer_instance = TextNormalizer()
         except ImportError:
             pass
     return _text_normalizer_instance
+
 
 def _get_misaki_g2p():
     """Get or create the misaki G2P instance"""
@@ -45,6 +50,7 @@ def _get_misaki_g2p():
     if _misaki_g2p is None:
         try:
             from misaki import en
+
             # Use British=False for American English (Kokoro default)
             # trf=False uses rule-based mode (faster, no neural overhead)
             _misaki_g2p = en.G2P(trf=False, british=False)
@@ -53,6 +59,7 @@ def _get_misaki_g2p():
             logger.warning(f"⚠️ Misaki not available for phonemizer patch: {e}")
             return None
     return _misaki_g2p
+
 
 def patch_kokoro_onnx():
     """Apply patches to kokoro_onnx library to fix tensor rank issues and optimize performance"""
@@ -68,6 +75,7 @@ def patch_kokoro_onnx():
             # Apply model-level optimizations
             try:
                 from LiteTTS.performance.model_optimizer import get_model_optimizer
+
                 model_optimizer = get_model_optimizer()
 
                 # Optimize model path selection
@@ -80,7 +88,9 @@ def patch_kokoro_onnx():
                 if session_options is None:
                     # Fallback to manual session options
                     session_options = ort.SessionOptions()
-                    session_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+                    session_options.graph_optimization_level = (
+                        ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+                    )
                     session_options.execution_mode = ort.ExecutionMode.ORT_PARALLEL
 
             except ImportError:
@@ -93,16 +103,18 @@ def patch_kokoro_onnx():
             enable_aggressive = False  # Default to conservative mode
             try:
                 from LiteTTS.performance.dynamic_allocator import get_dynamic_allocator
+
                 dynamic_allocator = get_dynamic_allocator()
 
                 # Try to apply dynamic allocation first
                 if dynamic_allocator.apply_to_onnx_session_options(session_options):
                     logger.info("Applied dynamic CPU allocation to ONNX session")
                     # Check if dynamic allocator supports aggressive mode
-                    enable_aggressive = getattr(dynamic_allocator, 'aggressive_mode', False)
+                    enable_aggressive = getattr(dynamic_allocator, "aggressive_mode", False)
                 else:
                     # Fallback to static CPU optimizer
                     from LiteTTS.performance.cpu_optimizer import get_cpu_optimizer
+
                     cpu_optimizer = get_cpu_optimizer()
 
                     # Check thermal status for aggressive optimization safety
@@ -117,32 +129,42 @@ def patch_kokoro_onnx():
                 # Additional aggressive optimizations
                 if enable_aggressive:
                     session_options.execution_mode = ort.ExecutionMode.ORT_PARALLEL
-                    session_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+                    session_options.graph_optimization_level = (
+                        ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+                    )
 
                     # Use centralized ONNX configuration to avoid duplicate warnings
                     try:
                         from LiteTTS.utils.onnx_config_manager import get_onnx_config_manager
+
                         onnx_manager = get_onnx_config_manager()
 
                         cpu_info = {
                             "model_name": cpu_optimizer.cpu_info.model_name,
-                            "supports_avx2": cpu_optimizer.cpu_info.supports_avx2
+                            "supports_avx2": cpu_optimizer.cpu_info.supports_avx2,
                         }
-                        onnx_manager.apply_cpu_optimizations(session_options, "kokoro_patches", cpu_info)
+                        onnx_manager.apply_cpu_optimizations(
+                            session_options, "kokoro_patches", cpu_info
+                        )
 
                     except ImportError:
-                        logger.debug("ONNX config manager not available, skipping advanced optimizations")
+                        logger.debug(
+                            "ONNX config manager not available, skipping advanced optimizations"
+                        )
 
                     mode = "aggressive" if enable_aggressive else "conservative"
                     temp = thermal_status.get("temperature", 0)
-                    logger.info(f"Applied {mode} CPU-optimized ONNX settings: "
-                              f"inter_op={settings['onnx_inter_op_threads']}, "
-                              f"intra_op={settings['onnx_intra_op_threads']}, "
-                              f"temp={temp:.1f}°C")
+                    logger.info(
+                        f"Applied {mode} CPU-optimized ONNX settings: "
+                        f"inter_op={settings['onnx_inter_op_threads']}, "
+                        f"intra_op={settings['onnx_intra_op_threads']}, "
+                        f"temp={temp:.1f}°C"
+                    )
 
             except ImportError:
                 # Fallback to aggressive manual detection
                 import os
+
                 cpu_count = os.cpu_count() or 4
 
                 if cpu_count >= 16:
@@ -171,7 +193,7 @@ def patch_kokoro_onnx():
 
             # Perform model warm-up for optimal performance
             try:
-                if hasattr(self, 'voices') and model_optimizer:
+                if hasattr(self, "voices") and model_optimizer:
                     # Get first available voice for warm-up
                     voice_names = list(self.voices.keys())
                     if voice_names:
@@ -189,12 +211,13 @@ def patch_kokoro_onnx():
 
         def patched_create_audio(self, phonemes, voice, speed):
             """Patched version of _create_audio with aggressive performance optimizations"""
-            log = logging.getLogger('kokoro_onnx')
+            log = logging.getLogger("kokoro_onnx")
             log.debug(f"Phonemes: {phonemes}")
 
             # Apply model-level optimizations
             try:
                 from LiteTTS.performance.model_optimizer import get_model_optimizer
+
                 model_optimizer = get_model_optimizer()
 
                 # Get text length optimizations
@@ -213,6 +236,7 @@ def patch_kokoro_onnx():
             phonemes = phonemes[:MAX_PHONEME_LENGTH]
 
             import time
+
             start_t = time.time()
             tokens = np.array(self.tokenizer.tokenize(phonemes), dtype=np.int64)
             assert len(tokens) <= MAX_PHONEME_LENGTH, (
@@ -230,9 +254,11 @@ def patch_kokoro_onnx():
 
             # Ensure we don't exceed voice vector bounds
             if token_length >= voice_size:
-                logger.warning(f"Token length {token_length} >= voice vector size {voice_size}, "
-                             f"using last available style vector at index {voice_size - 1}. "
-                             f"This may produce suboptimal voice quality.")
+                logger.warning(
+                    f"Token length {token_length} >= voice vector size {voice_size}, "
+                    f"using last available style vector at index {voice_size - 1}. "
+                    f"This may produce suboptimal voice quality."
+                )
                 style_vector = voice[voice_size - 1]  # Use the last available style vector
             else:
                 style_vector = voice[token_length]
@@ -266,7 +292,7 @@ def patch_kokoro_onnx():
                 audio = audio.flatten()
 
             # Ensure audio is contiguous in memory for better performance
-            if not audio.flags['C_CONTIGUOUS']:
+            if not audio.flags["C_CONTIGUOUS"]:
                 audio = np.ascontiguousarray(audio)
 
             SAMPLE_RATE = 24000  # From kokoro_onnx constants
@@ -289,6 +315,7 @@ def patch_kokoro_onnx():
         logger.error(f"❌ Failed to apply kokoro_onnx patches: {e}")
         return False
 
+
 def patch_kokoro_onnx_phonemizer():
     """Patch kokoro_onnx to use misaki instead of the broken TTS.cpp phonemizer
 
@@ -302,7 +329,7 @@ def patch_kokoro_onnx_phonemizer():
         import kokoro_onnx
 
         # Characters that indicate text is already phonemized with IPA
-        IPA_CHARS = set('ʃʒʔʜʢʡɕɧɑɐɒæβɔɕçɖðʤəɚɛɜɟɡɥɨɪʝɯɰŋɳɲɴøɸθœɹɾɻʁɽʂʃʈʧʊʋʌɣɤχʎʒθðŋɱ')
+        IPA_CHARS = set("ʃʒʔʜʢʡɕɧɑɐɒæβɔɕçɖðʤəɚɛɜɟɡɥɨɪʝɯɰŋɳɲɴøɸθœɹɾɻʁɽʂʃʈʧʊʋʌɣɤχʎʒθðŋɱ")
 
         def contains_ipa(text: str) -> bool:
             """Check if text contains IPA phoneme characters"""
@@ -317,43 +344,44 @@ def patch_kokoro_onnx_phonemizer():
             # This must happen before any other processing
             # Handle all case variations: JSON, Jason, json, JASON
             import re
-            if re.search(r'\bJSON\b', text, re.IGNORECASE):
-                text = re.sub(r'\bJSON\b', 'Jason', text, flags=re.IGNORECASE)
+
+            if re.search(r"\bJSON\b", text, re.IGNORECASE):
+                text = re.sub(r"\bJSON\b", "Jason", text, flags=re.IGNORECASE)
                 logger.info(f"Fixed JSON -> Jason in: '{text[:50]}...'")
 
             # Fix C# programming language - "C sharp", not "C hash"
             # NOTE: # is NOT a word char, so use (?!\w) instead of \b at end
-            if re.search(r'\bC#(?!\w)', text, re.IGNORECASE):
-                text = re.sub(r'\bC#(?!\w)', 'C sharp', text, flags=re.IGNORECASE)
+            if re.search(r"\bC#(?!\w)", text, re.IGNORECASE):
+                text = re.sub(r"\bC#(?!\w)", "C sharp", text, flags=re.IGNORECASE)
                 logger.info(f"Fixed C# -> C sharp in: '{text[:50]}...'")
 
             # ALSO fix "C hash" -> "C sharp" (in case # was already converted)
-            if re.search(r'\bC hash\b', text, re.IGNORECASE):
-                text = re.sub(r'\bC hash\b', 'C sharp', text, flags=re.IGNORECASE)
+            if re.search(r"\bC hash\b", text, re.IGNORECASE):
+                text = re.sub(r"\bC hash\b", "C sharp", text, flags=re.IGNORECASE)
                 logger.info(f"Fixed C hash -> C sharp in: '{text[:50]}...'")
 
             # Fix F# -> F sharp (if already mangled)
-            if re.search(r'\bF hash\b', text, re.IGNORECASE):
-                text = re.sub(r'\bF hash\b', 'F sharp', text, flags=re.IGNORECASE)
+            if re.search(r"\bF hash\b", text, re.IGNORECASE):
+                text = re.sub(r"\bF hash\b", "F sharp", text, flags=re.IGNORECASE)
 
             # OAuth authentication
-            if re.search(r'\bOAuth\b', text, re.IGNORECASE):
-                text = re.sub(r'OAuth\s*2\.0', 'OAuth two point zero', text, flags=re.IGNORECASE)
+            if re.search(r"\bOAuth\b", text, re.IGNORECASE):
+                text = re.sub(r"OAuth\s*2\.0", "OAuth two point zero", text, flags=re.IGNORECASE)
                 logger.info(f"Fixed OAuth 2.0 in: '{text[:50]}...'")
 
             # IPv6
-            if re.search(r'\bIPv6\b', text, re.IGNORECASE):
-                text = re.sub(r'\bIPv6\b', 'I P V six', text, flags=re.IGNORECASE)
+            if re.search(r"\bIPv6\b", text, re.IGNORECASE):
+                text = re.sub(r"\bIPv6\b", "I P V six", text, flags=re.IGNORECASE)
                 logger.info(f"Fixed IPv6 in: '{text[:50]}...'")
 
             # SHA-256
-            if re.search(r'\bSHA-?256\b', text, re.IGNORECASE):
-                text = re.sub(r'\bSHA-?256\b', 'SHA two fifty six', text, flags=re.IGNORECASE)
+            if re.search(r"\bSHA-?256\b", text, re.IGNORECASE):
+                text = re.sub(r"\bSHA-?256\b", "SHA two fifty six", text, flags=re.IGNORECASE)
                 logger.info(f"Fixed SHA-256 in: '{text[:50]}...'")
 
             # Fix SQL pronunciation - default to "sequel"
-            if re.search(r'\bSQL\b', text, re.IGNORECASE):
-                text = re.sub(r'\bSQL\b', 'sequel', text, flags=re.IGNORECASE)
+            if re.search(r"\bSQL\b", text, re.IGNORECASE):
+                text = re.sub(r"\bSQL\b", "sequel", text, flags=re.IGNORECASE)
                 logger.info(f"Fixed SQL -> sequel in: '{text[:50]}...'")
 
             if text != original_text:
@@ -364,9 +392,9 @@ def patch_kokoro_onnx_phonemizer():
         # Store original create method
         original_create = kokoro_onnx.Kokoro.create
 
-        def patched_create(self, text, voice, speed=1.0, lang='en-us'):
+        def patched_create(self, text, voice, speed=1.0, lang="en-us"):
             """Patched create method that uses misaki for phonemization"""
-            log = logging.getLogger('kokoro_onnx')
+            log = logging.getLogger("kokoro_onnx")
 
             # Check if text already contains IPA phonemes
             if contains_ipa(text):
@@ -382,9 +410,13 @@ def patch_kokoro_onnx_phonemizer():
                     try:
                         # Use misaki to phonemize the PRE-PROCESSED text
                         phonemes, _ = g2p(processed_text)
-                        logger.info(f"Misaki phonemized: '{processed_text[:50]}...' -> '{phonemes[:50]}...'")
+                        logger.info(
+                            f"Misaki phonemized: '{processed_text[:50]}...' -> '{phonemes[:50]}...'"
+                        )
                     except Exception as e:
-                        logger.warning(f"Misaki phonemization failed: {e}, falling back to internal")
+                        logger.warning(
+                            f"Misaki phonemization failed: {e}, falling back to internal"
+                        )
                         # Fall back to internal phonemizer
                         return original_create(self, text, voice, speed, lang)
                 else:
@@ -394,7 +426,7 @@ def patch_kokoro_onnx_phonemizer():
             # Resolve voice name to voice array if needed
             voice_array = voice
             if isinstance(voice, str):
-                if hasattr(self, 'voices') and voice in self.voices:
+                if hasattr(self, "voices") and voice in self.voices:
                     voice_array = self.voices[voice]
                 else:
                     log.warning(f"Voice '{voice}' not found, falling back to internal")
@@ -412,6 +444,7 @@ def patch_kokoro_onnx_phonemizer():
     except Exception as e:
         logger.error(f"❌ Failed to apply misaki phonemizer patch: {e}")
         return False
+
 
 def apply_all_patches():
     """Apply all necessary patches"""

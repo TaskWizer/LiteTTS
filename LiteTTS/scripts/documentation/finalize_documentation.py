@@ -218,7 +218,7 @@ Planned SSML features:
         ssml_path = self.project_root / "docs" / "ssml_guide.md"
         ssml_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(ssml_path, 'w') as f:
+        with open(ssml_path, "w") as f:
             f.write(ssml_doc)
 
         self.docs_created.append(str(ssml_path))
@@ -453,7 +453,7 @@ response = client.audio.speech.create(
 
         api_path = self.project_root / "docs" / "API_REFERENCE.md"
 
-        with open(api_path, 'w') as f:
+        with open(api_path, "w") as f:
             f.write(api_doc)
 
         self.docs_created.append(str(api_path))
@@ -797,7 +797,7 @@ python LiteTTS/scripts/performance_regression_test.py
 
         perf_path = self.project_root / "docs" / "performance_guide.md"
 
-        with open(perf_path, 'w') as f:
+        with open(perf_path, "w") as f:
             f.write(perf_doc)
 
         self.docs_created.append(str(perf_path))
@@ -1242,7 +1242,7 @@ When reporting issues, include:
 
         trouble_path = self.project_root / "docs" / "troubleshooting_guide.md"
 
-        with open(trouble_path, 'w') as f:
+        with open(trouble_path, "w") as f:
             f.write(trouble_doc)
 
         self.docs_created.append(str(trouble_path))
@@ -1426,7 +1426,7 @@ When reporting issues, include:
 
         changelog_path = self.project_root / "docs" / "CHANGELOG.md"
 
-        with open(changelog_path, 'w') as f:
+        with open(changelog_path, "w") as f:
             f.write(changelog)
 
         self.docs_updated.append(str(changelog_path))
@@ -1617,23 +1617,25 @@ The system is now ready for production deployment and can serve as a reliable, h
 
 ---
 
-**Generated**: {time.strftime('%Y-%m-%d %H:%M:%S')}
+**Generated**: {time.strftime("%Y-%m-%d %H:%M:%S")}
 **Version**: 2.0.0
 **Status**: ✅ Complete and Production Ready
 """
 
         summary_path = self.project_root / "docs" / "PROJECT_SUMMARY.md"
 
-        with open(summary_path, 'w') as f:
+        with open(summary_path, "w") as f:
             f.write(summary)
 
         self.docs_created.append(str(summary_path))
         print(f"   ✅ Created project summary: {summary_path}")
 
+
 def main():
     """Finalize all documentation"""
     finalizer = DocumentationFinalizer()
     finalizer.finalize_all_documentation()
+
 
 if __name__ == "__main__":
     main()

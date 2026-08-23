@@ -22,7 +22,7 @@ class TestVoiceInfo:
             file_size=1024,
             checksum="abc123",
             last_modified=1234567890.0,
-            source="local"
+            source="local",
         )
         assert info.name == "test_voice"
         assert info.file_path == "/path/to/voice.bin"
@@ -39,7 +39,7 @@ class TestVoiceInfo:
             last_modified=1234567890.0,
             source="huggingface",
             language="en-us",
-            gender="female"
+            gender="female",
         )
         assert info.language == "en-us"
         assert info.gender == "female"
@@ -84,7 +84,7 @@ class TestVoiceDiscovery:
                 "file_size": 1024,
                 "checksum": "abc123",
                 "last_modified": 1234567890.0,
-                "source": "local"
+                "source": "local",
             }
         }
         cache_file.write_text(json.dumps(cache_data))
@@ -103,7 +103,7 @@ class TestVoiceDiscovery:
                 "file_size": 1024,
                 "checksum": "abc",
                 "last_modified": 123.0,
-                "source": "local"
+                "source": "local",
             }
         }
         cache_file.write_text(json.dumps(cache_data))
@@ -121,7 +121,7 @@ class TestVoiceDiscovery:
             file_size=1024,
             checksum="abc",
             last_modified=123.0,
-            source="local"
+            source="local",
         )
         info = discovery.get_voice_info("af_heart")
         assert info is not None
@@ -142,7 +142,7 @@ class TestVoiceDiscovery:
             file_size=1024,
             checksum="abc",
             last_modified=123.0,
-            source="local"
+            source="local",
         )
         assert discovery.is_voice_available("af_heart") is True
         assert discovery.is_voice_available("nonexistent") is False
@@ -151,12 +151,20 @@ class TestVoiceDiscovery:
         """Test getting list of available voices"""
         discovery = VoiceDiscovery(voices_dir=str(tmp_path))
         discovery.voice_cache["voice1"] = VoiceInfo(
-            name="voice1", file_path="/p1", file_size=1,
-            checksum="a", last_modified=1.0, source="local"
+            name="voice1",
+            file_path="/p1",
+            file_size=1,
+            checksum="a",
+            last_modified=1.0,
+            source="local",
         )
         discovery.voice_cache["voice2"] = VoiceInfo(
-            name="voice2", file_path="/p2", file_size=1,
-            checksum="b", last_modified=1.0, source="local"
+            name="voice2",
+            file_path="/p2",
+            file_size=1,
+            checksum="b",
+            last_modified=1.0,
+            source="local",
         )
         voices = discovery.get_available_voices()
         assert "voice1" in voices
@@ -171,7 +179,7 @@ class TestVoiceDiscovery:
             file_size=1024,
             checksum="abc",
             last_modified=123.0,
-            source="local"
+            source="local",
         )
         result = discovery.load_voice_data("ghost_voice")
         assert result is None
@@ -191,7 +199,7 @@ class TestVoiceDiscovery:
             file_size=voice_file.stat().st_size,
             checksum="abc",
             last_modified=voice_file.stat().st_mtime,
-            source="local"
+            source="local",
         )
 
         result = discovery.load_voice_data("test_voice")
@@ -213,7 +221,7 @@ class TestVoiceDiscovery:
             file_size=voice_file.stat().st_size,
             checksum="abc",
             last_modified=voice_file.stat().st_mtime,
-            source="local"
+            source="local",
         )
 
         # First load
@@ -226,14 +234,26 @@ class TestVoiceDiscovery:
         """Test getting voice statistics"""
         discovery = VoiceDiscovery(voices_dir=str(tmp_path))
         discovery.voice_cache["v1"] = VoiceInfo(
-            name="v1", file_path="/p1", file_size=1024,
-            checksum="a", last_modified=1.0, source="huggingface",
-            language="en-us", gender="female", nationality="american"
+            name="v1",
+            file_path="/p1",
+            file_size=1024,
+            checksum="a",
+            last_modified=1.0,
+            source="huggingface",
+            language="en-us",
+            gender="female",
+            nationality="american",
         )
         discovery.voice_cache["v2"] = VoiceInfo(
-            name="v2", file_path="/p2", file_size=1024,
-            checksum="b", last_modified=1.0, source="local",
-            language="ja-jp", gender="male", nationality="japanese"
+            name="v2",
+            file_path="/p2",
+            file_size=1024,
+            checksum="b",
+            last_modified=1.0,
+            source="local",
+            language="ja-jp",
+            gender="male",
+            nationality="japanese",
         )
 
         stats = discovery.get_voice_stats()
@@ -246,14 +266,22 @@ class TestVoiceDiscovery:
         """Test filtering voices by language"""
         discovery = VoiceDiscovery(voices_dir=str(tmp_path))
         discovery.voice_cache["v1"] = VoiceInfo(
-            name="v1", file_path="/p1", file_size=1,
-            checksum="a", last_modified=1.0, source="local",
-            language="en-us"
+            name="v1",
+            file_path="/p1",
+            file_size=1,
+            checksum="a",
+            last_modified=1.0,
+            source="local",
+            language="en-us",
         )
         discovery.voice_cache["v2"] = VoiceInfo(
-            name="v2", file_path="/p2", file_size=1,
-            checksum="b", last_modified=1.0, source="local",
-            language="ja-jp"
+            name="v2",
+            file_path="/p2",
+            file_size=1,
+            checksum="b",
+            last_modified=1.0,
+            source="local",
+            language="ja-jp",
         )
 
         result = discovery.filter_voices(language="en-us")
@@ -264,14 +292,22 @@ class TestVoiceDiscovery:
         """Test filtering voices by gender"""
         discovery = VoiceDiscovery(voices_dir=str(tmp_path))
         discovery.voice_cache["v1"] = VoiceInfo(
-            name="v1", file_path="/p1", file_size=1,
-            checksum="a", last_modified=1.0, source="local",
-            gender="female"
+            name="v1",
+            file_path="/p1",
+            file_size=1,
+            checksum="a",
+            last_modified=1.0,
+            source="local",
+            gender="female",
         )
         discovery.voice_cache["v2"] = VoiceInfo(
-            name="v2", file_path="/p2", file_size=1,
-            checksum="b", last_modified=1.0, source="local",
-            gender="male"
+            name="v2",
+            file_path="/p2",
+            file_size=1,
+            checksum="b",
+            last_modified=1.0,
+            source="local",
+            gender="male",
         )
 
         result = discovery.filter_voices(gender="male")
@@ -282,14 +318,22 @@ class TestVoiceDiscovery:
         """Test filtering voices by nationality"""
         discovery = VoiceDiscovery(voices_dir=str(tmp_path))
         discovery.voice_cache["v1"] = VoiceInfo(
-            name="v1", file_path="/p1", file_size=1,
-            checksum="a", last_modified=1.0, source="local",
-            nationality="american"
+            name="v1",
+            file_path="/p1",
+            file_size=1,
+            checksum="a",
+            last_modified=1.0,
+            source="local",
+            nationality="american",
         )
         discovery.voice_cache["v2"] = VoiceInfo(
-            name="v2", file_path="/p2", file_size=1,
-            checksum="b", last_modified=1.0, source="local",
-            nationality="japanese"
+            name="v2",
+            file_path="/p2",
+            file_size=1,
+            checksum="b",
+            last_modified=1.0,
+            source="local",
+            nationality="japanese",
         )
 
         result = discovery.filter_voices(nationality="japanese")
@@ -300,12 +344,15 @@ class TestVoiceDiscovery:
         """Test filtering voices by source"""
         discovery = VoiceDiscovery(voices_dir=str(tmp_path))
         discovery.voice_cache["v1"] = VoiceInfo(
-            name="v1", file_path="/p1", file_size=1,
-            checksum="a", last_modified=1.0, source="huggingface"
+            name="v1",
+            file_path="/p1",
+            file_size=1,
+            checksum="a",
+            last_modified=1.0,
+            source="huggingface",
         )
         discovery.voice_cache["v2"] = VoiceInfo(
-            name="v2", file_path="/p2", file_size=1,
-            checksum="b", last_modified=1.0, source="local"
+            name="v2", file_path="/p2", file_size=1, checksum="b", last_modified=1.0, source="local"
         )
 
         result = discovery.filter_voices(source="huggingface")
@@ -316,9 +363,13 @@ class TestVoiceDiscovery:
         """Test filtering voices with no matches"""
         discovery = VoiceDiscovery(voices_dir=str(tmp_path))
         discovery.voice_cache["v1"] = VoiceInfo(
-            name="v1", file_path="/p1", file_size=1,
-            checksum="a", last_modified=1.0, source="local",
-            language="en-us"
+            name="v1",
+            file_path="/p1",
+            file_size=1,
+            checksum="a",
+            last_modified=1.0,
+            source="local",
+            language="en-us",
         )
 
         result = discovery.filter_voices(language="ja-jp")
@@ -339,7 +390,7 @@ class TestVoiceDiscovery:
             file_size=voice_file.stat().st_size,
             checksum="abc",
             last_modified=voice_file.stat().st_mtime,
-            source="local"
+            source="local",
         )
 
         # Load the voice
@@ -354,8 +405,7 @@ class TestVoiceDiscovery:
         """Test invalidating cache"""
         discovery = VoiceDiscovery(voices_dir=str(tmp_path))
         discovery.voice_cache["v1"] = VoiceInfo(
-            name="v1", file_path="/p1", file_size=1,
-            checksum="a", last_modified=1.0, source="local"
+            name="v1", file_path="/p1", file_size=1, checksum="a", last_modified=1.0, source="local"
         )
         discovery.loaded_voices["v1"] = np.array([1.0])
 
@@ -374,14 +424,14 @@ class TestVoiceDiscovery:
 
         # Create a voice file
         voice_file = tmp_path / "test_voice.bin"
-        voice_file.write_bytes(b'\x00' * 100)
+        voice_file.write_bytes(b"\x00" * 100)
 
         # First discovery
         d1, u1 = discovery.discover_voices()
         assert d1 >= 1
 
         # Modify the file
-        voice_file.write_bytes(b'\x00' * 200)
+        voice_file.write_bytes(b"\x00" * 200)
 
         # Second discovery should detect update
         d2, u2 = discovery.discover_voices()
@@ -393,7 +443,7 @@ class TestVoiceDiscovery:
 
         # Create a voice file and discover it
         voice_file = tmp_path / "test_voice.bin"
-        voice_file.write_bytes(b'\x00' * 100)
+        voice_file.write_bytes(b"\x00" * 100)
 
         discovery.discover_voices()
         assert "test_voice" in discovery.voice_cache
@@ -411,7 +461,7 @@ class TestVoiceDiscovery:
 
         # Create a file
         test_file = tmp_path / "test.bin"
-        test_file.write_bytes(b'\x00' * 100)
+        test_file.write_bytes(b"\x00" * 100)
 
         checksum = discovery._calculate_checksum(test_file)
         assert isinstance(checksum, str)
@@ -422,7 +472,7 @@ class TestVoiceDiscovery:
         discovery = VoiceDiscovery(voices_dir=str(tmp_path))
 
         test_file = tmp_path / "test.bin"
-        test_file.write_bytes(b'\x00' * 100)
+        test_file.write_bytes(b"\x00" * 100)
 
         checksum1 = discovery._calculate_checksum(test_file)
         checksum2 = discovery._calculate_checksum(test_file)

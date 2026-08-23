@@ -18,11 +18,7 @@ class TestPerformanceTargets:
 
     def test_creation_custom(self):
         """Test creating performance targets with custom values"""
-        targets = PerformanceTargets(
-            max_memory_mb=200,
-            target_rtf=0.3,
-            max_startup_time=15.0
-        )
+        targets = PerformanceTargets(max_memory_mb=200, target_rtf=0.3, max_startup_time=15.0)
         assert targets.max_memory_mb == 200
         assert targets.target_rtf == 0.3
         assert targets.max_startup_time == 15.0
@@ -47,7 +43,7 @@ class TestOptimizationResults:
             baseline_memory_mb=500.0,
             optimized_memory_mb=350.0,
             memory_reduction_mb=150.0,
-            memory_reduction_percent=30.0
+            memory_reduction_percent=30.0,
         )
         assert results.memory_optimized is True
         assert results.optimized_memory_mb == 350.0

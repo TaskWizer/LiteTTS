@@ -16,8 +16,9 @@ import aiohttp
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 # Setup logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 class VoiceSampleGenerator:
     def __init__(self, api_base_url: str = "http://localhost:8354"):
@@ -32,17 +33,58 @@ class VoiceSampleGenerator:
 
         # Voice categories for organization
         self.voice_categories = {
-            "American Female": ["af_heart", "af_bella", "af_sarah", "af_jessica", "af_nicole",
-                              "af_nova", "af_sky", "af_river", "af_alloy", "af_aoede", "af_kore"],
-            "American Male": ["am_adam", "am_onyx", "am_echo", "am_liam", "am_michael",
-                            "am_eric", "am_fenrir", "am_puck", "am_santa"],
+            "American Female": [
+                "af_heart",
+                "af_bella",
+                "af_sarah",
+                "af_jessica",
+                "af_nicole",
+                "af_nova",
+                "af_sky",
+                "af_river",
+                "af_alloy",
+                "af_aoede",
+                "af_kore",
+            ],
+            "American Male": [
+                "am_adam",
+                "am_onyx",
+                "am_echo",
+                "am_liam",
+                "am_michael",
+                "am_eric",
+                "am_fenrir",
+                "am_puck",
+                "am_santa",
+            ],
             "British Female": ["bf_alice", "bf_emma", "bf_isabella", "bf_lily"],
             "British Male": ["bm_daniel", "bm_george", "bm_lewis"],
-            "International": ["ff_siwis", "ef_dora", "em_alex", "em_santa", "hf_alpha",
-                            "hm_omega", "hm_psi", "if_sara", "im_nicola", "jf_alpha",
-                            "jf_gongitsune", "jf_nezumi", "jf_tebukuro", "jm_kumo",
-                            "pf_dora", "pm_alex", "pm_santa", "zf_xiaobei", "zf_xiaoni",
-                            "zf_xiaoxiao", "zf_xiaoyi", "zm_yunxi", "zm_yunxia", "zm_yunyang"]
+            "International": [
+                "ff_siwis",
+                "ef_dora",
+                "em_alex",
+                "em_santa",
+                "hf_alpha",
+                "hm_omega",
+                "hm_psi",
+                "if_sara",
+                "im_nicola",
+                "jf_alpha",
+                "jf_gongitsune",
+                "jf_nezumi",
+                "jf_tebukuro",
+                "jm_kumo",
+                "pf_dora",
+                "pm_alex",
+                "pm_santa",
+                "zf_xiaobei",
+                "zf_xiaoni",
+                "zf_xiaoxiao",
+                "zf_xiaoyi",
+                "zm_yunxi",
+                "zm_yunxia",
+                "zm_yunyang",
+            ],
         }
 
     async def get_available_voices(self) -> list[str]:
@@ -69,13 +111,13 @@ class VoiceSampleGenerator:
                 "voice": voice,
                 "response_format": "mp3",
                 "speed": 1.0,
-                "volume_multiplier": 1.0
+                "volume_multiplier": 1.0,
             }
 
-            async with aiohttp.ClientSession() as session, session.post(
-                f"{self.api_base_url}/v1/audio/speech",
-                json=payload
-            ) as response:
+            async with (
+                aiohttp.ClientSession() as session,
+                session.post(f"{self.api_base_url}/v1/audio/speech", json=payload) as response,
+            ):
                 if response.status == 200:
                     audio_data = await response.read()
                     output_file = self.samples_dir / f"{voice}.mp3"
@@ -104,9 +146,15 @@ class VoiceSampleGenerator:
 
             # Use ffmpeg to create time-stretched version
             cmd = [
-                "ffmpeg", "-y", "-i", str(input_file),
-                "-filter:a", f"atempo={stretch_factor}",
-                "-c:a", "mp3", str(output_file)
+                "ffmpeg",
+                "-y",
+                "-i",
+                str(input_file),
+                "-filter:a",
+                f"atempo={stretch_factor}",
+                "-c:a",
+                "mp3",
+                str(output_file),
             ]
 
             result = subprocess.run(cmd, capture_output=True, text=True)
@@ -115,7 +163,9 @@ class VoiceSampleGenerator:
                 logger.info(f"✅ Created time-stretched version for {voice} ({stretch_factor}x)")
                 return True
             else:
-                logger.error(f"❌ Failed to create time-stretched version for {voice}: {result.stderr}")
+                logger.error(
+                    f"❌ Failed to create time-stretched version for {voice}: {result.stderr}"
+                )
                 return False
 
         except Exception as e:
@@ -126,7 +176,9 @@ class VoiceSampleGenerator:
         """Create restored version from time-stretched audio"""
         try:
             stretched_file = self.time_stretched_dir / f"{voice}_stretched_{original_stretch}x.mp3"
-            restored_file = self.time_stretched_dir / f"{voice}_restored_from_{original_stretch}x.mp3"
+            restored_file = (
+                self.time_stretched_dir / f"{voice}_restored_from_{original_stretch}x.mp3"
+            )
 
             if not stretched_file.exists():
                 logger.error(f"❌ Stretched file not found: {stretched_file}")
@@ -136,9 +188,15 @@ class VoiceSampleGenerator:
             restore_factor = 1.0 / original_stretch
 
             cmd = [
-                "ffmpeg", "-y", "-i", str(stretched_file),
-                "-filter:a", f"atempo={restore_factor}",
-                "-c:a", "mp3", str(restored_file)
+                "ffmpeg",
+                "-y",
+                "-i",
+                str(stretched_file),
+                "-filter:a",
+                f"atempo={restore_factor}",
+                "-c:a",
+                "mp3",
+                str(restored_file),
             ]
 
             result = subprocess.run(cmd, capture_output=True, text=True)
@@ -174,7 +232,9 @@ class VoiceSampleGenerator:
             if await self.generate_voice_sample(voice):
                 successful_generations += 1
 
-        logger.info(f"✅ Successfully generated {successful_generations}/{len(all_voices)} voice samples")
+        logger.info(
+            f"✅ Successfully generated {successful_generations}/{len(all_voices)} voice samples"
+        )
 
         # Create time-stretched versions
         stretch_factors = [0.6, 0.8, 1.2, 1.4]  # Various stretch factors for testing
@@ -222,10 +282,12 @@ class VoiceSampleGenerator:
 
         logger.info(f"📋 Generated summary report: {report_file}")
 
+
 async def main():
     """Main function to run the voice sample regeneration"""
     generator = VoiceSampleGenerator()
     await generator.regenerate_all_samples()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

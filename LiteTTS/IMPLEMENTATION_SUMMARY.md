@@ -136,9 +136,7 @@ print(f"Duration: {result.duration}s, Quality: {result.quality_score}")
 from backends.whisper_optimized import create_whisper_processor
 
 processor = create_whisper_processor(
-    model_name="distil-small.en",
-    compute_type="int8",
-    enable_fallback=True
+    model_name="distil-small.en", compute_type="int8", enable_fallback=True
 )
 result = processor.transcribe("audio.wav")
 print(f"RTF: {result.rtf}, Success: {result.success}")

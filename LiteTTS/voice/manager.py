@@ -15,15 +15,17 @@ from .metadata import VoiceMetadataManager
 # Optional imports that may require torch
 try:
     from .validator import ValidationResult, VoiceValidator
+
     _HAS_VALIDATOR = True
 except ImportError:
     _HAS_VALIDATOR = False
+
     # Create a mock validator for testing
     class VoiceValidator:
-        def validate_voice(self, voice_name: str, file_path) -> 'ValidationResult':
+        def validate_voice(self, voice_name: str, file_path) -> "ValidationResult":
             return ValidationResult()
 
-        def validate_all_voices(self, voices_dir) -> dict[str, 'ValidationResult']:
+        def validate_all_voices(self, voices_dir) -> dict[str, "ValidationResult"]:
             return {}
 
     class ValidationResult:
@@ -31,15 +33,19 @@ except ImportError:
             self.is_valid = True
             self.errors = []
             self.warnings = []
+
+
 try:
     from ..models import VoiceEmbedding, VoiceMetadata
 except ImportError:
     # Fallback import from models.py file
     import sys
     from pathlib import Path
+
     models_path = Path(__file__).parent.parent / "models.py"
     if models_path.exists():
         import importlib.util
+
         spec = importlib.util.spec_from_file_location("models", models_path)
         models_module = importlib.util.module_from_spec(spec)
         sys.modules["models"] = models_module
@@ -49,16 +55,16 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+
 class VoiceManager:
     """Main voice manager that handles all voice operations"""
 
-    def __init__(self, voices_dir: str = None,
-                 max_cache_size: int = None,
-                 config=None):
+    def __init__(self, voices_dir: str = None, max_cache_size: int = None, config=None):
         # Load configuration
         if config is None:
             try:
                 from ..config import config as default_config
+
                 config = default_config
             except ImportError:
                 config = None
@@ -88,18 +94,21 @@ class VoiceManager:
 
         # Performance tracking for individual loading optimization
         self.performance_stats = {
-            'cache_hits': 0,
-            'cache_misses': 0,
-            'download_requests': 0,
-            'load_times': []
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "download_requests": 0,
+            "load_times": [],
         }
 
-        logger.info(f"Voice manager initialized with strategy: {self.loading_strategy}, "
-                   f"cache_size: {max_cache_size}, combined_file: {self.use_combined_file}")
+        logger.info(
+            f"Voice manager initialized with strategy: {self.loading_strategy}, "
+            f"cache_size: {max_cache_size}, combined_file: {self.use_combined_file}"
+        )
 
     def get_voice_embedding(self, voice_name: str) -> VoiceEmbedding | None:
         """Get voice embedding (optimized for individual loading strategy)"""
         import time
+
         start_time = time.perf_counter() if self.performance_monitoring else None
 
         # Try to get from cache first (optimized for individual loading)
@@ -108,17 +117,17 @@ class VoiceManager:
         if embedding:
             # Cache hit - update performance stats
             if self.performance_monitoring:
-                self.performance_stats['cache_hits'] += 1
+                self.performance_stats["cache_hits"] += 1
                 load_time = time.perf_counter() - start_time
-                self.performance_stats['load_times'].append(load_time)
-                logger.debug(f"Voice {voice_name} loaded from cache in {load_time*1000:.2f}ms")
+                self.performance_stats["load_times"].append(load_time)
+                logger.debug(f"Voice {voice_name} loaded from cache in {load_time * 1000:.2f}ms")
 
             self.metadata_manager.update_voice_stats(voice_name, 0.0, success=True)
             return embedding
 
         # Cache miss - track performance
         if self.performance_monitoring:
-            self.performance_stats['cache_misses'] += 1
+            self.performance_stats["cache_misses"] += 1
 
         # If not in cache, check if it's available (either downloaded HF voice or custom voice)
         is_hf_voice = voice_name in self.downloader.discovered_voices
@@ -129,7 +138,7 @@ class VoiceManager:
             if not self.downloader.is_voice_downloaded(voice_name):
                 logger.info(f"Voice {voice_name} not found, downloading individual file")
                 if self.performance_monitoring:
-                    self.performance_stats['download_requests'] += 1
+                    self.performance_stats["download_requests"] += 1
 
                 if self.download_voice(voice_name):
                     is_available = True
@@ -148,8 +157,8 @@ class VoiceManager:
             if embedding:
                 if self.performance_monitoring:
                     load_time = time.perf_counter() - start_time
-                    self.performance_stats['load_times'].append(load_time)
-                    logger.info(f"Voice {voice_name} loaded in {load_time*1000:.2f}ms")
+                    self.performance_stats["load_times"].append(load_time)
+                    logger.info(f"Voice {voice_name} loaded in {load_time * 1000:.2f}ms")
 
                 self.metadata_manager.update_voice_stats(voice_name, 0.0, success=True)
                 return embedding
@@ -158,12 +167,13 @@ class VoiceManager:
         self.metadata_manager.update_voice_stats(voice_name, 0.0, success=False)
         if self.performance_monitoring and start_time:
             load_time = time.perf_counter() - start_time
-            logger.warning(f"Failed to load voice {voice_name} after {load_time*1000:.2f}ms")
+            logger.warning(f"Failed to load voice {voice_name} after {load_time * 1000:.2f}ms")
 
         return None
 
-    def download_voice(self, voice_name: str,
-                      progress_callback: Callable[[DownloadProgress], None] | None = None) -> bool:
+    def download_voice(
+        self, voice_name: str, progress_callback: Callable[[DownloadProgress], None] | None = None
+    ) -> bool:
         """Download a specific voice"""
         logger.info(f"Downloading voice: {voice_name}")
 
@@ -175,7 +185,9 @@ class VoiceManager:
             validation_result = self.validator.validate_voice(voice_name, voice_file)
 
             if not validation_result.is_valid:
-                logger.error(f"Downloaded voice {voice_name} failed validation: {validation_result.errors}")
+                logger.error(
+                    f"Downloaded voice {voice_name} failed validation: {validation_result.errors}"
+                )
                 return False
 
             # Preload into cache if it's a default voice
@@ -187,13 +199,15 @@ class VoiceManager:
 
         return False
 
-    def download_all_voices(self,
-                           progress_callback: Callable[[DownloadProgress], None] | None = None) -> dict[str, bool]:
+    def download_all_voices(
+        self, progress_callback: Callable[[DownloadProgress], None] | None = None
+    ) -> dict[str, bool]:
         """Download all available voices"""
         return self.downloader.download_all_voices(progress_callback)
 
-    def download_default_voices(self,
-                               progress_callback: Callable[[DownloadProgress], None] | None = None) -> dict[str, bool]:
+    def download_default_voices(
+        self, progress_callback: Callable[[DownloadProgress], None] | None = None
+    ) -> dict[str, bool]:
         """Download default voices"""
         return self.downloader.download_default_voices(progress_callback)
 
@@ -291,7 +305,7 @@ class VoiceManager:
         """Get comprehensive system status"""
         # Get download status
         download_info = self.downloader.get_download_info()
-        downloaded_count = sum(1 for info in download_info.values() if info['downloaded'])
+        downloaded_count = sum(1 for info in download_info.values() if info["downloaded"])
 
         # Get validation status
         validation_results = self.validate_all_voices()
@@ -304,73 +318,78 @@ class VoiceManager:
         usage_summary = self.metadata_manager.get_usage_summary()
 
         return {
-            'voices': {
-                'total_available': len(self.downloader.discovered_voices),
-                'downloaded': downloaded_count,
-                'valid': valid_count,
-                'cached': cache_stats['cached_voices'],
-                'ready': len(self.get_available_voices())
+            "voices": {
+                "total_available": len(self.downloader.discovered_voices),
+                "downloaded": downloaded_count,
+                "valid": valid_count,
+                "cached": cache_stats["cached_voices"],
+                "ready": len(self.get_available_voices()),
             },
-            'download_status': download_info,
-            'validation_results': {
-                voice: {'is_valid': result.is_valid, 'errors': result.errors}
+            "download_status": download_info,
+            "validation_results": {
+                voice: {"is_valid": result.is_valid, "errors": result.errors}
                 for voice, result in validation_results.items()
             },
-            'cache_stats': cache_stats,
-            'usage_stats': usage_summary,
-            'system_health': {
-                'all_voices_downloaded': downloaded_count == len(self.downloader.discovered_voices),
-                'all_voices_valid': valid_count == downloaded_count,
-                'cache_healthy': cache_stats['hit_rate'] > 0.8 if cache_stats['cache_hits'] > 0 else True,
-                'default_voices_ready': all(
-                    self.is_voice_ready(voice) for voice in ['af_heart', 'am_puck']
-                )
-            }
+            "cache_stats": cache_stats,
+            "usage_stats": usage_summary,
+            "system_health": {
+                "all_voices_downloaded": downloaded_count == len(self.downloader.discovered_voices),
+                "all_voices_valid": valid_count == downloaded_count,
+                "cache_healthy": cache_stats["hit_rate"] > 0.8
+                if cache_stats["cache_hits"] > 0
+                else True,
+                "default_voices_ready": all(
+                    self.is_voice_ready(voice) for voice in ["af_heart", "am_puck"]
+                ),
+            },
         }
 
-    def setup_system(self, download_all: bool = False,
-                    progress_callback: Callable[[DownloadProgress], None] | None = None) -> dict[str, Any]:
+    def setup_system(
+        self,
+        download_all: bool = False,
+        progress_callback: Callable[[DownloadProgress], None] | None = None,
+    ) -> dict[str, Any]:
         """Set up the voice system (download, validate, cache)"""
         logger.info("Setting up voice system")
 
         setup_results = {
-            'download_results': {},
-            'validation_results': {},
-            'cache_results': {},
-            'success': False
+            "download_results": {},
+            "validation_results": {},
+            "cache_results": {},
+            "success": False,
         }
 
         try:
             # Step 1: Download voices
             if download_all:
-                setup_results['download_results'] = self.download_all_voices(progress_callback)
+                setup_results["download_results"] = self.download_all_voices(progress_callback)
             else:
-                setup_results['download_results'] = self.download_default_voices(progress_callback)
+                setup_results["download_results"] = self.download_default_voices(progress_callback)
 
             # Step 2: Validate downloaded voices
-            setup_results['validation_results'] = self.validate_all_voices()
+            setup_results["validation_results"] = self.validate_all_voices()
 
             # Step 3: Preload default voices into cache
-            default_voices = ['af_heart', 'am_puck']
-            setup_results['cache_results'] = self.preload_voices(default_voices)
+            default_voices = ["af_heart", "am_puck"]
+            setup_results["cache_results"] = self.preload_voices(default_voices)
 
             # Check overall success
-            download_success = any(setup_results['download_results'].values())
+            download_success = any(setup_results["download_results"].values())
             validation_success = any(
-                result.is_valid for result in setup_results['validation_results'].values()
+                result.is_valid for result in setup_results["validation_results"].values()
             )
-            cache_success = any(setup_results['cache_results'].values())
+            cache_success = any(setup_results["cache_results"].values())
 
-            setup_results['success'] = download_success and validation_success and cache_success
+            setup_results["success"] = download_success and validation_success and cache_success
 
-            if setup_results['success']:
+            if setup_results["success"]:
                 logger.info("Voice system setup completed successfully")
             else:
                 logger.warning("Voice system setup completed with issues")
 
         except Exception as e:
             logger.error(f"Voice system setup failed: {e}")
-            setup_results['error'] = str(e)
+            setup_results["error"] = str(e)
 
         return setup_results
 
@@ -407,52 +426,52 @@ class VoiceManager:
     def get_voice_info(self, voice_name: str) -> dict[str, Any]:
         """Get comprehensive information about a voice"""
         info = {
-            'name': voice_name,
-            'exists': False,
-            'downloaded': False,
-            'valid': False,
-            'cached': False,
-            'ready': False
+            "name": voice_name,
+            "exists": False,
+            "downloaded": False,
+            "valid": False,
+            "cached": False,
+            "ready": False,
         }
 
         # Check if voice exists in our system
         if voice_name in self.downloader.discovered_voices:
-            info['exists'] = True
+            info["exists"] = True
 
             # Check download status
-            info['downloaded'] = self.downloader.is_voice_downloaded(voice_name)
+            info["downloaded"] = self.downloader.is_voice_downloaded(voice_name)
 
-            if info['downloaded']:
+            if info["downloaded"]:
                 # Check validation status
                 validation_result = self.validate_voice(voice_name)
-                info['valid'] = validation_result.is_valid
-                info['validation_errors'] = validation_result.errors
-                info['validation_warnings'] = validation_result.warnings
+                info["valid"] = validation_result.is_valid
+                info["validation_errors"] = validation_result.errors
+                info["validation_warnings"] = validation_result.warnings
 
                 # Check cache status
-                info['cached'] = self.is_voice_cached(voice_name)
+                info["cached"] = self.is_voice_cached(voice_name)
 
                 # Check if ready for use
-                info['ready'] = self.is_voice_ready(voice_name)
+                info["ready"] = self.is_voice_ready(voice_name)
 
             # Get metadata
             metadata = self.get_voice_metadata(voice_name)
             if metadata:
-                info['metadata'] = {
-                    'gender': metadata.gender,
-                    'accent': metadata.accent,
-                    'quality_rating': metadata.quality_rating,
-                    'description': metadata.description
+                info["metadata"] = {
+                    "gender": metadata.gender,
+                    "accent": metadata.accent,
+                    "quality_rating": metadata.quality_rating,
+                    "description": metadata.description,
                 }
 
             # Get usage stats
             stats = self.metadata_manager.get_voice_stats(voice_name)
             if stats:
-                info['usage_stats'] = {
-                    'total_requests': stats.total_requests,
-                    'total_duration': stats.total_duration,
-                    'success_rate': stats.success_rate,
-                    'last_used': stats.last_used.isoformat() if stats.last_used else None
+                info["usage_stats"] = {
+                    "total_requests": stats.total_requests,
+                    "total_duration": stats.total_duration,
+                    "success_rate": stats.success_rate,
+                    "last_used": stats.last_used.isoformat() if stats.last_used else None,
                 }
 
         return info
@@ -465,20 +484,20 @@ class VoiceManager:
         stats = self.performance_stats.copy()
 
         # Calculate derived metrics
-        total_requests = stats['cache_hits'] + stats['cache_misses']
+        total_requests = stats["cache_hits"] + stats["cache_misses"]
         if total_requests > 0:
-            stats['cache_hit_rate'] = stats['cache_hits'] / total_requests
+            stats["cache_hit_rate"] = stats["cache_hits"] / total_requests
         else:
-            stats['cache_hit_rate'] = 0.0
+            stats["cache_hit_rate"] = 0.0
 
-        if stats['load_times']:
-            stats['avg_load_time_ms'] = sum(stats['load_times']) * 1000 / len(stats['load_times'])
-            stats['max_load_time_ms'] = max(stats['load_times']) * 1000
-            stats['min_load_time_ms'] = min(stats['load_times']) * 1000
+        if stats["load_times"]:
+            stats["avg_load_time_ms"] = sum(stats["load_times"]) * 1000 / len(stats["load_times"])
+            stats["max_load_time_ms"] = max(stats["load_times"]) * 1000
+            stats["min_load_time_ms"] = min(stats["load_times"]) * 1000
         else:
-            stats['avg_load_time_ms'] = 0.0
-            stats['max_load_time_ms'] = 0.0
-            stats['min_load_time_ms'] = 0.0
+            stats["avg_load_time_ms"] = 0.0
+            stats["max_load_time_ms"] = 0.0
+            stats["min_load_time_ms"] = 0.0
 
         # Add cache statistics
         cache_stats = self.cache.get_cache_stats()
@@ -489,10 +508,10 @@ class VoiceManager:
     def reset_performance_stats(self):
         """Reset performance statistics"""
         self.performance_stats = {
-            'cache_hits': 0,
-            'cache_misses': 0,
-            'download_requests': 0,
-            'load_times': []
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "download_requests": 0,
+            "load_times": [],
         }
         logger.info("Performance statistics reset")
 
@@ -501,8 +520,8 @@ class VoiceManager:
         logger.info("Optimizing voice manager for individual loading strategy")
 
         # Clear any combined file references
-        if hasattr(self, 'combined_file_path'):
-            delattr(self, 'combined_file_path')
+        if hasattr(self, "combined_file_path"):
+            delattr(self, "combined_file_path")
 
         # Optimize cache for individual files
         self.cache.optimize_for_individual_files()

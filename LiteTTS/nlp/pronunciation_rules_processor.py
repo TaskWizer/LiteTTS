@@ -9,6 +9,7 @@ import re
 
 logger = logging.getLogger(__name__)
 
+
 class PronunciationRulesProcessor:
     """Processor for applying pronunciation rules to maintain natural speech"""
 
@@ -27,6 +28,7 @@ class PronunciationRulesProcessor:
         try:
             # Try to import and use the centralized config system
             from ..config import config as app_config
+
             return app_config.to_dict()
         except ImportError:
             logger.warning("Could not load centralized config, using defaults")
@@ -35,10 +37,10 @@ class PronunciationRulesProcessor:
     def _get_fallback_config(self) -> dict:
         """Get fallback configuration if centralized config is not available"""
         return {
-            'text_processing': {
-                'contraction_handling': {
-                    'use_pronunciation_rules': True,
-                    'expand_contractions': False
+            "text_processing": {
+                "contraction_handling": {
+                    "use_pronunciation_rules": True,
+                    "expand_contractions": False,
                 }
             }
         }
@@ -46,7 +48,9 @@ class PronunciationRulesProcessor:
     def _is_enabled(self) -> bool:
         """Check if pronunciation rules are enabled"""
         # First check if contraction expansion is disabled globally
-        expand_contractions = self.config.get('text_processing', {}).get('expand_contractions', False)
+        expand_contractions = self.config.get("text_processing", {}).get(
+            "expand_contractions", False
+        )
 
         # If expand_contractions is False, we should NOT apply pronunciation rules that expand contractions
         if expand_contractions is False:
@@ -54,9 +58,11 @@ class PronunciationRulesProcessor:
             return False
 
         # Otherwise check if pronunciation rules are specifically enabled
-        return (self.config.get('text_processing', {})
-                .get('contraction_handling', {})
-                .get('use_pronunciation_rules', True))
+        return (
+            self.config.get("text_processing", {})
+            .get("contraction_handling", {})
+            .get("use_pronunciation_rules", True)
+        )
 
     def _load_contraction_rules(self) -> dict[str, str]:
         """Load contraction pronunciation rules from config"""
@@ -79,13 +85,15 @@ class PronunciationRulesProcessor:
             "can't": "cannot",
             "shouldn't": "should not",
             "wouldn't": "would not",
-            "couldn't": "could not"
+            "couldn't": "could not",
         }
 
         # Get rules from config, fall back to defaults
-        config_rules = (self.config.get('text_processing', {})
-                       .get('contraction_handling', {})
-                       .get('pronunciation_rules', {}))
+        config_rules = (
+            self.config.get("text_processing", {})
+            .get("contraction_handling", {})
+            .get("pronunciation_rules", {})
+        )
 
         # Merge config rules with defaults
         rules = default_rules.copy()
@@ -119,7 +127,7 @@ class PronunciationRulesProcessor:
         """Apply pronunciation rules for contractions"""
         for contraction, pronunciation in self.contraction_rules.items():
             # Use word boundaries to avoid partial matches
-            pattern = r'\b' + re.escape(contraction) + r'\b'
+            pattern = r"\b" + re.escape(contraction) + r"\b"
 
             # Apply case-insensitive replacement while preserving original case
             def replace_with_case_preservation(match):
@@ -142,28 +150,32 @@ class PronunciationRulesProcessor:
     def analyze_contractions(self, text: str) -> dict:
         """Analyze contractions in text and suggest pronunciation fixes"""
         analysis = {
-            'contractions_found': [],
-            'pronunciation_rules_applied': [],
-            'potential_issues': [],
-            'suggestions': []
+            "contractions_found": [],
+            "pronunciation_rules_applied": [],
+            "potential_issues": [],
+            "suggestions": [],
         }
 
         # Find all contractions in text
         contraction_pattern = r"\b\w+'\w+\b"
         found_contractions = re.findall(contraction_pattern, text)
-        analysis['contractions_found'] = list(set(found_contractions))
+        analysis["contractions_found"] = list(set(found_contractions))
 
         # Check which ones have pronunciation rules
-        for contraction in analysis['contractions_found']:
+        for contraction in analysis["contractions_found"]:
             lower_contraction = contraction.lower()
             if lower_contraction in self.contraction_rules:
-                analysis['pronunciation_rules_applied'].append({
-                    'contraction': contraction,
-                    'pronunciation': self.contraction_rules[lower_contraction]
-                })
+                analysis["pronunciation_rules_applied"].append(
+                    {
+                        "contraction": contraction,
+                        "pronunciation": self.contraction_rules[lower_contraction],
+                    }
+                )
             else:
-                analysis['potential_issues'].append(contraction)
-                analysis['suggestions'].append(f"Consider adding pronunciation rule for '{contraction}'")
+                analysis["potential_issues"].append(contraction)
+                analysis["suggestions"].append(
+                    f"Consider adding pronunciation rule for '{contraction}'"
+                )
 
         return analysis
 
@@ -202,35 +214,39 @@ class PronunciationRulesProcessor:
     def validate_config(self) -> dict:
         """Validate the current configuration"""
         validation = {
-            'config_loaded': bool(self.config),
-            'pronunciation_rules_enabled': self.enabled,
-            'rules_count': len(self.contraction_rules),
-            'issues': [],
-            'recommendations': []
+            "config_loaded": bool(self.config),
+            "pronunciation_rules_enabled": self.enabled,
+            "rules_count": len(self.contraction_rules),
+            "issues": [],
+            "recommendations": [],
         }
 
         # Check for common issues
         if not self.enabled:
-            validation['issues'].append("Pronunciation rules are disabled")
-            validation['recommendations'].append("Enable 'use_pronunciation_rules' in config")
+            validation["issues"].append("Pronunciation rules are disabled")
+            validation["recommendations"].append("Enable 'use_pronunciation_rules' in config")
 
         if len(self.contraction_rules) == 0:
-            validation['issues'].append("No pronunciation rules loaded")
-            validation['recommendations'].append("Add pronunciation rules to config")
+            validation["issues"].append("No pronunciation rules loaded")
+            validation["recommendations"].append("Add pronunciation rules to config")
 
         # Check for critical contractions
         critical_contractions = ["wasn't", "I'll", "you'll", "I'd", "I'm", "that's"]
         missing_critical = [c for c in critical_contractions if c not in self.contraction_rules]
 
         if missing_critical:
-            validation['issues'].append(f"Missing critical contraction rules: {missing_critical}")
-            validation['recommendations'].append("Add pronunciation rules for critical contractions")
+            validation["issues"].append(f"Missing critical contraction rules: {missing_critical}")
+            validation["recommendations"].append(
+                "Add pronunciation rules for critical contractions"
+            )
 
         return validation
+
 
 def create_pronunciation_rules_processor(config: dict | None = None) -> PronunciationRulesProcessor:
     """Factory function to create a pronunciation rules processor"""
     return PronunciationRulesProcessor(config)
+
 
 # Example usage and testing
 if __name__ == "__main__":
@@ -256,7 +272,7 @@ if __name__ == "__main__":
         "Can't believe it",
         "Shouldn't have done that",
         "Wouldn't want to miss it",
-        "Couldn't be better"
+        "Couldn't be better",
     ]
 
     print("🔧 Testing Pronunciation Rules Processor")
@@ -277,9 +293,9 @@ if __name__ == "__main__":
     print(f"Rules enabled: {validation['pronunciation_rules_enabled']}")
     print(f"Rules count: {validation['rules_count']}")
 
-    if validation['issues']:
+    if validation["issues"]:
         print(f"Issues: {validation['issues']}")
-    if validation['recommendations']:
+    if validation["recommendations"]:
         print(f"Recommendations: {validation['recommendations']}")
 
     # Analyze sample text

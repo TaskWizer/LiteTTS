@@ -14,9 +14,11 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class EspeakConfig:
     """Configuration for eSpeak backend"""
+
     enabled: bool = False
     voice: str = "en-us"
     phoneme_format: str = "ascii"  # "ascii" or "ipa"
@@ -27,14 +29,17 @@ class EspeakConfig:
     espeak_path: str | None = None
     timeout_seconds: float = 5.0
 
+
 @dataclass
 class PhonemeResult:
     """Result of phonemization"""
+
     phonemes: str
     success: bool
     error_message: str | None = None
     processing_time: float = 0.0
     cache_hit: bool = False
+
 
 class EspeakPhonemizerBackend:
     """
@@ -74,10 +79,7 @@ class EspeakPhonemizerBackend:
         # Test eSpeak functionality
         try:
             result = subprocess.run(
-                [espeak_path, "--version"],
-                capture_output=True,
-                text=True,
-                timeout=5.0
+                [espeak_path, "--version"], capture_output=True, text=True, timeout=5.0
             )
 
             if result.returncode == 0:
@@ -109,9 +111,7 @@ class EspeakPhonemizerBackend:
         """
         if not self.is_available():
             return PhonemeResult(
-                phonemes="",
-                success=False,
-                error_message="eSpeak backend not available"
+                phonemes="", success=False, error_message="eSpeak backend not available"
             )
 
         # Check cache first
@@ -134,7 +134,7 @@ class EspeakPhonemizerBackend:
             with self.cache_lock:
                 if len(self.cache) >= self.config.cache_size:
                     # Simple LRU: remove oldest entries
-                    oldest_keys = list(self.cache.keys())[:len(self.cache) // 4]
+                    oldest_keys = list(self.cache.keys())[: len(self.cache) // 4]
                     for key in oldest_keys:
                         del self.cache[key]
 
@@ -176,10 +176,7 @@ class EspeakPhonemizerBackend:
 
             # Execute eSpeak
             result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                timeout=self.config.timeout_seconds
+                cmd, capture_output=True, text=True, timeout=self.config.timeout_seconds
             )
 
             if result.returncode == 0:
@@ -187,35 +184,20 @@ class EspeakPhonemizerBackend:
                 # Clean up phoneme output
                 phonemes = self._clean_phoneme_output(phonemes)
 
-                return PhonemeResult(
-                    phonemes=phonemes,
-                    success=True
-                )
+                return PhonemeResult(phonemes=phonemes, success=True)
             else:
                 error_msg = result.stderr.strip() or "eSpeak returned non-zero exit code"
                 logger.warning(f"eSpeak error: {error_msg}")
-                return PhonemeResult(
-                    phonemes="",
-                    success=False,
-                    error_message=error_msg
-                )
+                return PhonemeResult(phonemes="", success=False, error_message=error_msg)
 
         except subprocess.TimeoutExpired:
             error_msg = f"eSpeak timeout after {self.config.timeout_seconds}s"
             logger.warning(error_msg)
-            return PhonemeResult(
-                phonemes="",
-                success=False,
-                error_message=error_msg
-            )
+            return PhonemeResult(phonemes="", success=False, error_message=error_msg)
         except Exception as e:
             error_msg = f"eSpeak execution failed: {e}"
             logger.warning(error_msg)
-            return PhonemeResult(
-                phonemes="",
-                success=False,
-                error_message=error_msg
-            )
+            return PhonemeResult(phonemes="", success=False, error_message=error_msg)
 
     def _clean_phoneme_output(self, phonemes: str) -> str:
         """Clean and normalize phoneme output"""
@@ -226,7 +208,7 @@ class EspeakPhonemizerBackend:
         if self.config.phoneme_format == "ascii":
             # Clean ASCII phoneme output
             phonemes = phonemes.replace("_:", "")  # Remove stress markers if not needed
-            phonemes = phonemes.replace("'", "")   # Remove primary stress if not needed
+            phonemes = phonemes.replace("'", "")  # Remove primary stress if not needed
 
         return phonemes
 
@@ -243,7 +225,7 @@ class EspeakPhonemizerBackend:
             "cache_enabled": self.config.cache_enabled,
             "voice": self.config.voice,
             "phoneme_format": self.config.phoneme_format,
-            "punctuation_mode": self.config.punctuation_mode
+            "punctuation_mode": self.config.punctuation_mode,
         }
 
     def clear_cache(self) -> None:
@@ -268,8 +250,8 @@ class EspeakPhonemizerBackend:
             "config": {
                 "voice": self.config.voice,
                 "phoneme_format": self.config.phoneme_format,
-                "punctuation_mode": self.config.punctuation_mode
-            }
+                "punctuation_mode": self.config.punctuation_mode,
+            },
         }
 
         if result.success:
@@ -278,6 +260,7 @@ class EspeakPhonemizerBackend:
             logger.warning(f"❌ eSpeak test failed: {result.error_message}")
 
         return test_result
+
 
 # Factory function for easy integration
 def create_espeak_backend(config_dict: dict[str, Any]) -> EspeakPhonemizerBackend:
@@ -291,7 +274,7 @@ def create_espeak_backend(config_dict: dict[str, Any]) -> EspeakPhonemizerBacken
         cache_size=config_dict.get("cache_size", 10000),
         fallback_to_existing=config_dict.get("fallback_to_existing", True),
         espeak_path=config_dict.get("espeak_path"),
-        timeout_seconds=config_dict.get("timeout_seconds", 5.0)
+        timeout_seconds=config_dict.get("timeout_seconds", 5.0),
     )
 
     return EspeakPhonemizerBackend(config)

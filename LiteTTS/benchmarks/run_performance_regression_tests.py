@@ -15,11 +15,9 @@ sys.path.insert(0, str(project_root))
 from LiteTTS.tests.performance_regression_framework import PerformanceRegressionTester
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 def main():
     """Run performance regression tests"""
@@ -49,7 +47,7 @@ def main():
         print(f"   Total Tests: {result.total_tests}")
         print(f"   Passed: {result.passed_tests}")
         print(f"   Failed: {result.failed_tests}")
-        print(f"   Success Rate: {(result.passed_tests/result.total_tests*100):.1f}%")
+        print(f"   Success Rate: {(result.passed_tests / result.total_tests * 100):.1f}%")
 
         print("\n⚡ Performance Metrics:")
         print(f"   Average RTF: {result.average_rtf:.3f}")
@@ -60,30 +58,30 @@ def main():
         if baseline_exists:
             print("\n📊 Baseline Comparison:")
             baseline_comp = result.baseline_comparison
-            if 'rtf_change_percent' in baseline_comp:
-                rtf_change = baseline_comp['rtf_change_percent']
+            if "rtf_change_percent" in baseline_comp:
+                rtf_change = baseline_comp["rtf_change_percent"]
                 rtf_symbol = "📈" if rtf_change > 0 else "📉" if rtf_change < 0 else "➡️"
                 print(f"   RTF Change: {rtf_symbol} {rtf_change:+.1f}%")
 
-            if 'memory_change_percent' in baseline_comp:
-                mem_change = baseline_comp['memory_change_percent']
+            if "memory_change_percent" in baseline_comp:
+                mem_change = baseline_comp["memory_change_percent"]
                 mem_symbol = "📈" if mem_change > 0 else "📉" if mem_change < 0 else "➡️"
                 print(f"   Memory Change: {mem_symbol} {mem_change:+.1f}%")
 
         # Performance status
-        status = report['analysis']['performance_status']
+        status = report["analysis"]["performance_status"]
         status_symbols = {
-            'PASSED': '✅',
-            'FAILED': '❌',
-            'REGRESSION_DETECTED': '⚠️',
-            'RTF_THRESHOLD_EXCEEDED': '🐌',
-            'MEMORY_THRESHOLD_EXCEEDED': '💾'
+            "PASSED": "✅",
+            "FAILED": "❌",
+            "REGRESSION_DETECTED": "⚠️",
+            "RTF_THRESHOLD_EXCEEDED": "🐌",
+            "MEMORY_THRESHOLD_EXCEEDED": "💾",
         }
 
         print(f"\n🎯 Performance Status: {status_symbols.get(status, '❓')} {status}")
 
         # Recommendations
-        recommendations = report['analysis']['recommendations']
+        recommendations = report["analysis"]["recommendations"]
         if recommendations:
             print("\n💡 Recommendations:")
             for i, rec in enumerate(recommendations, 1):
@@ -96,13 +94,13 @@ def main():
             print(f"   📈 Baseline Data: {tester.baseline_file}")
 
         # Exit status
-        if status == 'PASSED':
+        if status == "PASSED":
             print("\n🎉 All tests passed! Performance is within acceptable limits.")
             return True
-        elif status == 'REGRESSION_DETECTED':
+        elif status == "REGRESSION_DETECTED":
             print("\n⚠️  Performance regression detected. Review recent changes.")
             return False
-        elif status == 'FAILED':
+        elif status == "FAILED":
             print("\n❌ Some tests failed. Check logs for details.")
             return False
         else:
@@ -113,6 +111,7 @@ def main():
         logger.error(f"Performance testing failed: {e}")
         print(f"\n❌ Testing failed: {e}")
         return False
+
 
 if __name__ == "__main__":
     success = main()

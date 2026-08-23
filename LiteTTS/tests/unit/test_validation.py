@@ -53,7 +53,7 @@ class TestInputValidator:
 
     def test_validate_text_control_chars(self):
         """Test validating text with control characters"""
-        result = InputValidator.validate_text("Hello\x00World\x1F")
+        result = InputValidator.validate_text("Hello\x00World\x1f")
         assert result.is_valid is True
 
     def test_validate_text_excessive_whitespace(self):
@@ -375,6 +375,7 @@ class TestValidationEdgeCases:
 
     def test_validate_format_conversion_error(self):
         """Test format validation with object that can't be converted to string"""
+
         class Unstringable:
             def __str__(self):
                 raise ValueError("Cannot convert to string")
@@ -385,6 +386,7 @@ class TestValidationEdgeCases:
 
     def test_validate_speed_not_a_number_type(self):
         """Test speed validation with non-numeric type"""
+
         class NotANumber:
             pass
 
@@ -411,6 +413,7 @@ class TestValidationEdgeCases:
 
     def test_validate_format_with_complex_object(self):
         """Test format validation with complex object"""
+
         class ComplexFormat:
             pass
 

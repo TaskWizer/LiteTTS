@@ -24,13 +24,13 @@ class TestRTFMonitor:
     def test_record_request(self, monitor):
         """Test recording a request"""
         monitor.record_request(rtf=0.5, response_time=1.0, audio_duration=2.0)
-        assert monitor.metrics['total_requests'] == 1
+        assert monitor.metrics["total_requests"] == 1
 
     def test_record_multiple_requests(self, monitor):
         """Test recording multiple requests"""
         for i in range(10):
             monitor.record_request(rtf=0.5, response_time=1.0, audio_duration=2.0)
-        assert monitor.metrics['total_requests'] == 10
+        assert monitor.metrics["total_requests"] == 10
 
     def test_get_metrics(self, monitor):
         """Test getting metrics"""
@@ -48,7 +48,7 @@ class TestRTFMonitor:
         """Test resetting metrics"""
         monitor.record_request(rtf=0.5, response_time=1.0, audio_duration=2.0)
         monitor.reset_metrics()
-        assert monitor.metrics['total_requests'] == 0
+        assert monitor.metrics["total_requests"] == 0
 
 
 class TestRTFMonitorEdgeCases:
@@ -71,10 +71,10 @@ class TestRTFMonitorEdgeCases:
     def test_reset_with_no_data(self, monitor):
         """Test resetting with no data"""
         monitor.reset_metrics()
-        assert monitor.metrics['total_requests'] == 0
+        assert monitor.metrics["total_requests"] == 0
 
     def test_record_extreme_rtf_values(self, monitor):
         """Test recording extreme RTF values"""
         monitor.record_request(rtf=0.01, response_time=0.1, audio_duration=10.0)
         monitor.record_request(rtf=5.0, response_time=10.0, audio_duration=2.0)
-        assert monitor.metrics['total_requests'] == 2
+        assert monitor.metrics["total_requests"] == 2

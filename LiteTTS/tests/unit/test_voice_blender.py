@@ -20,7 +20,7 @@ class TestBlendConfig:
             blend_method="weighted_average",
             normalize_weights=True,
             preserve_energy=True,
-            smoothing_factor=0.1
+            smoothing_factor=0.1,
         )
         assert len(config.voices) == 2
         assert config.blend_method == "weighted_average"
@@ -74,8 +74,7 @@ class TestVoiceBlender:
         mock_voice_manager = Mock()
         blender = VoiceBlender(mock_voice_manager)
         config = BlendConfig(
-            voices=[("voice1", 0.5), ("voice2", 0.5)],
-            blend_method="unsupported_method"
+            voices=[("voice1", 0.5), ("voice2", 0.5)], blend_method="unsupported_method"
         )
         result = blender.blend_voices(config)
         assert result is None
@@ -87,8 +86,7 @@ class TestVoiceBlender:
 
         blender = VoiceBlender(mock_voice_manager)
         config = BlendConfig(
-            voices=[("voice1", 0.5), ("voice2", 0.5)],
-            blend_method="weighted_average"
+            voices=[("voice1", 0.5), ("voice2", 0.5)], blend_method="weighted_average"
         )
         result = blender.blend_voices(config)
         assert result is None
@@ -104,7 +102,7 @@ class TestVoiceBlender:
         config = BlendConfig(
             voices=[("voice1", 0.0), ("voice2", 0.0)],
             blend_method="weighted_average",
-            normalize_weights=True
+            normalize_weights=True,
         )
         result = blender.blend_voices(config)
         assert result is None
@@ -132,7 +130,7 @@ class TestVoiceBlender:
             voices=[("voice1", 0.5), ("voice2", 0.5)],
             blend_method="weighted_average",
             normalize_weights=True,
-            preserve_energy=False
+            preserve_energy=False,
         )
         result = blender.blend_voices(config)
         assert result is not None
@@ -217,7 +215,9 @@ class TestVoiceBlender:
         embedding3 = Mock()
         embedding3.embedding_data = np.ones(256, dtype=np.float32) * 3
 
-        result = blender._interpolation_blend([embedding1, embedding2, embedding3], [0.33, 0.33, 0.34])
+        result = blender._interpolation_blend(
+            [embedding1, embedding2, embedding3], [0.33, 0.33, 0.34]
+        )
 
         assert result is not None
 
@@ -279,7 +279,7 @@ class TestVoiceBlender:
         result = blender._create_blended_metadata([embedding1, embedding2], [0.5, 0.5])
 
         assert result is not None
-        assert hasattr(result, 'gender')
+        assert hasattr(result, "gender")
 
     def test_generate_blend_name(self):
         """Test _generate_blend_name method"""
@@ -313,9 +313,7 @@ class TestVoiceBlender:
 
         blender = VoiceBlender(mock_voice_manager)
         config = BlendConfig(
-            voices=[("voice1", 1.0)],
-            blend_method="weighted_average",
-            preserve_energy=True
+            voices=[("voice1", 1.0)], blend_method="weighted_average", preserve_energy=True
         )
         result = blender.blend_voices(config)
 
@@ -341,8 +339,7 @@ class TestVoiceBlender:
 
         blender = VoiceBlender(mock_voice_manager)
         config = BlendConfig(
-            voices=[("voice1", 0.5), ("voice2", 0.5)],
-            blend_method="interpolation"
+            voices=[("voice1", 0.5), ("voice2", 0.5)], blend_method="interpolation"
         )
         result = blender.blend_voices(config)
 
@@ -369,7 +366,7 @@ class TestVoiceBlender:
         config = BlendConfig(
             voices=[("voice1", 0.5), ("voice2", 0.5)],
             blend_method="style_mixing",
-            smoothing_factor=0.2
+            smoothing_factor=0.2,
         )
         result = blender.blend_voices(config)
 

@@ -17,10 +17,10 @@ class TestDownloadFile:
         url = "https://example.com/file.bin"
         filepath = tmp_path / "file.bin"
 
-        with patch('LiteTTS.downloader.requests.get') as mock_get:
+        with patch("LiteTTS.downloader.requests.get") as mock_get:
             mock_response = Mock()
-            mock_response.headers.get.return_value = '100'
-            mock_response.iter_content.return_value = [b'test data' * 100]
+            mock_response.headers.get.return_value = "100"
+            mock_response.iter_content.return_value = [b"test data" * 100]
             mock_response.raise_for_status = Mock()
             mock_get.return_value = mock_response
 
@@ -32,9 +32,9 @@ class TestDownloadFile:
         """Test download when file already exists"""
         url = "https://example.com/file.bin"
         filepath = tmp_path / "file.bin"
-        filepath.write_bytes(b'existing data')
+        filepath.write_bytes(b"existing data")
 
-        with patch('LiteTTS.downloader.requests.get') as mock_get:
+        with patch("LiteTTS.downloader.requests.get") as mock_get:
             result = download_file(url, filepath, "test file")
             assert result is True
             mock_get.assert_not_called()
@@ -44,7 +44,7 @@ class TestDownloadFile:
         url = "https://example.com/file.bin"
         filepath = tmp_path / "file.bin"
 
-        with patch('LiteTTS.downloader.requests.get') as mock_get:
+        with patch("LiteTTS.downloader.requests.get") as mock_get:
             mock_get.side_effect = Exception("Network error")
 
             result = download_file(url, filepath, "test file")
@@ -56,7 +56,7 @@ class TestDownloadFile:
         url = "https://example.com/file.bin"
         filepath = tmp_path / "file.bin"
 
-        with patch('LiteTTS.downloader.requests.get') as mock_get:
+        with patch("LiteTTS.downloader.requests.get") as mock_get:
             mock_response = Mock()
             mock_response.raise_for_status.side_effect = Exception("404 Not Found")
             mock_get.return_value = mock_response
@@ -69,10 +69,10 @@ class TestDownloadFile:
         url = "https://example.com/file.bin"
         filepath = tmp_path / "subdir" / "nested" / "file.bin"
 
-        with patch('LiteTTS.downloader.requests.get') as mock_get:
+        with patch("LiteTTS.downloader.requests.get") as mock_get:
             mock_response = Mock()
-            mock_response.headers.get.return_value = '10'
-            mock_response.iter_content.return_value = [b'test']
+            mock_response.headers.get.return_value = "10"
+            mock_response.iter_content.return_value = [b"test"]
             mock_response.raise_for_status = Mock()
             mock_get.return_value = mock_response
 
@@ -87,10 +87,11 @@ class TestEnsureModelFiles:
 
     def test_ensure_model_files_success(self):
         """Test ensure_model_files with mocked dependencies"""
-        with patch('LiteTTS.models.manager.ModelManager') as mock_model_mgr_class, \
-             patch('LiteTTS.voice.downloader.VoiceDownloader') as mock_voice_dl_class, \
-             patch('LiteTTS.config.config') as mock_config:
-
+        with (
+            patch("LiteTTS.models.manager.ModelManager") as mock_model_mgr_class,
+            patch("LiteTTS.voice.downloader.VoiceDownloader") as mock_voice_dl_class,
+            patch("LiteTTS.config.config") as mock_config,
+        ):
             # Setup config mock
             mock_config.paths.models_dir = "/tmp/models"
             mock_config.paths.voices_dir = "/tmp/voices"
@@ -104,7 +105,10 @@ class TestEnsureModelFiles:
 
             # Setup voice downloader mock
             mock_voice_instance = Mock()
-            mock_voice_instance.download_all_voices.return_value = {"af_heart": True, "am_puck": True}
+            mock_voice_instance.download_all_voices.return_value = {
+                "af_heart": True,
+                "am_puck": True,
+            }
             mock_voice_dl_class.return_value = mock_voice_instance
 
             result = ensure_model_files()
@@ -112,10 +116,11 @@ class TestEnsureModelFiles:
 
     def test_ensure_model_files_model_download_fails(self):
         """Test ensure_model_files when model download fails"""
-        with patch('LiteTTS.models.manager.ModelManager') as mock_model_mgr_class, \
-             patch('LiteTTS.voice.downloader.VoiceDownloader') as mock_voice_dl_class, \
-             patch('LiteTTS.config.config') as mock_config:
-
+        with (
+            patch("LiteTTS.models.manager.ModelManager") as mock_model_mgr_class,
+            patch("LiteTTS.voice.downloader.VoiceDownloader") as mock_voice_dl_class,
+            patch("LiteTTS.config.config") as mock_config,
+        ):
             mock_config.paths.models_dir = "/tmp/models"
             mock_config.paths.voices_dir = "/tmp/voices"
             mock_config.model.default_variant = "base"
@@ -134,10 +139,11 @@ class TestEnsureModelFiles:
 
     def test_ensure_model_files_no_voices(self):
         """Test ensure_model_files when no voices downloaded"""
-        with patch('LiteTTS.models.manager.ModelManager') as mock_model_mgr_class, \
-             patch('LiteTTS.voice.downloader.VoiceDownloader') as mock_voice_dl_class, \
-             patch('LiteTTS.config.config') as mock_config:
-
+        with (
+            patch("LiteTTS.models.manager.ModelManager") as mock_model_mgr_class,
+            patch("LiteTTS.voice.downloader.VoiceDownloader") as mock_voice_dl_class,
+            patch("LiteTTS.config.config") as mock_config,
+        ):
             mock_config.paths.models_dir = "/tmp/models"
             mock_config.paths.voices_dir = "/tmp/voices"
             mock_config.model.default_variant = "base"
@@ -160,7 +166,7 @@ class TestGetAvailableVoices:
 
     def test_get_available_voices_success(self):
         """Test get_available_voices with mocked dependencies"""
-        with patch('LiteTTS.voice.downloader.VoiceDownloader') as mock_voice_dl_class:
+        with patch("LiteTTS.voice.downloader.VoiceDownloader") as mock_voice_dl_class:
             mock_instance = Mock()
             mock_instance.get_available_voice_names.return_value = ["af_heart", "am_puck"]
             mock_voice_dl_class.return_value = mock_instance
@@ -170,13 +176,13 @@ class TestGetAvailableVoices:
 
     def test_get_available_voices_handles_error(self):
         """Test get_available_voices handles errors gracefully"""
-        with patch('LiteTTS.voice.downloader.VoiceDownloader', side_effect=Exception("Test error")):
+        with patch("LiteTTS.voice.downloader.VoiceDownloader", side_effect=Exception("Test error")):
             result = get_available_voices()
             assert result == []
 
     def test_get_available_voices_returns_list(self):
         """Test get_available_voices returns a list"""
-        with patch('LiteTTS.voice.downloader.VoiceDownloader') as mock_voice_dl_class:
+        with patch("LiteTTS.voice.downloader.VoiceDownloader") as mock_voice_dl_class:
             mock_instance = Mock()
             mock_instance.get_available_voice_names.return_value = []
             mock_voice_dl_class.return_value = mock_instance
@@ -195,9 +201,9 @@ class TestDownloadFileProgress:
         filepath = tmp_path / "largefile.bin"
 
         # Create a large response that exceeds 1MB
-        large_data = b'x' * (1024 * 1024 + 100)
+        large_data = b"x" * (1024 * 1024 + 100)
 
-        with patch('LiteTTS.downloader.requests.get') as mock_get:
+        with patch("LiteTTS.downloader.requests.get") as mock_get:
             mock_response = Mock()
             mock_response.headers.get.return_value = str(len(large_data))
             mock_response.iter_content.return_value = [large_data]
@@ -212,11 +218,11 @@ class TestDownloadFileProgress:
         url = "https://example.com/file.bin"
         filepath = tmp_path / "file.bin"
 
-        with patch('LiteTTS.downloader.requests.get') as mock_get:
+        with patch("LiteTTS.downloader.requests.get") as mock_get:
             mock_response = Mock()
-            mock_response.headers.get.return_value = '100'
+            mock_response.headers.get.return_value = "100"
             # Return multiple chunks to simulate progressive download
-            mock_response.iter_content.return_value = iter([b'chunk1', b'chunk2', b'chunk3'])
+            mock_response.iter_content.return_value = iter([b"chunk1", b"chunk2", b"chunk3"])
             mock_response.raise_for_status = Mock()
             mock_get.return_value = mock_response
 
@@ -245,7 +251,7 @@ class TestDownloadFileProgress:
             def mock_open(*args, **kwargs):
                 return FailingFileWrapper(original_open(*args, **kwargs))
 
-            with patch('LiteTTS.downloader.open', side_effect=mock_open):
+            with patch("LiteTTS.downloader.open", side_effect=mock_open):
                 result = download_file(url, filepath, "test file")
                 assert result is False
                 # Line 50: filepath.unlink() removes partial file on error
@@ -257,10 +263,11 @@ class TestEnsureModelFilesEdgeCases:
 
     def test_ensure_model_files_model_already_exists(self):
         """Test ensure_model_files when model already exists (line 78)"""
-        with patch('LiteTTS.models.manager.ModelManager') as mock_model_mgr_class, \
-             patch('LiteTTS.voice.downloader.VoiceDownloader') as mock_voice_dl_class, \
-             patch('LiteTTS.config.config') as mock_config:
-
+        with (
+            patch("LiteTTS.models.manager.ModelManager") as mock_model_mgr_class,
+            patch("LiteTTS.voice.downloader.VoiceDownloader") as mock_voice_dl_class,
+            patch("LiteTTS.config.config") as mock_config,
+        ):
             mock_config.paths.models_dir = "/tmp/models"
             mock_config.paths.voices_dir = "/tmp/voices"
             mock_config.model.default_variant = "base"
@@ -281,9 +288,10 @@ class TestEnsureModelFilesEdgeCases:
 
     def test_ensure_model_files_exception_handling(self):
         """Test ensure_model_files exception handling (lines 99-103)"""
-        with patch('LiteTTS.models.manager.ModelManager') as mock_model_mgr_class, \
-             patch('LiteTTS.config.config') as mock_config:
-
+        with (
+            patch("LiteTTS.models.manager.ModelManager") as mock_model_mgr_class,
+            patch("LiteTTS.config.config") as mock_config,
+        ):
             mock_config.paths.models_dir = "/tmp/models"
             mock_config.paths.voices_dir = "/tmp/voices"
             mock_config.model.default_variant = "base"

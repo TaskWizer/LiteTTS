@@ -13,15 +13,18 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class PhoneticAnalysis:
     """Result of phonetic analysis"""
+
     original_text: str
     processed_text: str
     phonetic_mappings: dict[str, str]
     stress_patterns: list[tuple[int, str]]
     confidence_score: float
     processing_notes: list[str]
+
 
 class RIMEAIIntegration:
     """Advanced phonetic processing based on RIME AI research"""
@@ -57,7 +60,7 @@ class RIMEAIIntegration:
 
         if config_path and Path(config_path).exists():
             try:
-                with open(config_path, 'r') as f:
+                with open(config_path, "r") as f:
                     user_config = json.load(f)
                 default_config.update(user_config)
             except Exception as e:
@@ -69,24 +72,66 @@ class RIMEAIIntegration:
         """Initialize RIME AI-style phonetic alphabet"""
         return {
             # Enhanced vowel mappings with RIME AI notation
-            'ɪ': 'I', 'i': 'i', 'ɛ': 'E', 'æ': '@', 'ʌ': 'A', 'ə': 'x',
-            'ɑ': 'a', 'ɔ': 'O', 'ʊ': 'U', 'u': 'u', 'ɝ': 'R', 'ɚ': 'R',
-
+            "ɪ": "I",
+            "i": "i",
+            "ɛ": "E",
+            "æ": "@",
+            "ʌ": "A",
+            "ə": "x",
+            "ɑ": "a",
+            "ɔ": "O",
+            "ʊ": "U",
+            "u": "u",
+            "ɝ": "R",
+            "ɚ": "R",
             # Diphthongs with RIME AI style
-            'eɪ': 'e', 'aɪ': 'Y', 'ɔɪ': 'O', 'aʊ': 'W', 'oʊ': 'o',
-
+            "eɪ": "e",
+            "aɪ": "Y",
+            "ɔɪ": "O",
+            "aʊ": "W",
+            "oʊ": "o",
             # Consonants with enhanced mapping
-            'θ': 'T', 'ð': 'D', 'ʃ': 'S', 'ʒ': 'Z', 'ŋ': 'G',
-            'tʃ': 'C', 'dʒ': 'J', 'p': 'p', 'b': 'b', 't': 't', 'd': 'd',
-            'k': 'k', 'g': 'g', 'f': 'f', 'v': 'v', 's': 's', 'z': 'z',
-            'h': 'h', 'm': 'm', 'n': 'n', 'j': 'y', 'w': 'w', 'r': 'r', 'l': 'l',
-
+            "θ": "T",
+            "ð": "D",
+            "ʃ": "S",
+            "ʒ": "Z",
+            "ŋ": "G",
+            "tʃ": "C",
+            "dʒ": "J",
+            "p": "p",
+            "b": "b",
+            "t": "t",
+            "d": "d",
+            "k": "k",
+            "g": "g",
+            "f": "f",
+            "v": "v",
+            "s": "s",
+            "z": "z",
+            "h": "h",
+            "m": "m",
+            "n": "n",
+            "j": "y",
+            "w": "w",
+            "r": "r",
+            "l": "l",
             # Stress and timing markers (RIME AI style)
-            'ˈ': '1', 'ˌ': '2', '.': '0', 'ː': '', '̆': '',
-
+            "ˈ": "1",
+            "ˌ": "2",
+            ".": "0",
+            "ː": "",
+            "̆": "",
             # Additional RIME AI phonetic symbols
-            'x': 'h', 'ɣ': 'g', 'ɲ': 'n', 'ɭ': 'l', 'ɻ': 'r',
-            'ɾ': 'r', 'ʔ': '', 'ʰ': 'h', 'ʷ': 'w', 'ʲ': 'y'
+            "x": "h",
+            "ɣ": "g",
+            "ɲ": "n",
+            "ɭ": "l",
+            "ɻ": "r",
+            "ɾ": "r",
+            "ʔ": "",
+            "ʰ": "h",
+            "ʷ": "w",
+            "ʲ": "y",
         }
 
     def _initialize_stress_patterns(self) -> dict[str, list[str]]:
@@ -96,52 +141,51 @@ class RIMEAIIntegration:
             "secondary_stress": ["2", "ˌ", ","],
             "unstressed": ["0", ".", ""],
             "long_vowel": ["ː", ":"],
-            "short_vowel": ["̆", "˘"]
+            "short_vowel": ["̆", "˘"],
         }
 
     def _initialize_phoneme_similarities(self) -> dict[str, list[str]]:
         """Initialize phoneme similarity mappings for error correction"""
         return {
             # Vowel similarities
-            'i': ['ɪ', 'iː', 'e'],
-            'ɪ': ['i', 'e', 'ɛ'],
-            'e': ['ɛ', 'eɪ', 'i'],
-            'ɛ': ['e', 'æ', 'ɪ'],
-            'æ': ['ɛ', 'a', 'ʌ'],
-            'a': ['æ', 'ɑ', 'ʌ'],
-            'ɑ': ['a', 'ɔ', 'ʌ'],
-            'ɔ': ['ɑ', 'o', 'ʊ'],
-            'o': ['ɔ', 'oʊ', 'ʊ'],
-            'ʊ': ['o', 'u', 'ɔ'],
-            'u': ['ʊ', 'uː', 'o'],
-            'ʌ': ['a', 'ɑ', 'ə'],
-            'ə': ['ʌ', 'ɪ', 'ɛ'],
-
+            "i": ["ɪ", "iː", "e"],
+            "ɪ": ["i", "e", "ɛ"],
+            "e": ["ɛ", "eɪ", "i"],
+            "ɛ": ["e", "æ", "ɪ"],
+            "æ": ["ɛ", "a", "ʌ"],
+            "a": ["æ", "ɑ", "ʌ"],
+            "ɑ": ["a", "ɔ", "ʌ"],
+            "ɔ": ["ɑ", "o", "ʊ"],
+            "o": ["ɔ", "oʊ", "ʊ"],
+            "ʊ": ["o", "u", "ɔ"],
+            "u": ["ʊ", "uː", "o"],
+            "ʌ": ["a", "ɑ", "ə"],
+            "ə": ["ʌ", "ɪ", "ɛ"],
             # Consonant similarities
-            'p': ['b', 'f', 'pʰ'],
-            'b': ['p', 'v', 'm'],
-            't': ['d', 'θ', 'tʰ'],
-            'd': ['t', 'ð', 'n'],
-            'k': ['g', 'x', 'kʰ'],
-            'g': ['k', 'ɣ', 'ŋ'],
-            'f': ['v', 'p', 'θ'],
-            'v': ['f', 'b', 'ð'],
-            's': ['z', 'ʃ', 'θ'],
-            'z': ['s', 'ʒ', 'ð'],
-            'ʃ': ['ʒ', 's', 'tʃ'],
-            'ʒ': ['ʃ', 'z', 'dʒ'],
-            'θ': ['f', 's', 't'],
-            'ð': ['v', 'z', 'd'],
-            'tʃ': ['ʃ', 'dʒ', 't'],
-            'dʒ': ['tʃ', 'ʒ', 'd'],
-            'm': ['n', 'b', 'p'],
-            'n': ['m', 'd', 't'],
-            'ŋ': ['n', 'g', 'k'],
-            'l': ['r', 'ɭ', 'ɾ'],
-            'r': ['l', 'ɻ', 'ɾ'],
-            'j': ['i', 'ʲ', 'ɪ'],
-            'w': ['u', 'ʷ', 'ʊ'],
-            'h': ['x', 'ʰ', 'ʔ']
+            "p": ["b", "f", "pʰ"],
+            "b": ["p", "v", "m"],
+            "t": ["d", "θ", "tʰ"],
+            "d": ["t", "ð", "n"],
+            "k": ["g", "x", "kʰ"],
+            "g": ["k", "ɣ", "ŋ"],
+            "f": ["v", "p", "θ"],
+            "v": ["f", "b", "ð"],
+            "s": ["z", "ʃ", "θ"],
+            "z": ["s", "ʒ", "ð"],
+            "ʃ": ["ʒ", "s", "tʃ"],
+            "ʒ": ["ʃ", "z", "dʒ"],
+            "θ": ["f", "s", "t"],
+            "ð": ["v", "z", "d"],
+            "tʃ": ["ʃ", "dʒ", "t"],
+            "dʒ": ["tʃ", "ʒ", "d"],
+            "m": ["n", "b", "p"],
+            "n": ["m", "d", "t"],
+            "ŋ": ["n", "g", "k"],
+            "l": ["r", "ɭ", "ɾ"],
+            "r": ["l", "ɻ", "ɾ"],
+            "j": ["i", "ʲ", "ɪ"],
+            "w": ["u", "ʷ", "ʊ"],
+            "h": ["x", "ʰ", "ʔ"],
         }
 
     def _initialize_context_rules(self) -> dict[str, dict[str, str]]:
@@ -176,7 +220,7 @@ class RIMEAIIntegration:
                 "compound_words": "first_element",
                 "prefixed_words": "root",
                 "suffixed_words": "depends_on_suffix",
-            }
+            },
         }
 
     def process_text_with_rime_ai(self, text: str) -> PhoneticAnalysis:
@@ -222,7 +266,7 @@ class RIMEAIIntegration:
             phonetic_mappings=phonetic_mappings,
             stress_patterns=stress_patterns,
             confidence_score=confidence_score,
-            processing_notes=processing_notes
+            processing_notes=processing_notes,
         )
 
     def _process_rime_notation(self, text: str) -> tuple[str, dict[str, str]]:
@@ -230,7 +274,7 @@ class RIMEAIIntegration:
         mappings = {}
 
         # Pattern for RIME AI notation: {phonetic_string}
-        pattern = re.compile(r'\{([^}]+)\}')
+        pattern = re.compile(r"\{([^}]+)\}")
 
         def replace_rime_notation(match):
             phonetic = match.group(1)
@@ -251,9 +295,9 @@ class RIMEAIIntegration:
             # Handle stress markers (numbers)
             if phonetic[i].isdigit():
                 stress_level = phonetic[i]
-                if stress_level == '1' and self.config["stress_marker_style"] == "readable":
+                if stress_level == "1" and self.config["stress_marker_style"] == "readable":
                     result.append("'")  # Primary stress marker
-                elif stress_level == '2' and self.config["stress_marker_style"] == "readable":
+                elif stress_level == "2" and self.config["stress_marker_style"] == "readable":
                     result.append(",")  # Secondary stress marker
                 # Skip stress markers in phonetic output
                 i += 1
@@ -261,7 +305,7 @@ class RIMEAIIntegration:
 
             # Handle multi-character phonemes
             if i < len(phonetic) - 1:
-                two_char = phonetic[i:i+2]
+                two_char = phonetic[i : i + 2]
                 if two_char in self.rime_phonetic_alphabet:
                     result.append(self.rime_phonetic_alphabet[two_char])
                     i += 2
@@ -276,7 +320,7 @@ class RIMEAIIntegration:
 
             i += 1
 
-        return ''.join(result)
+        return "".join(result)
 
     def _apply_context_rules(self, text: str) -> tuple[str, dict[str, str]]:
         """Apply context-aware pronunciation rules"""
@@ -290,7 +334,7 @@ class RIMEAIIntegration:
             # Apply word-initial rules
             for pattern, replacement in self.context_rules["word_initial"].items():
                 if word.lower().startswith(pattern):
-                    new_word = replacement + word[len(pattern):]
+                    new_word = replacement + word[len(pattern) :]
                     if new_word != word:
                         mappings[f"initial_{pattern}"] = f"{pattern} → {replacement}"
                         word = new_word
@@ -299,7 +343,7 @@ class RIMEAIIntegration:
             # Apply word-final rules
             for pattern, replacement in self.context_rules["word_final"].items():
                 if word.lower().endswith(pattern):
-                    new_word = word[:-len(pattern)] + replacement
+                    new_word = word[: -len(pattern)] + replacement
                     if new_word != word:
                         mappings[f"final_{pattern}"] = f"{pattern} → {replacement}"
                         word = new_word
@@ -318,7 +362,7 @@ class RIMEAIIntegration:
 
             processed_words.append(word)
 
-        return ' '.join(processed_words), mappings
+        return " ".join(processed_words), mappings
 
     def _detect_stress_patterns(self, text: str) -> list[tuple[int, str]]:
         """Detect stress patterns in text"""
@@ -329,14 +373,14 @@ class RIMEAIIntegration:
 
         for word_idx, word in enumerate(words):
             # Count syllables (simple vowel counting)
-            vowels = 'aeiouAEIOU'
+            vowels = "aeiouAEIOU"
             syllable_count = sum(1 for char in word if char in vowels)
 
             if syllable_count > 1:
                 # Apply basic stress rules
                 if len(word) > 6:  # Longer words often have secondary stress
                     stress_patterns.append((word_idx, "primary_secondary"))
-                elif word.endswith(('tion', 'sion', 'ment', 'ness')):
+                elif word.endswith(("tion", "sion", "ment", "ness")):
                     stress_patterns.append((word_idx, "penultimate"))
                 else:
                     stress_patterns.append((word_idx, "initial"))
@@ -357,20 +401,26 @@ class RIMEAIIntegration:
             "expresso": "espresso",
             "supposably": "supposedly",
             "irregardless": "regardless",
-            "pacifically": "specifically"
+            "pacifically": "specifically",
         }
 
         processed_text = text
         for wrong, correct in common_fixes.items():
             if wrong in processed_text.lower():
-                processed_text = re.sub(re.escape(wrong), correct, processed_text, flags=re.IGNORECASE)
+                processed_text = re.sub(
+                    re.escape(wrong), correct, processed_text, flags=re.IGNORECASE
+                )
                 corrections[wrong] = correct
 
         return processed_text, corrections
 
-    def _calculate_confidence_score(self, original: str, processed: str,
-                                  mappings: dict[str, str],
-                                  stress_patterns: list[tuple[int, str]]) -> float:
+    def _calculate_confidence_score(
+        self,
+        original: str,
+        processed: str,
+        mappings: dict[str, str],
+        stress_patterns: list[tuple[int, str]],
+    ) -> float:
         """Calculate confidence score for phonetic processing"""
         base_score = 0.8
 
@@ -400,6 +450,7 @@ class RIMEAIIntegration:
         summary += f"Processing Notes: {', '.join(analysis.processing_notes)}\n"
 
         return summary
+
 
 # Global instance for easy access
 rime_ai_processor = RIMEAIIntegration()

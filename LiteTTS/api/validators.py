@@ -13,6 +13,7 @@ from ..tts.synthesizer import TTSSynthesizer
 
 logger = logging.getLogger(__name__)
 
+
 class RequestValidator:
     """Validates TTS API requests"""
 
@@ -26,7 +27,9 @@ class RequestValidator:
         if max_text_length is None:
             # Try to get from synthesizer config, otherwise use safe default
             try:
-                max_text_length = getattr(synthesizer.config, 'max_text_length', self.DEFAULT_MAX_TEXT_LENGTH)
+                max_text_length = getattr(
+                    synthesizer.config, "max_text_length", self.DEFAULT_MAX_TEXT_LENGTH
+                )
             except (AttributeError, TypeError):
                 max_text_length = self.DEFAULT_MAX_TEXT_LENGTH
 
@@ -41,13 +44,13 @@ class RequestValidator:
         self.min_emotion_strength = 0.0
 
         # Supported formats
-        self.supported_formats = ['mp3', 'wav', 'ogg', 'flac', 'opus']
+        self.supported_formats = ["mp3", "wav", "ogg", "flac", "opus"]
 
         # Text content filters
         self.forbidden_patterns = [
-            re.compile(r'<script.*?</script>', re.IGNORECASE | re.DOTALL),
-            re.compile(r'javascript:', re.IGNORECASE),
-            re.compile(r'data:.*?base64', re.IGNORECASE)
+            re.compile(r"<script.*?</script>", re.IGNORECASE | re.DOTALL),
+            re.compile(r"javascript:", re.IGNORECASE),
+            re.compile(r"data:.*?base64", re.IGNORECASE),
         ]
 
         logger.info("Request validator initialized")
@@ -81,12 +84,12 @@ class RequestValidator:
         errors.extend(volume_errors)
 
         # Emotion validation (if present)
-        emotion = getattr(request, 'emotion', None)
+        emotion = getattr(request, "emotion", None)
         if emotion:
             emotion_errors = self._validate_emotion(emotion)
             errors.extend(emotion_errors)
 
-            emotion_strength = getattr(request, 'emotion_strength', 1.0)
+            emotion_strength = getattr(request, "emotion_strength", 1.0)
             strength_errors = self._validate_emotion_strength(emotion_strength)
             errors.extend(strength_errors)
 
@@ -166,7 +169,9 @@ class RequestValidator:
             return errors
 
         if format.lower() not in self.supported_formats:
-            errors.append(f"Format '{format}' not supported. Supported formats: {self.supported_formats}")
+            errors.append(
+                f"Format '{format}' not supported. Supported formats: {self.supported_formats}"
+            )
 
         return errors
 
@@ -195,7 +200,9 @@ class RequestValidator:
 
         supported_emotions = self.synthesizer.get_supported_emotions()
         if emotion not in supported_emotions:
-            errors.append(f"Emotion '{emotion}' not supported. Supported emotions: {supported_emotions}")
+            errors.append(
+                f"Emotion '{emotion}' not supported. Supported emotions: {supported_emotions}"
+            )
 
         return errors
 
@@ -224,11 +231,11 @@ class RequestValidator:
             return errors
 
         # Simple validation for language code format
-        if not re.match(r'^[a-z]{2}(-[a-z]{2})?$', lang_code.lower()):
+        if not re.match(r"^[a-z]{2}(-[a-z]{2})?$", lang_code.lower()):
             errors.append("Invalid language code format (expected: 'en' or 'en-us')")
 
         # For now, only support English
-        if not lang_code.lower().startswith('en'):
+        if not lang_code.lower().startswith("en"):
             errors.append("Only English language is currently supported")
 
         return errors
@@ -236,7 +243,7 @@ class RequestValidator:
     def _has_excessive_repetition(self, text: str) -> bool:
         """Check for excessive character or word repetition"""
         # Check for repeated characters (more than 10 in a row)
-        if re.search(r'(.)\1{10,}', text):
+        if re.search(r"(.)\1{10,}", text):
             return True
 
         # Check for repeated words
@@ -257,7 +264,7 @@ class RequestValidator:
         """Check if text contains only valid characters"""
         # Allow most printable characters, including Unicode
         # Exclude control characters except common ones
-        allowed_control_chars = {'\n', '\r', '\t'}
+        allowed_control_chars = {"\n", "\r", "\t"}
 
         for char in text:
             if char.isprintable() or char in allowed_control_chars:
@@ -274,45 +281,39 @@ class RequestValidator:
         # Validate voice once
         voice_errors = self._validate_voice(voice)
         if voice_errors:
-            validation_results['voice'] = voice_errors
+            validation_results["voice"] = voice_errors
 
         # Validate each text
         text_errors = {}
         for i, text in enumerate(texts):
             errors = self._validate_text(text)
             if errors:
-                text_errors[f'text_{i}'] = errors
+                text_errors[f"text_{i}"] = errors
 
         if text_errors:
-            validation_results['texts'] = text_errors
+            validation_results["texts"] = text_errors
 
         # Check batch size
         if len(texts) > 100:  # Reasonable batch limit
-            validation_results['batch'] = ["Batch size too large (maximum 100 texts)"]
+            validation_results["batch"] = ["Batch size too large (maximum 100 texts)"]
 
         return validation_results
 
     def get_validation_rules(self) -> dict[str, Any]:
         """Get current validation rules"""
         return {
-            'text': {
-                'min_length': self.min_text_length,
-                'max_length': self.max_text_length,
-                'forbidden_patterns': [p.pattern for p in self.forbidden_patterns]
+            "text": {
+                "min_length": self.min_text_length,
+                "max_length": self.max_text_length,
+                "forbidden_patterns": [p.pattern for p in self.forbidden_patterns],
             },
-            'speed': {
-                'min': self.min_speed,
-                'max': self.max_speed
+            "speed": {"min": self.min_speed, "max": self.max_speed},
+            "volume": {"min": self.min_volume, "max": self.max_volume},
+            "emotion_strength": {
+                "min": self.min_emotion_strength,
+                "max": self.max_emotion_strength,
             },
-            'volume': {
-                'min': self.min_volume,
-                'max': self.max_volume
-            },
-            'emotion_strength': {
-                'min': self.min_emotion_strength,
-                'max': self.max_emotion_strength
-            },
-            'supported_formats': self.supported_formats,
-            'supported_voices': self.synthesizer.get_available_voices(),
-            'supported_emotions': self.synthesizer.get_supported_emotions()
+            "supported_formats": self.supported_formats,
+            "supported_voices": self.synthesizer.get_available_voices(),
+            "supported_emotions": self.synthesizer.get_supported_emotions(),
         }

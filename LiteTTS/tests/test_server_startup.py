@@ -13,12 +13,13 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
+
 def check_environment():
     """Check if we're running in the correct uv environment"""
     print("🔍 Checking Python environment...")
 
     # Check if we're in a uv environment
-    in_uv_env = os.environ.get('VIRTUAL_ENV') or 'uv' in sys.executable
+    in_uv_env = os.environ.get("VIRTUAL_ENV") or "uv" in sys.executable
 
     if not in_uv_env:
         print("⚠️  Not running in uv environment!")
@@ -32,6 +33,7 @@ def check_environment():
         print(f"   Python: {sys.executable}")
         return True
 
+
 def test_core_imports():
     """Test importing core modules"""
     print("🔍 Testing core infrastructure...")
@@ -41,7 +43,7 @@ def test_core_imports():
         ("kokoro.exceptions", "Exception handling"),
         ("kokoro.logging_config", "Logging system"),
         ("kokoro.startup", "Startup validation"),
-        ("kokoro.cache", "Cache system (with legacy support)")
+        ("kokoro.cache", "Cache system (with legacy support)"),
     ]
 
     for module_name, description in core_modules:
@@ -54,10 +56,12 @@ def test_core_imports():
 
     return True
 
+
 def test_cache_manager():
     """Test cache manager specifically"""
     try:
         from LiteTTS.cache import cache_manager
+
         print("✅ Cache manager import")
 
         # Test basic functionality
@@ -69,6 +73,7 @@ def test_cache_manager():
         print(f"❌ Cache manager: {e}")
         return False
 
+
 def check_dependencies():
     """Check required dependencies"""
     print("\n🔍 Checking dependencies...")
@@ -79,13 +84,10 @@ def check_dependencies():
         ("pydantic", "Data validation"),
         ("numpy", "Numerical computing"),
         ("soundfile", "Audio file I/O"),
-        ("onnxruntime", "ONNX model runtime")
+        ("onnxruntime", "ONNX model runtime"),
     ]
 
-    optional_deps = [
-        ("torch", "PyTorch (for CUDA support)"),
-        ("psutil", "System monitoring")
-    ]
+    optional_deps = [("torch", "PyTorch (for CUDA support)"), ("psutil", "System monitoring")]
 
     missing_required = []
     missing_optional = []
@@ -108,16 +110,18 @@ def check_dependencies():
 
     return missing_required, missing_optional
 
+
 def test_app_import():
     """Test importing the main app"""
     print("\n🔍 Testing main application...")
 
     try:
         import app
+
         print("✅ Main app imports successfully")
 
         # Test if the app can be created
-        if hasattr(app, 'app'):
+        if hasattr(app, "app"):
             print("✅ FastAPI app instance available")
 
         return True, []
@@ -130,6 +134,7 @@ def test_app_import():
         print(f"❌ App import failed: {e}")
         traceback.print_exc()
         return False, []
+
 
 def main():
     """Main test function"""
@@ -192,6 +197,7 @@ def main():
         print("   uv run python LiteTTS/tests/test_server_startup.py")
 
     return 0 if (core_success and cache_success) else 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

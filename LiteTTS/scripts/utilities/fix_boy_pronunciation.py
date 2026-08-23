@@ -30,16 +30,16 @@ def add_pronunciation_overrides():
     # Words that need pronunciation fixes
     pronunciation_fixes = {
         # Words losing final consonants
-        "Boy": "/bɔɪ/",      # Ensure full diphthong pronunciation
-        "boy": "/bɔɪ/",      # Lowercase version
-        "Joy": "/dʒɔɪ/",     # Similar pattern
-        "joy": "/dʒɔɪ/",     # Lowercase version
-        "Toy": "/tɔɪ/",      # Similar pattern
-        "toy": "/tɔɪ/",      # Lowercase version
-        "June": "/dʒuːn/",   # Ensure final consonant
-        "june": "/dʒuːn/",   # Lowercase version
-        "Jan": "/dʒæn/",     # Ensure final consonant
-        "jan": "/dʒæn/",     # Lowercase version
+        "Boy": "/bɔɪ/",  # Ensure full diphthong pronunciation
+        "boy": "/bɔɪ/",  # Lowercase version
+        "Joy": "/dʒɔɪ/",  # Similar pattern
+        "joy": "/dʒɔɪ/",  # Lowercase version
+        "Toy": "/tɔɪ/",  # Similar pattern
+        "toy": "/tɔɪ/",  # Lowercase version
+        "June": "/dʒuːn/",  # Ensure final consonant
+        "june": "/dʒuːn/",  # Lowercase version
+        "Jan": "/dʒæn/",  # Ensure final consonant
+        "jan": "/dʒæn/",  # Lowercase version
     }
 
     # Add to homograph resolver
@@ -49,14 +49,14 @@ def add_pronunciation_overrides():
         print(f"Adding override: '{word}' -> {pronunciation}")
 
         # Add as homograph with single pronunciation
-        homograph_resolver.add_homograph(word, {
-            "default": pronunciation,
-            "phonetic": pronunciation
-        })
+        homograph_resolver.add_homograph(
+            word, {"default": pronunciation, "phonetic": pronunciation}
+        )
 
     print(f"\n✅ Added {len(pronunciation_fixes)} pronunciation overrides")
 
     return pronunciation_fixes
+
 
 def create_phonetic_markers():
     """Create phonetic markers for problematic words"""
@@ -67,13 +67,7 @@ def create_phonetic_markers():
     # Test phonetic processor with explicit markers
     phonetic_processor = PhoneticProcessor()
 
-    test_cases = [
-        "Boy",
-        "The boy is here",
-        "Joy and toy",
-        "June is coming",
-        "Jan said hello"
-    ]
+    test_cases = ["Boy", "The boy is here", "Joy and toy", "June is coming", "Jan said hello"]
 
     for test_case in test_cases:
         print(f"\nTesting: '{test_case}'")
@@ -97,6 +91,7 @@ def create_phonetic_markers():
         processed = phonetic_processor.process_phonetics(with_markers)
         print(f"Processed: '{processed}'")
 
+
 def update_pronunciation_config():
     """Update pronunciation configuration files"""
 
@@ -107,7 +102,7 @@ def update_pronunciation_config():
     config_files = [
         "LiteTTS/config/pronunciation.json",
         "LiteTTS/config/phonetic_overrides.json",
-        "LiteTTS/config/word_pronunciations.json"
+        "LiteTTS/config/word_pronunciations.json",
     ]
 
     pronunciation_data = {
@@ -115,59 +110,59 @@ def update_pronunciation_config():
             "Boy": {
                 "phonetic": "/bɔɪ/",
                 "ipa": "bɔɪ",
-                "description": "Full diphthong pronunciation to prevent 'boi' truncation"
+                "description": "Full diphthong pronunciation to prevent 'boi' truncation",
             },
             "boy": {
                 "phonetic": "/bɔɪ/",
                 "ipa": "bɔɪ",
-                "description": "Full diphthong pronunciation to prevent 'boi' truncation"
+                "description": "Full diphthong pronunciation to prevent 'boi' truncation",
             },
             "Joy": {
                 "phonetic": "/dʒɔɪ/",
                 "ipa": "dʒɔɪ",
-                "description": "Full diphthong pronunciation"
+                "description": "Full diphthong pronunciation",
             },
             "joy": {
                 "phonetic": "/dʒɔɪ/",
                 "ipa": "dʒɔɪ",
-                "description": "Full diphthong pronunciation"
+                "description": "Full diphthong pronunciation",
             },
             "Toy": {
                 "phonetic": "/tɔɪ/",
                 "ipa": "tɔɪ",
-                "description": "Full diphthong pronunciation"
+                "description": "Full diphthong pronunciation",
             },
             "toy": {
                 "phonetic": "/tɔɪ/",
                 "ipa": "tɔɪ",
-                "description": "Full diphthong pronunciation"
+                "description": "Full diphthong pronunciation",
             },
             "June": {
                 "phonetic": "/dʒuːn/",
                 "ipa": "dʒuːn",
-                "description": "Ensure final consonant is pronounced"
+                "description": "Ensure final consonant is pronounced",
             },
             "june": {
                 "phonetic": "/dʒuːn/",
                 "ipa": "dʒuːn",
-                "description": "Ensure final consonant is pronounced"
+                "description": "Ensure final consonant is pronounced",
             },
             "Jan": {
                 "phonetic": "/dʒæn/",
                 "ipa": "dʒæn",
-                "description": "Ensure final consonant is pronounced"
+                "description": "Ensure final consonant is pronounced",
             },
             "jan": {
                 "phonetic": "/dʒæn/",
                 "ipa": "dʒæn",
-                "description": "Ensure final consonant is pronounced"
-            }
+                "description": "Ensure final consonant is pronounced",
+            },
         },
         "metadata": {
             "description": "Pronunciation overrides for words with known TTS issues",
             "version": "1.0",
-            "created_by": "pronunciation_fix_script"
-        }
+            "created_by": "pronunciation_fix_script",
+        },
     }
 
     # Create pronunciation override file
@@ -175,13 +170,14 @@ def update_pronunciation_config():
 
     try:
         os.makedirs(os.path.dirname(config_file), exist_ok=True)
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             json.dump(pronunciation_data, f, indent=2)
         print(f"✅ Created pronunciation config: {config_file}")
     except Exception as e:
         print(f"❌ Failed to create config file: {e}")
 
     return config_file
+
 
 def test_pronunciation_fixes():
     """Test the pronunciation fixes"""
@@ -200,7 +196,7 @@ def test_pronunciation_fixes():
         "June is coming",
         "Jan said hello",
         "Boy, joy, and toy",
-        "June and Jan are friends"
+        "June and Jan are friends",
     ]
 
     for test_case in test_cases:
@@ -217,6 +213,7 @@ def test_pronunciation_fixes():
                 print(f"  ✅ '{word}' preserved in output")
             elif word in test_case.lower():
                 print(f"  ⚠️ '{word}' may have been altered")
+
 
 def main():
     """Main function to implement pronunciation fixes"""
@@ -250,6 +247,7 @@ def main():
     print("3. Consider model-specific pronunciation adjustments")
 
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

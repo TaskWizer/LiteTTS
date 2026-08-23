@@ -25,18 +25,20 @@ try:
     from .prosody_analyzer import ProsodyAnalyzer
     from .spell_processor import SpellProcessor
     from .text_normalizer import TextNormalizer
+
     EXISTING_COMPONENTS_AVAILABLE = True
 except ImportError:
     EXISTING_COMPONENTS_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class EnhancedProcessingOptions:
     """Configuration options for enhanced text processing"""
 
     # Contraction processing
-    contraction_mode: str = 'hybrid'  # natural, phonetic, expanded, hybrid
+    contraction_mode: str = "hybrid"  # natural, phonetic, expanded, hybrid
     preserve_natural_speech: bool = True
 
     # Symbol processing
@@ -58,7 +60,7 @@ class EnhancedProcessingOptions:
     use_natural_time_format: bool = True
 
     # Abbreviation handling
-    abbreviation_mode: str = 'hybrid'  # spell_out, expand, natural, hybrid
+    abbreviation_mode: str = "hybrid"  # spell_out, expand, natural, hybrid
     preserve_technical_terms: bool = True
 
     # Emotion/intonation
@@ -71,9 +73,11 @@ class EnhancedProcessingOptions:
     fallback_to_existing: bool = True
     enable_performance_monitoring: bool = False
 
+
 @dataclass
 class ProcessingResult:
     """Result of enhanced text processing"""
+
     processed_text: str
     original_text: str
     processing_time: float
@@ -82,6 +86,7 @@ class ProcessingResult:
     intonation_markers: list[IntonationMarker] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
     metadata: dict[str, Any] = field(default_factory=dict)
+
 
 class EnhancedNLPProcessor:
     """Enhanced NLP processor with comprehensive pronunciation fixes"""
@@ -98,10 +103,10 @@ class EnhancedNLPProcessor:
 
         # Performance monitoring
         self.processing_stats = {
-            'total_processed': 0,
-            'total_time': 0.0,
-            'component_times': {},
-            'error_count': 0
+            "total_processed": 0,
+            "total_time": 0.0,
+            "component_times": {},
+            "error_count": 0,
         }
 
     def _init_enhanced_components(self):
@@ -116,14 +121,14 @@ class EnhancedNLPProcessor:
             self.symbol_processor.set_configuration(
                 preserve_markdown=self.options.preserve_markdown,
                 handle_quotes_naturally=self.options.handle_quotes_naturally,
-                fix_html_entities=self.options.fix_html_entities
+                fix_html_entities=self.options.fix_html_entities,
             )
 
             # Pronunciation dictionary
             self.pronunciation_dict = ExtendedPronunciationDictionary()
             self.pronunciation_dict.set_configuration(
                 use_context_awareness=self.options.use_context_awareness,
-                use_phonetic_spelling=self.options.use_phonetic_spelling
+                use_phonetic_spelling=self.options.use_phonetic_spelling,
             )
 
             # Voice modulation
@@ -131,14 +136,14 @@ class EnhancedNLPProcessor:
             self.voice_modulation.set_configuration(
                 enable_parenthetical_whisper=self.options.enable_parenthetical_whisper,
                 enable_emphasis_detection=self.options.enable_emphasis_detection,
-                default_whisper_voice=self.options.default_whisper_voice
+                default_whisper_voice=self.options.default_whisper_voice,
             )
 
             # Date/time processing
             self.datetime_processor = EnhancedDateTimeProcessor()
             self.datetime_processor.set_configuration(
                 use_ordinal_dates=self.options.use_ordinal_dates,
-                use_natural_time_format=self.options.use_natural_time_format
+                use_natural_time_format=self.options.use_natural_time_format,
             )
 
             # Abbreviation handling
@@ -146,7 +151,7 @@ class EnhancedNLPProcessor:
             abbrev_mode = AbbreviationMode(self.options.abbreviation_mode)
             self.abbreviation_handler.set_configuration(
                 default_mode=abbrev_mode,
-                preserve_technical_terms=self.options.preserve_technical_terms
+                preserve_technical_terms=self.options.preserve_technical_terms,
             )
 
             # Emotion/intonation
@@ -154,7 +159,7 @@ class EnhancedNLPProcessor:
             self.emotion_system.set_configuration(
                 enable_question_intonation=self.options.enable_question_intonation,
                 enable_exclamation_handling=self.options.enable_exclamation_handling,
-                enable_context_analysis=self.options.enable_context_analysis
+                enable_context_analysis=self.options.enable_context_analysis,
             )
 
             logger.info("Enhanced NLP components initialized successfully")
@@ -180,8 +185,9 @@ class EnhancedNLPProcessor:
             logger.warning(f"Failed to initialize existing components: {e}")
             self.options.fallback_to_existing = False
 
-    def process_text_enhanced(self, text: str,
-                            custom_options: EnhancedProcessingOptions | None = None) -> ProcessingResult:
+    def process_text_enhanced(
+        self, text: str, custom_options: EnhancedProcessingOptions | None = None
+    ) -> ProcessingResult:
         """Process text with all enhanced components"""
         import time
 
@@ -201,11 +207,15 @@ class EnhancedNLPProcessor:
             # Step 1: Phonemizer preprocessing (if available)
             if EXISTING_COMPONENTS_AVAILABLE:
                 try:
-                    preprocessing_result = phonemizer_preprocessor.preprocess_text(text, preserve_word_count=True)
+                    preprocessing_result = phonemizer_preprocessor.preprocess_text(
+                        text, preserve_word_count=True
+                    )
                     text = preprocessing_result.processed_text
                     if preprocessing_result.changes_made:
                         components_used.append("phonemizer_preprocessor")
-                        logger.debug(f"Phonemizer preprocessing: {preprocessing_result.changes_made}")
+                        logger.debug(
+                            f"Phonemizer preprocessing: {preprocessing_result.changes_made}"
+                        )
                 except Exception as e:
                     warnings.append(f"Phonemizer preprocessing failed: {e}")
 
@@ -221,7 +231,9 @@ class EnhancedNLPProcessor:
             # Step 3: Contraction processing
             if options.use_enhanced_processing:
                 try:
-                    text = self.contraction_processor.process_contractions(text, mode=options.contraction_mode)
+                    text = self.contraction_processor.process_contractions(
+                        text, mode=options.contraction_mode
+                    )
                     components_used.append("enhanced_contraction_processor")
                 except Exception as e:
                     warnings.append(f"Contraction processing failed: {e}")
@@ -321,11 +333,11 @@ class EnhancedNLPProcessor:
                 intonation_markers=intonation_markers,
                 warnings=warnings,
                 metadata={
-                    'text_length': len(original_text),
-                    'processed_length': len(text),
-                    'modulation_count': len(modulation_segments),
-                    'intonation_count': len(intonation_markers)
-                }
+                    "text_length": len(original_text),
+                    "processed_length": len(text),
+                    "modulation_count": len(modulation_segments),
+                    "intonation_count": len(intonation_markers),
+                },
             )
 
         except Exception as e:
@@ -346,7 +358,7 @@ class EnhancedNLPProcessor:
                         processing_time=processing_time,
                         components_used=components_used,
                         warnings=warnings,
-                        metadata={'fallback_used': True}
+                        metadata={"fallback_used": True},
                     )
                 except Exception as fallback_error:
                     logger.error(f"Fallback processing also failed: {fallback_error}")
@@ -358,45 +370,45 @@ class EnhancedNLPProcessor:
                 processing_time=processing_time,
                 components_used=[],
                 warnings=[f"All processing failed: {e}"],
-                metadata={'processing_failed': True}
+                metadata={"processing_failed": True},
             )
 
     def _update_stats(self, processing_time: float, components_used: list[str], had_errors: bool):
         """Update processing statistics"""
-        self.processing_stats['total_processed'] += 1
-        self.processing_stats['total_time'] += processing_time
+        self.processing_stats["total_processed"] += 1
+        self.processing_stats["total_time"] += processing_time
 
         if had_errors:
-            self.processing_stats['error_count'] += 1
+            self.processing_stats["error_count"] += 1
 
         for component in components_used:
-            if component not in self.processing_stats['component_times']:
-                self.processing_stats['component_times'][component] = []
-            self.processing_stats['component_times'][component].append(processing_time)
+            if component not in self.processing_stats["component_times"]:
+                self.processing_stats["component_times"][component] = []
+            self.processing_stats["component_times"][component].append(processing_time)
 
     def get_processing_stats(self) -> dict[str, Any]:
         """Get processing statistics"""
         stats = self.processing_stats.copy()
 
-        if stats['total_processed'] > 0:
-            stats['average_time'] = stats['total_time'] / stats['total_processed']
-            stats['error_rate'] = stats['error_count'] / stats['total_processed']
+        if stats["total_processed"] > 0:
+            stats["average_time"] = stats["total_time"] / stats["total_processed"]
+            stats["error_rate"] = stats["error_count"] / stats["total_processed"]
         else:
-            stats['average_time'] = 0.0
-            stats['error_rate'] = 0.0
+            stats["average_time"] = 0.0
+            stats["error_rate"] = 0.0
 
         return stats
 
     def analyze_text_issues(self, text: str) -> dict[str, Any]:
         """Analyze text for potential pronunciation issues"""
         issues = {
-            'contractions': self.contraction_processor.get_contraction_info(text),
-            'symbols': self.symbol_processor.analyze_symbols(text),
-            'pronunciations': self.pronunciation_dict.analyze_pronunciations(text),
-            'datetime': self.datetime_processor.analyze_datetime_patterns(text),
-            'abbreviations': self.abbreviation_handler.analyze_abbreviations(text),
-            'intonation': self.emotion_system.analyze_intonation_opportunities(text),
-            'voice_modulation': self.voice_modulation.analyze_modulation_opportunities(text)
+            "contractions": self.contraction_processor.get_contraction_info(text),
+            "symbols": self.symbol_processor.analyze_symbols(text),
+            "pronunciations": self.pronunciation_dict.analyze_pronunciations(text),
+            "datetime": self.datetime_processor.analyze_datetime_patterns(text),
+            "abbreviations": self.abbreviation_handler.analyze_abbreviations(text),
+            "intonation": self.emotion_system.analyze_intonation_opportunities(text),
+            "voice_modulation": self.voice_modulation.analyze_modulation_opportunities(text),
         }
 
         return issues
@@ -411,30 +423,30 @@ class EnhancedNLPProcessor:
             self.symbol_processor.set_configuration(
                 preserve_markdown=new_options.preserve_markdown,
                 handle_quotes_naturally=new_options.handle_quotes_naturally,
-                fix_html_entities=new_options.fix_html_entities
+                fix_html_entities=new_options.fix_html_entities,
             )
             self.pronunciation_dict.set_configuration(
                 use_context_awareness=new_options.use_context_awareness,
-                use_phonetic_spelling=new_options.use_phonetic_spelling
+                use_phonetic_spelling=new_options.use_phonetic_spelling,
             )
             self.voice_modulation.set_configuration(
                 enable_parenthetical_whisper=new_options.enable_parenthetical_whisper,
                 enable_emphasis_detection=new_options.enable_emphasis_detection,
-                default_whisper_voice=new_options.default_whisper_voice
+                default_whisper_voice=new_options.default_whisper_voice,
             )
             self.datetime_processor.set_configuration(
                 use_ordinal_dates=new_options.use_ordinal_dates,
-                use_natural_time_format=new_options.use_natural_time_format
+                use_natural_time_format=new_options.use_natural_time_format,
             )
             abbrev_mode = AbbreviationMode(new_options.abbreviation_mode)
             self.abbreviation_handler.set_configuration(
                 default_mode=abbrev_mode,
-                preserve_technical_terms=new_options.preserve_technical_terms
+                preserve_technical_terms=new_options.preserve_technical_terms,
             )
             self.emotion_system.set_configuration(
                 enable_question_intonation=new_options.enable_question_intonation,
                 enable_exclamation_handling=new_options.enable_exclamation_handling,
-                enable_context_analysis=new_options.enable_context_analysis
+                enable_context_analysis=new_options.enable_context_analysis,
             )
 
             logger.info("Enhanced NLP processor configuration updated")
@@ -446,10 +458,10 @@ class EnhancedNLPProcessor:
     def reset_stats(self):
         """Reset processing statistics"""
         self.processing_stats = {
-            'total_processed': 0,
-            'total_time': 0.0,
-            'component_times': {},
-            'error_count': 0
+            "total_processed": 0,
+            "total_time": 0.0,
+            "component_times": {},
+            "error_count": 0,
         }
         logger.info("Processing statistics reset")
 
@@ -472,12 +484,12 @@ class EnhancedNLPProcessor:
     def get_component_versions(self) -> dict[str, str]:
         """Get version information for all components"""
         return {
-            'enhanced_nlp_processor': '1.0.0',
-            'enhanced_contraction_processor': '1.0.0',
-            'advanced_symbol_processor': '1.0.0',
-            'extended_pronunciation_dictionary': '1.0.0',
-            'voice_modulation_system': '1.0.0',
-            'enhanced_datetime_processor': '1.0.0',
-            'advanced_abbreviation_handler': '1.0.0',
-            'dynamic_emotion_intonation': '1.0.0'
+            "enhanced_nlp_processor": "1.0.0",
+            "enhanced_contraction_processor": "1.0.0",
+            "advanced_symbol_processor": "1.0.0",
+            "extended_pronunciation_dictionary": "1.0.0",
+            "voice_modulation_system": "1.0.0",
+            "enhanced_datetime_processor": "1.0.0",
+            "advanced_abbreviation_handler": "1.0.0",
+            "dynamic_emotion_intonation": "1.0.0",
         }

@@ -19,8 +19,8 @@ class TestCacheManager:
     def test_initialization(self, cache):
         """Test cache initializes correctly"""
         assert cache is not None
-        assert hasattr(cache, 'memory_cache')
-        assert hasattr(cache, 'stats')
+        assert hasattr(cache, "memory_cache")
+        assert hasattr(cache, "stats")
 
     def test_put_and_get(self, cache):
         """Test basic put and get"""
@@ -43,8 +43,8 @@ class TestCacheManager:
     def test_stats_initial(self, cache):
         """Test initial cache statistics"""
         stats = cache.get_stats()
-        assert 'memory_cache' in stats
-        assert 'disk_cache' in stats
+        assert "memory_cache" in stats
+        assert "disk_cache" in stats
 
 
 class TestCacheManagerEdgeCases:

@@ -12,6 +12,7 @@ import pytest
 
 try:
     import memory_profiler
+
     MEMORY_PROFILER_AVAILABLE = True
 except ImportError:
     MEMORY_PROFILER_AVAILABLE = False
@@ -37,9 +38,11 @@ from LiteTTS.nlp.voice_modulation_system import VoiceModulationSystem
 try:
     from LiteTTS.nlp.processor import NLPProcessor
     from LiteTTS.nlp.text_normalizer import TextNormalizer
+
     EXISTING_COMPONENTS_AVAILABLE = True
 except ImportError:
     EXISTING_COMPONENTS_AVAILABLE = False
+
 
 class PerformanceBenchmark:
     """Performance benchmarking utility"""
@@ -57,32 +60,29 @@ class PerformanceBenchmark:
             times.append(end_time - start_time)
 
         return {
-            'mean': statistics.mean(times),
-            'median': statistics.median(times),
-            'min': min(times),
-            'max': max(times),
-            'std_dev': statistics.stdev(times) if len(times) > 1 else 0,
-            'result': result
+            "mean": statistics.mean(times),
+            "median": statistics.median(times),
+            "min": min(times),
+            "max": max(times),
+            "std_dev": statistics.stdev(times) if len(times) > 1 else 0,
+            "result": result,
         }
 
     def memory_usage(self, func, *args, **kwargs):
         """Measure memory usage of a function"""
         if not MEMORY_PROFILER_AVAILABLE:
-            return {
-                'peak_memory': 0,
-                'memory_increase': 0,
-                'average_memory': 0,
-                'skipped': True
-            }
+            return {"peak_memory": 0, "memory_increase": 0, "average_memory": 0, "skipped": True}
+
         def wrapper():
             return func(*args, **kwargs)
 
         mem_usage = memory_profiler.memory_usage(wrapper, interval=0.1)
         return {
-            'peak_memory': max(mem_usage),
-            'memory_increase': max(mem_usage) - min(mem_usage),
-            'average_memory': statistics.mean(mem_usage)
+            "peak_memory": max(mem_usage),
+            "memory_increase": max(mem_usage) - min(mem_usage),
+            "average_memory": statistics.mean(mem_usage),
         }
+
 
 class TestPerformanceRegression(unittest.TestCase):
     """Test performance regression for all new components"""
@@ -110,42 +110,40 @@ class TestPerformanceRegression(unittest.TestCase):
     def _load_test_texts(self) -> dict[str, list[str]]:
         """Load test texts of various sizes and complexities"""
         return {
-            'short': [
+            "short": [
                 "Hello world!",
                 "I'll be there.",
                 "What time is it?",
                 "That's amazing!",
                 "Call me ASAP.",
             ],
-            'medium': [
+            "medium": [
                 "I'll update my resume by 2023-10-27. The FAQ says to contact Dr. Smith ASAP.",
                 "What do you think about the new API? It's really amazing!",
                 "The * symbol represents multiplication & the % symbol represents percentage.",
                 "Please read the documentation (it's very important) before proceeding.",
                 "We'll meet at 14:30 on 2024-01-15 to discuss the project.",
             ],
-            'long': [
+            "long": [
                 """I'll update my resume by 2023-10-27. The FAQ says to contact Dr. Smith ASAP.
                 "That's amazing!" she said (imagine this whispered). What do you think?
                 The * symbol represents multiplication & the % symbol represents percentage.
                 We'll meet at 14:30 on 2024-01-15 to discuss the new API documentation.
                 It's really incredible how much progress we've made! Don't you agree?
                 Please review the HTML & CSS files before the meeting. The URL is in the email.""",
-
                 """Dr. Johnson won't be available until 2024-02-15 at 09:00 AM.
                 The CEO said "We'll achieve our goals ASAP" during the meeting.
                 What's the status of the SQL database? It's been running slowly.
                 The FAQ mentions that you'll need to update your password (very important).
                 I'd recommend checking the API documentation & the XML configuration files.
                 That's absolutely fantastic! How did you manage to fix the bug so quickly?""",
-
                 """The nuclear power plant's safety protocols are extremely important.
                 Dr. Smith's resume includes experience with asterisk (*) notation systems.
                 We'll schedule the meeting for Wednesday, February 14th, 2024 at 3:30 PM.
                 "I can't believe it's working!" she exclaimed (with obvious excitement).
                 The HTML parser couldn't handle the & symbol in the XML document.
                 What's your opinion on the new UI? It's really user-friendly, isn't it?""",
-            ]
+            ],
         }
 
     def test_contraction_processing_performance(self):
@@ -156,23 +154,33 @@ class TestPerformanceRegression(unittest.TestCase):
             for i, text in enumerate(texts):
                 # Test new enhanced processor
                 new_result = self.benchmark.time_function(
-                    self.contraction_processor.process_contractions,
-                    text, iterations=50
+                    self.contraction_processor.process_contractions, text, iterations=50
                 )
 
-                print(f"{size.capitalize()} text {i+1}:")
-                print(f"  Enhanced processor: {new_result['mean']:.4f}s ± {new_result['std_dev']:.4f}s")
+                print(f"{size.capitalize()} text {i + 1}:")
+                print(
+                    f"  Enhanced processor: {new_result['mean']:.4f}s ± {new_result['std_dev']:.4f}s"
+                )
 
                 # Ensure reasonable performance (should be under 10ms for short texts)
-                if size == 'short':
-                    self.assertLess(new_result['mean'], 0.01,
-                                  f"Contraction processing too slow for short text: {new_result['mean']:.4f}s")
-                elif size == 'medium':
-                    self.assertLess(new_result['mean'], 0.05,
-                                  f"Contraction processing too slow for medium text: {new_result['mean']:.4f}s")
-                elif size == 'long':
-                    self.assertLess(new_result['mean'], 0.1,
-                                  f"Contraction processing too slow for long text: {new_result['mean']:.4f}s")
+                if size == "short":
+                    self.assertLess(
+                        new_result["mean"],
+                        0.01,
+                        f"Contraction processing too slow for short text: {new_result['mean']:.4f}s",
+                    )
+                elif size == "medium":
+                    self.assertLess(
+                        new_result["mean"],
+                        0.05,
+                        f"Contraction processing too slow for medium text: {new_result['mean']:.4f}s",
+                    )
+                elif size == "long":
+                    self.assertLess(
+                        new_result["mean"],
+                        0.1,
+                        f"Contraction processing too slow for long text: {new_result['mean']:.4f}s",
+                    )
 
     def test_symbol_processing_performance(self):
         """Test symbol processing performance"""
@@ -182,20 +190,21 @@ class TestPerformanceRegression(unittest.TestCase):
             for i, text in enumerate(texts):
                 # Test new advanced processor
                 new_result = self.benchmark.time_function(
-                    self.symbol_processor.process_symbols,
-                    text, iterations=50
+                    self.symbol_processor.process_symbols, text, iterations=50
                 )
 
-                print(f"{size.capitalize()} text {i+1}:")
-                print(f"  Advanced processor: {new_result['mean']:.4f}s ± {new_result['std_dev']:.4f}s")
+                print(f"{size.capitalize()} text {i + 1}:")
+                print(
+                    f"  Advanced processor: {new_result['mean']:.4f}s ± {new_result['std_dev']:.4f}s"
+                )
 
                 # Ensure reasonable performance
-                if size == 'short':
-                    self.assertLess(new_result['mean'], 0.01)
-                elif size == 'medium':
-                    self.assertLess(new_result['mean'], 0.05)
-                elif size == 'long':
-                    self.assertLess(new_result['mean'], 0.1)
+                if size == "short":
+                    self.assertLess(new_result["mean"], 0.01)
+                elif size == "medium":
+                    self.assertLess(new_result["mean"], 0.05)
+                elif size == "long":
+                    self.assertLess(new_result["mean"], 0.1)
 
     def test_pronunciation_dictionary_performance(self):
         """Test pronunciation dictionary performance"""
@@ -205,20 +214,21 @@ class TestPerformanceRegression(unittest.TestCase):
             for i, text in enumerate(texts):
                 # Test new extended dictionary
                 new_result = self.benchmark.time_function(
-                    self.pronunciation_dict.process_text_pronunciations,
-                    text, iterations=50
+                    self.pronunciation_dict.process_text_pronunciations, text, iterations=50
                 )
 
-                print(f"{size.capitalize()} text {i+1}:")
-                print(f"  Extended dictionary: {new_result['mean']:.4f}s ± {new_result['std_dev']:.4f}s")
+                print(f"{size.capitalize()} text {i + 1}:")
+                print(
+                    f"  Extended dictionary: {new_result['mean']:.4f}s ± {new_result['std_dev']:.4f}s"
+                )
 
                 # Ensure reasonable performance
-                if size == 'short':
-                    self.assertLess(new_result['mean'], 0.02)
-                elif size == 'medium':
-                    self.assertLess(new_result['mean'], 0.1)
-                elif size == 'long':
-                    self.assertLess(new_result['mean'], 0.2)
+                if size == "short":
+                    self.assertLess(new_result["mean"], 0.02)
+                elif size == "medium":
+                    self.assertLess(new_result["mean"], 0.1)
+                elif size == "long":
+                    self.assertLess(new_result["mean"], 0.2)
 
     def test_datetime_processing_performance(self):
         """Test date/time processing performance"""
@@ -228,20 +238,21 @@ class TestPerformanceRegression(unittest.TestCase):
             for i, text in enumerate(texts):
                 # Test new enhanced processor
                 new_result = self.benchmark.time_function(
-                    self.datetime_processor.process_dates_and_times,
-                    text, iterations=50
+                    self.datetime_processor.process_dates_and_times, text, iterations=50
                 )
 
-                print(f"{size.capitalize()} text {i+1}:")
-                print(f"  Enhanced processor: {new_result['mean']:.4f}s ± {new_result['std_dev']:.4f}s")
+                print(f"{size.capitalize()} text {i + 1}:")
+                print(
+                    f"  Enhanced processor: {new_result['mean']:.4f}s ± {new_result['std_dev']:.4f}s"
+                )
 
                 # Ensure reasonable performance
-                if size == 'short':
-                    self.assertLess(new_result['mean'], 0.01)
-                elif size == 'medium':
-                    self.assertLess(new_result['mean'], 0.05)
-                elif size == 'long':
-                    self.assertLess(new_result['mean'], 0.1)
+                if size == "short":
+                    self.assertLess(new_result["mean"], 0.01)
+                elif size == "medium":
+                    self.assertLess(new_result["mean"], 0.05)
+                elif size == "long":
+                    self.assertLess(new_result["mean"], 0.1)
 
     def test_abbreviation_handling_performance(self):
         """Test abbreviation handling performance"""
@@ -251,20 +262,21 @@ class TestPerformanceRegression(unittest.TestCase):
             for i, text in enumerate(texts):
                 # Test new advanced handler
                 new_result = self.benchmark.time_function(
-                    self.abbreviation_handler.process_abbreviations,
-                    text, iterations=50
+                    self.abbreviation_handler.process_abbreviations, text, iterations=50
                 )
 
-                print(f"{size.capitalize()} text {i+1}:")
-                print(f"  Advanced handler: {new_result['mean']:.4f}s ± {new_result['std_dev']:.4f}s")
+                print(f"{size.capitalize()} text {i + 1}:")
+                print(
+                    f"  Advanced handler: {new_result['mean']:.4f}s ± {new_result['std_dev']:.4f}s"
+                )
 
                 # Ensure reasonable performance
-                if size == 'short':
-                    self.assertLess(new_result['mean'], 0.01)
-                elif size == 'medium':
-                    self.assertLess(new_result['mean'], 0.05)
-                elif size == 'long':
-                    self.assertLess(new_result['mean'], 0.1)
+                if size == "short":
+                    self.assertLess(new_result["mean"], 0.01)
+                elif size == "medium":
+                    self.assertLess(new_result["mean"], 0.05)
+                elif size == "long":
+                    self.assertLess(new_result["mean"], 0.1)
 
     def test_emotion_intonation_performance(self):
         """Test emotion/intonation processing performance"""
@@ -274,20 +286,19 @@ class TestPerformanceRegression(unittest.TestCase):
             for i, text in enumerate(texts):
                 # Test new dynamic system
                 new_result = self.benchmark.time_function(
-                    self.emotion_system.process_emotion_intonation,
-                    text, iterations=50
+                    self.emotion_system.process_emotion_intonation, text, iterations=50
                 )
 
-                print(f"{size.capitalize()} text {i+1}:")
+                print(f"{size.capitalize()} text {i + 1}:")
                 print(f"  Dynamic system: {new_result['mean']:.4f}s ± {new_result['std_dev']:.4f}s")
 
                 # Ensure reasonable performance
-                if size == 'short':
-                    self.assertLess(new_result['mean'], 0.02)
-                elif size == 'medium':
-                    self.assertLess(new_result['mean'], 0.1)
-                elif size == 'long':
-                    self.assertLess(new_result['mean'], 0.2)
+                if size == "short":
+                    self.assertLess(new_result["mean"], 0.02)
+                elif size == "medium":
+                    self.assertLess(new_result["mean"], 0.1)
+                elif size == "long":
+                    self.assertLess(new_result["mean"], 0.2)
 
     def test_voice_modulation_performance(self):
         """Test voice modulation performance"""
@@ -297,20 +308,21 @@ class TestPerformanceRegression(unittest.TestCase):
             for i, text in enumerate(texts):
                 # Test new voice modulation system
                 new_result = self.benchmark.time_function(
-                    self.voice_modulation.process_voice_modulation,
-                    text, iterations=50
+                    self.voice_modulation.process_voice_modulation, text, iterations=50
                 )
 
-                print(f"{size.capitalize()} text {i+1}:")
-                print(f"  Voice modulation: {new_result['mean']:.4f}s ± {new_result['std_dev']:.4f}s")
+                print(f"{size.capitalize()} text {i + 1}:")
+                print(
+                    f"  Voice modulation: {new_result['mean']:.4f}s ± {new_result['std_dev']:.4f}s"
+                )
 
                 # Ensure reasonable performance
-                if size == 'short':
-                    self.assertLess(new_result['mean'], 0.01)
-                elif size == 'medium':
-                    self.assertLess(new_result['mean'], 0.05)
-                elif size == 'long':
-                    self.assertLess(new_result['mean'], 0.1)
+                if size == "short":
+                    self.assertLess(new_result["mean"], 0.01)
+                elif size == "medium":
+                    self.assertLess(new_result["mean"], 0.05)
+                elif size == "long":
+                    self.assertLess(new_result["mean"], 0.1)
 
     def test_integrated_processing_performance(self):
         """Test integrated processing performance"""
@@ -331,25 +343,37 @@ class TestPerformanceRegression(unittest.TestCase):
             for i, text in enumerate(texts):
                 # Test integrated processing
                 integrated_result = self.benchmark.time_function(
-                    process_with_all_components,
-                    text, iterations=20
+                    process_with_all_components, text, iterations=20
                 )
 
-                print(f"{size.capitalize()} text {i+1}:")
-                print(f"  Integrated processing: {integrated_result['mean']:.4f}s ± {integrated_result['std_dev']:.4f}s")
+                print(f"{size.capitalize()} text {i + 1}:")
+                print(
+                    f"  Integrated processing: {integrated_result['mean']:.4f}s ± {integrated_result['std_dev']:.4f}s"
+                )
 
                 # Ensure reasonable performance for integrated processing
-                if size == 'short':
-                    self.assertLess(integrated_result['mean'], 0.1,
-                                  f"Integrated processing too slow for short text: {integrated_result['mean']:.4f}s")
-                elif size == 'medium':
-                    self.assertLess(integrated_result['mean'], 0.5,
-                                  f"Integrated processing too slow for medium text: {integrated_result['mean']:.4f}s")
-                elif size == 'long':
-                    self.assertLess(integrated_result['mean'], 1.0,
-                                  f"Integrated processing too slow for long text: {integrated_result['mean']:.4f}s")
+                if size == "short":
+                    self.assertLess(
+                        integrated_result["mean"],
+                        0.1,
+                        f"Integrated processing too slow for short text: {integrated_result['mean']:.4f}s",
+                    )
+                elif size == "medium":
+                    self.assertLess(
+                        integrated_result["mean"],
+                        0.5,
+                        f"Integrated processing too slow for medium text: {integrated_result['mean']:.4f}s",
+                    )
+                elif size == "long":
+                    self.assertLess(
+                        integrated_result["mean"],
+                        1.0,
+                        f"Integrated processing too slow for long text: {integrated_result['mean']:.4f}s",
+                    )
 
-    @unittest.skipUnless(EXISTING_COMPONENTS_AVAILABLE, "Existing components not available for comparison")
+    @unittest.skipUnless(
+        EXISTING_COMPONENTS_AVAILABLE, "Existing components not available for comparison"
+    )
     def test_comparison_with_existing_components(self):
         """Compare performance with existing components"""
         print("\n=== Comparison with Existing Components ===")
@@ -358,8 +382,7 @@ class TestPerformanceRegression(unittest.TestCase):
             for i, text in enumerate(texts):
                 # Test existing text normalizer
                 existing_result = self.benchmark.time_function(
-                    self.text_normalizer.normalize_text,
-                    text, iterations=50
+                    self.text_normalizer.normalize_text, text, iterations=50
                 )
 
                 # Test new integrated processing
@@ -368,19 +391,21 @@ class TestPerformanceRegression(unittest.TestCase):
                     text = self.contraction_processor.process_contractions(text)
                     return text
 
-                new_result = self.benchmark.time_function(
-                    new_processing,
-                    text, iterations=50
-                )
+                new_result = self.benchmark.time_function(new_processing, text, iterations=50)
 
-                print(f"{size.capitalize()} text {i+1}:")
-                print(f"  Existing normalizer: {existing_result['mean']:.4f}s ± {existing_result['std_dev']:.4f}s")
+                print(f"{size.capitalize()} text {i + 1}:")
+                print(
+                    f"  Existing normalizer: {existing_result['mean']:.4f}s ± {existing_result['std_dev']:.4f}s"
+                )
                 print(f"  New processing: {new_result['mean']:.4f}s ± {new_result['std_dev']:.4f}s")
                 print(f"  Performance ratio: {new_result['mean'] / existing_result['mean']:.2f}x")
 
                 # Ensure new processing isn't more than 3x slower than existing
-                self.assertLess(new_result['mean'] / existing_result['mean'], 3.0,
-                              f"New processing significantly slower than existing: {new_result['mean'] / existing_result['mean']:.2f}x")
+                self.assertLess(
+                    new_result["mean"] / existing_result["mean"],
+                    3.0,
+                    f"New processing significantly slower than existing: {new_result['mean'] / existing_result['mean']:.2f}x",
+                )
 
     def test_memory_usage(self):
         """Test memory usage of new components"""
@@ -395,7 +420,7 @@ class TestPerformanceRegression(unittest.TestCase):
             ("Abbreviation Handler", self.abbreviation_handler.process_abbreviations),
         ]
 
-        test_text = self.test_texts['long'][0]
+        test_text = self.test_texts["long"][0]
 
         for name, func in components:
             try:
@@ -405,8 +430,11 @@ class TestPerformanceRegression(unittest.TestCase):
                 print(f"  Memory increase: {mem_usage['memory_increase']:.2f} MB")
 
                 # Ensure reasonable memory usage (should not increase by more than 50MB)
-                self.assertLess(mem_usage['memory_increase'], 50.0,
-                              f"{name} uses too much memory: {mem_usage['memory_increase']:.2f} MB")
+                self.assertLess(
+                    mem_usage["memory_increase"],
+                    50.0,
+                    f"{name} uses too much memory: {mem_usage['memory_increase']:.2f} MB",
+                )
             except Exception as e:
                 print(f"{name}: Memory profiling failed - {e}")
 
@@ -425,11 +453,11 @@ class TestPerformanceRegression(unittest.TestCase):
             # Process with new components
             result = input_text
             result = self.symbol_processor.process_symbols(result)
-            result = self.contraction_processor.process_contractions(result, mode='natural')
+            result = self.contraction_processor.process_contractions(result, mode="natural")
 
             # Clean up whitespace for comparison
-            result_clean = ' '.join(result.split())
-            expected_clean = ' '.join(expected_pattern.split())
+            result_clean = " ".join(result.split())
+            expected_clean = " ".join(expected_pattern.split())
 
             print(f"Input: '{input_text}'")
             print(f"Expected pattern: '{expected_clean}'")
@@ -445,6 +473,7 @@ class TestPerformanceRegression(unittest.TestCase):
                 if "equals" in expected_pattern:
                     self.assertIn("equals", result_clean)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     # Run performance tests
     unittest.main(verbosity=2)

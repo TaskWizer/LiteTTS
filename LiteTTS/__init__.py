@@ -31,11 +31,12 @@ from .logging_config import get_request_logger, setup_logging
 def _is_available(module_name: str) -> bool:
     """Check if a module is available without importing it."""
     # Handle both relative (".api") and absolute ("LiteTTS.api") module names
-    if module_name.startswith('.'):
+    if module_name.startswith("."):
         # Relative import - resolve from this package
         return importlib.util.find_spec(module_name, package="LiteTTS") is not None
     else:
         return importlib.util.find_spec(module_name) is not None
+
 
 # Main API components
 _API_AVAILABLE = _is_available(".api")
@@ -61,13 +62,11 @@ __all__ = [
     "__version__",
     "__author__",
     "__description__",
-
     # Configuration (always available)
     "ConfigManager",
     "config",
     "setup_logging",
     "get_request_logger",
-
     # Exceptions (always available)
     "KokoroError",
     "ModelError",
@@ -81,48 +80,60 @@ __all__ = [
 
 # Add conditional exports
 if _API_AVAILABLE:
-    __all__.extend([
-        "ErrorHandler",
-        "RequestValidator",
-        "ResponseFormatter",
-        "TTSAPIRouter",
-    ])
+    __all__.extend(
+        [
+            "ErrorHandler",
+            "RequestValidator",
+            "ResponseFormatter",
+            "TTSAPIRouter",
+        ]
+    )
 
 if _TTS_AVAILABLE:
-    __all__.extend([
-        "ChunkProcessor",
-        "EmotionController",
-        "KokoroTTSEngine",
-        "TTSSynthesizer",
-    ])
+    __all__.extend(
+        [
+            "ChunkProcessor",
+            "EmotionController",
+            "KokoroTTSEngine",
+            "TTSSynthesizer",
+        ]
+    )
 
 if _NLP_AVAILABLE:
-    __all__.extend([
-        "HomographResolver",
-        "NLPProcessor",
-        "PhoneticProcessor",
-        "TextNormalizer",
-    ])
+    __all__.extend(
+        [
+            "HomographResolver",
+            "NLPProcessor",
+            "PhoneticProcessor",
+            "TextNormalizer",
+        ]
+    )
 
 if _VOICE_AVAILABLE:
-    __all__.extend([
-        "VoiceDownloader",
-        "VoiceManager",
-        "VoiceMetadataManager",
-        "VoiceValidator",
-    ])
+    __all__.extend(
+        [
+            "VoiceDownloader",
+            "VoiceManager",
+            "VoiceMetadataManager",
+            "VoiceValidator",
+        ]
+    )
 
 if _AUDIO_AVAILABLE:
-    __all__.extend([
-        "AudioFormatConverter",
-        "AudioProcessor",
-        "AudioSegment",
-        "AudioStreamer",
-    ])
+    __all__.extend(
+        [
+            "AudioFormatConverter",
+            "AudioProcessor",
+            "AudioSegment",
+            "AudioStreamer",
+        ]
+    )
 
 if _CACHE_AVAILABLE:
-    __all__.extend([
-        "AudioCache",
-        "EnhancedCacheManager",
-        "TextCache",
-    ])
+    __all__.extend(
+        [
+            "AudioCache",
+            "EnhancedCacheManager",
+            "TextCache",
+        ]
+    )

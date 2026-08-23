@@ -35,9 +35,9 @@ def test_meaning_bug():
 
     # Test with different processors
     processors = {
-        'NLPProcessor': NLPProcessor(),
-        'CleanTextNormalizer': CleanTextNormalizer(),
-        'AdvancedAbbreviationHandler': AdvancedAbbreviationHandler()
+        "NLPProcessor": NLPProcessor(),
+        "CleanTextNormalizer": CleanTextNormalizer(),
+        "AdvancedAbbreviationHandler": AdvancedAbbreviationHandler(),
     }
 
     for processor_name, processor in processors.items():
@@ -45,19 +45,19 @@ def test_meaning_bug():
 
         for test_text in test_cases:
             try:
-                if processor_name == 'NLPProcessor':
+                if processor_name == "NLPProcessor":
                     result = processor.process_text(test_text)
-                elif processor_name == 'CleanTextNormalizer':
+                elif processor_name == "CleanTextNormalizer":
                     result_obj = processor.normalize_text(test_text)
                     result = result_obj.processed_text
-                elif processor_name == 'AdvancedAbbreviationHandler':
+                elif processor_name == "AdvancedAbbreviationHandler":
                     result = processor.process_abbreviations(test_text)
 
                 print(f"Input:  {test_text}")
                 print(f"Output: {result}")
 
                 # Check for the bug
-                if any(unit in result.lower() for unit in ['meters', 'inches', 'grams']):
+                if any(unit in result.lower() for unit in ["meters", "inches", "grams"]):
                     print("❌ BUG DETECTED: Unit conversion in 'meaning'")
                 else:
                     print("✅ OK: No unit conversion")
@@ -69,6 +69,7 @@ def test_meaning_bug():
                 print("-" * 50)
 
         print()
+
 
 def test_unit_abbreviations_proper_context():
     """Test that unit abbreviations work correctly in proper contexts"""
@@ -107,7 +108,7 @@ def test_unit_abbreviations_proper_context():
             print(f"Input:  {test_text}")
             print(f"Output: {result}")
 
-            if any(unit in result.lower() for unit in ['meters', 'inches', 'grams']):
+            if any(unit in result.lower() for unit in ["meters", "inches", "grams"]):
                 print("✅ CORRECT: Unit conversion applied")
             else:
                 print("❌ MISSING: Unit conversion not applied")
@@ -125,7 +126,7 @@ def test_unit_abbreviations_proper_context():
             print(f"Input:  {test_text}")
             print(f"Output: {result}")
 
-            if any(unit in result.lower() for unit in ['meters', 'inches', 'grams']):
+            if any(unit in result.lower() for unit in ["meters", "inches", "grams"]):
                 print("❌ BUG: Incorrect unit conversion")
             else:
                 print("✅ CORRECT: No unit conversion")
@@ -135,6 +136,7 @@ def test_unit_abbreviations_proper_context():
         except Exception as e:
             print(f"❌ ERROR: {e}")
             print("-" * 40)
+
 
 def test_other_critical_bugs():
     """Test other critical pronunciation issues"""
@@ -146,19 +148,18 @@ def test_other_critical_bugs():
         # Complex word pronunciations
         ("religions", "should not become 'really-gram-ions'"),
         ("existentialism", "should not become 'Exi-stential-ism'"),
-
         # Contraction processing
         ("she'd like that", "should become 'she would like that'"),
-
         # Proper name pronunciation
         ("Carl Sagan", "should become 'Carl S-A-gan'"),
-
         # Verify existing fixes
         ("joy", "should remain 'JOY'"),
         ("TSLA stock", "should become 'T-S-L-A stock'"),
-
         # Empty audio generation test case
-        ('"The Moon isn\'t out there. It\'s inside us. Always has been."', "should process without errors"),
+        (
+            "\"The Moon isn't out there. It's inside us. Always has been.\"",
+            "should process without errors",
+        ),
     ]
 
     for test_text, expected_behavior in critical_tests:
@@ -174,7 +175,8 @@ def test_other_critical_bugs():
             print(f"❌ ERROR processing '{test_text}': {e}")
             print("-" * 60)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     test_meaning_bug()
     test_unit_abbreviations_proper_context()
     test_other_critical_bugs()

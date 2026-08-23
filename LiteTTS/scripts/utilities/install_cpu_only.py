@@ -10,6 +10,7 @@ import sys
 
 logger = logging.getLogger(__name__)
 
+
 def run_command(cmd: list, description: str) -> bool:
     """Run a command and return success status"""
     try:
@@ -32,23 +33,18 @@ def run_command(cmd: list, description: str) -> bool:
         logger.error(f"❌ {description} - Exception: {e}")
         return False
 
+
 def check_gpu_packages():
     """Check for and warn about GPU packages"""
-    gpu_packages = [
-        "onnxruntime-gpu",
-        "torch",
-        "tensorflow-gpu",
-        "cupy",
-        "nvidia-ml-py",
-        "pycuda"
-    ]
+    gpu_packages = ["onnxruntime-gpu", "torch", "tensorflow-gpu", "cupy", "nvidia-ml-py", "pycuda"]
 
     installed_gpu_packages = []
 
     for package in gpu_packages:
         try:
-            result = subprocess.run([sys.executable, "-m", "pip", "show", package],
-                                  capture_output=True, text=True)
+            result = subprocess.run(
+                [sys.executable, "-m", "pip", "show", package], capture_output=True, text=True
+            )
             if result.returncode == 0:
                 installed_gpu_packages.append(package)
         except:
@@ -62,6 +58,7 @@ def check_gpu_packages():
     else:
         logger.info("✅ No conflicting GPU packages detected")
         return True
+
 
 def install_cpu_dependencies():
     """Install CPU-only dependencies"""
@@ -78,7 +75,7 @@ def install_cpu_dependencies():
         # Explicitly install CPU-only ONNX Runtime
         "onnxruntime>=1.22.1",
         # Kokoro ONNX (should be CPU-only)
-        "kokoro-onnx>=0.4.9"
+        "kokoro-onnx>=0.4.9",
     ]
 
     success = True
@@ -90,6 +87,7 @@ def install_cpu_dependencies():
             success = False
 
     return success
+
 
 def verify_installation():
     """Verify the installation works correctly"""
@@ -106,7 +104,7 @@ def verify_installation():
         logger.info(f"📋 ONNX Runtime providers: {providers}")
 
         # Check for GPU providers
-        gpu_providers = [p for p in providers if 'CUDA' in p or 'GPU' in p]
+        gpu_providers = [p for p in providers if "CUDA" in p or "GPU" in p]
         if gpu_providers:
             logger.warning(f"⚠️ GPU providers detected: {gpu_providers}")
             logger.warning("   This may indicate GPU dependencies are installed")
@@ -116,7 +114,10 @@ def verify_installation():
         # Try to import kokoro-onnx
         try:
             import kokoro_onnx
-            logger.info(f"✅ kokoro-onnx imported successfully (version: {getattr(kokoro_onnx, '__version__', 'unknown')})")
+
+            logger.info(
+                f"✅ kokoro-onnx imported successfully (version: {getattr(kokoro_onnx, '__version__', 'unknown')})"
+            )
         except ImportError as e:
             logger.error(f"❌ Failed to import kokoro-onnx: {e}")
             return False
@@ -130,12 +131,10 @@ def verify_installation():
         logger.error(f"❌ Verification failed: {e}")
         return False
 
+
 def main():
     """Main installation function"""
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(levelname)s - %(message)s'
-    )
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
     logger.info("🎯 Kokoro ONNX TTS API - CPU-Only Installation")
     logger.info("=" * 50)
@@ -158,6 +157,7 @@ def main():
 
     logger.info("🎉 CPU-only installation completed successfully!")
     logger.info("💡 You can now run: uv run python app.py")
+
 
 if __name__ == "__main__":
     main()

@@ -24,10 +24,10 @@ class BaseASRClient(ABC):
     async def transcribe(self, audio_data: bytes) -> tuple[str, float]:
         """
         Transcribe audio data to text
-        
+
         Args:
             audio_data: Audio data in bytes (WAV format)
-            
+
         Returns:
             Tuple of (transcription, confidence_score)
         """
@@ -36,7 +36,7 @@ class BaseASRClient(ABC):
     def is_available(self) -> bool:
         """
         Check if the ASR service is available and properly configured
-        
+
         Returns:
             True if service is available, False otherwise
         """
@@ -44,7 +44,7 @@ class BaseASRClient(ABC):
     def get_service_info(self) -> dict[str, Any]:
         """
         Get information about the ASR service
-        
+
         Returns:
             Dictionary with service information
         """
@@ -53,5 +53,5 @@ class BaseASRClient(ABC):
             "language": self.language,
             "model": self.model,
             "timeout": self.timeout,
-            "available": self.is_available()
+            "available": self.is_available(),
         }

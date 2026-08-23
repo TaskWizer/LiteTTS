@@ -23,13 +23,7 @@ class TestSIMDCapabilities:
 
     def test_creation_custom(self):
         """Test creating capabilities with custom values"""
-        caps = SIMDCapabilities(
-            sse=True,
-            sse2=True,
-            avx=True,
-            avx2=True,
-            vector_width=256
-        )
+        caps = SIMDCapabilities(sse=True, sse2=True, avx=True, avx2=True, vector_width=256)
         assert caps.sse is True
         assert caps.avx2 is True
         assert caps.vector_width == 256
@@ -48,9 +42,7 @@ class TestSIMDOptimizationConfig:
     def test_creation_custom(self):
         """Test creating config with custom values"""
         config = SIMDOptimizationConfig(
-            enable_vectorization=False,
-            vector_chunk_size=2048,
-            force_instruction_set="avx2"
+            enable_vectorization=False, vector_chunk_size=2048, force_instruction_set="avx2"
         )
         assert config.enable_vectorization is False
         assert config.vector_chunk_size == 2048

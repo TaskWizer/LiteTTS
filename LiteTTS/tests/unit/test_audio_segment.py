@@ -76,21 +76,25 @@ class TestAudioSegment:
         """Test getting audio info"""
         result = audio_segment.get_info()
         assert isinstance(result, dict)
-        assert 'duration' in result
-        assert 'sample_rate' in result
-        assert 'samples' in result
-        assert 'max_amplitude' in result
-        assert 'rms_level' in result
+        assert "duration" in result
+        assert "sample_rate" in result
+        assert "samples" in result
+        assert "max_amplitude" in result
+        assert "rms_level" in result
 
     def test_concatenate(self, audio_segment, another_segment):
         """Test concatenating audio segments"""
         result = audio_segment.concatenate(another_segment)
         assert isinstance(result, AudioSegment)
-        assert len(result.audio_data) == len(audio_segment.audio_data) + len(another_segment.audio_data)
+        assert len(result.audio_data) == len(audio_segment.audio_data) + len(
+            another_segment.audio_data
+        )
 
     def test_concatenate_different_sample_rates_raises(self, audio_segment):
         """Test concatenating segments with different sample rates raises error"""
-        other = AudioSegment(audio_data=np.random.randn(16000).astype(np.float32), sample_rate=16000)
+        other = AudioSegment(
+            audio_data=np.random.randn(16000).astype(np.float32), sample_rate=16000
+        )
         with pytest.raises(ValueError):
             audio_segment.concatenate(other)
 
@@ -205,9 +209,9 @@ class TestAudioSegmentEdgeCases:
     def test_get_info_keys(self, audio_segment):
         """Test info contains expected keys"""
         result = audio_segment.get_info()
-        assert 'duration' in result
-        assert 'sample_rate' in result
-        assert 'samples' in result
+        assert "duration" in result
+        assert "sample_rate" in result
+        assert "samples" in result
 
     def test_concatenate_metadata_merge(self, audio_segment, another_segment):
         """Test that metadata is merged on concatenate"""

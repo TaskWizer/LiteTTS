@@ -14,10 +14,12 @@ import pytest
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
+
 @pytest.fixture(scope="session")
 def project_root_path():
     """Get project root path"""
     return project_root
+
 
 @pytest.fixture(scope="session")
 def temp_dir():
@@ -25,6 +27,7 @@ def temp_dir():
     temp_path = Path(tempfile.mkdtemp())
     yield temp_path
     shutil.rmtree(temp_path, ignore_errors=True)
+
 
 @pytest.fixture(scope="session")
 def test_config():
@@ -35,15 +38,16 @@ def test_config():
         "test_texts": [
             "Hello, world!",
             "This is a test.",
-            "Testing the TTS system with a longer sentence."
+            "Testing the TTS system with a longer sentence.",
         ],
         "performance_thresholds": {
             "max_rtf": 1.0,
             "max_cache_hit_ms": 50,
             "max_memory_mb": 500,
-            "max_startup_seconds": 30
-        }
+            "max_startup_seconds": 30,
+        },
     }
+
 
 @pytest.fixture(autouse=True)
 def setup_test_environment():
@@ -56,6 +60,7 @@ def setup_test_environment():
     yield
 
     # Cleanup after test if needed
+
 
 @pytest.fixture
 def mock_audio_data():
@@ -73,27 +78,16 @@ def mock_audio_data():
 
     return generate_audio
 
+
 @pytest.fixture
 def sample_tts_requests():
     """Sample TTS request data for testing"""
     return [
-        {
-            "input": "Hello, world!",
-            "voice": "af_heart",
-            "response_format": "mp3"
-        },
-        {
-            "input": "Testing different voice",
-            "voice": "am_puck",
-            "response_format": "wav"
-        },
-        {
-            "input": "Speed test",
-            "voice": "af_heart",
-            "response_format": "mp3",
-            "speed": 1.5
-        }
+        {"input": "Hello, world!", "voice": "af_heart", "response_format": "mp3"},
+        {"input": "Testing different voice", "voice": "am_puck", "response_format": "wav"},
+        {"input": "Speed test", "voice": "af_heart", "response_format": "mp3", "speed": 1.5},
     ]
+
 
 # Pytest configuration
 def pytest_configure(config):
@@ -102,15 +96,10 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "slow: marks tests as slow (deselect with '-m \"not slow\"')"
     )
-    config.addinivalue_line(
-        "markers", "integration: marks tests as integration tests"
-    )
-    config.addinivalue_line(
-        "markers", "performance: marks tests as performance tests"
-    )
-    config.addinivalue_line(
-        "markers", "api: marks tests as API endpoint tests"
-    )
+    config.addinivalue_line("markers", "integration: marks tests as integration tests")
+    config.addinivalue_line("markers", "performance: marks tests as performance tests")
+    config.addinivalue_line("markers", "api: marks tests as API endpoint tests")
+
 
 def pytest_collection_modifyitems(config, items):
     """Modify test collection"""
@@ -132,6 +121,7 @@ def pytest_collection_modifyitems(config, items):
         if "api" in item.name or "endpoint" in item.name:
             item.add_marker(pytest.mark.api)
 
+
 # Test data constants
 TEST_VOICES = ["af_heart", "am_puck", "af_sarah", "am_michael"]
 TEST_FORMATS = ["mp3", "wav", "flac"]
@@ -140,7 +130,7 @@ TEST_TEXTS = [
     "Hello, world!",
     "This is a test of the text-to-speech system.",
     "The quick brown fox jumps over the lazy dog.",
-    "In a hole in the ground there lived a hobbit. Not a nasty, dirty, wet hole."
+    "In a hole in the ground there lived a hobbit. Not a nasty, dirty, wet hole.",
 ]
 
 # Performance thresholds
@@ -150,5 +140,5 @@ PERFORMANCE_THRESHOLDS = {
     "max_memory_mb": 500,  # Memory usage should be < 500MB
     "max_startup_seconds": 30,  # Startup should be < 30 seconds
     "min_audio_quality": 50,  # Audio quality score should be > 50
-    "max_generation_time_per_second": 2.0  # Should generate 1s audio in < 2s
+    "max_generation_time_per_second": 2.0,  # Should generate 1s audio in < 2s
 }

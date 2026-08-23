@@ -17,9 +17,11 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class SIMDCapabilities:
     """SIMD instruction set capabilities"""
+
     has_sse: bool = False
     has_sse2: bool = False
     has_sse3: bool = False
@@ -31,9 +33,11 @@ class SIMDCapabilities:
     has_avx512f: bool = False
     has_fma: bool = False
 
+
 @dataclass
 class BatchRequest:
     """Batch request item"""
+
     id: str
     text: str
     voice: str
@@ -41,6 +45,7 @@ class BatchRequest:
     format: str
     callback: Callable | None = None
     priority: int = 0  # Higher number = higher priority
+
 
 class RequestBatcher:
     """Intelligent request batching system"""
@@ -57,7 +62,7 @@ class RequestBatcher:
             "batched_requests": 0,
             "single_requests": 0,
             "avg_batch_size": 0.0,
-            "total_processing_time": 0.0
+            "total_processing_time": 0.0,
         }
 
     def start(self):
@@ -68,7 +73,9 @@ class RequestBatcher:
         self.running = True
         self.batch_processor = threading.Thread(target=self._process_batches, daemon=True)
         self.batch_processor.start()
-        logger.info(f"Request batcher started: max_batch={self.max_batch_size}, timeout={self.batch_timeout_ms}ms")
+        logger.info(
+            f"Request batcher started: max_batch={self.max_batch_size}, timeout={self.batch_timeout_ms}ms"
+        )
 
     def stop(self):
         """Stop the batch processor"""
@@ -136,7 +143,9 @@ class RequestBatcher:
         """Process a single request"""
         try:
             # This would be replaced with actual TTS processing
-            result = self._synthesize_audio(request.text, request.voice, request.speed, request.format)
+            result = self._synthesize_audio(
+                request.text, request.voice, request.speed, request.format
+            )
             if request.callback:
                 request.callback(request.id, result, None)
         except Exception as e:
@@ -151,7 +160,10 @@ class RequestBatcher:
             for request in batch:
                 future = executor.submit(
                     self._synthesize_audio,
-                    request.text, request.voice, request.speed, request.format
+                    request.text,
+                    request.voice,
+                    request.speed,
+                    request.format,
                 )
                 future_to_request[future] = request
 
@@ -174,6 +186,7 @@ class RequestBatcher:
     def get_stats(self) -> dict[str, Any]:
         """Get batching statistics"""
         return self.stats.copy()
+
 
 class SystemOptimizer:
     """System-level optimizations"""
@@ -236,7 +249,7 @@ class SystemOptimizer:
             "other": {
                 "fma": self.simd_capabilities.has_fma,
             },
-            "optimization_level": self._get_optimization_level()
+            "optimization_level": self._get_optimization_level(),
         }
 
         return simd_info
@@ -278,6 +291,7 @@ class SystemOptimizer:
 
             # Python-specific memory optimizations
             import gc
+
             gc.set_threshold(700, 10, 10)  # More aggressive garbage collection
 
             self.memory_optimizations_applied = True
@@ -290,8 +304,9 @@ class SystemOptimizer:
 
         return optimizations
 
-    def setup_request_batching(self, max_batch_size: int = 6, batch_timeout_ms: int = 25,
-                             max_workers: int = 18) -> bool:
+    def setup_request_batching(
+        self, max_batch_size: int = 6, batch_timeout_ms: int = 25, max_workers: int = 18
+    ) -> bool:
         """Setup intelligent request batching"""
         try:
             if self.request_batcher:
@@ -300,8 +315,10 @@ class SystemOptimizer:
             self.request_batcher = RequestBatcher(max_batch_size, batch_timeout_ms, max_workers)
             self.request_batcher.start()
 
-            logger.info(f"Request batching enabled: batch_size={max_batch_size}, "
-                       f"timeout={batch_timeout_ms}ms, workers={max_workers}")
+            logger.info(
+                f"Request batching enabled: batch_size={max_batch_size}, "
+                f"timeout={batch_timeout_ms}ms, workers={max_workers}"
+            )
             return True
 
         except Exception as e:
@@ -315,13 +332,13 @@ class SystemOptimizer:
             "memory": {
                 "recommended_arena_max": 4,
                 "recommended_mmap_threshold": 131072,
-                "gc_optimization": "aggressive"
+                "gc_optimization": "aggressive",
             },
             "batching": {
                 "recommended_batch_size": 6,
                 "recommended_timeout_ms": 25,
-                "recommended_workers": min(18, os.cpu_count() or 4)
-            }
+                "recommended_workers": min(18, os.cpu_count() or 4),
+            },
         }
 
         return recommendations
@@ -342,13 +359,14 @@ class SystemOptimizer:
 
             # Set memory-related environment variables for ONNX Runtime
             import os
+
             memory_env_vars = {
                 "ORT_DISABLE_ALL_OPTIMIZATION": "0",  # Enable optimizations
-                "ORT_ENABLE_CPU_FP16_OPS": "1",       # Enable FP16 operations
+                "ORT_ENABLE_CPU_FP16_OPS": "1",  # Enable FP16 operations
                 "ORT_TENSORRT_MAX_WORKSPACE_SIZE": "2147483648",  # 2GB workspace
-                "MALLOC_ARENA_MAX": "4",              # Limit malloc arenas
-                "MALLOC_MMAP_THRESHOLD_": "131072",   # 128KB mmap threshold
-                "MALLOC_TRIM_THRESHOLD_": "131072"    # 128KB trim threshold
+                "MALLOC_ARENA_MAX": "4",  # Limit malloc arenas
+                "MALLOC_MMAP_THRESHOLD_": "131072",  # 128KB mmap threshold
+                "MALLOC_TRIM_THRESHOLD_": "131072",  # 128KB trim threshold
             }
 
             # Apply environment variables
@@ -370,18 +388,14 @@ class SystemOptimizer:
                 "memory_allocation": memory_result,
                 "additional_optimizations": additional_optimizations,
                 "optimizations_applied": True,
-                "environment_variables_set": len(applied_vars)
+                "environment_variables_set": len(applied_vars),
             }
 
             return result
 
         except Exception as e:
             logger.error(f"Failed to apply memory optimizations: {e}")
-            return {
-                "status": "failed",
-                "error": str(e),
-                "optimizations_applied": False
-            }
+            return {"status": "failed", "error": str(e), "optimizations_applied": False}
 
     def apply_io_optimizations(self) -> dict[str, Any]:
         """
@@ -402,19 +416,16 @@ class SystemOptimizer:
                 # Disable access time updates for better performance
                 "PYTHONUNBUFFERED": "1",  # Unbuffered stdout/stderr
                 "PYTHONDONTWRITEBYTECODE": "1",  # Don't write .pyc files
-
                 # ONNX Runtime I/O optimizations
                 "ORT_DISABLE_ALL_OPTIMIZATION": "0",  # Enable optimizations
-                "ORT_ENABLE_CPU_FP16_OPS": "1",       # Enable FP16 operations
+                "ORT_ENABLE_CPU_FP16_OPS": "1",  # Enable FP16 operations
                 "ORT_TENSORRT_MAX_WORKSPACE_SIZE": "2147483648",  # 2GB workspace
-
                 # Threading optimizations for I/O
                 "OMP_NUM_THREADS": str(min(8, os.cpu_count() or 4)),
                 "MKL_NUM_THREADS": str(min(8, os.cpu_count() or 4)),
-
                 # Memory mapping optimizations
-                "MALLOC_MMAP_THRESHOLD_": "131072",   # 128KB mmap threshold
-                "MALLOC_TRIM_THRESHOLD_": "131072",   # 128KB trim threshold
+                "MALLOC_MMAP_THRESHOLD_": "131072",  # 128KB mmap threshold
+                "MALLOC_TRIM_THRESHOLD_": "131072",  # 128KB trim threshold
             }
 
             # Apply environment variables for I/O optimization
@@ -445,62 +456,60 @@ class SystemOptimizer:
                         io_optimizations["file_descriptors"] = {
                             "old_limit": soft_limit,
                             "new_limit": recommended_limit,
-                            "status": "increased"
+                            "status": "increased",
                         }
                     except (ValueError, OSError) as e:
                         io_optimizations["file_descriptors"] = {
                             "current_limit": soft_limit,
                             "recommended_limit": recommended_limit,
                             "status": "failed_to_increase",
-                            "error": str(e)
+                            "error": str(e),
                         }
                 else:
                     io_optimizations["file_descriptors"] = {
                         "current_limit": soft_limit,
-                        "status": "adequate"
+                        "status": "adequate",
                     }
 
             except ImportError:
-                io_optimizations["file_descriptors"] = {
-                    "status": "resource_module_unavailable"
-                }
+                io_optimizations["file_descriptors"] = {"status": "resource_module_unavailable"}
 
             # Disk I/O optimizations
             try:
                 # Check if we can optimize temporary file handling
                 import tempfile
+
                 temp_dir = tempfile.gettempdir()
 
                 # Check available space in temp directory
-                if hasattr(os, 'statvfs'):
+                if hasattr(os, "statvfs"):
                     stat = os.statvfs(temp_dir)
                     available_gb = (stat.f_bavail * stat.f_frsize) / (1024**3)
 
                     io_optimizations["disk_io"] = {
                         "temp_directory": temp_dir,
                         "available_space_gb": round(available_gb, 2),
-                        "status": "adequate" if available_gb > 1.0 else "low_space"
+                        "status": "adequate" if available_gb > 1.0 else "low_space",
                     }
 
                     if available_gb < 1.0:
-                        io_optimizations["disk_io"]["warning"] = "Low disk space may affect performance"
+                        io_optimizations["disk_io"]["warning"] = (
+                            "Low disk space may affect performance"
+                        )
                 else:
                     io_optimizations["disk_io"] = {
                         "temp_directory": temp_dir,
-                        "status": "space_check_unavailable"
+                        "status": "space_check_unavailable",
                     }
 
             except Exception as e:
-                io_optimizations["disk_io"] = {
-                    "status": "failed",
-                    "error": str(e)
-                }
+                io_optimizations["disk_io"] = {"status": "failed", "error": str(e)}
 
             # Audio file I/O optimizations
             audio_io_settings = {
                 "buffer_size": 8192,  # 8KB buffer for audio I/O
                 "use_memory_mapping": True,
-                "async_io_enabled": True
+                "async_io_enabled": True,
             }
             io_optimizations["audio_io"] = audio_io_settings
 
@@ -511,19 +520,17 @@ class SystemOptimizer:
                 "status": "success",
                 "optimizations": io_optimizations,
                 "settings_applied": len(applied_settings),
-                "io_optimizations_applied": True
+                "io_optimizations_applied": True,
             }
 
-            logger.info(f"I/O optimizations applied: {len(applied_settings)} environment variables set")
+            logger.info(
+                f"I/O optimizations applied: {len(applied_settings)} environment variables set"
+            )
             return result
 
         except Exception as e:
             logger.error(f"Failed to apply I/O optimizations: {e}")
-            return {
-                "status": "failed",
-                "error": str(e),
-                "io_optimizations_applied": False
-            }
+            return {"status": "failed", "error": str(e), "io_optimizations_applied": False}
 
     def apply_network_optimizations(self) -> dict[str, Any]:
         """
@@ -541,16 +548,13 @@ class SystemOptimizer:
                 # TCP buffer optimizations for API responses
                 "TCP_NODELAY": "1",  # Disable Nagle's algorithm for low latency
                 "SO_REUSEADDR": "1",  # Allow socket reuse
-
                 # HTTP connection optimizations
                 "HTTPX_TIMEOUT": "30",  # HTTP client timeout
                 "AIOHTTP_TIMEOUT": "30",  # Async HTTP timeout
-
                 # FastAPI/Uvicorn optimizations
                 "UVICORN_BACKLOG": "2048",  # Connection backlog
                 "UVICORN_LIMIT_CONCURRENCY": "1000",  # Max concurrent connections
                 "UVICORN_LIMIT_MAX_REQUESTS": "10000",  # Max requests per worker
-
                 # Keep-alive optimizations
                 "UVICORN_TIMEOUT_KEEP_ALIVE": "5",  # Keep-alive timeout
                 "UVICORN_TIMEOUT_GRACEFUL_SHUTDOWN": "30",  # Graceful shutdown timeout
@@ -570,7 +574,7 @@ class SystemOptimizer:
                 "max_keepalive_connections": 20,  # Keep-alive connections
                 "keepalive_expiry": 5.0,  # Keep-alive expiry time
                 "timeout": 30.0,  # Connection timeout
-                "retries": 3  # Retry attempts
+                "retries": 3,  # Retry attempts
             }
             network_optimizations["connection_pool"] = connection_pool_settings
 
@@ -579,7 +583,7 @@ class SystemOptimizer:
                 "chunk_size": 8192,  # 8KB chunks for audio streaming
                 "buffer_size": 65536,  # 64KB buffer
                 "compression_enabled": True,  # Enable response compression
-                "streaming_threshold": 1024  # Stream responses > 1KB
+                "streaming_threshold": 1024,  # Stream responses > 1KB
             }
             network_optimizations["streaming"] = streaming_settings
 
@@ -588,7 +592,7 @@ class SystemOptimizer:
                 "enable_gzip": True,  # Enable gzip compression
                 "gzip_minimum_size": 1024,  # Compress responses > 1KB
                 "cache_control": "public, max-age=300",  # 5-minute cache
-                "etag_enabled": True  # Enable ETags for caching
+                "etag_enabled": True,  # Enable ETags for caching
             }
             network_optimizations["response_optimization"] = response_settings
 
@@ -596,19 +600,17 @@ class SystemOptimizer:
                 "status": "success",
                 "optimizations": network_optimizations,
                 "settings_applied": len(applied_settings),
-                "network_optimizations_applied": True
+                "network_optimizations_applied": True,
             }
 
-            logger.info(f"Network optimizations applied: {len(applied_settings)} environment variables set")
+            logger.info(
+                f"Network optimizations applied: {len(applied_settings)} environment variables set"
+            )
             return result
 
         except Exception as e:
             logger.error(f"Failed to apply network optimizations: {e}")
-            return {
-                "status": "failed",
-                "error": str(e),
-                "network_optimizations_applied": False
-            }
+            return {"status": "failed", "error": str(e), "network_optimizations_applied": False}
 
     def apply_all_optimizations(self) -> dict[str, Any]:
         """Apply all system-level optimizations"""
@@ -631,8 +633,10 @@ class SystemOptimizer:
 
         return results
 
+
 # Global system optimizer instance
 _system_optimizer = None
+
 
 def get_system_optimizer() -> SystemOptimizer:
     """Get global system optimizer instance"""

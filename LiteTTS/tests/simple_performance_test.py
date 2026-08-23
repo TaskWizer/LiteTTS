@@ -19,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 try:
     from LiteTTS.nlp.rime_ai_integration import rime_ai_processor
     from LiteTTS.nlp.text_normalizer import TextNormalizer
+
     TEXT_PROCESSING_AVAILABLE = True
 except ImportError as e:
     TEXT_PROCESSING_AVAILABLE = False
@@ -26,15 +27,18 @@ except ImportError as e:
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class SimplePerformanceMetrics:
     """Simple performance metrics"""
+
     test_name: str
     text_length: int
     processing_time: float
     throughput_chars_per_sec: float
     success: bool
     error_message: str | None = None
+
 
 class SimplePerformanceTester:
     """Lightweight performance tester for text processing components"""
@@ -47,7 +51,7 @@ class SimplePerformanceTester:
             "Performance testing requires systematic evaluation of processing speed and accuracy. "
             "The system should handle contractions like don't, won't, and can't properly.",
             "Complex text with URLs like https://example.com, emails like test@example.com, "
-            "currency amounts like $123.45, dates like 2023-10-27, and contractions like I'll, you'll."
+            "currency amounts like $123.45, dates like 2023-10-27, and contractions like I'll, you'll.",
         ]
 
         if TEXT_PROCESSING_AVAILABLE:
@@ -58,19 +62,21 @@ class SimplePerformanceTester:
     def run_text_processing_performance_test(self) -> list[SimplePerformanceMetrics]:
         """Test text processing performance"""
         if not TEXT_PROCESSING_AVAILABLE:
-            return [SimplePerformanceMetrics(
-                test_name="text_processing_unavailable",
-                text_length=0,
-                processing_time=0.0,
-                throughput_chars_per_sec=0.0,
-                success=False,
-                error_message="Text processing components not available"
-            )]
+            return [
+                SimplePerformanceMetrics(
+                    test_name="text_processing_unavailable",
+                    text_length=0,
+                    processing_time=0.0,
+                    throughput_chars_per_sec=0.0,
+                    success=False,
+                    error_message="Text processing components not available",
+                )
+            ]
 
         results = []
 
         for i, text in enumerate(self.test_texts):
-            test_name = f"text_normalization_{i+1}"
+            test_name = f"text_normalization_{i + 1}"
 
             try:
                 start_time = time.perf_counter()
@@ -84,26 +90,30 @@ class SimplePerformanceTester:
                 # Calculate throughput
                 throughput = len(text) / processing_time if processing_time > 0 else 0
 
-                results.append(SimplePerformanceMetrics(
-                    test_name=test_name,
-                    text_length=len(text),
-                    processing_time=processing_time,
-                    throughput_chars_per_sec=throughput,
-                    success=True
-                ))
+                results.append(
+                    SimplePerformanceMetrics(
+                        test_name=test_name,
+                        text_length=len(text),
+                        processing_time=processing_time,
+                        throughput_chars_per_sec=throughput,
+                        success=True,
+                    )
+                )
 
                 logger.info(f"Test {test_name}: {processing_time:.4f}s, {throughput:.0f} chars/sec")
 
             except Exception as e:
                 logger.error(f"Test {test_name} failed: {e}")
-                results.append(SimplePerformanceMetrics(
-                    test_name=test_name,
-                    text_length=len(text),
-                    processing_time=0.0,
-                    throughput_chars_per_sec=0.0,
-                    success=False,
-                    error_message=str(e)
-                ))
+                results.append(
+                    SimplePerformanceMetrics(
+                        test_name=test_name,
+                        text_length=len(text),
+                        processing_time=0.0,
+                        throughput_chars_per_sec=0.0,
+                        success=False,
+                        error_message=str(e),
+                    )
+                )
 
         return results
 
@@ -117,11 +127,11 @@ class SimplePerformanceTester:
             "The pronunciation of {h1Ed0n1Izm} is important",
             "Testing {1Ast0r1Isk} pronunciation",
             "Normal text without RIME notation",
-            "Mixed text with {f0n1Et1Ik} and normal words"
+            "Mixed text with {f0n1Et1Ik} and normal words",
         ]
 
         for i, text in enumerate(rime_test_texts):
-            test_name = f"rime_ai_processing_{i+1}"
+            test_name = f"rime_ai_processing_{i + 1}"
 
             try:
                 start_time = time.perf_counter()
@@ -135,26 +145,32 @@ class SimplePerformanceTester:
                 # Calculate throughput
                 throughput = len(text) / processing_time if processing_time > 0 else 0
 
-                results.append(SimplePerformanceMetrics(
-                    test_name=test_name,
-                    text_length=len(text),
-                    processing_time=processing_time,
-                    throughput_chars_per_sec=throughput,
-                    success=True
-                ))
+                results.append(
+                    SimplePerformanceMetrics(
+                        test_name=test_name,
+                        text_length=len(text),
+                        processing_time=processing_time,
+                        throughput_chars_per_sec=throughput,
+                        success=True,
+                    )
+                )
 
-                logger.info(f"Test {test_name}: {processing_time:.4f}s, confidence: {analysis.confidence_score:.2f}")
+                logger.info(
+                    f"Test {test_name}: {processing_time:.4f}s, confidence: {analysis.confidence_score:.2f}"
+                )
 
             except Exception as e:
                 logger.error(f"Test {test_name} failed: {e}")
-                results.append(SimplePerformanceMetrics(
-                    test_name=test_name,
-                    text_length=len(text),
-                    processing_time=0.0,
-                    throughput_chars_per_sec=0.0,
-                    success=False,
-                    error_message=str(e)
-                ))
+                results.append(
+                    SimplePerformanceMetrics(
+                        test_name=test_name,
+                        text_length=len(text),
+                        processing_time=0.0,
+                        throughput_chars_per_sec=0.0,
+                        success=False,
+                        error_message=str(e),
+                    )
+                )
 
         return results
 
@@ -166,11 +182,11 @@ class SimplePerformanceTester:
 
         # Text processing tests
         text_results = self.run_text_processing_performance_test()
-        all_results['text_processing'] = text_results
+        all_results["text_processing"] = text_results
 
         # RIME AI tests
         rime_results = self.run_rime_ai_performance_test()
-        all_results['rime_ai_processing'] = rime_results
+        all_results["rime_ai_processing"] = rime_results
 
         # Calculate summary statistics
         all_metrics = text_results + rime_results
@@ -178,44 +194,51 @@ class SimplePerformanceTester:
 
         if successful_metrics:
             summary = {
-                'total_tests': len(all_metrics),
-                'successful_tests': len(successful_metrics),
-                'failed_tests': len(all_metrics) - len(successful_metrics),
-                'average_processing_time': statistics.mean(m.processing_time for m in successful_metrics),
-                'average_throughput': statistics.mean(m.throughput_chars_per_sec for m in successful_metrics),
-                'min_processing_time': min(m.processing_time for m in successful_metrics),
-                'max_processing_time': max(m.processing_time for m in successful_metrics),
-                'total_characters_processed': sum(m.text_length for m in successful_metrics)
+                "total_tests": len(all_metrics),
+                "successful_tests": len(successful_metrics),
+                "failed_tests": len(all_metrics) - len(successful_metrics),
+                "average_processing_time": statistics.mean(
+                    m.processing_time for m in successful_metrics
+                ),
+                "average_throughput": statistics.mean(
+                    m.throughput_chars_per_sec for m in successful_metrics
+                ),
+                "min_processing_time": min(m.processing_time for m in successful_metrics),
+                "max_processing_time": max(m.processing_time for m in successful_metrics),
+                "total_characters_processed": sum(m.text_length for m in successful_metrics),
             }
         else:
             summary = {
-                'total_tests': len(all_metrics),
-                'successful_tests': 0,
-                'failed_tests': len(all_metrics),
-                'error': 'All tests failed'
+                "total_tests": len(all_metrics),
+                "successful_tests": 0,
+                "failed_tests": len(all_metrics),
+                "error": "All tests failed",
             }
 
-        all_results['summary'] = summary
+        all_results["summary"] = summary
 
         return all_results
 
-    def save_results(self, results: dict[str, Any], filename: str = "simple_performance_results.json"):
+    def save_results(
+        self, results: dict[str, Any], filename: str = "simple_performance_results.json"
+    ):
         """Save test results to file"""
         # Convert dataclasses to dictionaries for JSON serialization
         serializable_results = {}
 
         for key, value in results.items():
-            if key == 'summary':
+            if key == "summary":
                 serializable_results[key] = value
             else:
                 serializable_results[key] = [asdict(item) for item in value]
 
         try:
-            with open(filename, 'w') as f:
+            with open(filename, "w") as f:
                 json.dump(serializable_results, f, indent=2)
             logger.info(f"Results saved to {filename}")
         except Exception as e:
             logger.error(f"Failed to save results: {e}")
+
 
 def main():
     """Main test execution"""
@@ -223,20 +246,20 @@ def main():
     print("=" * 30)
 
     # Configure logging
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
     try:
         tester = SimplePerformanceTester()
         results = tester.run_all_tests()
 
         # Print summary
-        summary = results['summary']
+        summary = results["summary"]
         print("\nTest Summary:")
         print(f"  Total Tests: {summary['total_tests']}")
         print(f"  Successful: {summary['successful_tests']}")
         print(f"  Failed: {summary['failed_tests']}")
 
-        if 'average_processing_time' in summary:
+        if "average_processing_time" in summary:
             print(f"  Average Processing Time: {summary['average_processing_time']:.4f}s")
             print(f"  Average Throughput: {summary['average_throughput']:.0f} chars/sec")
             print(f"  Total Characters Processed: {summary['total_characters_processed']}")
@@ -247,18 +270,20 @@ def main():
         # Print detailed results
         print("\nDetailed Results:")
         for category, metrics in results.items():
-            if category == 'summary':
+            if category == "summary":
                 continue
 
             print(f"\n{category.replace('_', ' ').title()}:")
             for metric in metrics:
                 status = "✅" if metric.success else "❌"
                 if metric.success:
-                    print(f"  {status} {metric.test_name}: {metric.processing_time:.4f}s ({metric.throughput_chars_per_sec:.0f} chars/sec)")
+                    print(
+                        f"  {status} {metric.test_name}: {metric.processing_time:.4f}s ({metric.throughput_chars_per_sec:.0f} chars/sec)"
+                    )
                 else:
                     print(f"  {status} {metric.test_name}: {metric.error_message}")
 
-        success = summary['failed_tests'] == 0
+        success = summary["failed_tests"] == 0
         if success:
             print("\n🎉 All tests passed!")
         else:
@@ -270,6 +295,7 @@ def main():
         logger.error(f"Performance testing failed: {e}")
         print(f"\n❌ Testing failed: {e}")
         return False
+
 
 if __name__ == "__main__":
     success = main()

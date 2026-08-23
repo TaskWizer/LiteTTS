@@ -87,29 +87,29 @@ class TestEmojiMappings:
 
     def test_system_emojis_defined(self):
         """Test system/logging emojis are defined"""
-        assert 'clipboard' in EMOJIS
-        assert 'folder' in EMOJIS
-        assert 'chart' in EMOJIS
+        assert "clipboard" in EMOJIS
+        assert "folder" in EMOJIS
+        assert "chart" in EMOJIS
 
     def test_status_emojis_defined(self):
         """Test status indicator emojis are defined"""
-        assert 'check' in EMOJIS
-        assert 'cross' in EMOJIS
-        assert 'warning' in EMOJIS
-        assert 'stop' in EMOJIS
+        assert "check" in EMOJIS
+        assert "cross" in EMOJIS
+        assert "warning" in EMOJIS
+        assert "stop" in EMOJIS
 
     def test_action_emojis_defined(self):
         """Test action/process emojis are defined"""
-        assert 'rocket' in EMOJIS
-        assert 'gear' in EMOJIS
-        assert 'refresh' in EMOJIS
+        assert "rocket" in EMOJIS
+        assert "gear" in EMOJIS
+        assert "refresh" in EMOJIS
 
     def test_audio_emojis_defined(self):
         """Test audio/TTS emojis are defined"""
-        assert 'microphone' in EMOJIS
-        assert 'speaker' in EMOJIS
-        assert 'musical_note' in EMOJIS
-        assert 'masks' in EMOJIS
+        assert "microphone" in EMOJIS
+        assert "speaker" in EMOJIS
+        assert "musical_note" in EMOJIS
+        assert "masks" in EMOJIS
 
 
 class TestGetEmoji:

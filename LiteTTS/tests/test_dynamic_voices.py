@@ -15,10 +15,10 @@ from LiteTTS.voice.dynamic_manager import DynamicVoiceManager
 
 # Setup logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s | %(levelname)s | %(name)s | %(message)s'
+    level=logging.INFO, format="%(asctime)s | %(levelname)s | %(name)s | %(message)s"
 )
 logger = logging.getLogger(__name__)
+
 
 def test_voice_discovery():
     """Test voice discovery functionality"""
@@ -52,6 +52,7 @@ def test_voice_discovery():
         print(f"❌ Voice discovery test failed: {e}")
         return False
 
+
 def test_voice_mappings():
     """Test voice name mapping functionality"""
     print("\n🔗 Testing Voice Mappings")
@@ -83,6 +84,7 @@ def test_voice_mappings():
         print(f"❌ Voice mapping test failed: {e}")
         return False
 
+
 def test_module_functions():
     """Test module-level functions"""
     print("\n🔧 Testing Module Functions")
@@ -113,6 +115,7 @@ def test_module_functions():
         print(f"❌ Module function test failed: {e}")
         return False
 
+
 def test_huggingface_discovery():
     """Test HuggingFace discovery functionality"""
     print("\n🌐 Testing HuggingFace Discovery")
@@ -136,7 +139,7 @@ def test_huggingface_discovery():
         # Show some examples
         for i, (name, info) in enumerate(list(discovered.items())[:5]):
             size_mb = info.size / (1024 * 1024) if info.size > 0 else 0
-            print(f"   {i+1}. {name} ({size_mb:.1f} MB)")
+            print(f"   {i + 1}. {name} ({size_mb:.1f} MB)")
 
         if len(discovered) > 5:
             print(f"   ... and {len(discovered) - 5} more")
@@ -146,6 +149,7 @@ def test_huggingface_discovery():
     except Exception as e:
         print(f"❌ HuggingFace discovery test failed: {e}")
         return False
+
 
 def test_download_functionality():
     """Test voice download functionality (without actually downloading)"""
@@ -157,7 +161,7 @@ def test_download_functionality():
 
         # Test download status
         download_info = voice_manager.downloader.get_download_info()
-        downloaded_count = sum(1 for info in download_info.values() if info['downloaded'])
+        downloaded_count = sum(1 for info in download_info.values() if info["downloaded"])
         total_count = len(download_info)
 
         print(f"📊 Download status: {downloaded_count}/{total_count} voices downloaded")
@@ -165,12 +169,12 @@ def test_download_functionality():
         # Show download info for a few voices
         print("📋 Sample download info:")
         for i, (name, info) in enumerate(list(download_info.items())[:5]):
-            status = "✅ Downloaded" if info['downloaded'] else "❌ Missing"
-            size_mb = info['file_size'] / (1024 * 1024) if info['file_size'] > 0 else 0
-            expected_mb = info['expected_size'] / (1024 * 1024) if info['expected_size'] > 0 else 0
+            status = "✅ Downloaded" if info["downloaded"] else "❌ Missing"
+            size_mb = info["file_size"] / (1024 * 1024) if info["file_size"] > 0 else 0
+            expected_mb = info["expected_size"] / (1024 * 1024) if info["expected_size"] > 0 else 0
 
-            print(f"   {i+1}. {name}: {status}")
-            if info['downloaded']:
+            print(f"   {i + 1}. {name}: {status}")
+            if info["downloaded"]:
                 print(f"      Size: {size_mb:.1f} MB")
             else:
                 print(f"      Expected: {expected_mb:.1f} MB")
@@ -180,6 +184,7 @@ def test_download_functionality():
     except Exception as e:
         print(f"❌ Download functionality test failed: {e}")
         return False
+
 
 def main():
     """Run all tests"""
@@ -191,7 +196,7 @@ def main():
         test_voice_mappings,
         test_module_functions,
         test_huggingface_discovery,
-        test_download_functionality
+        test_download_functionality,
     ]
 
     passed = 0
@@ -212,6 +217,7 @@ def main():
     else:
         print("❌ Some tests failed")
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

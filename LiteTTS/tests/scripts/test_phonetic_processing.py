@@ -10,6 +10,7 @@ from pathlib import Path
 # Add the project root to the path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
+
 def test_phonetic_processor_import():
     """Test if phonetic processor can be imported"""
     print("🔍 Testing Phonetic Processor Import")
@@ -17,6 +18,7 @@ def test_phonetic_processor_import():
 
     try:
         from LiteTTS.nlp.phonetic_processor import PhoneticProcessor  # noqa: F401
+
         print("✅ PhoneticProcessor imported successfully")
         return True
     except ImportError as e:
@@ -26,6 +28,7 @@ def test_phonetic_processor_import():
         print(f"❌ Unexpected error importing PhoneticProcessor: {e}")
         return False
 
+
 def test_phonetic_dictionary_manager():
     """Test if phonetic dictionary manager can be imported and initialized"""
     print("\n🔍 Testing Phonetic Dictionary Manager")
@@ -33,6 +36,7 @@ def test_phonetic_dictionary_manager():
 
     try:
         from LiteTTS.nlp.phonetic_dictionary_manager import PhoneticDictionaryManager
+
         print("✅ PhoneticDictionaryManager imported successfully")
 
         # Test initialization
@@ -45,6 +49,7 @@ def test_phonetic_dictionary_manager():
     except Exception as e:
         print(f"❌ Unexpected error with PhoneticDictionaryManager: {e}")
         return False
+
 
 def test_dictionary_loading():
     """Test loading phonetic dictionaries"""
@@ -59,7 +64,7 @@ def test_dictionary_loading():
             "dictionary_sources": {
                 "arpabet": "docs/dictionaries/cmudict.dict",
                 "ipa": "docs/dictionaries/ipa_dict.json",
-                "unisyn": "docs/dictionaries/unisyn_dict.json"
+                "unisyn": "docs/dictionaries/unisyn_dict.json",
             }
         }
 
@@ -95,6 +100,7 @@ def test_dictionary_loading():
         print(f"❌ Dictionary loading test failed: {e}")
         return False
 
+
 def test_phonetic_processing():
     """Test phonetic processing with a simple example"""
     print("\n🔍 Testing Phonetic Processing")
@@ -111,18 +117,14 @@ def test_phonetic_processing():
                 "rime_ai_style": True,
                 "custom_markers": True,
                 "ipa_notation": True,
-                "nato_phonetic": True
-            }
+                "nato_phonetic": True,
+            },
         }
 
         processor = PhoneticProcessor({"phonetic_processing": config})
 
         # Test cases
-        test_cases = [
-            "Hello world",
-            "The quick brown fox",
-            "Testing phonetic processing"
-        ]
+        test_cases = ["Hello world", "The quick brown fox", "Testing phonetic processing"]
 
         print("📝 Testing phonetic processing:")
 
@@ -147,6 +149,7 @@ def test_phonetic_processing():
         print(f"❌ Phonetic processing test failed: {e}")
         return False
 
+
 def test_unified_processor_with_phonetics():
     """Test unified text processor with phonetic processing enabled"""
     print("\n🔍 Testing Unified Processor with Phonetics")
@@ -170,19 +173,16 @@ def test_unified_processor_with_phonetics():
                         "rime_ai_style": True,
                         "custom_markers": True,
                         "ipa_notation": True,
-                        "nato_phonetic": True
-                    }
-                }
+                        "nato_phonetic": True,
+                    },
+                },
             }
         }
 
         processor = UnifiedTextProcessor(enable_advanced_features=True, config=config)
 
         # Test cases
-        test_cases = [
-            "Hello? How are you?",
-            "Testing phonetic processing"
-        ]
+        test_cases = ["Hello? How are you?", "Testing phonetic processing"]
 
         options = ProcessingOptions(mode=ProcessingMode.ENHANCED)
 
@@ -209,6 +209,7 @@ def test_unified_processor_with_phonetics():
             except Exception as e:
                 print(f"   ❌ Error: {e}")
                 import traceback
+
                 traceback.print_exc()
                 return False
 
@@ -217,8 +218,10 @@ def test_unified_processor_with_phonetics():
     except Exception as e:
         print(f"❌ Unified processor test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return False
+
 
 def main():
     """Main test function"""
@@ -264,6 +267,7 @@ def main():
         print("   Check the error messages above to identify the root cause.")
 
     return success
+
 
 if __name__ == "__main__":
     success = main()

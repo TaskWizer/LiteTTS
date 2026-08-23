@@ -14,11 +14,13 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
+
 class IntelligentPreCaching:
     """Intelligent pre-caching system that learns from usage patterns"""
 
-    def __init__(self, log_file_path: str = "docs/logs/structured.jsonl",
-                 cache_dir: str = "cache/audio"):
+    def __init__(
+        self, log_file_path: str = "docs/logs/structured.jsonl", cache_dir: str = "cache/audio"
+    ):
         self.log_file_path = Path(log_file_path)
         self.cache_dir = Path(cache_dir)
         self.cache_dir.mkdir(parents=True, exist_ok=True)
@@ -61,7 +63,7 @@ class IntelligentPreCaching:
             "As a result",
             "On the other hand",
             "In conclusion",
-            "To summarize"
+            "To summarize",
         ]
 
     def analyze_logs(self) -> dict[str, any]:
@@ -77,7 +79,7 @@ class IntelligentPreCaching:
         error_count = 0
 
         try:
-            with open(self.log_file_path, 'r', encoding='utf-8') as f:
+            with open(self.log_file_path, "r", encoding="utf-8") as f:
                 for line in f:
                     total_lines += 1
                     try:
@@ -85,11 +87,11 @@ class IntelligentPreCaching:
                         self._process_log_entry(log_entry)
 
                         # Count speech requests
-                        if 'Generating speech' in log_entry.get('message', ''):
+                        if "Generating speech" in log_entry.get("message", ""):
                             speech_requests += 1
 
                         # Count errors
-                        if log_entry.get('level', '').upper() in ['ERROR', 'CRITICAL']:
+                        if log_entry.get("level", "").upper() in ["ERROR", "CRITICAL"]:
                             error_count += 1
 
                     except json.JSONDecodeError:
@@ -101,13 +103,15 @@ class IntelligentPreCaching:
         except Exception as e:
             logger.error(f"Error reading log file: {e}")
 
-        logger.info(f"Analyzed {total_lines} log entries, {speech_requests} speech requests, {error_count} errors")
+        logger.info(
+            f"Analyzed {total_lines} log entries, {speech_requests} speech requests, {error_count} errors"
+        )
         return self._get_analysis_summary()
 
     def _process_log_entry(self, log_entry: dict) -> None:
         """Process a single log entry"""
-        message = log_entry.get('message', '')
-        timestamp = log_entry.get('timestamp', '')
+        message = log_entry.get("message", "")
+        timestamp = log_entry.get("timestamp", "")
 
         # Extract speech generation requests
         speech_match = re.search(r"Generating speech: '([^']+)'.*voice '([^']+)'", message)
@@ -119,11 +123,9 @@ class IntelligentPreCaching:
             phrases = self._extract_phrases(text)
             for phrase in phrases:
                 self.phrase_frequencies[phrase] += 1
-                self.phrase_contexts[phrase].append({
-                    'full_text': text,
-                    'voice': voice,
-                    'timestamp': timestamp
-                })
+                self.phrase_contexts[phrase].append(
+                    {"full_text": text, "voice": voice, "timestamp": timestamp}
+                )
 
             # Track voice usage
             self.voice_usage[voice] += 1
@@ -131,7 +133,7 @@ class IntelligentPreCaching:
             # Track time patterns
             if timestamp:
                 try:
-                    dt = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+                    dt = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
                     hour = dt.hour
                     self.time_patterns[hour].append(text)
                 except Exception:
@@ -142,13 +144,15 @@ class IntelligentPreCaching:
         phrases = []
 
         # Clean text
-        text = re.sub(r'[^\w\s\.\!\?\,\;\:]', ' ', text)
+        text = re.sub(r"[^\w\s\.\!\?\,\;\:]", " ", text)
         words = text.split()
 
         # Extract phrases of different lengths
-        for length in range(self.min_phrase_length, min(len(words) + 1, self.max_phrase_length + 1)):
+        for length in range(
+            self.min_phrase_length, min(len(words) + 1, self.max_phrase_length + 1)
+        ):
             for i in range(len(words) - length + 1):
-                phrase = ' '.join(words[i:i + length])
+                phrase = " ".join(words[i : i + length])
 
                 # Filter out phrases that are too generic or contain only common words
                 if self._is_meaningful_phrase(phrase):
@@ -165,7 +169,45 @@ class IntelligentPreCaching:
             return False
 
         # Skip if all words are common stop words
-        stop_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'can', 'this', 'that', 'these', 'those'}
+        stop_words = {
+            "the",
+            "a",
+            "an",
+            "and",
+            "or",
+            "but",
+            "in",
+            "on",
+            "at",
+            "to",
+            "for",
+            "of",
+            "with",
+            "by",
+            "is",
+            "are",
+            "was",
+            "were",
+            "be",
+            "been",
+            "have",
+            "has",
+            "had",
+            "do",
+            "does",
+            "did",
+            "will",
+            "would",
+            "could",
+            "should",
+            "may",
+            "might",
+            "can",
+            "this",
+            "that",
+            "these",
+            "those",
+        }
         meaningful_words = [w for w in words if w not in stop_words]
 
         if len(meaningful_words) < 2:
@@ -183,12 +225,12 @@ class IntelligentPreCaching:
 
         # Add essential phrases with high priority
         for phrase in self.essential_phrases:
-            priority_phrases.append((phrase, 100, 'essential'))
+            priority_phrases.append((phrase, 100, "essential"))
 
         # Add frequent phrases from logs
         for phrase, count in self.phrase_frequencies.most_common(limit):
             if count >= self.min_frequency:
-                priority_phrases.append((phrase, count, 'frequent'))
+                priority_phrases.append((phrase, count, "frequent"))
 
         # Sort by priority (frequency/importance)
         priority_phrases.sort(key=lambda x: x[1], reverse=True)
@@ -202,12 +244,14 @@ class IntelligentPreCaching:
     def _get_analysis_summary(self) -> dict[str, any]:
         """Get summary of analysis results"""
         return {
-            'total_phrases': len(self.phrase_frequencies),
-            'frequent_phrases': len([p for p, c in self.phrase_frequencies.items() if c >= self.min_frequency]),
-            'top_phrases': self.phrase_frequencies.most_common(10),
-            'voice_usage': dict(self.voice_usage.most_common(10)),
-            'time_patterns': {hour: len(texts) for hour, texts in self.time_patterns.items()},
-            'essential_phrases_count': len(self.essential_phrases)
+            "total_phrases": len(self.phrase_frequencies),
+            "frequent_phrases": len(
+                [p for p, c in self.phrase_frequencies.items() if c >= self.min_frequency]
+            ),
+            "top_phrases": self.phrase_frequencies.most_common(10),
+            "voice_usage": dict(self.voice_usage.most_common(10)),
+            "time_patterns": {hour: len(texts) for hour, texts in self.time_patterns.items()},
+            "essential_phrases_count": len(self.essential_phrases),
         }
 
     def generate_cache_plan(self) -> dict[str, any]:
@@ -220,27 +264,31 @@ class IntelligentPreCaching:
         for phrase, frequency, source in priority_phrases:
             for voice, voice_count in recommended_voices:
                 cache_key = self._generate_cache_key(phrase, voice)
-                priority_score = frequency * (voice_count / max(self.voice_usage.values(), default=1))
+                priority_score = frequency * (
+                    voice_count / max(self.voice_usage.values(), default=1)
+                )
 
-                cache_combinations.append({
-                    'phrase': phrase,
-                    'voice': voice,
-                    'cache_key': cache_key,
-                    'priority_score': priority_score,
-                    'source': source,
-                    'frequency': frequency
-                })
+                cache_combinations.append(
+                    {
+                        "phrase": phrase,
+                        "voice": voice,
+                        "cache_key": cache_key,
+                        "priority_score": priority_score,
+                        "source": source,
+                        "frequency": frequency,
+                    }
+                )
 
         # Sort by priority score
-        cache_combinations.sort(key=lambda x: x['priority_score'], reverse=True)
+        cache_combinations.sort(key=lambda x: x["priority_score"], reverse=True)
 
         return {
-            'total_combinations': len(cache_combinations),
-            'high_priority': cache_combinations[:20],
-            'medium_priority': cache_combinations[20:50],
-            'low_priority': cache_combinations[50:],
-            'recommended_voices': recommended_voices,
-            'cache_size_estimate': len(cache_combinations) * 0.5  # MB estimate
+            "total_combinations": len(cache_combinations),
+            "high_priority": cache_combinations[:20],
+            "medium_priority": cache_combinations[20:50],
+            "low_priority": cache_combinations[50:],
+            "recommended_voices": recommended_voices,
+            "cache_size_estimate": len(cache_combinations) * 0.5,  # MB estimate
         }
 
     def _generate_cache_key(self, text: str, voice: str) -> str:
@@ -254,21 +302,21 @@ class IntelligentPreCaching:
         cache_plan = self.generate_cache_plan()
 
         export_data = {
-            'generated_at': datetime.now().isoformat(),
-            'analysis_summary': analysis,
-            'cache_plan': cache_plan,
-            'configuration': {
-                'min_phrase_length': self.min_phrase_length,
-                'max_phrase_length': self.max_phrase_length,
-                'min_frequency': self.min_frequency,
-                'cache_size_limit': self.cache_size_limit
-            }
+            "generated_at": datetime.now().isoformat(),
+            "analysis_summary": analysis,
+            "cache_plan": cache_plan,
+            "configuration": {
+                "min_phrase_length": self.min_phrase_length,
+                "max_phrase_length": self.max_phrase_length,
+                "min_frequency": self.min_frequency,
+                "cache_size_limit": self.cache_size_limit,
+            },
         }
 
         output_path = Path(output_file)
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             json.dump(export_data, f, indent=2, ensure_ascii=False)
 
         logger.info(f"Cache plan exported to {output_path}")
@@ -279,36 +327,38 @@ class IntelligentPreCaching:
         error_details = []
 
         if not self.log_file_path.exists():
-            return {'error_patterns': {}, 'error_details': []}
+            return {"error_patterns": {}, "error_details": []}
 
         try:
-            with open(self.log_file_path, 'r', encoding='utf-8') as f:
+            with open(self.log_file_path, "r", encoding="utf-8") as f:
                 for line in f:
                     try:
                         log_entry = json.loads(line.strip())
-                        level = log_entry.get('level', '').upper()
+                        level = log_entry.get("level", "").upper()
 
-                        if 'ERROR' in level or 'CRITICAL' in level:
-                            message = log_entry.get('message', '')
+                        if "ERROR" in level or "CRITICAL" in level:
+                            message = log_entry.get("message", "")
 
                             # Categorize errors
-                            if 'Voice' in message and 'not found' in message:
-                                error_patterns['voice_not_found'] += 1
-                            elif 'Failed to initialize' in message:
-                                error_patterns['initialization_failure'] += 1
-                            elif 'Model test failed' in message:
-                                error_patterns['model_test_failure'] += 1
-                            elif 'Is a directory' in message:
-                                error_patterns['path_configuration_error'] += 1
+                            if "Voice" in message and "not found" in message:
+                                error_patterns["voice_not_found"] += 1
+                            elif "Failed to initialize" in message:
+                                error_patterns["initialization_failure"] += 1
+                            elif "Model test failed" in message:
+                                error_patterns["model_test_failure"] += 1
+                            elif "Is a directory" in message:
+                                error_patterns["path_configuration_error"] += 1
                             else:
-                                error_patterns['other_errors'] += 1
+                                error_patterns["other_errors"] += 1
 
-                            error_details.append({
-                                'timestamp': log_entry.get('timestamp'),
-                                'message': message,
-                                'module': log_entry.get('module'),
-                                'function': log_entry.get('function')
-                            })
+                            error_details.append(
+                                {
+                                    "timestamp": log_entry.get("timestamp"),
+                                    "message": message,
+                                    "module": log_entry.get("module"),
+                                    "function": log_entry.get("function"),
+                                }
+                            )
 
                     except json.JSONDecodeError:
                         continue
@@ -317,10 +367,11 @@ class IntelligentPreCaching:
             logger.error(f"Error analyzing error patterns: {e}")
 
         return {
-            'error_patterns': dict(error_patterns),
-            'error_details': error_details[-10:],  # Last 10 errors
-            'total_errors': sum(error_patterns.values())
+            "error_patterns": dict(error_patterns),
+            "error_details": error_details[-10:],  # Last 10 errors
+            "total_errors": sum(error_patterns.values()),
         }
+
 
 def main():
     """Main function for testing the intelligent pre-caching system"""
@@ -352,12 +403,13 @@ def main():
     print("\n❌ Error Analysis:")
     error_analysis = precaching.get_error_patterns()
     print(f"  Total errors: {error_analysis['total_errors']}")
-    for pattern, count in error_analysis['error_patterns'].items():
+    for pattern, count in error_analysis["error_patterns"].items():
         print(f"  {pattern}: {count}")
 
     # Export cache plan
     precaching.export_cache_plan()
     print("\n✅ Cache plan exported to cache/precache_plan.json")
+
 
 if __name__ == "__main__":
     main()

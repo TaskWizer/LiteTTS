@@ -20,7 +20,7 @@ class TestMemoryProfile:
             peak_memory_mb=600.0,
             memory_growth_mb=10.0,
             gc_collections={"gen0": 100, "gen1": 10, "gen2": 1},
-            largest_objects=[]
+            largest_objects=[],
         )
         assert profile.total_memory_mb == 16384.0
         assert profile.process_memory_mb == 512.0
@@ -36,7 +36,7 @@ class TestMemoryProfile:
             peak_memory_mb=600.0,
             memory_growth_mb=10.0,
             gc_collections={},
-            largest_objects=[]
+            largest_objects=[],
         )
         assert profile.gc_collections == {}
 
@@ -56,7 +56,7 @@ class TestMemoryOptimizationConfig:
             enable_memory_mapping=False,
             cache_size_limit_mb=1024,
             enable_lazy_loading=True,
-            memory_monitoring_interval=1.0
+            memory_monitoring_interval=1.0,
         )
         assert config.enable_pre_allocation is True
         assert config.pre_allocation_size_mb == 256

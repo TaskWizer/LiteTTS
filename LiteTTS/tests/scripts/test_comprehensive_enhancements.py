@@ -20,8 +20,9 @@ from LiteTTS.nlp.audio_quality_enhancer import audio_quality_enhancer
 from LiteTTS.nlp.unified_pronunciation_fix import unified_pronunciation_fix
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
+
 
 def test_pronunciation_fixes():
     """Test all pronunciation fixes"""
@@ -33,18 +34,15 @@ def test_pronunciation_fixes():
         "thinking, or not thinking",
         "walking, and running together",
         "hmm, let me think about this",
-
         # Diphthong pronunciation issues
         "joy to the world",
         "that boy is full of joy",
         "I enjoy reading books",
-
         # Contraction processing issues
         "I'm happy to see you",
         "you're absolutely right",
         "we'll be there soon",
         "I'd like to help",
-
         # Interjection handling issues
         "hmm, that's interesting",
         "uh, I don't know",
@@ -69,6 +67,7 @@ def test_pronunciation_fixes():
     print(f"\n📊 Pronunciation Fix Summary: {total_fixes} total fixes applied")
     return total_fixes > 0
 
+
 def test_audio_quality_enhancements():
     """Test audio quality enhancements"""
     print("\n🎵 Testing Audio Quality Enhancements")
@@ -80,18 +79,15 @@ def test_audio_quality_enhancements():
         "I'm really sorry to hear about your loss.",
         "That's absolutely fantastic news!",
         "I'm not sure if this is the right approach.",
-
         # Prosodic opportunities
         "However, we need to consider the consequences.",
         "The quick brown fox jumps over the lazy dog.",
         "Please, thank you, and excuse me are polite phrases.",
-
         # Context adaptations
         "Are you coming to the party tonight?",
         "What an incredible performance!",
         "The book (which I mentioned earlier) is excellent.",
         "She said, \"I'll be there at five o'clock.\"",
-
         # Complex sentences
         "Well, I think we should carefully consider all the options, but ultimately, the decision is yours to make.",
     ]
@@ -122,6 +118,7 @@ def test_audio_quality_enhancements():
     print(f"\n📊 Audio Quality Summary: {total_enhancements} texts enhanced")
     return total_enhancements > 0
 
+
 def test_api_performance():
     """Test API performance with enhancements"""
     print("\n🚀 Testing API Performance with Enhancements")
@@ -131,7 +128,10 @@ def test_api_performance():
     test_cases = [
         ("Simple", "Hello, world!"),
         ("Emotional", "I'm so excited about this amazing opportunity!"),
-        ("Complex", "Well, thinking, or perhaps I should say pondering, about this joyful occasion makes me feel quite happy, and I'm sure you're excited too!"),
+        (
+            "Complex",
+            "Well, thinking, or perhaps I should say pondering, about this joyful occasion makes me feel quite happy, and I'm sure you're excited too!",
+        ),
         ("Problematic", "hmm, thinking, or maybe I'm wrong about joy, but you're right"),
     ]
 
@@ -145,12 +145,16 @@ def test_api_performance():
 
         try:
             start_time = time.time()
-            response = requests.post(api_url, json={
-                'model': 'kokoro',
-                'input': test_text,
-                'voice': 'af_heart',
-                'response_format': 'mp3'
-            }, timeout=30)
+            response = requests.post(
+                api_url,
+                json={
+                    "model": "kokoro",
+                    "input": test_text,
+                    "voice": "af_heart",
+                    "response_format": "mp3",
+                },
+                timeout=30,
+            )
 
             if response.status_code == 200:
                 generation_time = time.time() - start_time
@@ -160,14 +164,13 @@ def test_api_performance():
                 estimated_duration = audio_length / 16000  # Rough estimate
                 rtf = generation_time / estimated_duration if estimated_duration > 0 else 0
 
-                print(f"   ✅ Success: RTF={rtf:.3f}, Time={generation_time:.3f}s, Size={audio_length}B")
+                print(
+                    f"   ✅ Success: RTF={rtf:.3f}, Time={generation_time:.3f}s, Size={audio_length}B"
+                )
 
-                performance_results.append({
-                    'test': test_name,
-                    'rtf': rtf,
-                    'time': generation_time,
-                    'size': audio_length
-                })
+                performance_results.append(
+                    {"test": test_name, "rtf": rtf, "time": generation_time, "size": audio_length}
+                )
             else:
                 print(f"   ❌ Error: {response.status_code} - {response.text[:100]}")
 
@@ -179,13 +182,14 @@ def test_api_performance():
 
     if performance_results:
         print("\n📊 Performance Summary:")
-        avg_rtf = sum(r['rtf'] for r in performance_results) / len(performance_results)
-        avg_time = sum(r['time'] for r in performance_results) / len(performance_results)
+        avg_rtf = sum(r["rtf"] for r in performance_results) / len(performance_results)
+        avg_time = sum(r["time"] for r in performance_results) / len(performance_results)
         print(f"   Average RTF: {avg_rtf:.3f}")
         print(f"   Average Time: {avg_time:.3f}s")
         print(f"   Target RTF: 0.6-0.7 {'✅ ACHIEVED' if avg_rtf <= 0.7 else '⚠️ ABOVE TARGET'}")
 
     return len(performance_results) > 0
+
 
 def test_end_to_end_processing():
     """Test complete end-to-end processing pipeline"""
@@ -206,8 +210,12 @@ def test_end_to_end_processing():
 
     # Step 2: Audio quality enhancements
     print("\n🎵 Step 2: Audio Quality Enhancements")
-    quality_analysis = audio_quality_enhancer.analyze_quality_potential(pronunciation_result.processed_text)
-    enhanced_text = audio_quality_enhancer.enhance_audio_quality(pronunciation_result.processed_text)
+    quality_analysis = audio_quality_enhancer.analyze_quality_potential(
+        pronunciation_result.processed_text
+    )
+    enhanced_text = audio_quality_enhancer.enhance_audio_quality(
+        pronunciation_result.processed_text
+    )
     print(f"   Result: '{enhanced_text}'")
     print(f"   Analysis: {quality_analysis['enhancement_potential']} potential")
 
@@ -215,12 +223,16 @@ def test_end_to_end_processing():
     print("\n🚀 Step 3: API Generation Test")
     try:
         start_time = time.time()
-        response = requests.post("http://localhost:8354/v1/audio/speech", json={
-            'model': 'kokoro',
-            'input': enhanced_text,
-            'voice': 'af_heart',
-            'response_format': 'mp3'
-        }, timeout=30)
+        response = requests.post(
+            "http://localhost:8354/v1/audio/speech",
+            json={
+                "model": "kokoro",
+                "input": enhanced_text,
+                "voice": "af_heart",
+                "response_format": "mp3",
+            },
+            timeout=30,
+        )
 
         if response.status_code == 200:
             generation_time = time.time() - start_time
@@ -233,7 +245,7 @@ def test_end_to_end_processing():
 
             # Save test audio
             output_path = project_root / "test_output_enhanced.mp3"
-            with open(output_path, 'wb') as f:
+            with open(output_path, "wb") as f:
                 f.write(response.content)
             print(f"   💾 Audio saved to: {output_path}")
 
@@ -246,24 +258,25 @@ def test_end_to_end_processing():
         print(f"   ❌ Test failed: {e}")
         return False
 
+
 def main():
     """Run comprehensive enhancement tests"""
     print("🎯 Kokoro TTS Comprehensive Enhancement Testing")
     print("=" * 60)
 
     test_results = {
-        'pronunciation_fixes': False,
-        'audio_quality': False,
-        'api_performance': False,
-        'end_to_end': False
+        "pronunciation_fixes": False,
+        "audio_quality": False,
+        "api_performance": False,
+        "end_to_end": False,
     }
 
     try:
         # Run all tests
-        test_results['pronunciation_fixes'] = test_pronunciation_fixes()
-        test_results['audio_quality'] = test_audio_quality_enhancements()
-        test_results['api_performance'] = test_api_performance()
-        test_results['end_to_end'] = test_end_to_end_processing()
+        test_results["pronunciation_fixes"] = test_pronunciation_fixes()
+        test_results["audio_quality"] = test_audio_quality_enhancements()
+        test_results["api_performance"] = test_api_performance()
+        test_results["end_to_end"] = test_end_to_end_processing()
 
         # Summary
         print("\n" + "=" * 60)
@@ -294,8 +307,10 @@ def main():
     except Exception as e:
         print(f"\n❌ Test suite failed with error: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
+
 
 if __name__ == "__main__":
     exit_code = main()

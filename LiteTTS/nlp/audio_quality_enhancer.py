@@ -11,8 +11,10 @@ from enum import Enum
 
 logger = logging.getLogger(__name__)
 
+
 class EmotionType(Enum):
     """Supported emotion types for speech synthesis"""
+
     NEUTRAL = "neutral"
     HAPPY = "happy"
     SAD = "sad"
@@ -24,37 +26,44 @@ class EmotionType(Enum):
     UNCERTAIN = "uncertain"
     EMPATHETIC = "empathetic"
 
+
 class ProsodyLevel(Enum):
     """Prosodic emphasis levels"""
+
     VERY_LOW = "very_low"
     LOW = "low"
     NORMAL = "normal"
     HIGH = "high"
     VERY_HIGH = "very_high"
 
+
 @dataclass
 class ProsodyMarker:
     """Prosodic marker for text segments"""
+
     start_pos: int
     end_pos: int
     emotion: EmotionType
     emphasis: ProsodyLevel
     pause_before: float = 0.0  # seconds
-    pause_after: float = 0.0   # seconds
-    pitch_shift: float = 0.0   # semitones
+    pause_after: float = 0.0  # seconds
+    pitch_shift: float = 0.0  # semitones
     speed_factor: float = 1.0  # relative speed
+
 
 @dataclass
 class AudioQualityProfile:
     """Audio quality enhancement profile"""
+
     enable_emotional_analysis: bool = True
     enable_prosodic_modeling: bool = True
     enable_natural_pauses: bool = False  # Disabled by default - Kokoro handles pauses naturally
     enable_context_adaptation: bool = True
     enable_dynamic_intonation: bool = True
     emotional_intensity: float = 0.7  # 0.0-1.0
-    prosodic_variation: float = 0.8   # 0.0-1.0
-    naturalness_level: float = 0.9    # 0.0-1.0
+    prosodic_variation: float = 0.8  # 0.0-1.0
+    naturalness_level: float = 0.9  # 0.0-1.0
+
 
 class AudioQualityEnhancer:
     """Advanced audio quality enhancement system"""
@@ -69,76 +78,83 @@ class AudioQualityEnhancer:
         """Load patterns for emotion detection"""
         return {
             # Positive emotions
-            r'\b(great|wonderful|amazing|fantastic|excellent|perfect|love|adore|excited|thrilled|delighted)\b': EmotionType.HAPPY,
-            r'\b(yay|hooray|awesome|brilliant|superb|marvelous|incredible)\b': EmotionType.EXCITED,
-            r'\b(calm|peaceful|serene|relaxed|tranquil|gentle|soothing)\b': EmotionType.CALM,
-            r'\b(confident|sure|certain|determined|strong|powerful)\b': EmotionType.CONFIDENT,
-
+            r"\b(great|wonderful|amazing|fantastic|excellent|perfect|love|adore|excited|thrilled|delighted)\b": EmotionType.HAPPY,
+            r"\b(yay|hooray|awesome|brilliant|superb|marvelous|incredible)\b": EmotionType.EXCITED,
+            r"\b(calm|peaceful|serene|relaxed|tranquil|gentle|soothing)\b": EmotionType.CALM,
+            r"\b(confident|sure|certain|determined|strong|powerful)\b": EmotionType.CONFIDENT,
             # Negative emotions
-            r'\b(sad|sorry|disappointed|upset|hurt|heartbroken|devastated)\b': EmotionType.SAD,
-            r'\b(angry|mad|furious|irritated|annoyed|frustrated|outraged)\b': EmotionType.ANGRY,
-            r'\b(surprised|shocked|amazed|astonished|stunned|bewildered)\b': EmotionType.SURPRISED,
-
+            r"\b(sad|sorry|disappointed|upset|hurt|heartbroken|devastated)\b": EmotionType.SAD,
+            r"\b(angry|mad|furious|irritated|annoyed|frustrated|outraged)\b": EmotionType.ANGRY,
+            r"\b(surprised|shocked|amazed|astonished|stunned|bewildered)\b": EmotionType.SURPRISED,
             # Uncertain emotions
-            r'\b(maybe|perhaps|possibly|might|could|uncertain|unsure|confused)\b': EmotionType.UNCERTAIN,
-            r'\b(hmm|uh|um|well|I think|I guess|I suppose)\b': EmotionType.UNCERTAIN,
-
+            r"\b(maybe|perhaps|possibly|might|could|uncertain|unsure|confused)\b": EmotionType.UNCERTAIN,
+            r"\b(hmm|uh|um|well|I think|I guess|I suppose)\b": EmotionType.UNCERTAIN,
             # Empathetic emotions
-            r'\b(understand|feel|empathize|sympathize|care|support|comfort)\b': EmotionType.EMPATHETIC,
-            r'\b(I\'m sorry|my condolences|I feel for you|that must be hard)\b': EmotionType.EMPATHETIC,
+            r"\b(understand|feel|empathize|sympathize|care|support|comfort)\b": EmotionType.EMPATHETIC,
+            r"\b(I\'m sorry|my condolences|I feel for you|that must be hard)\b": EmotionType.EMPATHETIC,
         }
 
     def _load_prosody_rules(self) -> list[tuple[str, ProsodyLevel, float, float]]:
         """Load prosodic emphasis rules"""
         return [
             # Pattern, Emphasis Level, Pause Before, Pause After
-            (r'[.!?]\s+', ProsodyLevel.NORMAL, 0.0, 0.5),  # Sentence endings
-            (r'[,;]\s+', ProsodyLevel.LOW, 0.0, 0.2),      # Clause boundaries
-            (r':\s+', ProsodyLevel.NORMAL, 0.0, 0.3),      # Colons
-            (r'\b(however|therefore|moreover|furthermore|nevertheless|consequently)\b', ProsodyLevel.HIGH, 0.2, 0.2),
-            (r'\b(but|and|or|yet|so|for|nor)\b', ProsodyLevel.LOW, 0.1, 0.1),
-            (r'\b(very|extremely|incredibly|absolutely|completely|totally)\b', ProsodyLevel.HIGH, 0.0, 0.0),
-            (r'\b(please|thank you|excuse me|pardon me|sorry)\b', ProsodyLevel.NORMAL, 0.1, 0.1),
-            (r'[A-Z]{2,}', ProsodyLevel.HIGH, 0.0, 0.0),   # Acronyms
-            (r'\b[A-Z][a-z]*\b', ProsodyLevel.NORMAL, 0.0, 0.0),  # Proper nouns
+            (r"[.!?]\s+", ProsodyLevel.NORMAL, 0.0, 0.5),  # Sentence endings
+            (r"[,;]\s+", ProsodyLevel.LOW, 0.0, 0.2),  # Clause boundaries
+            (r":\s+", ProsodyLevel.NORMAL, 0.0, 0.3),  # Colons
+            (
+                r"\b(however|therefore|moreover|furthermore|nevertheless|consequently)\b",
+                ProsodyLevel.HIGH,
+                0.2,
+                0.2,
+            ),
+            (r"\b(but|and|or|yet|so|for|nor)\b", ProsodyLevel.LOW, 0.1, 0.1),
+            (
+                r"\b(very|extremely|incredibly|absolutely|completely|totally)\b",
+                ProsodyLevel.HIGH,
+                0.0,
+                0.0,
+            ),
+            (r"\b(please|thank you|excuse me|pardon me|sorry)\b", ProsodyLevel.NORMAL, 0.1, 0.1),
+            (r"[A-Z]{2,}", ProsodyLevel.HIGH, 0.0, 0.0),  # Acronyms
+            (r"\b[A-Z][a-z]*\b", ProsodyLevel.NORMAL, 0.0, 0.0),  # Proper nouns
         ]
 
     def _load_context_patterns(self) -> dict[str, dict[str, float]]:
         """Load context-aware adaptation patterns"""
         return {
-            'question': {
-                'pattern': r'\?',
-                'pitch_shift': 2.0,  # Higher pitch for questions
-                'speed_factor': 0.95,  # Slightly slower
-                'pause_after': 0.3
+            "question": {
+                "pattern": r"\?",
+                "pitch_shift": 2.0,  # Higher pitch for questions
+                "speed_factor": 0.95,  # Slightly slower
+                "pause_after": 0.3,
             },
-            'exclamation': {
-                'pattern': r'!',
-                'pitch_shift': 1.5,  # Elevated pitch
-                'speed_factor': 1.1,  # Slightly faster
-                'pause_after': 0.4
+            "exclamation": {
+                "pattern": r"!",
+                "pitch_shift": 1.5,  # Elevated pitch
+                "speed_factor": 1.1,  # Slightly faster
+                "pause_after": 0.4,
             },
-            'parenthetical': {
-                'pattern': r'\([^)]+\)',
-                'pitch_shift': -1.0,  # Lower pitch
-                'speed_factor': 0.9,  # Slower
-                'pause_before': 0.1,
-                'pause_after': 0.1
+            "parenthetical": {
+                "pattern": r"\([^)]+\)",
+                "pitch_shift": -1.0,  # Lower pitch
+                "speed_factor": 0.9,  # Slower
+                "pause_before": 0.1,
+                "pause_after": 0.1,
             },
-            'quotation': {
-                'pattern': r'"[^"]*"',
-                'pitch_shift': 0.5,  # Slight pitch change
-                'speed_factor': 0.95,  # Slightly slower
-                'pause_before': 0.1,
-                'pause_after': 0.1
+            "quotation": {
+                "pattern": r'"[^"]*"',
+                "pitch_shift": 0.5,  # Slight pitch change
+                "speed_factor": 0.95,  # Slightly slower
+                "pause_before": 0.1,
+                "pause_after": 0.1,
             },
-            'emphasis': {
-                'pattern': r'\*[^*]+\*|_[^_]+_',
-                'pitch_shift': 1.0,  # Emphasized pitch
-                'speed_factor': 0.9,  # Slower for emphasis
-                'pause_before': 0.05,
-                'pause_after': 0.05
-            }
+            "emphasis": {
+                "pattern": r"\*[^*]+\*|_[^_]+_",
+                "pitch_shift": 1.0,  # Emphasized pitch
+                "speed_factor": 0.9,  # Slower for emphasis
+                "pause_before": 0.05,
+                "pause_after": 0.05,
+            },
         }
 
     def enhance_audio_quality(self, text: str) -> str:
@@ -182,12 +198,23 @@ class AudioQualityEnhancer:
         # Define emotion keywords and their emphasis levels
         emotion_markers = {
             # Strong positive emotions - use strong emphasis
-            'happy': ['love', 'adore', 'excited', 'thrilled', 'delighted', 'amazing', 'fantastic', 'wonderful', 'great', 'perfect'],
-            'excited': ['yay', 'hooray', 'awesome', 'brilliant'],
-            'sad': ['sad', 'sorry', 'disappointed', 'upset', 'hurt', 'heartbroken', 'devastated'],
-            'angry': ['angry', 'mad', 'furious', 'irritated', 'frustrated', 'outraged'],
-            'surprised': ['surprised', 'shocked', 'amazed', 'astonished', 'stunned'],
-            'uncertain': ['maybe', 'perhaps', 'possibly', 'might', 'could', 'uncertain', 'unsure'],
+            "happy": [
+                "love",
+                "adore",
+                "excited",
+                "thrilled",
+                "delighted",
+                "amazing",
+                "fantastic",
+                "wonderful",
+                "great",
+                "perfect",
+            ],
+            "excited": ["yay", "hooray", "awesome", "brilliant"],
+            "sad": ["sad", "sorry", "disappointed", "upset", "hurt", "heartbroken", "devastated"],
+            "angry": ["angry", "mad", "furious", "irritated", "frustrated", "outraged"],
+            "surprised": ["surprised", "shocked", "amazed", "astonished", "stunned"],
+            "uncertain": ["maybe", "perhaps", "possibly", "might", "could", "uncertain", "unsure"],
         }
 
         # Only apply if emotional analysis is enabled
@@ -200,7 +227,7 @@ class AudioQualityEnhancer:
         for emotion, keywords in emotion_markers.items():
             for keyword in keywords:
                 # Use word boundaries to match whole words only
-                pattern = r'\b' + re.escape(keyword) + r'\b'
+                pattern = r"\b" + re.escape(keyword) + r"\b"
                 for match in re.finditer(pattern, text, re.IGNORECASE):
                     start, end = match.span()
                     # Skip if this position was already marked
@@ -208,7 +235,7 @@ class AudioQualityEnhancer:
                         continue
                     matched_text = match.group()
                     # Apply emphasis tag - use moderate level for naturalness
-                    emphasis_level = 'moderate' if emotion in ['uncertain'] else 'strong'
+                    emphasis_level = "moderate" if emotion in ["uncertain"] else "strong"
                     marked_text = f'<emphasis level="{emphasis_level}">{matched_text}</emphasis>'
                     text = text[:start] + marked_text + text[end:]
                     marked_positions.add((start, start + len(marked_text)))
@@ -231,10 +258,10 @@ class AudioQualityEnhancer:
 
         # Apply to sentence-ending punctuation for natural emphasis
         # Exclamation points - increase rate slightly
-        for match in reversed(list(re.finditer(r'([.!?])\s+', text))):
+        for match in reversed(list(re.finditer(r"([.!?])\s+", text))):
             # Don't mark if already inside another tag (simple heuristic: check for <)
             pos = match.start()
-            if pos > 0 and '<' not in text[max(0, pos-20):pos]:
+            if pos > 0 and "<" not in text[max(0, pos - 20) : pos]:
                 marked_count += 1
 
         if marked_count > 0:
@@ -251,11 +278,18 @@ class AudioQualityEnhancer:
 
         # Add pauses after conjunctions in longer sentences
         if len(text.split()) > 10:
-            text = re.sub(r'\b(and|but|or|so|yet|for|nor)\b', r'<break time="0.1s"/>\1<break time="0.1s"/>', text)
+            text = re.sub(
+                r"\b(and|but|or|so|yet|for|nor)\b",
+                r'<break time="0.1s"/>\1<break time="0.1s"/>',
+                text,
+            )
 
         # Add pauses before important transitions
-        text = re.sub(r'\b(however|therefore|moreover|furthermore|nevertheless|consequently)\b',
-                     r'<break time="0.2s"/>\1<break time="0.2s"/>', text)
+        text = re.sub(
+            r"\b(however|therefore|moreover|furthermore|nevertheless|consequently)\b",
+            r'<break time="0.2s"/>\1<break time="0.2s"/>',
+            text,
+        )
 
         # Add breathing pauses in very long sentences
         if len(text) > 100:
@@ -263,15 +297,15 @@ class AudioQualityEnhancer:
             words = text.split()
             if len(words) > 15:
                 for i in range(15, len(words), 20):
-                    words[i] = f'<break time="{0.1*naturalness:.1f}s"/>{words[i]}'
-                text = ' '.join(words)
+                    words[i] = f'<break time="{0.1 * naturalness:.1f}s"/>{words[i]}'
+                text = " ".join(words)
 
         return text
 
     def _apply_context_adaptation(self, text: str) -> str:
         """Apply context-aware speech adaptations"""
         for context_type, context_config in self.context_patterns.items():
-            pattern = context_config['pattern']
+            pattern = context_config["pattern"]
             matches = list(re.finditer(pattern, text))
 
             for match in reversed(matches):
@@ -281,27 +315,35 @@ class AudioQualityEnhancer:
                 # Build enhanced text with context adaptations
                 enhanced_text = matched_text
 
-                if 'pitch_shift' in context_config:
-                    pitch = context_config['pitch_shift']
+                if "pitch_shift" in context_config:
+                    pitch = context_config["pitch_shift"]
                     if pitch > 0:
                         enhanced_text = f'<prosody pitch="+{pitch:.1f}st">{enhanced_text}</prosody>'
                     elif pitch < 0:
                         enhanced_text = f'<prosody pitch="{pitch:.1f}st">{enhanced_text}</prosody>'
 
-                if 'speed_factor' in context_config:
-                    speed = context_config['speed_factor']
+                if "speed_factor" in context_config:
+                    speed = context_config["speed_factor"]
                     if speed != 1.0:
                         rate_change = (speed - 1.0) * 100
                         if rate_change > 0:
-                            enhanced_text = f'<prosody rate="+{rate_change:.0f}%">{enhanced_text}</prosody>'
+                            enhanced_text = (
+                                f'<prosody rate="+{rate_change:.0f}%">{enhanced_text}</prosody>'
+                            )
                         else:
-                            enhanced_text = f'<prosody rate="{rate_change:.0f}%">{enhanced_text}</prosody>'
+                            enhanced_text = (
+                                f'<prosody rate="{rate_change:.0f}%">{enhanced_text}</prosody>'
+                            )
 
-                if 'pause_before' in context_config and context_config['pause_before'] > 0:
-                    enhanced_text = f'<break time="{context_config["pause_before"]:.1f}s"/>{enhanced_text}'
+                if "pause_before" in context_config and context_config["pause_before"] > 0:
+                    enhanced_text = (
+                        f'<break time="{context_config["pause_before"]:.1f}s"/>{enhanced_text}'
+                    )
 
-                if 'pause_after' in context_config and context_config['pause_after'] > 0:
-                    enhanced_text = f'{enhanced_text}<break time="{context_config["pause_after"]:.1f}s"/>'
+                if "pause_after" in context_config and context_config["pause_after"] > 0:
+                    enhanced_text = (
+                        f'{enhanced_text}<break time="{context_config["pause_after"]:.1f}s"/>'
+                    )
 
                 text = text[:start] + enhanced_text + text[end:]
 
@@ -310,13 +352,14 @@ class AudioQualityEnhancer:
     def _apply_dynamic_intonation(self, text: str) -> str:
         """Apply dynamic intonation patterns"""
         # Enhanced question intonation
-        text = re.sub(r'(\w+)\?', r'<prosody pitch="+15%">\1</prosody>?', text)
+        text = re.sub(r"(\w+)\?", r'<prosody pitch="+15%">\1</prosody>?', text)
 
         # Enhanced exclamation intonation
-        text = re.sub(r'(\w+)!', r'<prosody pitch="+10%" volume="+10%">\1</prosody>!', text)
+        text = re.sub(r"(\w+)!", r'<prosody pitch="+10%" volume="+10%">\1</prosody>!', text)
 
         # List intonation (rising pitch for items except the last)
-        list_pattern = r'(\w+),\s*(\w+),\s*and\s+(\w+)'
+        list_pattern = r"(\w+),\s*(\w+),\s*and\s+(\w+)"
+
         def list_replacer(match):
             item1, item2, item3 = match.groups()
             return f'<prosody pitch="+5%">{item1}</prosody>, <prosody pitch="+3%">{item2}</prosody>, and <prosody pitch="-2%">{item3}</prosody>'
@@ -328,32 +371,32 @@ class AudioQualityEnhancer:
     def analyze_quality_potential(self, text: str) -> dict[str, any]:
         """Analyze text for quality enhancement potential"""
         analysis = {
-            'emotional_content': [],
-            'prosodic_opportunities': [],
-            'context_adaptations': [],
-            'naturalness_score': 0.0,
-            'enhancement_potential': 'low'
+            "emotional_content": [],
+            "prosodic_opportunities": [],
+            "context_adaptations": [],
+            "naturalness_score": 0.0,
+            "enhancement_potential": "low",
         }
 
         # Analyze emotional content
         for pattern, emotion in self.emotion_patterns.items():
             if re.search(pattern, text, re.IGNORECASE):
-                analysis['emotional_content'].append(emotion.value)
+                analysis["emotional_content"].append(emotion.value)
 
         # Analyze prosodic opportunities
         for pattern, emphasis, _, _ in self.prosody_rules:
             matches = re.findall(pattern, text, re.IGNORECASE)
             if matches:
-                analysis['prosodic_opportunities'].extend(matches)
+                analysis["prosodic_opportunities"].extend(matches)
 
         # Analyze context adaptations
         for context_type, context_config in self.context_patterns.items():
-            if re.search(context_config['pattern'], text):
-                analysis['context_adaptations'].append(context_type)
+            if re.search(context_config["pattern"], text):
+                analysis["context_adaptations"].append(context_type)
 
         # Calculate naturalness score
         word_count = len(text.split())
-        sentence_count = len(re.findall(r'[.!?]+', text))
+        sentence_count = len(re.findall(r"[.!?]+", text))
         avg_sentence_length = word_count / max(sentence_count, 1)
 
         # Score based on various factors
@@ -361,28 +404,31 @@ class AudioQualityEnhancer:
 
         if avg_sentence_length < 20:  # Good sentence length
             naturalness_score += 0.2
-        if len(analysis['emotional_content']) > 0:  # Has emotional content
+        if len(analysis["emotional_content"]) > 0:  # Has emotional content
             naturalness_score += 0.1
-        if len(analysis['prosodic_opportunities']) > 0:  # Has prosodic markers
+        if len(analysis["prosodic_opportunities"]) > 0:  # Has prosodic markers
             naturalness_score += 0.1
-        if len(analysis['context_adaptations']) > 0:  # Has context markers
+        if len(analysis["context_adaptations"]) > 0:  # Has context markers
             naturalness_score += 0.1
 
-        analysis['naturalness_score'] = min(naturalness_score, 1.0)
+        analysis["naturalness_score"] = min(naturalness_score, 1.0)
 
         # Determine enhancement potential
-        total_opportunities = (len(analysis['emotional_content']) +
-                             len(analysis['prosodic_opportunities']) +
-                             len(analysis['context_adaptations']))
+        total_opportunities = (
+            len(analysis["emotional_content"])
+            + len(analysis["prosodic_opportunities"])
+            + len(analysis["context_adaptations"])
+        )
 
         if total_opportunities >= 5:
-            analysis['enhancement_potential'] = 'high'
+            analysis["enhancement_potential"] = "high"
         elif total_opportunities >= 2:
-            analysis['enhancement_potential'] = 'medium'
+            analysis["enhancement_potential"] = "medium"
         else:
-            analysis['enhancement_potential'] = 'low'
+            analysis["enhancement_potential"] = "low"
 
         return analysis
+
 
 # Global instance for easy access
 audio_quality_enhancer = AudioQualityEnhancer()

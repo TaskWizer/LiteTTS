@@ -24,6 +24,7 @@ def get_performance_metrics(base_url: str = "http://localhost:8354") -> dict[str
         print(f"❌ Error getting performance metrics: {e}")
         return {}
 
+
 def analyze_rtf_performance(base_url: str = "http://localhost:8354") -> list[float]:
     """Analyze RTF performance with accurate measurements"""
 
@@ -46,7 +47,7 @@ def analyze_rtf_performance(base_url: str = "http://localhost:8354") -> list[flo
         "Great job everyone",
         "Excellent performance today",
         "The system is running well",
-        "Everything looks good"
+        "Everything looks good",
     ]
 
     rtf_values = []
@@ -55,19 +56,11 @@ def analyze_rtf_performance(base_url: str = "http://localhost:8354") -> list[flo
     for i, text in enumerate(test_cases, 1):
         print(f"\nTest {i}: '{text}'")
 
-        payload = {
-            "input": text,
-            "voice": "af_heart",
-            "response_format": "mp3"
-        }
+        payload = {"input": text, "voice": "af_heart", "response_format": "mp3"}
 
         try:
             start_time = time.time()
-            response = requests.post(
-                f"{base_url}/v1/audio/speech",
-                json=payload,
-                timeout=15
-            )
+            response = requests.post(f"{base_url}/v1/audio/speech", json=payload, timeout=15)
             end_time = time.time()
 
             if response.status_code == 200:
@@ -89,6 +82,7 @@ def analyze_rtf_performance(base_url: str = "http://localhost:8354") -> list[flo
 
     return response_times
 
+
 def analyze_server_metrics(base_url: str = "http://localhost:8354"):
     """Analyze server-side performance metrics"""
 
@@ -102,7 +96,7 @@ def analyze_server_metrics(base_url: str = "http://localhost:8354"):
         return
 
     # Extract summary data
-    summary = metrics.get('summary', {})
+    summary = metrics.get("summary", {})
 
     print(f"📈 Total Requests: {summary.get('total_requests', 0)}")
     print(f"🎯 Cache Hit Rate: {summary.get('cache_hit_rate_percent', 0):.1f}%")
@@ -115,7 +109,7 @@ def analyze_server_metrics(base_url: str = "http://localhost:8354"):
     print(f"🔧 Efficiency Ratio: {summary.get('efficiency_ratio', 0):.2f}")
 
     # Performance assessment based on server RTF
-    avg_rtf = summary.get('avg_rtf', 0)
+    avg_rtf = summary.get("avg_rtf", 0)
     if avg_rtf <= 0.30:
         print(f"\n🎉 EXCELLENT: Server RTF {avg_rtf:.3f} is in target range (≤0.30)")
     elif avg_rtf <= 0.50:
@@ -124,6 +118,7 @@ def analyze_server_metrics(base_url: str = "http://localhost:8354"):
         print(f"\n⚠️ NEEDS IMPROVEMENT: Server RTF {avg_rtf:.3f} is above target")
 
     return metrics
+
 
 def test_problematic_inputs(base_url: str = "http://localhost:8354"):
     """Test inputs that are known to cause issues"""
@@ -136,25 +131,17 @@ def test_problematic_inputs(base_url: str = "http://localhost:8354"):
         "This is a much longer sentence that contains more words and should take longer to process but we want to see how the RTF scales with length",  # Known to cause empty audio
         "Testing edge cases",
         "Performance optimization",
-        "Real-time factor analysis"
+        "Real-time factor analysis",
     ]
 
     for i, text in enumerate(problematic_cases, 1):
         print(f"\nProblematic Test {i}: '{text[:50]}{'...' if len(text) > 50 else ''}'")
 
-        payload = {
-            "input": text,
-            "voice": "af_heart",
-            "response_format": "mp3"
-        }
+        payload = {"input": text, "voice": "af_heart", "response_format": "mp3"}
 
         try:
             start_time = time.time()
-            response = requests.post(
-                f"{base_url}/v1/audio/speech",
-                json=payload,
-                timeout=15
-            )
+            response = requests.post(f"{base_url}/v1/audio/speech", json=payload, timeout=15)
             end_time = time.time()
 
             response_time = end_time - start_time
@@ -166,6 +153,7 @@ def test_problematic_inputs(base_url: str = "http://localhost:8354"):
 
         except Exception as e:
             print(f"   ❌ Error: {e}")
+
 
 def main():
     """Main analysis function"""
@@ -189,14 +177,18 @@ def main():
     print("🎯 ANALYSIS COMPLETE")
 
     if metrics:
-        summary = metrics.get('summary', {})
-        avg_rtf = summary.get('avg_rtf', 0)
-        cache_hit_rate = summary.get('cache_hit_rate_percent', 0)
+        summary = metrics.get("summary", {})
+        avg_rtf = summary.get("avg_rtf", 0)
+        cache_hit_rate = summary.get("cache_hit_rate_percent", 0)
 
         print("\n📊 Key Findings:")
         print(f"   • Server RTF: {avg_rtf:.3f}")
         print(f"   • Cache Hit Rate: {cache_hit_rate:.1f}%")
-        print(f"   • Average Response Time: {statistics.mean(response_times):.3f}s" if response_times else "   • No response time data")
+        print(
+            f"   • Average Response Time: {statistics.mean(response_times):.3f}s"
+            if response_times
+            else "   • No response time data"
+        )
 
         if avg_rtf <= 0.30:
             print("\n✅ Performance is EXCELLENT")
@@ -213,6 +205,7 @@ def main():
     else:
         print("\n❌ Could not analyze performance - server metrics unavailable")
         return 1
+
 
 if __name__ == "__main__":
     exit(main())

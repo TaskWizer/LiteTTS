@@ -11,14 +11,17 @@ from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class NormalizationResult:
     """Result of text normalization"""
+
     processed_text: str
     original_text: str
     changes_made: list[str]
     issues_found: list[str]
     processing_time: float
+
 
 class CleanTextNormalizer:
     """Clean, systematic text normalizer for TTS pronunciation fixes"""
@@ -45,7 +48,9 @@ class CleanTextNormalizer:
     def _should_expand_contractions(self) -> bool:
         """Check if contractions should be expanded based on config"""
         # Check the main expand_contractions setting
-        expand_contractions = self.config.get('text_processing', {}).get('expand_contractions', False)
+        expand_contractions = self.config.get("text_processing", {}).get(
+            "expand_contractions", False
+        )
 
         # If expand_contractions is explicitly False, don't expand
         if expand_contractions is False:
@@ -62,17 +67,17 @@ class CleanTextNormalizer:
             # Only include contractions that cause actual TTS pronunciation issues
             # Most W/I contractions are now preserved for natural speech
             "that'll": "that will",  # Can be problematic
-            "who'll": "who will",    # Can be problematic
+            "who'll": "who will",  # Can be problematic
             "what'll": "what will",  # Can be problematic
-            "where'll": "where will", # Can be problematic
+            "where'll": "where will",  # Can be problematic
             "when'll": "when will",  # Can be problematic
-            "how'll": "how will",    # Can be problematic
+            "how'll": "how will",  # Can be problematic
             "that'd": "that would",  # Can be problematic
-            "who'd": "who would",    # Can be problematic
+            "who'd": "who would",  # Can be problematic
             "what'd": "what would",  # Can be problematic
-            "where'd": "where would", # Can be problematic
+            "where'd": "where would",  # Can be problematic
             "when'd": "when would",  # Can be problematic
-            "how'd": "how would",    # Can be problematic
+            "how'd": "how would",  # Can be problematic
             "wouldn't": "would not",
             "mustn't": "must not",
             "needn't": "need not",
@@ -84,21 +89,20 @@ class CleanTextNormalizer:
         """Load symbol-to-word mappings"""
         return {
             # Critical fixes from conversation history
-            '*': ' asterisk ',  # Not "astrisk" - but this conflicts with pronunciation dict
-            '&': ' and ',       # Not "ampersand"
-            '%': ' percent ',
-            '@': ' at ',
-            '#': ' hash ',
-            '+': ' plus ',
-            '=': ' equals ',
-            '~': ' approximately ',
-            '^': ' caret ',
-            '|': ' pipe ',
-            '\\': ' backslash ',
+            "*": " asterisk ",  # Not "astrisk" - but this conflicts with pronunciation dict
+            "&": " and ",  # Not "ampersand"
+            "%": " percent ",
+            "@": " at ",
+            "#": " hash ",
+            "+": " plus ",
+            "=": " equals ",
+            "~": " approximately ",
+            "^": " caret ",
+            "|": " pipe ",
+            "\\": " backslash ",
             # REMOVED: '/' -> ' slash ' (slashes should be silent per user request)
-            '<': ' less than ',
-            '>': ' greater than ',
-
+            "<": " less than ",
+            ">": " greater than ",
             # Currency symbols are handled separately in currency processing
             # '$': ' dollars ',  # Handled in currency processing
             # '€': ' euros ',    # Handled in currency processing
@@ -110,69 +114,69 @@ class CleanTextNormalizer:
         """Load currency processing patterns"""
         return [
             # Dollar amounts with cents
-            (r'\$(\d{1,3}(?:,\d{3})*\.\d{2})', self._format_dollar_amount),
+            (r"\$(\d{1,3}(?:,\d{3})*\.\d{2})", self._format_dollar_amount),
             # Dollar amounts without cents
-            (r'\$(\d{1,3}(?:,\d{3})*)', self._format_dollar_amount_no_cents),
+            (r"\$(\d{1,3}(?:,\d{3})*)", self._format_dollar_amount_no_cents),
             # Approximate amounts
-            (r'~\$(\d+(?:\.\d{2})?)', self._format_approximate_amount),
+            (r"~\$(\d+(?:\.\d{2})?)", self._format_approximate_amount),
             # Euro amounts
-            (r'€(\d+(?:\.\d{2})?)', self._format_euro_amount),
+            (r"€(\d+(?:\.\d{2})?)", self._format_euro_amount),
         ]
 
     def _load_date_patterns(self) -> list[tuple[str, callable]]:
         """Load date processing patterns"""
         return [
             # ISO format (the problematic one)
-            (r'\b(\d{4})-(\d{1,2})-(\d{1,2})\b', self._format_iso_date),
+            (r"\b(\d{4})-(\d{1,2})-(\d{1,2})\b", self._format_iso_date),
             # US format MM/DD/YYYY
-            (r'\b(\d{1,2})/(\d{1,2})/(\d{4})\b', self._format_us_date),
+            (r"\b(\d{1,2})/(\d{1,2})/(\d{4})\b", self._format_us_date),
             # Short year format MM/DD/YY
-            (r'\b(\d{1,2})/(\d{1,2})/(\d{2})\b', self._format_short_year_date),
+            (r"\b(\d{1,2})/(\d{1,2})/(\d{2})\b", self._format_short_year_date),
         ]
 
     def _load_abbreviation_mappings(self) -> dict[str, str]:
         """Load abbreviation mappings"""
         return {
             # Critical fixes from conversation history
-            'FAQ': 'F-A-Q',
-            'ASAP': 'A-S-A-P',  # Not "a sap"
-            'Dr.': 'Doctor',
-            'Mr.': 'Mister',
-            'Mrs.': 'Missus',
-            'Ms.': 'Miss',
-            'Prof.': 'Professor',
-            'e.g.': 'for example',  # Not "e g"
-            'E.g.': 'For example',  # Capitalized version
-            'i.e.': 'that is',
-            'etc.': 'etcetera',
-            'vs.': 'versus',
-            'Inc.': 'Incorporated',
-            'Corp.': 'Corporation',
-            'Ltd.': 'Limited',
-            'LLC': 'L-L-C',
+            "FAQ": "F-A-Q",
+            "ASAP": "A-S-A-P",  # Not "a sap"
+            "Dr.": "Doctor",
+            "Mr.": "Mister",
+            "Mrs.": "Missus",
+            "Ms.": "Miss",
+            "Prof.": "Professor",
+            "e.g.": "for example",  # Not "e g"
+            "E.g.": "For example",  # Capitalized version
+            "i.e.": "that is",
+            "etc.": "etcetera",
+            "vs.": "versus",
+            "Inc.": "Incorporated",
+            "Corp.": "Corporation",
+            "Ltd.": "Limited",
+            "LLC": "L-L-C",
             # Executive titles - keep as natural words, not spelled out
             # 'CEO': 'C-E-O',  # Keep as "CEO"
             # 'CFO': 'C-F-O',  # Keep as "CFO"
             # 'CTO': 'C-T-O',  # Keep as "CTO"
-            'HR': 'H-R',
+            "HR": "H-R",
             # 'IT': 'I-T',  # DISABLED: Causes "it" → "I-T" conversion bug
-            'AI': 'A-I',
-            'API': 'A-P-I',
-            'URL': 'U-R-L',
-            'HTML': 'H-T-M-L',
-            'CSS': 'C-S-S',
-            'SQL': 'S-Q-L',
-            'PDF': 'P-D-F',
-            'GPS': 'G-P-S',
-            'USB': 'U-S-B',
-            'WiFi': 'Wi-Fi',
-            'DVD': 'D-V-D',
-            'CD': 'C-D',
-            'TV': 'T-V',
-            'PC': 'P-C',
-            'Mac': 'Mac',
-            'iOS': 'i-O-S',
-            'Android': 'Android',
+            "AI": "A-I",
+            "API": "A-P-I",
+            "URL": "U-R-L",
+            "HTML": "H-T-M-L",
+            "CSS": "C-S-S",
+            "SQL": "S-Q-L",
+            "PDF": "P-D-F",
+            "GPS": "G-P-S",
+            "USB": "U-S-B",
+            "WiFi": "Wi-Fi",
+            "DVD": "D-V-D",
+            "CD": "C-D",
+            "TV": "T-V",
+            "PC": "P-C",
+            "Mac": "Mac",
+            "iOS": "i-O-S",
+            "Android": "Android",
         }
 
     def _load_pronunciation_fixes(self) -> dict[str, str]:
@@ -186,23 +190,24 @@ class CleanTextNormalizer:
             # Stock symbols - spell out letter-by-letter for universal compatibility
             # Only include major, commonly referenced ticker symbols to avoid over-processing
             # These are ALL CAPS so they're clearly ticker symbols, not regular words
-            'TSLA': 'T S L A',
-            'AAPL': 'A A P L',
-            'MSFT': 'M S F T',
-            'GOOGL': 'G O O G L',
-            'AMZN': 'A M Z N',
-            'NVDA': 'N V D A',
-            'META': 'M E T A',
-            'NFLX': 'N F L X',
-            'GOOG': 'G O O G',
-            'COIN': 'C O I N',
-            'VTI': 'V T I',
+            "TSLA": "T S L A",
+            "AAPL": "A A P L",
+            "MSFT": "M S F T",
+            "GOOGL": "G O O G L",
+            "AMZN": "A M Z N",
+            "NVDA": "N V D A",
+            "META": "M E T A",
+            "NFLX": "N F L X",
+            "GOOG": "G O O G",
+            "COIN": "C O I N",
+            "VTI": "V T I",
             # Note: Removed less common tickers to avoid conflicts with common words
         }
 
     def normalize_text(self, text: str) -> NormalizationResult:
         """Main normalization function"""
         import time
+
         start_time = time.perf_counter()
 
         original_text = text
@@ -213,7 +218,7 @@ class CleanTextNormalizer:
 
         try:
             # Step 1: Fix HTML entities and encoding issues
-            if '&#x27;' in text or '&quot;' in text:
+            if "&#x27;" in text or "&quot;" in text:
                 text = self._fix_html_entities(text)
                 changes_made.append("Fixed HTML entities")
 
@@ -277,7 +282,7 @@ class CleanTextNormalizer:
                 original_text=original_text,
                 changes_made=changes_made,
                 issues_found=issues_found,
-                processing_time=processing_time
+                processing_time=processing_time,
             )
 
         except Exception as e:
@@ -290,23 +295,23 @@ class CleanTextNormalizer:
                 original_text=original_text,
                 changes_made=changes_made,
                 issues_found=issues_found,
-                processing_time=processing_time
+                processing_time=processing_time,
             )
 
     def _fix_html_entities(self, text: str) -> str:
         """Fix HTML entities that cause pronunciation issues"""
         # Critical fixes from conversation history
         html_fixes = {
-            '&#x27;': "'",  # Apostrophe that causes "x 27" pronunciation
-            '&#39;': "'",   # Apostrophe
-            '&apos;': "'",  # Apostrophe
-            '&quot;': '',   # Quote - remove to prevent "in quat"
-            '&#34;': '',    # Quote - remove to prevent "in quat"
-            '&#x22;': '',   # Quote - remove to prevent "in quat"
-            '&amp;': ' and ',  # Ampersand
-            '&lt;': ' less than ',
-            '&gt;': ' greater than ',
-            '&nbsp;': ' ',  # Non-breaking space
+            "&#x27;": "'",  # Apostrophe that causes "x 27" pronunciation
+            "&#39;": "'",  # Apostrophe
+            "&apos;": "'",  # Apostrophe
+            "&quot;": "",  # Quote - remove to prevent "in quat"
+            "&#34;": "",  # Quote - remove to prevent "in quat"
+            "&#x22;": "",  # Quote - remove to prevent "in quat"
+            "&amp;": " and ",  # Ampersand
+            "&lt;": " less than ",
+            "&gt;": " greater than ",
+            "&nbsp;": " ",  # Non-breaking space
         }
 
         for entity, replacement in html_fixes.items():
@@ -323,7 +328,7 @@ class CleanTextNormalizer:
 
         for contraction, expansion in self.contraction_fixes.items():
             # Use word boundaries to avoid partial matches
-            pattern = r'\b' + re.escape(contraction) + r'\b'
+            pattern = r"\b" + re.escape(contraction) + r"\b"
             text = re.sub(pattern, expansion, text, flags=re.IGNORECASE)
 
         return text
@@ -331,9 +336,9 @@ class CleanTextNormalizer:
     def _fix_symbols(self, text: str) -> str:
         """Fix symbol pronunciations"""
         for symbol, replacement in self.symbol_mappings.items():
-            if symbol == '*':
+            if symbol == "*":
                 # Special handling for asterisk - only standalone ones
-                text = re.sub(r'(?<!\*)\*(?!\*)', replacement, text)
+                text = re.sub(r"(?<!\*)\*(?!\*)", replacement, text)
             else:
                 text = text.replace(symbol, replacement)
 
@@ -354,10 +359,10 @@ class CleanTextNormalizer:
         """Format dollar amounts with cents"""
         amount_str = match.group(1)
         # Remove commas for processing
-        amount_str = amount_str.replace(',', '')
+        amount_str = amount_str.replace(",", "")
 
-        if '.' in amount_str:
-            dollars, cents = amount_str.split('.')
+        if "." in amount_str:
+            dollars, cents = amount_str.split(".")
             dollars = int(dollars)
             cents = int(cents)
 
@@ -383,7 +388,7 @@ class CleanTextNormalizer:
 
     def _format_dollar_amount_no_cents(self, match) -> str:
         """Format dollar amounts without cents"""
-        amount_str = match.group(1).replace(',', '')
+        amount_str = match.group(1).replace(",", "")
         dollars = int(amount_str)
         dollar_text = self._number_to_words(dollars)
         dollar_word = "dollar" if dollars == 1 else "dollars"
@@ -392,14 +397,14 @@ class CleanTextNormalizer:
     def _format_approximate_amount(self, match) -> str:
         """Format approximate amounts"""
         amount_str = match.group(1)
-        formatted = self._format_dollar_amount(re.match(r'(\d+(?:\.\d{2})?)', amount_str))
+        formatted = self._format_dollar_amount(re.match(r"(\d+(?:\.\d{2})?)", amount_str))
         return f"approximately {formatted}"
 
     def _format_euro_amount(self, match) -> str:
         """Format euro amounts"""
         amount_str = match.group(1)
-        if '.' in amount_str:
-            euros, cents = amount_str.split('.')
+        if "." in amount_str:
+            euros, cents = amount_str.split(".")
             euros = int(euros)
             cents = int(cents)
 
@@ -434,8 +439,19 @@ class CleanTextNormalizer:
         day = int(day)
 
         month_names = [
-            '', 'January', 'February', 'March', 'April', 'May', 'June',
-            'July', 'August', 'September', 'October', 'November', 'December'
+            "",
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December",
         ]
 
         month_name = month_names[month] if 1 <= month <= 12 else str(month)
@@ -452,8 +468,19 @@ class CleanTextNormalizer:
         year = int(year)
 
         month_names = [
-            '', 'January', 'February', 'March', 'April', 'May', 'June',
-            'July', 'August', 'September', 'October', 'November', 'December'
+            "",
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December",
         ]
 
         month_name = month_names[month] if 1 <= month <= 12 else str(month)
@@ -476,8 +503,19 @@ class CleanTextNormalizer:
             full_year = 1900 + year
 
         month_names = [
-            '', 'January', 'February', 'March', 'April', 'May', 'June',
-            'July', 'August', 'September', 'October', 'November', 'December'
+            "",
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December",
         ]
 
         month_name = month_names[month] if 1 <= month <= 12 else str(month)
@@ -489,12 +527,12 @@ class CleanTextNormalizer:
     def _fix_abbreviations(self, text: str) -> str:
         """Fix abbreviation pronunciations"""
         for abbrev, replacement in self.abbreviation_mappings.items():
-            if abbrev.endswith('.'):
+            if abbrev.endswith("."):
                 # Handle abbreviations with periods more carefully
-                pattern = r'(?<!\w)' + re.escape(abbrev) + r'(?!\w)'
+                pattern = r"(?<!\w)" + re.escape(abbrev) + r"(?!\w)"
             else:
                 # Use word boundaries for regular abbreviations
-                pattern = r'\b' + re.escape(abbrev) + r'\b'
+                pattern = r"\b" + re.escape(abbrev) + r"\b"
             text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
 
         return text
@@ -507,7 +545,7 @@ class CleanTextNormalizer:
         # Then handle specific pronunciation fixes
         for word, pronunciation in self.pronunciation_fixes.items():
             # Use word boundaries to avoid partial matches
-            pattern = r'\b' + re.escape(word) + r'\b'
+            pattern = r"\b" + re.escape(word) + r"\b"
             text = re.sub(pattern, pronunciation, text, flags=re.IGNORECASE)
 
         return text
@@ -521,14 +559,14 @@ class CleanTextNormalizer:
     def _clean_whitespace(self, text: str) -> str:
         """Clean up whitespace"""
         # Remove multiple spaces
-        text = re.sub(r'\s+', ' ', text)
+        text = re.sub(r"\s+", " ", text)
 
         # Remove leading/trailing whitespace
         text = text.strip()
 
         # Fix spacing around punctuation
-        text = re.sub(r'\s+([,.!?;:])', r'\1', text)  # Remove space before punctuation
-        text = re.sub(r'([,.!?;:])\s*', r'\1 ', text)  # Ensure space after punctuation
+        text = re.sub(r"\s+([,.!?;:])", r"\1", text)  # Remove space before punctuation
+        text = re.sub(r"([,.!?;:])\s*", r"\1 ", text)  # Ensure space after punctuation
 
         return text
 
@@ -537,20 +575,58 @@ class CleanTextNormalizer:
         if num == 0:
             return "zero"
 
-        ones = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
-                "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen",
-                "seventeen", "eighteen", "nineteen"]
+        ones = [
+            "",
+            "one",
+            "two",
+            "three",
+            "four",
+            "five",
+            "six",
+            "seven",
+            "eight",
+            "nine",
+            "ten",
+            "eleven",
+            "twelve",
+            "thirteen",
+            "fourteen",
+            "fifteen",
+            "sixteen",
+            "seventeen",
+            "eighteen",
+            "nineteen",
+        ]
 
-        tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"]
+        tens = [
+            "",
+            "",
+            "twenty",
+            "thirty",
+            "forty",
+            "fifty",
+            "sixty",
+            "seventy",
+            "eighty",
+            "ninety",
+        ]
 
         if num < 20:
             return ones[num]
         elif num < 100:
             return tens[num // 10] + ("" if num % 10 == 0 else " " + ones[num % 10])
         elif num < 1000:
-            return ones[num // 100] + " hundred" + ("" if num % 100 == 0 else " " + self._number_to_words(num % 100))
+            return (
+                ones[num // 100]
+                + " hundred"
+                + ("" if num % 100 == 0 else " " + self._number_to_words(num % 100))
+            )
         elif num < 1000000:
-            return self._number_to_words(num // 1000) + " thousand" + ("" if num % 1000 == 0 else " " + self._number_to_words(num % 1000))
+            return (
+                self._number_to_words(num // 1000)
+                + " thousand"
+                + ("" if num % 1000 == 0 else " " + self._number_to_words(num % 1000))
+            )
         else:
             # For larger numbers, use a simplified approach
             return str(num)  # Fallback to digits for very large numbers
@@ -627,25 +703,21 @@ class CleanTextNormalizer:
     def _fix_contextual_units(self, text: str) -> str:
         """Process single-letter units only in proper measurement contexts"""
         # Define unit patterns that should only be processed in measurement contexts
-        contextual_units = {
-            'm': 'meters',
-            'g': 'grams',
-            'in': 'inches'
-        }
+        contextual_units = {"m": "meters", "g": "grams", "in": "inches"}
 
         # Pattern to match numbers followed by units
         # This ensures we only process units that follow numbers
         for unit, expansion in contextual_units.items():
             # Match: number + space + unit + word boundary
             # Examples: "5 m tall", "10 g of", "3 in wide"
-            pattern = r'(\d+(?:\.\d+)?)\s+' + re.escape(unit) + r'\b'
-            replacement = r'\1 ' + expansion
+            pattern = r"(\d+(?:\.\d+)?)\s+" + re.escape(unit) + r"\b"
+            replacement = r"\1 " + expansion
             text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
 
             # Also match: number + unit (no space)
             # Examples: "5m", "10g", "3in"
-            pattern = r'(\d+(?:\.\d+)?)' + re.escape(unit) + r'\b'
-            replacement = r'\1 ' + expansion
+            pattern = r"(\d+(?:\.\d+)?)" + re.escape(unit) + r"\b"
+            replacement = r"\1 " + expansion
             text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
 
         return text

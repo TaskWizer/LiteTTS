@@ -15,8 +15,10 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+
 class BackgroundType(Enum):
     """Supported background noise types"""
+
     COFFEE_SHOP = "coffee_shop"
     OFFICE = "office"
     NATURE = "nature"
@@ -27,9 +29,11 @@ class BackgroundType(Enum):
     BROWN_NOISE = "brown_noise"
     CUSTOM = "custom"
 
+
 @dataclass
 class BackgroundConfig:
     """Configuration for background noise"""
+
     type: BackgroundType
     volume: float = 0.3  # 0.0 to 1.0
     fade_in: float = 0.5  # seconds
@@ -37,19 +41,23 @@ class BackgroundConfig:
     loop: bool = True
     custom_file: str | None = None
 
+
 @dataclass
 class SSMLElement:
     """Represents a parsed SSML element"""
+
     tag: str
     text: str
     attributes: dict[str, str]
-    children: list['SSMLElement']
+    children: list["SSMLElement"]
     start_pos: int = 0
     end_pos: int = 0
+
 
 @dataclass
 class ParsedSSML:
     """Result of SSML parsing"""
+
     plain_text: str
     background_config: BackgroundConfig | None
     prosody_changes: list[dict[str, Any]]
@@ -57,39 +65,48 @@ class ParsedSSML:
     break_positions: list[tuple[int, float]]  # position, duration
     errors: list[str]
 
+
 class SSMLParser:
     """
     SSML Parser with background noise support
-    
+
     Supports standard SSML tags plus custom <background> tag for ambient audio.
     """
 
     def __init__(self):
         self.supported_tags = {
-            'speak', 'background', 'prosody', 'emphasis', 'break',
-            'say-as', 'sub', 'phoneme', 'voice', 'lang'
+            "speak",
+            "background",
+            "prosody",
+            "emphasis",
+            "break",
+            "say-as",
+            "sub",
+            "phoneme",
+            "voice",
+            "lang",
         }
 
         # Background noise mappings
         self.background_types = {
-            'coffee-shop': BackgroundType.COFFEE_SHOP,
-            'coffee_shop': BackgroundType.COFFEE_SHOP,
-            'cafe': BackgroundType.COFFEE_SHOP,
-            'office': BackgroundType.OFFICE,
-            'workplace': BackgroundType.OFFICE,
-            'nature': BackgroundType.NATURE,
-            'forest': BackgroundType.NATURE,
-            'rain': BackgroundType.RAIN,
-            'rainfall': BackgroundType.RAIN,
-            'wind': BackgroundType.WIND,
-            'windy': BackgroundType.WIND,
-            'white-noise': BackgroundType.WHITE_NOISE,
-            'white_noise': BackgroundType.WHITE_NOISE,
-            'pink-noise': BackgroundType.PINK_NOISE,
-            'pink_noise': BackgroundType.PINK_NOISE,
-            'brown-noise': BackgroundType.BROWN_NOISE,
-            'brown_noise': BackgroundType.BROWN_NOISE,
-            'custom': BackgroundType.CUSTOM
+            "coffee-shop": BackgroundType.COFFEE_SHOP,
+            "coffee_shop": BackgroundType.COFFEE_SHOP,
+            "cafe": BackgroundType.COFFEE_SHOP,
+            "office": BackgroundType.OFFICE,
+            "workplace": BackgroundType.OFFICE,
+            "nature": BackgroundType.NATURE,
+            "forest": BackgroundType.NATURE,
+            "rain": BackgroundType.RAIN,
+            "rainfall": BackgroundType.RAIN,
+            "wind": BackgroundType.WIND,
+            "windy": BackgroundType.WIND,
+            "white-noise": BackgroundType.WHITE_NOISE,
+            "white_noise": BackgroundType.WHITE_NOISE,
+            "pink-noise": BackgroundType.PINK_NOISE,
+            "pink_noise": BackgroundType.PINK_NOISE,
+            "brown-noise": BackgroundType.BROWN_NOISE,
+            "brown_noise": BackgroundType.BROWN_NOISE,
+            "custom": BackgroundType.CUSTOM,
         }
 
     def parse(self, ssml_text: str) -> ParsedSSML:
@@ -107,6 +124,7 @@ class SSMLParser:
         try:
             # Step 1: Decode HTML entities if present
             import html
+
             decoded_text = html.unescape(ssml_text)
 
             # Check if input contains SSML tags (after decoding)
@@ -118,15 +136,15 @@ class SSMLParser:
                     prosody_changes=[],
                     emphasis_spans=[],
                     break_positions=[],
-                    errors=[]
+                    errors=[],
                 )
 
             # Use decoded text for further processing
             ssml_text = decoded_text
 
             # Wrap in speak tag if not already wrapped
-            if not ssml_text.strip().startswith('<speak'):
-                ssml_text = f'<speak>{ssml_text}</speak>'
+            if not ssml_text.strip().startswith("<speak"):
+                ssml_text = f"<speak>{ssml_text}</speak>"
 
             # Parse XML
             try:
@@ -139,14 +157,14 @@ class SSMLParser:
                 except ET.ParseError:
                     errors.append(f"SSML parsing failed: {e}")
                     # Return plain text fallback
-                    plain_text = re.sub(r'<[^>]+>', '', ssml_text)
+                    plain_text = re.sub(r"<[^>]+>", "", ssml_text)
                     return ParsedSSML(
                         plain_text=plain_text,
                         background_config=None,
                         prosody_changes=[],
                         emphasis_spans=[],
                         break_positions=[],
-                        errors=errors
+                        errors=errors,
                     )
 
             # Extract components
@@ -162,7 +180,7 @@ class SSMLParser:
                 prosody_changes=prosody_changes,
                 emphasis_spans=emphasis_spans,
                 break_positions=break_positions,
-                errors=errors
+                errors=errors,
             )
 
         except Exception as e:
@@ -170,27 +188,27 @@ class SSMLParser:
             logger.error(f"SSML parsing error: {e}")
 
             # Fallback to plain text
-            plain_text = re.sub(r'<[^>]+>', '', ssml_text)
+            plain_text = re.sub(r"<[^>]+>", "", ssml_text)
             return ParsedSSML(
                 plain_text=plain_text,
                 background_config=None,
                 prosody_changes=[],
                 emphasis_spans=[],
                 break_positions=[],
-                errors=errors
+                errors=errors,
             )
 
     def _contains_ssml(self, text: str) -> bool:
         """Check if text contains SSML tags"""
-        return bool(re.search(r'<[^>]+>', text))
+        return bool(re.search(r"<[^>]+>", text))
 
     def _fix_common_ssml_issues(self, ssml_text: str) -> str:
         """Fix common SSML formatting issues"""
         # Escape unescaped ampersands
-        ssml_text = re.sub(r'&(?!(?:amp|lt|gt|quot|apos);)', '&amp;', ssml_text)
+        ssml_text = re.sub(r"&(?!(?:amp|lt|gt|quot|apos);)", "&amp;", ssml_text)
 
         # Fix unclosed self-closing tags
-        ssml_text = re.sub(r'<(break|phoneme)([^>]*[^/])>', r'<\1\2/>', ssml_text)
+        ssml_text = re.sub(r"<(break|phoneme)([^>]*[^/])>", r"<\1\2/>", ssml_text)
 
         return ssml_text
 
@@ -202,29 +220,29 @@ class SSMLParser:
             text_parts.append(element.text)
 
         for child in element:
-            if child.tag == 'break':
+            if child.tag == "break":
                 # Add space for breaks
-                text_parts.append(' ')
+                text_parts.append(" ")
             else:
                 text_parts.append(self._extract_text(child))
 
             if child.tail:
                 text_parts.append(child.tail)
 
-        return ''.join(text_parts).strip()
+        return "".join(text_parts).strip()
 
     def _extract_background_config(self, root: ET.Element) -> BackgroundConfig | None:
         """Extract background configuration from SSML"""
-        background_elem = root.find('.//background')
+        background_elem = root.find(".//background")
         if background_elem is None:
             return None
 
         # Get background type
-        bg_type_str = background_elem.get('type', 'nature').lower()
+        bg_type_str = background_elem.get("type", "nature").lower()
         bg_type = self.background_types.get(bg_type_str, BackgroundType.NATURE)
 
         # Get volume (0-100 or 0.0-1.0)
-        volume_str = background_elem.get('volume', '30')
+        volume_str = background_elem.get("volume", "30")
         try:
             volume = float(volume_str)
             if volume > 1.0:
@@ -234,14 +252,14 @@ class SSMLParser:
             volume = 0.3
 
         # Get fade settings
-        fade_in = float(background_elem.get('fade-in', '0.5'))
-        fade_out = float(background_elem.get('fade-out', '0.5'))
+        fade_in = float(background_elem.get("fade-in", "0.5"))
+        fade_out = float(background_elem.get("fade-out", "0.5"))
 
         # Get loop setting
-        loop = background_elem.get('loop', 'true').lower() == 'true'
+        loop = background_elem.get("loop", "true").lower() == "true"
 
         # Get custom file if specified
-        custom_file = background_elem.get('src') or background_elem.get('file')
+        custom_file = background_elem.get("src") or background_elem.get("file")
 
         return BackgroundConfig(
             type=bg_type,
@@ -249,36 +267,38 @@ class SSMLParser:
             fade_in=fade_in,
             fade_out=fade_out,
             loop=loop,
-            custom_file=custom_file
+            custom_file=custom_file,
         )
 
     def _extract_prosody_changes(self, root: ET.Element) -> list[dict[str, Any]]:
         """Extract prosody changes from SSML"""
         prosody_changes = []
 
-        for prosody_elem in root.findall('.//prosody'):
+        for prosody_elem in root.findall(".//prosody"):
             change = {}
 
             # Extract prosody attributes
-            if 'rate' in prosody_elem.attrib:
-                change['rate'] = prosody_elem.get('rate')
-            if 'pitch' in prosody_elem.attrib:
-                change['pitch'] = prosody_elem.get('pitch')
-            if 'volume' in prosody_elem.attrib:
-                change['volume'] = prosody_elem.get('volume')
+            if "rate" in prosody_elem.attrib:
+                change["rate"] = prosody_elem.get("rate")
+            if "pitch" in prosody_elem.attrib:
+                change["pitch"] = prosody_elem.get("pitch")
+            if "volume" in prosody_elem.attrib:
+                change["volume"] = prosody_elem.get("volume")
 
             if change:
-                change['text'] = self._extract_text(prosody_elem)
+                change["text"] = self._extract_text(prosody_elem)
                 prosody_changes.append(change)
 
         return prosody_changes
 
-    def _extract_emphasis_spans(self, root: ET.Element, plain_text: str) -> list[tuple[int, int, str]]:
+    def _extract_emphasis_spans(
+        self, root: ET.Element, plain_text: str
+    ) -> list[tuple[int, int, str]]:
         """Extract emphasis spans from SSML"""
         emphasis_spans = []
 
-        for emphasis_elem in root.findall('.//emphasis'):
-            level = emphasis_elem.get('level', 'moderate')
+        for emphasis_elem in root.findall(".//emphasis"):
+            level = emphasis_elem.get("level", "moderate")
             text = self._extract_text(emphasis_elem)
 
             # Find position in plain text (simplified)
@@ -289,19 +309,21 @@ class SSMLParser:
 
         return emphasis_spans
 
-    def _extract_break_positions(self, root: ET.Element, plain_text: str) -> list[tuple[int, float]]:
+    def _extract_break_positions(
+        self, root: ET.Element, plain_text: str
+    ) -> list[tuple[int, float]]:
         """Extract break positions from SSML"""
         break_positions = []
 
         # This is a simplified implementation
         # In practice, you'd need to track positions more carefully
-        for break_elem in root.findall('.//break'):
-            time_str = break_elem.get('time', '0.5s')
+        for break_elem in root.findall(".//break"):
+            time_str = break_elem.get("time", "0.5s")
 
             # Parse time value
-            if time_str.endswith('s'):
+            if time_str.endswith("s"):
                 duration = float(time_str[:-1])
-            elif time_str.endswith('ms'):
+            elif time_str.endswith("ms"):
                 duration = float(time_str[:-2]) / 1000.0
             else:
                 duration = 0.5

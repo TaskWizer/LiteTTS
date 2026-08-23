@@ -14,15 +14,15 @@ class TestEmotionMapping:
     def test_creation(self):
         """Test creating an emotion mapping"""
         mapping = EmotionMapping(
-            name='test_emotion',
-            weight_adjustments={'brightness': 0.3},
+            name="test_emotion",
+            weight_adjustments={"brightness": 0.3},
             pitch_adjustment=0.1,
             speed_adjustment=1.2,
             energy_adjustment=1.1,
-            description="Test emotion"
+            description="Test emotion",
         )
-        assert mapping.name == 'test_emotion'
-        assert mapping.weight_adjustments == {'brightness': 0.3}
+        assert mapping.name == "test_emotion"
+        assert mapping.weight_adjustments == {"brightness": 0.3}
         assert mapping.pitch_adjustment == 0.1
         assert mapping.speed_adjustment == 1.2
         assert mapping.energy_adjustment == 1.1
@@ -30,10 +30,7 @@ class TestEmotionMapping:
 
     def test_creation_defaults(self):
         """Test creating emotion mapping with defaults"""
-        mapping = EmotionMapping(
-            name='minimal',
-            weight_adjustments={}
-        )
+        mapping = EmotionMapping(name="minimal", weight_adjustments={})
         assert mapping.pitch_adjustment == 0.0
         assert mapping.speed_adjustment == 1.0
         assert mapping.energy_adjustment == 1.0
@@ -48,22 +45,22 @@ class TestEmotionController:
         controller = EmotionController()
         assert controller.emotion_mappings is not None
         assert len(controller.emotion_mappings) > 0
-        assert 'neutral' in controller.emotion_mappings
+        assert "neutral" in controller.emotion_mappings
 
     def test_supported_emotions(self):
         """Test getting supported emotions"""
         controller = EmotionController()
         emotions = controller.supported_emotions
         assert isinstance(emotions, list)
-        assert 'neutral' in emotions
-        assert 'happy' in emotions
-        assert 'sad' in emotions
+        assert "neutral" in emotions
+        assert "happy" in emotions
+        assert "sad" in emotions
 
     def test_apply_emotion_neutral(self):
         """Test applying neutral emotion returns original"""
         controller = EmotionController()
         embedding = np.random.randn(256).astype(np.float32)
-        result = controller.apply_emotion(embedding, 'neutral')
+        result = controller.apply_emotion(embedding, "neutral")
         np.testing.assert_array_equal(result, embedding)
 
     def test_apply_emotion_unknown(self):
@@ -71,7 +68,7 @@ class TestEmotionController:
         controller = EmotionController()
         embedding = np.random.randn(256).astype(np.float32)
         original = embedding.copy()
-        result = controller.apply_emotion(embedding, 'unknown_emotion')
+        result = controller.apply_emotion(embedding, "unknown_emotion")
         # Should return neutral (original) embedding
         np.testing.assert_array_equal(result, original)
 
@@ -79,7 +76,7 @@ class TestEmotionController:
         """Test applying emotion with zero strength"""
         controller = EmotionController()
         embedding = np.random.randn(256).astype(np.float32)
-        result = controller.apply_emotion(embedding, 'happy', strength=0.0)
+        result = controller.apply_emotion(embedding, "happy", strength=0.0)
         np.testing.assert_array_equal(result, embedding)
 
     def test_apply_emotion_strength_clamped(self):
@@ -87,37 +84,37 @@ class TestEmotionController:
         controller = EmotionController()
         embedding = np.random.randn(256).astype(np.float32)
         # Should not raise even with out-of-range strength
-        result = controller.apply_emotion(embedding, 'happy', strength=5.0)
+        result = controller.apply_emotion(embedding, "happy", strength=5.0)
         assert result is not None
-        result = controller.apply_emotion(embedding, 'happy', strength=-1.0)
+        result = controller.apply_emotion(embedding, "happy", strength=-1.0)
         assert result is not None
 
     def test_apply_emotion_happy(self):
         """Test applying happy emotion modifies embedding"""
         controller = EmotionController()
         embedding = np.random.randn(256).astype(np.float32)
-        result = controller.apply_emotion(embedding, 'happy', strength=1.0)
+        result = controller.apply_emotion(embedding, "happy", strength=1.0)
         assert result.shape == embedding.shape
         assert result.dtype == embedding.dtype
 
     def test_get_emotion_adjustments(self):
         """Test getting emotion adjustments"""
         controller = EmotionController()
-        adjustments = controller.get_emotion_adjustments('happy', strength=1.0)
-        assert 'pitch_adjustment' in adjustments
-        assert 'speed_adjustment' in adjustments
-        assert 'energy_adjustment' in adjustments
-        assert adjustments['pitch_adjustment'] == 0.1
-        assert adjustments['speed_adjustment'] == 1.1
+        adjustments = controller.get_emotion_adjustments("happy", strength=1.0)
+        assert "pitch_adjustment" in adjustments
+        assert "speed_adjustment" in adjustments
+        assert "energy_adjustment" in adjustments
+        assert adjustments["pitch_adjustment"] == 0.1
+        assert adjustments["speed_adjustment"] == 1.1
 
     def test_get_emotion_adjustments_unknown(self):
         """Test getting adjustments for unknown emotion returns neutral"""
         controller = EmotionController()
-        adjustments = controller.get_emotion_adjustments('unknown', strength=1.0)
+        adjustments = controller.get_emotion_adjustments("unknown", strength=1.0)
         # Should return neutral adjustments
-        assert adjustments['pitch_adjustment'] == 0.0
-        assert adjustments['speed_adjustment'] == 1.0
-        assert adjustments['energy_adjustment'] == 1.0
+        assert adjustments["pitch_adjustment"] == 0.0
+        assert adjustments["speed_adjustment"] == 1.0
+        assert adjustments["energy_adjustment"] == 1.0
 
     def test_blend_emotions_empty(self):
         """Test blending with empty emotions list"""
@@ -130,14 +127,14 @@ class TestEmotionController:
         """Test blending emotions with zero total strength"""
         controller = EmotionController()
         embedding = np.random.randn(256).astype(np.float32)
-        result = controller.blend_emotions(embedding, [('happy', 0.0), ('sad', 0.0)])
+        result = controller.blend_emotions(embedding, [("happy", 0.0), ("sad", 0.0)])
         np.testing.assert_array_equal(result, embedding)
 
     def test_blend_emotions_multiple(self):
         """Test blending multiple emotions"""
         controller = EmotionController()
         embedding = np.random.randn(256).astype(np.float32)
-        result = controller.blend_emotions(embedding, [('happy', 0.5), ('calm', 0.5)])
+        result = controller.blend_emotions(embedding, [("happy", 0.5), ("calm", 0.5)])
         assert result.shape == embedding.shape
 
     def test_get_supported_emotions(self):
@@ -147,23 +144,23 @@ class TestEmotionController:
         assert isinstance(emotions, list)
         assert len(emotions) > 0
         # Verify it returns a copy
-        emotions.append('test')
-        assert 'test' not in controller.supported_emotions
+        emotions.append("test")
+        assert "test" not in controller.supported_emotions
 
     def test_get_emotion_info_existing(self):
         """Test getting info for existing emotion"""
         controller = EmotionController()
-        info = controller.get_emotion_info('happy')
+        info = controller.get_emotion_info("happy")
         assert info is not None
-        assert info['name'] == 'happy'
-        assert 'description' in info
-        assert 'pitch_adjustment' in info
-        assert 'weight_adjustments' in info
+        assert info["name"] == "happy"
+        assert "description" in info
+        assert "pitch_adjustment" in info
+        assert "weight_adjustments" in info
 
     def test_get_emotion_info_nonexistent(self):
         """Test getting info for nonexistent emotion"""
         controller = EmotionController()
-        info = controller.get_emotion_info('nonexistent')
+        info = controller.get_emotion_info("nonexistent")
         assert info is None
 
     def test_validate_emotion_strength_valid(self):
@@ -204,44 +201,42 @@ class TestEmotionController:
         """Test suggesting emotion for happy text"""
         controller = EmotionController()
         emotion = controller.suggest_emotion_for_text("I am so happy and excited today!")
-        assert emotion == 'happy'
+        assert emotion == "happy"
 
     def test_suggest_emotion_for_text_sad(self):
         """Test suggesting emotion for sad text"""
         controller = EmotionController()
         emotion = controller.suggest_emotion_for_text("I am sad and it is terrible")
-        assert emotion == 'sad'
+        assert emotion == "sad"
 
     def test_suggest_emotion_for_text_neutral(self):
         """Test suggesting emotion for neutral text"""
         controller = EmotionController()
         emotion = controller.suggest_emotion_for_text("The weather is cloudy today")
-        assert emotion == 'neutral'
+        assert emotion == "neutral"
 
     def test_create_custom_emotion_success(self):
         """Test creating custom emotion successfully"""
         controller = EmotionController()
         result = controller.create_custom_emotion(
-            name='custom_emotion',
-            weight_adjustments={'brightness': 0.5},
+            name="custom_emotion",
+            weight_adjustments={"brightness": 0.5},
             pitch_adjustment=0.2,
             speed_adjustment=1.1,
             energy_adjustment=1.2,
-            description="A custom emotion"
+            description="A custom emotion",
         )
         assert result is True
-        assert 'custom_emotion' in controller.emotion_mappings
-        assert 'custom_emotion' in controller.supported_emotions
+        assert "custom_emotion" in controller.emotion_mappings
+        assert "custom_emotion" in controller.supported_emotions
 
     def test_create_custom_emotion_info(self):
         """Test that custom emotion has correct info"""
         controller = EmotionController()
         controller.create_custom_emotion(
-            name='my_emotion',
-            weight_adjustments={'intensity': 0.5},
-            pitch_adjustment=0.1
+            name="my_emotion", weight_adjustments={"intensity": 0.5}, pitch_adjustment=0.1
         )
-        info = controller.get_emotion_info('my_emotion')
+        info = controller.get_emotion_info("my_emotion")
         assert info is not None
-        assert info['name'] == 'my_emotion'
-        assert info['pitch_adjustment'] == 0.1
+        assert info["name"] == "my_emotion"
+        assert info["pitch_adjustment"] == 0.1

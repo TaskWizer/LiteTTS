@@ -12,9 +12,11 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class CPUInfo:
     """CPU information and capabilities"""
+
     total_cores: int
     physical_cores: int
     logical_cores: int
@@ -29,6 +31,7 @@ class CPUInfo:
     numa_nodes: int = 1
     base_frequency: float = 0.0
     max_frequency: float = 0.0
+
 
 class CPUOptimizer:
     """CPU optimization and affinity management"""
@@ -84,10 +87,10 @@ class CPUOptimizer:
                         # But shows as 20 logical cores (6P*2 + 8E*1)
                         if "i5-13600K" in model_name:
                             performance_cores = 6  # P-cores with hyperthreading
-                            efficiency_cores = 8   # E-cores without hyperthreading
+                            efficiency_cores = 8  # E-cores without hyperthreading
                         elif "i7-13700K" in model_name:
                             performance_cores = 8  # P-cores with hyperthreading
-                            efficiency_cores = 8   # E-cores without hyperthreading
+                            efficiency_cores = 8  # E-cores without hyperthreading
                         elif "i9-13900K" in model_name:
                             performance_cores = 8  # P-cores with hyperthreading
                             efficiency_cores = 16  # E-cores without hyperthreading
@@ -104,9 +107,12 @@ class CPUOptimizer:
                     # Get NUMA information
                     try:
                         import os
+
                         numa_path = "/sys/devices/system/node"
                         if os.path.exists(numa_path):
-                            numa_nodes = len([d for d in os.listdir(numa_path) if d.startswith("node")])
+                            numa_nodes = len(
+                                [d for d in os.listdir(numa_path) if d.startswith("node")]
+                            )
                     except Exception:
                         numa_nodes = 1
 
@@ -129,7 +135,7 @@ class CPUOptimizer:
                 efficiency_cores=efficiency_cores,
                 numa_nodes=numa_nodes,
                 base_frequency=base_frequency,
-                max_frequency=max_frequency
+                max_frequency=max_frequency,
             )
 
         except ImportError:
@@ -143,16 +149,16 @@ class CPUOptimizer:
                 architecture=platform.machine(),
                 model_name=platform.processor(),
                 supports_avx2=False,
-                supports_avx512=False
+                supports_avx512=False,
             )
 
     def set_cpu_affinity(self, core_list: list[int] | None = None) -> bool:
         """
         Set CPU affinity for the current process
-        
+
         Args:
             core_list: List of CPU cores to bind to. If None, auto-select optimal cores
-        
+
         Returns:
             True if affinity was set successfully
         """
@@ -255,25 +261,29 @@ class CPUOptimizer:
             else:
                 omp_threads = min(4, total_cores)
 
-        env_vars.update({
-            "OMP_NUM_THREADS": str(omp_threads),
-            "OPENBLAS_NUM_THREADS": str(omp_threads),
-            "MKL_NUM_THREADS": str(omp_threads),
-            "NUMEXPR_NUM_THREADS": str(min(6, total_cores // 3)),
-            "ONNX_DISABLE_SPARSE_TENSORS": "1"
-        })
+        env_vars.update(
+            {
+                "OMP_NUM_THREADS": str(omp_threads),
+                "OPENBLAS_NUM_THREADS": str(omp_threads),
+                "MKL_NUM_THREADS": str(omp_threads),
+                "NUMEXPR_NUM_THREADS": str(min(6, total_cores // 3)),
+                "ONNX_DISABLE_SPARSE_TENSORS": "1",
+            }
+        )
 
         # Aggressive optimizations
         if aggressive:
-            env_vars.update({
-                "OMP_SCHEDULE": "dynamic",
-                "OMP_PROC_BIND": "spread",
-                "OMP_PLACES": "cores",
-                "GOMP_CPU_AFFINITY": f"0-{total_cores-1}",
-                "KMP_AFFINITY": "granularity=fine,compact,1,0",
-                "KMP_BLOCKTIME": "0",
-                "KMP_SETTINGS": "1" if aggressive else "0"
-            })
+            env_vars.update(
+                {
+                    "OMP_SCHEDULE": "dynamic",
+                    "OMP_PROC_BIND": "spread",
+                    "OMP_PLACES": "cores",
+                    "GOMP_CPU_AFFINITY": f"0-{total_cores - 1}",
+                    "KMP_AFFINITY": "granularity=fine,compact,1,0",
+                    "KMP_BLOCKTIME": "0",
+                    "KMP_SETTINGS": "1" if aggressive else "0",
+                }
+            )
 
         # CPU-specific optimizations
         if self.cpu_info.supports_avx512:
@@ -323,7 +333,9 @@ class CPUOptimizer:
 
                     return {
                         "workers": min(6, total_cores // 3),  # More workers for parallel processing
-                        "onnx_inter_op_threads": min(8, p_cores + e_cores // 2),  # Use P-cores + some E-cores
+                        "onnx_inter_op_threads": min(
+                            8, p_cores + e_cores // 2
+                        ),  # Use P-cores + some E-cores
                         "onnx_intra_op_threads": min(18, total_cores - 2),  # Use almost all threads
                         "batch_size": 6,  # Larger batches
                         "concurrent_requests": 12,  # More concurrent requests
@@ -331,7 +343,7 @@ class CPUOptimizer:
                         "audio_processing_threads": min(6, p_cores),  # Use P-cores for compute
                         "pipeline_parallelism": True,
                         "warm_up_enabled": True,
-                        "short_text_optimization": True
+                        "short_text_optimization": True,
                     }
                 else:
                     return {
@@ -341,7 +353,7 @@ class CPUOptimizer:
                         "batch_size": 6,
                         "concurrent_requests": 12,
                         "pipeline_parallelism": True,
-                        "warm_up_enabled": True
+                        "warm_up_enabled": True,
                     }
             elif total_cores >= 8:
                 return {
@@ -350,7 +362,7 @@ class CPUOptimizer:
                     "onnx_intra_op_threads": min(12, int(total_cores * 0.9)),
                     "batch_size": 4,
                     "concurrent_requests": 8,
-                    "pipeline_parallelism": True
+                    "pipeline_parallelism": True,
                 }
             else:
                 return {
@@ -358,7 +370,7 @@ class CPUOptimizer:
                     "onnx_inter_op_threads": min(3, total_cores // 2),
                     "onnx_intra_op_threads": min(6, total_cores - 1),
                     "batch_size": 2,
-                    "concurrent_requests": 4
+                    "concurrent_requests": 4,
                 }
         else:
             # Conservative mode (original behavior)
@@ -368,7 +380,7 @@ class CPUOptimizer:
                     "onnx_inter_op_threads": min(6, total_cores // 3),
                     "onnx_intra_op_threads": min(12, total_cores // 2),
                     "batch_size": 4,
-                    "concurrent_requests": 8
+                    "concurrent_requests": 8,
                 }
             elif total_cores >= 8:
                 return {
@@ -376,7 +388,7 @@ class CPUOptimizer:
                     "onnx_inter_op_threads": min(4, total_cores // 2),
                     "onnx_intra_op_threads": min(8, total_cores),
                     "batch_size": 2,
-                    "concurrent_requests": 4
+                    "concurrent_requests": 4,
                 }
             else:
                 return {
@@ -384,7 +396,7 @@ class CPUOptimizer:
                     "onnx_inter_op_threads": min(2, total_cores // 2),
                     "onnx_intra_op_threads": min(4, total_cores),
                     "batch_size": 1,
-                    "concurrent_requests": 2
+                    "concurrent_requests": 2,
                 }
 
     def get_thermal_status(self) -> dict[str, Any]:
@@ -393,7 +405,7 @@ class CPUOptimizer:
             "temperature": 0.0,
             "throttling": False,
             "safe_for_aggressive": True,
-            "recommended_threads": self.cpu_info.total_cores
+            "recommended_threads": self.cpu_info.total_cores,
         }
 
         try:
@@ -420,10 +432,14 @@ class CPUOptimizer:
                             thermal_info["throttling"] = True
                             thermal_info["safe_for_aggressive"] = False
                             # Reduce thread count if overheating
-                            thermal_info["recommended_threads"] = max(4, self.cpu_info.total_cores // 2)
+                            thermal_info["recommended_threads"] = max(
+                                4, self.cpu_info.total_cores // 2
+                            )
                         elif avg_temp > 75:
                             thermal_info["safe_for_aggressive"] = False
-                            thermal_info["recommended_threads"] = max(8, int(self.cpu_info.total_cores * 0.8))
+                            thermal_info["recommended_threads"] = max(
+                                8, int(self.cpu_info.total_cores * 0.8)
+                            )
 
         except Exception as e:
             logger.debug(f"Could not get thermal information: {e}")
@@ -450,7 +466,9 @@ class CPUOptimizer:
             else:
                 # Use P-cores and some E-cores
                 p_core_threads = list(range(p_cores * 2))  # All P-core threads
-                e_core_threads = list(range(p_cores * 2, p_cores * 2 + e_cores // 2))  # Half E-cores
+                e_core_threads = list(
+                    range(p_cores * 2, p_cores * 2 + e_cores // 2)
+                )  # Half E-cores
                 core_list = p_core_threads + e_core_threads
 
             # Store original affinity for restoration
@@ -461,7 +479,9 @@ class CPUOptimizer:
             psutil.Process().cpu_affinity(core_list)
             self.affinity_set = True
 
-            logger.info(f"Set hybrid CPU affinity: P-cores={p_cores}, E-cores={e_cores}, using cores={core_list}")
+            logger.info(
+                f"Set hybrid CPU affinity: P-cores={p_cores}, E-cores={e_cores}, using cores={core_list}"
+            )
             return True
 
         except Exception as e:
@@ -496,7 +516,7 @@ class CPUOptimizer:
             "enable_hybrid_optimization": self.cpu_info.has_hybrid_architecture,
             "thermal_safe": thermal_status["safe_for_aggressive"],
             "environment_variables": self.optimize_environment_variables(aggressive=True),
-            "recommended_settings": self.get_recommended_settings(aggressive=True)
+            "recommended_settings": self.get_recommended_settings(aggressive=True),
         }
 
         # Add thermal-aware adjustments
@@ -511,20 +531,24 @@ class CPUOptimizer:
                 "performance_cores": self.cpu_info.performance_cores,
                 "efficiency_cores": self.cpu_info.efficiency_cores,
                 "use_all_p_cores": True,
-                "use_most_e_cores": thermal_status["safe_for_aggressive"]
+                "use_most_e_cores": thermal_status["safe_for_aggressive"],
             }
 
         # Add SIMD optimization flags
         config["simd_optimizations"] = {
             "avx2_enabled": self.cpu_info.supports_avx2,
             "avx512_enabled": self.cpu_info.supports_avx512,
-            "vectorization_level": "aggressive" if thermal_status["safe_for_aggressive"] else "conservative"
+            "vectorization_level": "aggressive"
+            if thermal_status["safe_for_aggressive"]
+            else "conservative",
         }
 
         return config
 
+
 # Global CPU optimizer instance
 _cpu_optimizer = None
+
 
 def get_cpu_optimizer() -> CPUOptimizer:
     """Get global CPU optimizer instance"""

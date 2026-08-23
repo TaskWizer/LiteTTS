@@ -95,8 +95,8 @@ class TestSimplifiedVoiceCombiner:
     def test_get_available_voices(self, tmp_path):
         """Test getting list of available voices"""
         # Create some voice files
-        (tmp_path / "voice1.bin").write_bytes(b'\x00' * 100)
-        (tmp_path / "voice2.bin").write_bytes(b'\x00' * 100)
+        (tmp_path / "voice1.bin").write_bytes(b"\x00" * 100)
+        (tmp_path / "voice2.bin").write_bytes(b"\x00" * 100)
 
         with warnings.catch_warnings(record=True):
             warnings.simplefilter("always")

@@ -14,6 +14,7 @@ from LiteTTS.nlp.unified_text_processor import ProcessingMode, UnifiedTextProces
 # Skip - internal NLP component tests with incorrect expectations
 pytestmark = pytest.mark.skip(reason="Internal NLP component tests with incorrect expectations")
 
+
 class TestInterjectionPronunciationFixes(unittest.TestCase):
     """Test interjection pronunciation fixes"""
 
@@ -29,7 +30,6 @@ class TestInterjectionPronunciationFixes(unittest.TestCase):
             ("hmm", "hmmm", "hmm should expand to 'hmmm'"),
             ("Hm", "Hm", "Hm should be preserved (too short to expand reliably)"),
             ("hm", "hm", "hm should be preserved (too short to expand reliably)"),
-
             # Context variations
             ("Hmm, that's interesting", "Hmmm, that's interesting", "Hmm in sentence context"),
             ("I think, hmm, maybe", "I think, hmmm, maybe", "hmm in middle of sentence"),
@@ -55,8 +55,11 @@ class TestInterjectionPronunciationFixes(unittest.TestCase):
         print(f"\nHmm Fixes Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})")
 
         # Require 100% success for critical fixes
-        self.assertEqual(success_count, len(test_cases),
-                        f"Hmm pronunciation fixes must have 100% success rate, got {success_rate:.1%}")
+        self.assertEqual(
+            success_count,
+            len(test_cases),
+            f"Hmm pronunciation fixes must have 100% success rate, got {success_rate:.1%}",
+        )
 
     def test_nasal_sound_fixes(self):
         """Test nasal sound pronunciation fixes"""
@@ -83,10 +86,13 @@ class TestInterjectionPronunciationFixes(unittest.TestCase):
                 print(f"❌ '{input_text}' → '{result}' (expected '{expected_output}')")
 
         success_rate = success_count / len(test_cases)
-        print(f"\nNasal Sound Fixes Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})")
+        print(
+            f"\nNasal Sound Fixes Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})"
+        )
 
-        self.assertGreaterEqual(success_rate, 0.9,
-                               f"Nasal sound fixes success rate {success_rate:.1%} below 90%")
+        self.assertGreaterEqual(
+            success_rate, 0.9, f"Nasal sound fixes success rate {success_rate:.1%} below 90%"
+        )
 
     def test_hesitation_sound_fixes(self):
         """Test hesitation sound pronunciation fixes"""
@@ -117,10 +123,13 @@ class TestInterjectionPronunciationFixes(unittest.TestCase):
                 print(f"❌ '{input_text}' → '{result}' (expected '{expected_output}')")
 
         success_rate = success_count / len(test_cases)
-        print(f"\nHesitation Sound Fixes Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})")
+        print(
+            f"\nHesitation Sound Fixes Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})"
+        )
 
-        self.assertGreaterEqual(success_rate, 0.9,
-                               f"Hesitation sound fixes success rate {success_rate:.1%} below 90%")
+        self.assertGreaterEqual(
+            success_rate, 0.9, f"Hesitation sound fixes success rate {success_rate:.1%} below 90%"
+        )
 
     def test_laughter_sound_fixes(self):
         """Test laughter sound pronunciation fixes"""
@@ -147,17 +156,23 @@ class TestInterjectionPronunciationFixes(unittest.TestCase):
                 print(f"❌ '{input_text}' → '{result}' (expected '{expected_output}')")
 
         success_rate = success_count / len(test_cases)
-        print(f"\nLaughter Sound Fixes Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})")
+        print(
+            f"\nLaughter Sound Fixes Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})"
+        )
 
-        self.assertGreaterEqual(success_rate, 0.8,
-                               f"Laughter sound fixes success rate {success_rate:.1%} below 80%")
+        self.assertGreaterEqual(
+            success_rate, 0.8, f"Laughter sound fixes success rate {success_rate:.1%} below 80%"
+        )
 
     def test_context_preservation(self):
         """Test that context around interjections is preserved"""
         test_cases = [
             ("Well, hmm, I think so", "Well, hmmm, I think so"),
             ("The answer is, uh, complicated", "The answer is, uhh, complicated"),
-            ("She said 'hmm' thoughtfully", "She said 'hmm' thoughtfully"),  # In quotes, should preserve
+            (
+                "She said 'hmm' thoughtfully",
+                "She said 'hmm' thoughtfully",
+            ),  # In quotes, should preserve
             ("Hmm... let me see", "Hmmm... let me see"),  # Sentence start, capitalize
             ("Um, actually, never mind", "umm, actually, never mind"),
         ]
@@ -176,10 +191,13 @@ class TestInterjectionPronunciationFixes(unittest.TestCase):
                 print(f"❌ '{input_text}' → '{result}' (expected '{expected_output}')")
 
         success_rate = success_count / len(test_cases)
-        print(f"\nContext Preservation Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})")
+        print(
+            f"\nContext Preservation Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})"
+        )
 
-        self.assertGreaterEqual(success_rate, 0.9,
-                               f"Context preservation success rate {success_rate:.1%} below 90%")
+        self.assertGreaterEqual(
+            success_rate, 0.9, f"Context preservation success rate {success_rate:.1%} below 90%"
+        )
 
     def test_unified_processor_integration(self):
         """Test integration with unified text processor"""
@@ -188,7 +206,7 @@ class TestInterjectionPronunciationFixes(unittest.TestCase):
             "uh, I think so",
             "mm, okay then",
             "ah, yes indeed",
-            "oh, really now"
+            "oh, really now",
         ]
 
         print("\n🔧 Testing Unified Processor Integration")
@@ -212,10 +230,13 @@ class TestInterjectionPronunciationFixes(unittest.TestCase):
                 print(f"❌ '{text}' -> Error: {e}")
 
         success_rate = success_count / len(test_cases)
-        print(f"\nUnified Integration Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})")
+        print(
+            f"\nUnified Integration Success Rate: {success_rate:.1%} ({success_count}/{len(test_cases)})"
+        )
 
-        self.assertGreaterEqual(success_rate, 0.9,
-                               f"Unified integration success rate {success_rate:.1%} below 90%")
+        self.assertGreaterEqual(
+            success_rate, 0.9, f"Unified integration success rate {success_rate:.1%} below 90%"
+        )
 
     def test_performance(self):
         """Test interjection processing performance"""
@@ -226,6 +247,7 @@ class TestInterjectionPronunciationFixes(unittest.TestCase):
 
         # Time multiple runs
         import time
+
         times = []
         for _ in range(10):
             start_time = time.perf_counter()
@@ -261,14 +283,14 @@ class TestInterjectionPronunciationFixes(unittest.TestCase):
         print(f"Potential fixes: {analysis['potential_fixes']}")
 
         # Should find interjections
-        self.assertGreater(len(analysis['short_interjections']), 0,
-                          "Should find short interjections")
-        self.assertGreater(len(analysis['nasal_sounds']), 0,
-                          "Should find nasal sounds")
-        self.assertGreater(len(analysis['hesitation_markers']), 0,
-                          "Should find hesitation markers")
+        self.assertGreater(
+            len(analysis["short_interjections"]), 0, "Should find short interjections"
+        )
+        self.assertGreater(len(analysis["nasal_sounds"]), 0, "Should find nasal sounds")
+        self.assertGreater(len(analysis["hesitation_markers"]), 0, "Should find hesitation markers")
 
         print("✅ Analysis functionality working correctly")
+
 
 def run_comprehensive_interjection_tests():
     """Run all interjection tests and provide summary"""
@@ -280,7 +302,7 @@ def run_comprehensive_interjection_tests():
     suite = unittest.TestLoader().loadTestsFromTestCase(TestInterjectionPronunciationFixes)
 
     # Run tests with detailed output
-    runner = unittest.TextTestRunner(verbosity=2, stream=open('/dev/null', 'w'))
+    runner = unittest.TextTestRunner(verbosity=2, stream=open("/dev/null", "w"))
     result = runner.run(suite)
 
     # Calculate success rate
@@ -289,9 +311,9 @@ def run_comprehensive_interjection_tests():
     passed_tests = total_tests - failed_tests
     success_rate = passed_tests / total_tests if total_tests > 0 else 0
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("INTERJECTION FIXES TEST SUMMARY")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"Tests Run: {total_tests}")
     print(f"Tests Passed: {passed_tests}")
     print(f"Tests Failed: {failed_tests}")
@@ -317,6 +339,7 @@ def run_comprehensive_interjection_tests():
             print(f"  - {test}: {traceback.split('Exception:')[-1].strip()}")
 
     return success_rate
+
 
 if __name__ == "__main__":
     # Run individual test instance for detailed output

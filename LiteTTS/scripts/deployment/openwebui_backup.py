@@ -14,11 +14,9 @@ from datetime import datetime
 from pathlib import Path
 
 # Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 class OpenWebUIBackup:
     """OpenWebUI backup utility"""
@@ -35,16 +33,11 @@ class OpenWebUIBackup:
             "docker-compose.yaml",
             ".env",
             ".env.local",
-            ".env.production"
+            ".env.production",
         ]
 
         # Directories to backup
-        self.data_dirs = [
-            "data",
-            "certs",
-            "config",
-            "logs"
-        ]
+        self.data_dirs = ["data", "certs", "config", "logs"]
 
     def create_backup_directory(self):
         """Create backup directory structure"""
@@ -123,12 +116,13 @@ class OpenWebUIBackup:
                 "config_files": config_files,
                 "data_directories": data_dirs,
                 "backup_path": str(self.backup_path),
-                "total_files": len(config_files) + len(data_dirs)
+                "total_files": len(config_files) + len(data_dirs),
             }
 
             manifest_path = self.backup_path / "backup_manifest.json"
             import json
-            with open(manifest_path, 'w') as f:
+
+            with open(manifest_path, "w") as f:
                 json.dump(manifest, f, indent=2)
 
             logger.info(f"✅ Created backup manifest: {manifest_path}")
@@ -158,9 +152,7 @@ class OpenWebUIBackup:
 
         # Calculate total backup size
         try:
-            total_size = sum(
-                f.stat().st_size for f in self.backup_path.rglob('*') if f.is_file()
-            )
+            total_size = sum(f.stat().st_size for f in self.backup_path.rglob("*") if f.is_file())
             size_mb = total_size / (1024 * 1024)
             logger.info(f"📊 Total backup size: {size_mb:.1f} MB")
         except Exception as e:
@@ -170,6 +162,7 @@ class OpenWebUIBackup:
         logger.info(f"📁 Backup saved to: {self.backup_path}")
 
         return True
+
 
 def main():
     """Main function with argument parsing"""
@@ -181,21 +174,17 @@ Examples:
   python openwebui_backup.py                           # Default backup
   python openwebui_backup.py --backup-dir ./backups   # Custom backup directory
   python openwebui_backup.py --list                   # List existing backups
-        """
+        """,
     )
 
     parser.add_argument(
         "--backup-dir",
         type=str,
         default="./openwebui_backups",
-        help="Backup directory (default: ./openwebui_backups)"
+        help="Backup directory (default: ./openwebui_backups)",
     )
 
-    parser.add_argument(
-        "--list",
-        action="store_true",
-        help="List existing backups"
-    )
+    parser.add_argument("--list", action="store_true", help="List existing backups")
 
     args = parser.parse_args()
 
@@ -219,6 +208,7 @@ Examples:
     success = backup.run_backup()
 
     return 0 if success else 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

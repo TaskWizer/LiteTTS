@@ -47,7 +47,7 @@ class TestContractionProcessing(unittest.TestCase):
 
         for input_text, expected in test_cases:
             with self.subTest(input_text=input_text):
-                result = self.processor.process_contractions(input_text, mode='hybrid')
+                result = self.processor.process_contractions(input_text, mode="hybrid")
                 self.assertEqual(result, expected)
 
     def test_natural_contractions_preserved(self):
@@ -63,7 +63,7 @@ class TestContractionProcessing(unittest.TestCase):
 
         for input_text in test_cases:
             with self.subTest(input_text=input_text):
-                result = self.processor.process_contractions(input_text, mode='natural')
+                result = self.processor.process_contractions(input_text, mode="natural")
                 self.assertEqual(result, input_text)
 
     def test_apostrophe_normalization(self):
@@ -80,6 +80,7 @@ class TestContractionProcessing(unittest.TestCase):
                 result = self.processor.process_contractions(input_text)
                 self.assertIn("'", result)
                 self.assertNotIn("&#x27;", result)
+
 
 class TestSymbolProcessing(unittest.TestCase):
     """Test symbol and punctuation processing fixes"""
@@ -104,10 +105,10 @@ class TestSymbolProcessing(unittest.TestCase):
     def test_quote_handling(self):
         """Test quote handling to prevent 'in quat' issues"""
         test_cases = [
-            ('"Hello world"', 'Hello world'),
-            ('&quot;Test&quot;', 'Test'),
-            ('&#34;Example&#34;', 'Example'),
-            ('"This is a test"', 'This is a test'),
+            ('"Hello world"', "Hello world"),
+            ("&quot;Test&quot;", "Test"),
+            ("&#34;Example&#34;", "Example"),
+            ('"This is a test"', "This is a test"),
         ]
 
         for input_text, expected in test_cases:
@@ -151,9 +152,10 @@ class TestSymbolProcessing(unittest.TestCase):
             with self.subTest(input_text=input_text):
                 result = self.processor.process_symbols(input_text)
                 # Clean up extra spaces for comparison
-                result_clean = ' '.join(result.split())
-                expected_clean = ' '.join(expected.split())
+                result_clean = " ".join(result.split())
+                expected_clean = " ".join(expected.split())
                 self.assertEqual(result_clean, expected_clean)
+
 
 class TestPronunciationDictionary(unittest.TestCase):
     """Test pronunciation dictionary fixes"""
@@ -204,6 +206,7 @@ class TestPronunciationDictionary(unittest.TestCase):
         self.assertIn("rez-uh-may", result)
         self.assertIn("NEW-klee-er", result)
 
+
 class TestDateTimeProcessing(unittest.TestCase):
     """Test date and time processing fixes"""
 
@@ -251,6 +254,7 @@ class TestDateTimeProcessing(unittest.TestCase):
                 result = self.processor.process_dates_and_times(input_text)
                 # Check that the result contains natural time language
                 self.assertNotIn(":", result)
+
 
 class TestAbbreviationHandling(unittest.TestCase):
     """Test abbreviation handling fixes"""
@@ -310,6 +314,7 @@ class TestAbbreviationHandling(unittest.TestCase):
         self.assertIn("F A Q", result)
         self.assertIn("A P I", result)
 
+
 class TestVoiceModulation(unittest.TestCase):
     """Test voice modulation system"""
 
@@ -349,6 +354,7 @@ class TestVoiceModulation(unittest.TestCase):
         self.assertEqual(segments[0].modulation.tone, "whisper")
         self.assertEqual(segments[1].modulation.tone, "loud")
 
+
 class TestEmotionIntonation(unittest.TestCase):
     """Test dynamic emotion and intonation system"""
 
@@ -368,7 +374,12 @@ class TestEmotionIntonation(unittest.TestCase):
             with self.subTest(text=text):
                 processed_text, markers = self.system.process_emotion_intonation(text)
                 # Should have at least one questioning marker
-                question_markers = [m for m in markers if 'questioning' in m.intonation_type.value or 'rising' in m.intonation_type.value]
+                question_markers = [
+                    m
+                    for m in markers
+                    if "questioning" in m.intonation_type.value
+                    or "rising" in m.intonation_type.value
+                ]
                 self.assertGreater(len(question_markers), 0)
 
     def test_exclamation_handling(self):
@@ -384,7 +395,9 @@ class TestEmotionIntonation(unittest.TestCase):
             with self.subTest(text=text):
                 processed_text, markers = self.system.process_emotion_intonation(text)
                 # Should have exclamatory markers
-                exclamation_markers = [m for m in markers if 'exclamatory' in m.intonation_type.value]
+                exclamation_markers = [
+                    m for m in markers if "exclamatory" in m.intonation_type.value
+                ]
                 self.assertGreater(len(exclamation_markers), 0)
 
     def test_emphasis_detection(self):
@@ -399,7 +412,7 @@ class TestEmotionIntonation(unittest.TestCase):
             with self.subTest(text=text):
                 processed_text, markers = self.system.process_emotion_intonation(text)
                 # Should have emphasis markers
-                emphasis_markers = [m for m in markers if 'emphatic' in m.intonation_type.value]
+                emphasis_markers = [m for m in markers if "emphatic" in m.intonation_type.value]
                 self.assertGreater(len(emphasis_markers), 0)
 
     def test_emotion_context_detection(self):
@@ -412,6 +425,7 @@ class TestEmotionIntonation(unittest.TestCase):
         self.assertEqual(emotion_context.primary_emotion, "excitement")
         self.assertIn("excited", emotion_context.triggers)
         self.assertIn("amazing", emotion_context.triggers)
+
 
 class TestIntegration(unittest.TestCase):
     """Test integration of all components"""
@@ -454,6 +468,7 @@ class TestIntegration(unittest.TestCase):
         processed_text, markers = self.emotion_system.process_emotion_intonation(text)
         self.assertGreater(len(markers), 0)  # Should have intonation markers
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     # Run all tests
     unittest.main(verbosity=2)

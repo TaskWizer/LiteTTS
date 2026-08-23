@@ -13,8 +13,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
+
 
 def test_whisper_processor():
     """Test the OptimizedWhisperProcessor"""
@@ -25,9 +28,7 @@ def test_whisper_processor():
 
         # Create processor with recommended settings
         processor = create_whisper_processor(
-            model_name="distil-small.en",
-            compute_type="int8",
-            enable_fallback=True
+            model_name="distil-small.en", compute_type="int8", enable_fallback=True
         )
 
         logger.info("✅ OptimizedWhisperProcessor created successfully")
@@ -42,6 +43,7 @@ def test_whisper_processor():
         logger.error(f"❌ OptimizedWhisperProcessor test failed: {e}")
         return False
 
+
 def test_config_loader():
     """Test the configuration loader"""
     try:
@@ -54,18 +56,23 @@ def test_config_loader():
         settings = config_loader.get_settings()
 
         logger.info("✅ WhisperConfigLoader created successfully")
-        logger.info(f"Settings: Model={settings.default_model}, RTF threshold={settings.rtf_threshold}")
+        logger.info(
+            f"Settings: Model={settings.default_model}, RTF threshold={settings.rtf_threshold}"
+        )
 
         # Test model info
         model_info = config_loader.get_model_info(settings.default_model)
         if model_info:
-            logger.info(f"Model info: Size={model_info.get('size_mb')}MB, Expected RTF={model_info.get('expected_rtf', {}).get('raspberry_pi_4')}")
+            logger.info(
+                f"Model info: Size={model_info.get('size_mb')}MB, Expected RTF={model_info.get('expected_rtf', {}).get('raspberry_pi_4')}"
+            )
 
         return True
 
     except Exception as e:
         logger.error(f"❌ WhisperConfigLoader test failed: {e}")
         return False
+
 
 def test_voice_cloning_update():
     """Test the voice cloning duration update"""
@@ -83,31 +90,36 @@ def test_voice_cloning_update():
             logger.info("✅ Voice cloning duration successfully extended to 120s")
             return True
         else:
-            logger.warning(f"⚠️ Voice cloning duration is {cloner.max_audio_duration}s, expected 120s")
+            logger.warning(
+                f"⚠️ Voice cloning duration is {cloner.max_audio_duration}s, expected 120s"
+            )
             return False
 
     except Exception as e:
         logger.error(f"❌ VoiceCloner test failed: {e}")
         return False
 
+
 def test_faster_whisper_availability():
     """Test if faster-whisper is available"""
     try:
         import faster_whisper
+
         logger.info(f"✅ faster-whisper available, version: {faster_whisper.__version__}")
         return True
     except ImportError:
         logger.error("❌ faster-whisper not available")
         return False
 
+
 def test_environment_variables():
     """Test environment variable configuration"""
     logger.info("Testing environment variable configuration...")
 
     # Set test environment variables
-    os.environ['WHISPER_MODEL'] = 'base'
-    os.environ['WHISPER_CPU_THREADS'] = '2'
-    os.environ['VOICE_CLONING_MAX_DURATION'] = '90'
+    os.environ["WHISPER_MODEL"] = "base"
+    os.environ["WHISPER_CPU_THREADS"] = "2"
+    os.environ["VOICE_CLONING_MAX_DURATION"] = "90"
 
     try:
         from config.whisper_config_loader import WhisperConfigLoader
@@ -121,9 +133,9 @@ def test_environment_variables():
         logger.info(f"Max duration from env: {settings.max_audio_duration}")
 
         # Clean up
-        del os.environ['WHISPER_MODEL']
-        del os.environ['WHISPER_CPU_THREADS']
-        del os.environ['VOICE_CLONING_MAX_DURATION']
+        del os.environ["WHISPER_MODEL"]
+        del os.environ["WHISPER_CPU_THREADS"]
+        del os.environ["VOICE_CLONING_MAX_DURATION"]
 
         logger.info("✅ Environment variable configuration working")
         return True
@@ -131,6 +143,7 @@ def test_environment_variables():
     except Exception as e:
         logger.error(f"❌ Environment variable test failed: {e}")
         return False
+
 
 def main():
     """Run all tests"""
@@ -178,6 +191,7 @@ def main():
     else:
         logger.warning(f"⚠️ {total - passed} tests failed. Please check the issues above.")
         return False
+
 
 if __name__ == "__main__":
     success = main()

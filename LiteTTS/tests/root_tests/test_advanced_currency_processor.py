@@ -42,7 +42,10 @@ class TestAdvancedCurrencyProcessor(unittest.TestCase):
         test_cases = [
             ("$1,000", "one thousand dollars"),
             ("$5,681.52", "five thousand six hundred eighty one dollars and fifty two cents"),
-            ("$1,234,567.89", "one million two hundred thirty four thousand five hundred sixty seven dollars and eighty nine cents"),
+            (
+                "$1,234,567.89",
+                "one million two hundred thirty four thousand five hundred sixty seven dollars and eighty nine cents",
+            ),
             ("€2,500.75", "two thousand five hundred euros and seventy five cents"),
         ]
 
@@ -110,8 +113,14 @@ class TestAdvancedCurrencyProcessor(unittest.TestCase):
     def test_mixed_content(self):
         """Test mixed currency and text content"""
         test_cases = [
-            ("The stock price is $45.67", "The stock price is forty five dollars and sixty seven cents"),
-            ("Revenue of $2.5M vs $1.8M", "Revenue of two point five million dollars vs one point eight million dollars"),
+            (
+                "The stock price is $45.67",
+                "The stock price is forty five dollars and sixty seven cents",
+            ),
+            (
+                "Revenue of $2.5M vs $1.8M",
+                "Revenue of two point five million dollars vs one point eight million dollars",
+            ),
             ("Market cap: $1.2B", "Market cap: one point two billion dollars"),
             ("Loss of ($500K)", "Loss of negative five hundred thousand dollars"),
         ]
@@ -171,10 +180,10 @@ class TestAdvancedCurrencyProcessor(unittest.TestCase):
         text = "The company reported $2.5M revenue and €1.2B market cap with 25 bps margin."
         analysis = self.processor.analyze_currency_content(text)
 
-        self.assertGreater(len(analysis['currency_amounts']), 0)
-        self.assertGreater(len(analysis['financial_terms']), 0)
-        self.assertGreater(analysis['complexity_score'], 0)
-        self.assertIn('Currency amount normalization', analysis['processing_opportunities'])
+        self.assertGreater(len(analysis["currency_amounts"]), 0)
+        self.assertGreater(len(analysis["financial_terms"]), 0)
+        self.assertGreater(analysis["complexity_score"], 0)
+        self.assertIn("Currency amount normalization", analysis["processing_opportunities"])
 
     def test_configuration(self):
         """Test processor configuration"""
@@ -190,10 +199,11 @@ class TestAdvancedCurrencyProcessor(unittest.TestCase):
     def test_supported_currencies(self):
         """Test supported currency list"""
         currencies = self.processor.get_supported_currencies()
-        expected_currencies = ['USD', 'EUR', 'GBP', 'JPY', 'INR', 'RUB', 'KRW']
+        expected_currencies = ["USD", "EUR", "GBP", "JPY", "INR", "RUB", "KRW"]
 
         for currency in expected_currencies:
             self.assertIn(currency, currencies)
+
 
 def run_comprehensive_test():
     """Run comprehensive test with detailed output"""
@@ -208,25 +218,23 @@ def run_comprehensive_test():
         # Critical fixes from assessment
         ("$568.91", "five hundred sixty eight dollars and ninety one cents"),
         ("$5,681.52", "five thousand six hundred eighty one dollars and fifty two cents"),
-        ("$1,234,567.89", "one million two hundred thirty four thousand five hundred sixty seven dollars and eighty nine cents"),
-
+        (
+            "$1,234,567.89",
+            "one million two hundred thirty four thousand five hundred sixty seven dollars and eighty nine cents",
+        ),
         # Currency suffixes (major improvement)
         ("$2.5M", "two point five million dollars"),
         ("Revenue of $2.5M", "Revenue of two point five million dollars"),
         ("$1.2B market cap", "one point two billion dollars market cap"),
-
         # International currencies
         ("€100.50", "one hundred euros and fifty cents"),
         ("£75.25", "seventy five pounds and twenty five pence"),
         ("¥1000", "one thousand yen"),
-
         # Approximate values
         ("~$568.91", "approximately five hundred sixty eight dollars and ninety one cents"),
-
         # Negative amounts
         ("-$50", "negative fifty dollars"),
         ("($100)", "negative one hundred dollars"),
-
         # Financial terms
         ("25 bps", "25 basis points"),
         ("Q1 results", "first quarter results"),
@@ -255,9 +263,10 @@ def run_comprehensive_test():
 
     print("\n" + "=" * 60)
     print(f"📊 Test Results: {passed} passed, {failed} failed")
-    print(f"Success rate: {passed/(passed+failed)*100:.1f}%")
+    print(f"Success rate: {passed / (passed + failed) * 100:.1f}%")
 
     return failed == 0
+
 
 if __name__ == "__main__":
     # Run comprehensive test

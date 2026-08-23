@@ -29,7 +29,7 @@ class TestHardwareProfile:
             has_gpu=True,
             gpu_memory_gb=8.0,
             platform_system="Linux",
-            architecture="x86_64"
+            architecture="x86_64",
         )
         assert profile.cpu_cores == 8
         assert profile.cpu_threads == 16
@@ -52,7 +52,7 @@ class TestHardwareProfile:
             has_gpu=False,
             gpu_memory_gb=None,
             platform_system="Linux",
-            architecture="x86_64"
+            architecture="x86_64",
         )
         assert profile.has_gpu is False
         assert profile.gpu_memory_gb is None
@@ -71,7 +71,7 @@ class TestOptimizedSettings:
             preload_models=True,
             max_text_length=8000,
             timeout_seconds=30,
-            device="cuda"
+            device="cuda",
         )
         assert settings.workers == 4
         assert settings.chunk_size == 200
@@ -92,7 +92,7 @@ class TestOptimizedSettings:
             preload_models=False,
             max_text_length=3000,
             timeout_seconds=60,
-            device="cpu"
+            device="cpu",
         )
         assert settings.device == "cpu"
         assert settings.workers == 2
@@ -133,9 +133,9 @@ class TestHardwareOptimizer:
         benchmarks = optimizer.run_benchmarks()
 
         assert isinstance(benchmarks, dict)
-        assert 'cpu_performance' in benchmarks
-        assert 'memory_performance' in benchmarks
-        assert 'io_performance' in benchmarks
+        assert "cpu_performance" in benchmarks
+        assert "memory_performance" in benchmarks
+        assert "io_performance" in benchmarks
         assert optimizer.benchmark_results == benchmarks
 
     def test_run_benchmarks_raises_without_hardware(self):
@@ -198,8 +198,14 @@ class TestHardwareOptimizer:
         """Test saving override configuration"""
         optimizer = HardwareOptimizer()
         optimizer.optimized_settings = OptimizedSettings(
-            workers=4, chunk_size=200, cache_enabled=True, cache_size=100,
-            preload_models=True, max_text_length=8000, timeout_seconds=30, device="cpu"
+            workers=4,
+            chunk_size=200,
+            cache_enabled=True,
+            cache_size=100,
+            preload_models=True,
+            max_text_length=8000,
+            timeout_seconds=30,
+            device="cpu",
         )
 
         mock_path_instance = Mock()
@@ -216,8 +222,14 @@ class TestHardwareOptimizer:
         """Test save override config handles failures"""
         optimizer = HardwareOptimizer()
         optimizer.optimized_settings = OptimizedSettings(
-            workers=4, chunk_size=200, cache_enabled=True, cache_size=100,
-            preload_models=True, max_text_length=8000, timeout_seconds=30, device="cpu"
+            workers=4,
+            chunk_size=200,
+            cache_enabled=True,
+            cache_size=100,
+            preload_models=True,
+            max_text_length=8000,
+            timeout_seconds=30,
+            device="cpu",
         )
 
         mock_path_instance = Mock()
@@ -233,22 +245,34 @@ class TestHardwareOptimizer:
         optimizer = HardwareOptimizer()
         # Set up real objects for generate_override_config to work
         optimizer.hardware_profile = HardwareProfile(
-            cpu_cores=8, cpu_threads=16, cpu_frequency=3.5,
-            total_memory_gb=32.0, available_memory_gb=16.0,
-            has_gpu=False, gpu_memory_gb=None,
-            platform_system="Linux", architecture="x86_64"
+            cpu_cores=8,
+            cpu_threads=16,
+            cpu_frequency=3.5,
+            total_memory_gb=32.0,
+            available_memory_gb=16.0,
+            has_gpu=False,
+            gpu_memory_gb=None,
+            platform_system="Linux",
+            architecture="x86_64",
         )
-        optimizer.benchmark_results = {'cpu_performance': 1.5}
+        optimizer.benchmark_results = {"cpu_performance": 1.5}
         optimizer.optimized_settings = OptimizedSettings(
-            workers=4, chunk_size=200, cache_enabled=True, cache_size=100,
-            preload_models=True, max_text_length=8000, timeout_seconds=30, device="cpu"
+            workers=4,
+            chunk_size=200,
+            cache_enabled=True,
+            cache_size=100,
+            preload_models=True,
+            max_text_length=8000,
+            timeout_seconds=30,
+            device="cpu",
         )
 
-        with patch.object(optimizer, 'detect_hardware') as mock_detect, \
-             patch.object(optimizer, 'run_benchmarks') as mock_bench, \
-             patch.object(optimizer, 'calculate_optimal_settings') as mock_calc, \
-             patch.object(optimizer, 'save_override_config') as mock_save:
-
+        with (
+            patch.object(optimizer, "detect_hardware") as mock_detect,
+            patch.object(optimizer, "run_benchmarks") as mock_bench,
+            patch.object(optimizer, "calculate_optimal_settings") as mock_calc,
+            patch.object(optimizer, "save_override_config") as mock_save,
+        ):
             mock_detect.return_value = Mock()
             mock_bench.return_value = {}
             mock_calc.return_value = Mock()
@@ -303,8 +327,8 @@ class TestHardwareOptimizerEdgeCases:
         """Test GPU detection when torch import fails (line 78-79)"""
         optimizer = HardwareOptimizer()
 
-        with patch.dict('sys.modules', {'torch': None}):
-            with patch('LiteTTS.hardware_optimizer.psutil') as mock_psutil:
+        with patch.dict("sys.modules", {"torch": None}):
+            with patch("LiteTTS.hardware_optimizer.psutil") as mock_psutil:
                 # Set up basic mock returns
                 mock_psutil.cpu_count.side_effect = [4, 8]
                 mock_freq = Mock()
@@ -323,7 +347,7 @@ class TestHardwareOptimizerEdgeCases:
         """Test GPU detection when torch raises exception (lines 80-81)"""
         optimizer = HardwareOptimizer()
 
-        with patch('LiteTTS.hardware_optimizer.psutil') as mock_psutil:
+        with patch("LiteTTS.hardware_optimizer.psutil") as mock_psutil:
             mock_psutil.cpu_count.side_effect = [4, 8]
             mock_freq = Mock()
             mock_freq.current = 2.5
@@ -334,8 +358,9 @@ class TestHardwareOptimizerEdgeCases:
             mock_psutil.virtual_memory.return_value = mock_mem
 
             import torch
-            with patch.dict('sys.modules', {'torch': torch}):
-                with patch.object(torch.cuda, 'is_available', side_effect=Exception("CUDA error")):
+
+            with patch.dict("sys.modules", {"torch": torch}):
+                with patch.object(torch.cuda, "is_available", side_effect=Exception("CUDA error")):
                     profile = optimizer.detect_hardware()
                     # Should handle exception gracefully
                     assert profile.has_gpu is False
@@ -344,32 +369,42 @@ class TestHardwareOptimizerEdgeCases:
         """Test I/O benchmark exception handling (lines 145-146)"""
         optimizer = HardwareOptimizer()
         optimizer.hardware_profile = HardwareProfile(
-            cpu_cores=4, cpu_threads=8, cpu_frequency=2.5,
-            total_memory_gb=16.0, available_memory_gb=8.0,
-            has_gpu=False, gpu_memory_gb=None,
-            platform_system="Linux", architecture="x86_64"
+            cpu_cores=4,
+            cpu_threads=8,
+            cpu_frequency=2.5,
+            total_memory_gb=16.0,
+            available_memory_gb=8.0,
+            has_gpu=False,
+            gpu_memory_gb=None,
+            platform_system="Linux",
+            architecture="x86_64",
         )
 
-        with patch('LiteTTS.hardware_optimizer.open', side_effect=OSError("Disk error")):
+        with patch("LiteTTS.hardware_optimizer.open", side_effect=OSError("Disk error")):
             benchmarks = optimizer.run_benchmarks()
             # Should still return benchmarks with partial results
-            assert 'cpu_performance' in benchmarks
-            assert 'memory_performance' in benchmarks
-            assert 'io_performance' in benchmarks
+            assert "cpu_performance" in benchmarks
+            assert "memory_performance" in benchmarks
+            assert "io_performance" in benchmarks
 
     def test_calculate_optimal_settings_low_end_hardware(self):
         """Test optimal settings calculation for low-end hardware (lines 171-174, 179-184, 190-193, 201-204, 210-213)"""
         optimizer = HardwareOptimizer()
         optimizer.hardware_profile = HardwareProfile(
-            cpu_cores=2, cpu_threads=4, cpu_frequency=1.5,
-            total_memory_gb=3.5, available_memory_gb=2.0,
-            has_gpu=False, gpu_memory_gb=None,
-            platform_system="Linux", architecture="x86_64"
+            cpu_cores=2,
+            cpu_threads=4,
+            cpu_frequency=1.5,
+            total_memory_gb=3.5,
+            available_memory_gb=2.0,
+            has_gpu=False,
+            gpu_memory_gb=None,
+            platform_system="Linux",
+            architecture="x86_64",
         )
         optimizer.benchmark_results = {
-            'cpu_performance': 0.5,  # Slow CPU
-            'memory_performance': 1.0,
-            'io_performance': 1.0
+            "cpu_performance": 0.5,  # Slow CPU
+            "memory_performance": 1.0,
+            "io_performance": 1.0,
         }
 
         settings = optimizer.calculate_optimal_settings()
@@ -389,15 +424,20 @@ class TestHardwareOptimizerEdgeCases:
         """Test optimal settings for high-end hardware"""
         optimizer = HardwareOptimizer()
         optimizer.hardware_profile = HardwareProfile(
-            cpu_cores=16, cpu_threads=32, cpu_frequency=4.0,
-            total_memory_gb=64.0, available_memory_gb=32.0,
-            has_gpu=True, gpu_memory_gb=8.0,
-            platform_system="Linux", architecture="x86_64"
+            cpu_cores=16,
+            cpu_threads=32,
+            cpu_frequency=4.0,
+            total_memory_gb=64.0,
+            available_memory_gb=32.0,
+            has_gpu=True,
+            gpu_memory_gb=8.0,
+            platform_system="Linux",
+            architecture="x86_64",
         )
         optimizer.benchmark_results = {
-            'cpu_performance': 3.0,  # Fast CPU
-            'memory_performance': 2.0,
-            'io_performance': 2.0
+            "cpu_performance": 3.0,  # Fast CPU
+            "memory_performance": 2.0,
+            "io_performance": 2.0,
         }
 
         settings = optimizer.calculate_optimal_settings()
@@ -419,15 +459,26 @@ class TestHardwareOptimizerEdgeCases:
         """Test generate_override_config adds cuda device when available (line 276)"""
         optimizer = HardwareOptimizer()
         optimizer.hardware_profile = HardwareProfile(
-            cpu_cores=8, cpu_threads=16, cpu_frequency=3.5,
-            total_memory_gb=32.0, available_memory_gb=16.0,
-            has_gpu=True, gpu_memory_gb=8.0,
-            platform_system="Linux", architecture="x86_64"
+            cpu_cores=8,
+            cpu_threads=16,
+            cpu_frequency=3.5,
+            total_memory_gb=32.0,
+            available_memory_gb=16.0,
+            has_gpu=True,
+            gpu_memory_gb=8.0,
+            platform_system="Linux",
+            architecture="x86_64",
         )
-        optimizer.benchmark_results = {'cpu_performance': 1.5}
+        optimizer.benchmark_results = {"cpu_performance": 1.5}
         optimizer.optimized_settings = OptimizedSettings(
-            workers=4, chunk_size=200, cache_enabled=True, cache_size=100,
-            preload_models=True, max_text_length=8000, timeout_seconds=30, device="cuda"
+            workers=4,
+            chunk_size=200,
+            cache_enabled=True,
+            cache_size=100,
+            preload_models=True,
+            max_text_length=8000,
+            timeout_seconds=30,
+            device="cuda",
         )
 
         config = optimizer.generate_override_config()
@@ -440,18 +491,24 @@ class TestHardwareOptimizerEdgeCases:
         """Test save_override_config backs up existing file (lines 286-288)"""
         optimizer = HardwareOptimizer()
         optimizer.optimized_settings = OptimizedSettings(
-            workers=4, chunk_size=200, cache_enabled=True, cache_size=100,
-            preload_models=True, max_text_length=8000, timeout_seconds=30, device="cpu"
+            workers=4,
+            chunk_size=200,
+            cache_enabled=True,
+            cache_size=100,
+            preload_models=True,
+            max_text_length=8000,
+            timeout_seconds=30,
+            device="cpu",
         )
 
-        with patch('LiteTTS.hardware_optimizer.Path') as mock_path:
+        with patch("LiteTTS.hardware_optimizer.Path") as mock_path:
             mock_existing = Mock()
             mock_existing.exists.return_value = True
             mock_backup = Mock()
             mock_path.return_value = mock_existing
-            mock_path.side_effect = lambda x: mock_backup if 'backup' in str(x) else mock_existing
+            mock_path.side_effect = lambda x: mock_backup if "backup" in str(x) else mock_existing
 
-            with patch('builtins.open', create=True):
+            with patch("builtins.open", create=True):
                 result = optimizer.save_override_config({}, backup_existing=True)
                 # Line 286-288: should rename existing to backup
                 assert mock_existing.rename.called
@@ -460,17 +517,14 @@ class TestHardwareOptimizerEdgeCases:
         """Test optimize_system returns True when already done (lines 305-313)"""
         optimizer = HardwareOptimizer()
 
-        existing_config = {
-            "_generated_by": "Kokoro Hardware Optimizer",
-            "server": {"workers": 4}
-        }
+        existing_config = {"_generated_by": "Kokoro Hardware Optimizer", "server": {"workers": 4}}
 
-        with patch('LiteTTS.hardware_optimizer.Path') as mock_path:
+        with patch("LiteTTS.hardware_optimizer.Path") as mock_path:
             mock_path_instance = Mock()
             mock_path_instance.exists.return_value = True
             mock_path.return_value = mock_path_instance
 
-            with patch('builtins.open', create=True) as mock_open:
+            with patch("builtins.open", create=True) as mock_open:
                 mock_file = Mock()
                 mock_file.__enter__ = Mock(return_value=mock_file)
                 mock_file.__exit__ = Mock(return_value=None)
@@ -484,7 +538,7 @@ class TestHardwareOptimizerEdgeCases:
         """Test optimize_system handles failures (lines 336-341)"""
         optimizer = HardwareOptimizer()
 
-        with patch.object(optimizer, 'detect_hardware', side_effect=Exception("Detection failed")):
+        with patch.object(optimizer, "detect_hardware", side_effect=Exception("Detection failed")):
             result = optimizer.optimize_system()
             assert result is False
 
@@ -492,19 +546,30 @@ class TestHardwareOptimizerEdgeCases:
         """Test optimize_system when save fails"""
         optimizer = HardwareOptimizer()
         optimizer.hardware_profile = HardwareProfile(
-            cpu_cores=4, cpu_threads=8, cpu_frequency=2.5,
-            total_memory_gb=16.0, available_memory_gb=8.0,
-            has_gpu=False, gpu_memory_gb=None,
-            platform_system="Linux", architecture="x86_64"
+            cpu_cores=4,
+            cpu_threads=8,
+            cpu_frequency=2.5,
+            total_memory_gb=16.0,
+            available_memory_gb=8.0,
+            has_gpu=False,
+            gpu_memory_gb=None,
+            platform_system="Linux",
+            architecture="x86_64",
         )
-        optimizer.benchmark_results = {'cpu_performance': 1.5}
+        optimizer.benchmark_results = {"cpu_performance": 1.5}
         optimizer.optimized_settings = OptimizedSettings(
-            workers=4, chunk_size=200, cache_enabled=True, cache_size=100,
-            preload_models=True, max_text_length=8000, timeout_seconds=30, device="cpu"
+            workers=4,
+            chunk_size=200,
+            cache_enabled=True,
+            cache_size=100,
+            preload_models=True,
+            max_text_length=8000,
+            timeout_seconds=30,
+            device="cpu",
         )
 
-        with patch.object(optimizer, 'save_override_config', return_value=False):
-            with patch('LiteTTS.hardware_optimizer.Path') as mock_path:
+        with patch.object(optimizer, "save_override_config", return_value=False):
+            with patch("LiteTTS.hardware_optimizer.Path") as mock_path:
                 mock_path_instance = Mock()
                 mock_path_instance.exists.return_value = False
                 mock_path.return_value = mock_path_instance
@@ -521,15 +586,20 @@ class TestHardwareOptimizerEdgeCases:
         # 12GB total triggers line 202 (max_text_length=5000 for 8<=total<16)
         # cpu_perf 1.5 triggers line 211 (timeout_seconds=45 for 1.0<perf<=2.0)
         optimizer.hardware_profile = HardwareProfile(
-            cpu_cores=4, cpu_threads=8, cpu_frequency=2.5,
-            total_memory_gb=12.0, available_memory_gb=6.0,
-            has_gpu=False, gpu_memory_gb=None,
-            platform_system="Linux", architecture="x86_64"
+            cpu_cores=4,
+            cpu_threads=8,
+            cpu_frequency=2.5,
+            total_memory_gb=12.0,
+            available_memory_gb=6.0,
+            has_gpu=False,
+            gpu_memory_gb=None,
+            platform_system="Linux",
+            architecture="x86_64",
         )
         optimizer.benchmark_results = {
-            'cpu_performance': 1.5,  # Medium CPU -> line 211
-            'memory_performance': 1.5,
-            'io_performance': 1.5
+            "cpu_performance": 1.5,  # Medium CPU -> line 211
+            "memory_performance": 1.5,
+            "io_performance": 1.5,
         }
 
         settings = optimizer.calculate_optimal_settings()
@@ -549,15 +619,20 @@ class TestHardwareOptimizerEdgeCases:
         """Test workers calculation for 8 cores (line 170)"""
         optimizer = HardwareOptimizer()
         optimizer.hardware_profile = HardwareProfile(
-            cpu_cores=8, cpu_threads=16, cpu_frequency=3.0,
-            total_memory_gb=32.0, available_memory_gb=16.0,
-            has_gpu=False, gpu_memory_gb=None,
-            platform_system="Linux", architecture="x86_64"
+            cpu_cores=8,
+            cpu_threads=16,
+            cpu_frequency=3.0,
+            total_memory_gb=32.0,
+            available_memory_gb=16.0,
+            has_gpu=False,
+            gpu_memory_gb=None,
+            platform_system="Linux",
+            architecture="x86_64",
         )
         optimizer.benchmark_results = {
-            'cpu_performance': 2.5,
-            'memory_performance': 2.0,
-            'io_performance': 2.0
+            "cpu_performance": 2.5,
+            "memory_performance": 2.0,
+            "io_performance": 2.0,
         }
 
         settings = optimizer.calculate_optimal_settings()
@@ -569,15 +644,20 @@ class TestHardwareOptimizerEdgeCases:
         """Test chunk_size for 4-8GB memory range (line 182)"""
         optimizer = HardwareOptimizer()
         optimizer.hardware_profile = HardwareProfile(
-            cpu_cores=2, cpu_threads=4, cpu_frequency=2.0,
-            total_memory_gb=6.0, available_memory_gb=3.0,
-            has_gpu=False, gpu_memory_gb=None,
-            platform_system="Linux", architecture="x86_64"
+            cpu_cores=2,
+            cpu_threads=4,
+            cpu_frequency=2.0,
+            total_memory_gb=6.0,
+            available_memory_gb=3.0,
+            has_gpu=False,
+            gpu_memory_gb=None,
+            platform_system="Linux",
+            architecture="x86_64",
         )
         optimizer.benchmark_results = {
-            'cpu_performance': 1.0,
-            'memory_performance': 1.0,
-            'io_performance': 1.0
+            "cpu_performance": 1.0,
+            "memory_performance": 1.0,
+            "io_performance": 1.0,
         }
 
         settings = optimizer.calculate_optimal_settings()
@@ -589,7 +669,7 @@ class TestHardwareOptimizerEdgeCases:
         """Test GPU detection when CUDA is available (lines 75-77)"""
         optimizer = HardwareOptimizer()
 
-        with patch('LiteTTS.hardware_optimizer.psutil') as mock_psutil:
+        with patch("LiteTTS.hardware_optimizer.psutil") as mock_psutil:
             mock_psutil.cpu_count.side_effect = [8, 16]
             mock_freq = Mock()
             mock_freq.current = 3.5
@@ -606,8 +686,10 @@ class TestHardwareOptimizerEdgeCases:
             mock_torch.cuda.is_available.return_value = True
             mock_torch.cuda.get_device_name.return_value = "NVIDIA RTX 3080"
 
-            with patch.dict('sys.modules', {'torch': mock_torch}):
-                with patch.object(mock_torch.cuda, 'get_device_properties', return_value=mock_device):
+            with patch.dict("sys.modules", {"torch": mock_torch}):
+                with patch.object(
+                    mock_torch.cuda, "get_device_properties", return_value=mock_device
+                ):
                     profile = optimizer.detect_hardware()
 
                     assert profile.has_gpu is True
@@ -618,29 +700,41 @@ class TestHardwareOptimizerEdgeCases:
         optimizer = HardwareOptimizer()
         # Set up required state for generate_override_config
         optimizer.hardware_profile = HardwareProfile(
-            cpu_cores=4, cpu_threads=8, cpu_frequency=2.5,
-            total_memory_gb=16.0, available_memory_gb=8.0,
-            has_gpu=False, gpu_memory_gb=None,
-            platform_system="Linux", architecture="x86_64"
+            cpu_cores=4,
+            cpu_threads=8,
+            cpu_frequency=2.5,
+            total_memory_gb=16.0,
+            available_memory_gb=8.0,
+            has_gpu=False,
+            gpu_memory_gb=None,
+            platform_system="Linux",
+            architecture="x86_64",
         )
-        optimizer.benchmark_results = {'cpu_performance': 1.5}
+        optimizer.benchmark_results = {"cpu_performance": 1.5}
         optimizer.optimized_settings = OptimizedSettings(
-            workers=4, chunk_size=200, cache_enabled=True, cache_size=100,
-            preload_models=True, max_text_length=8000, timeout_seconds=30, device="cpu"
+            workers=4,
+            chunk_size=200,
+            cache_enabled=True,
+            cache_size=100,
+            preload_models=True,
+            max_text_length=8000,
+            timeout_seconds=30,
+            device="cpu",
         )
 
-        with patch('LiteTTS.hardware_optimizer.Path') as mock_path:
+        with patch("LiteTTS.hardware_optimizer.Path") as mock_path:
             mock_path_instance = Mock()
             mock_path_instance.exists.return_value = True
             mock_path.return_value = mock_path_instance
 
-            with patch('builtins.open', side_effect=Exception("Cannot read backup")):
+            with patch("builtins.open", side_effect=Exception("Cannot read backup")):
                 # Should continue with optimization when existing config cannot be read
-                with patch.object(optimizer, 'detect_hardware') as mock_detect, \
-                     patch.object(optimizer, 'run_benchmarks') as mock_bench, \
-                     patch.object(optimizer, 'calculate_optimal_settings') as mock_calc, \
-                     patch.object(optimizer, 'save_override_config') as mock_save:
-
+                with (
+                    patch.object(optimizer, "detect_hardware") as mock_detect,
+                    patch.object(optimizer, "run_benchmarks") as mock_bench,
+                    patch.object(optimizer, "calculate_optimal_settings") as mock_calc,
+                    patch.object(optimizer, "save_override_config") as mock_save,
+                ):
                     mock_detect.return_value = Mock()
                     mock_bench.return_value = {}
                     mock_calc.return_value = Mock()

@@ -28,6 +28,7 @@ def test_health_endpoint():
     except Exception as e:
         print(f"   ❌ Health endpoint error: {e}")
 
+
 def test_voices_endpoint():
     """Test the voices endpoint"""
     print("\n🎭 Testing Voices Endpoint")
@@ -39,8 +40,8 @@ def test_voices_endpoint():
             print("   ✅ Voices endpoint accessible")
             try:
                 data = response.json()
-                if isinstance(data, dict) and 'data' in data:
-                    voices = data['data']
+                if isinstance(data, dict) and "data" in data:
+                    voices = data["data"]
                     print(f"   📊 Found {len(voices)} voices")
                     if voices:
                         print(f"   🎤 Sample voice: {voices[0].get('id', 'unknown')}")
@@ -58,6 +59,7 @@ def test_voices_endpoint():
     except Exception as e:
         print(f"   ❌ Voices endpoint error: {e}")
 
+
 def test_models_endpoint():
     """Test the models endpoint"""
     print("\n🤖 Testing Models Endpoint")
@@ -69,8 +71,8 @@ def test_models_endpoint():
             print("   ✅ Models endpoint accessible")
             try:
                 data = response.json()
-                if isinstance(data, dict) and 'data' in data:
-                    models = data['data']
+                if isinstance(data, dict) and "data" in data:
+                    models = data["data"]
                     print(f"   📊 Found {len(models)} models")
                     if models:
                         print(f"   🤖 Sample model: {models[0].get('id', 'unknown')}")
@@ -84,6 +86,7 @@ def test_models_endpoint():
     except Exception as e:
         print(f"   ❌ Models endpoint error: {e}")
 
+
 def test_tts_endpoint():
     """Test the main TTS endpoint"""
     print("\n🗣️ Testing TTS Endpoint")
@@ -96,8 +99,8 @@ def test_tts_endpoint():
                 "model": "kokoro",
                 "input": "Hello, this is a test.",
                 "voice": "af_heart",
-                "response_format": "mp3"
-            }
+                "response_format": "mp3",
+            },
         },
         {
             "name": "Different Voice",
@@ -105,8 +108,8 @@ def test_tts_endpoint():
                 "model": "kokoro",
                 "input": "Testing with a different voice.",
                 "voice": "am_puck",
-                "response_format": "wav"
-            }
+                "response_format": "wav",
+            },
         },
         {
             "name": "Speed Control",
@@ -115,9 +118,9 @@ def test_tts_endpoint():
                 "input": "Testing speed control.",
                 "voice": "af_heart",
                 "speed": 1.5,
-                "response_format": "mp3"
-            }
-        }
+                "response_format": "mp3",
+            },
+        },
     ]
 
     for test_case in test_cases:
@@ -125,9 +128,7 @@ def test_tts_endpoint():
         try:
             start_time = time.time()
             response = requests.post(
-                "http://localhost:8354/v1/audio/speech",
-                json=test_case["payload"],
-                timeout=30
+                "http://localhost:8354/v1/audio/speech", json=test_case["payload"], timeout=30
             )
             end_time = time.time()
 
@@ -137,7 +138,7 @@ def test_tts_endpoint():
                 print(f"      ✅ SUCCESS: {audio_size:,} bytes in {generation_time:.3f}s")
 
                 # Check content type
-                content_type = response.headers.get('content-type', 'unknown')
+                content_type = response.headers.get("content-type", "unknown")
                 print(f"      📋 Content-Type: {content_type}")
 
             else:
@@ -153,6 +154,7 @@ def test_tts_endpoint():
         except Exception as e:
             print(f"      ❌ ERROR: {e}")
 
+
 def test_error_handling():
     """Test error handling"""
     print("\n🚨 Testing Error Handling")
@@ -165,9 +167,9 @@ def test_error_handling():
                 "model": "kokoro",
                 "input": "Test with invalid voice",
                 "voice": "invalid_voice",
-                "response_format": "mp3"
+                "response_format": "mp3",
             },
-            "expected_status": [400, 422]
+            "expected_status": [400, 422],
         },
         {
             "name": "Empty Text",
@@ -175,9 +177,9 @@ def test_error_handling():
                 "model": "kokoro",
                 "input": "",
                 "voice": "af_heart",
-                "response_format": "mp3"
+                "response_format": "mp3",
             },
-            "expected_status": [400, 422]
+            "expected_status": [400, 422],
         },
         {
             "name": "Invalid Format",
@@ -185,9 +187,9 @@ def test_error_handling():
                 "model": "kokoro",
                 "input": "Test with invalid format",
                 "voice": "af_heart",
-                "response_format": "invalid_format"
+                "response_format": "invalid_format",
             },
-            "expected_status": [400, 422]
+            "expected_status": [400, 422],
         },
         {
             "name": "Invalid Speed",
@@ -196,19 +198,17 @@ def test_error_handling():
                 "input": "Test with invalid speed",
                 "voice": "af_heart",
                 "speed": -1.0,
-                "response_format": "mp3"
+                "response_format": "mp3",
             },
-            "expected_status": [400, 422]
-        }
+            "expected_status": [400, 422],
+        },
     ]
 
     for test_case in error_test_cases:
         print(f"\n   🧪 {test_case['name']}")
         try:
             response = requests.post(
-                "http://localhost:8354/v1/audio/speech",
-                json=test_case["payload"],
-                timeout=15
+                "http://localhost:8354/v1/audio/speech", json=test_case["payload"], timeout=15
             )
 
             if response.status_code in test_case["expected_status"]:
@@ -219,10 +219,13 @@ def test_error_handling():
                 except:
                     pass
             else:
-                print(f"      ⚠️ Unexpected status: {response.status_code} (expected {test_case['expected_status']})")
+                print(
+                    f"      ⚠️ Unexpected status: {response.status_code} (expected {test_case['expected_status']})"
+                )
 
         except Exception as e:
             print(f"      ❌ ERROR: {e}")
+
 
 def test_server_status():
     """Check if server is running"""
@@ -231,6 +234,7 @@ def test_server_status():
         return response.status_code == 200
     except:
         return False
+
 
 if __name__ == "__main__":
     print("🚀 Starting API Endpoint Testing")

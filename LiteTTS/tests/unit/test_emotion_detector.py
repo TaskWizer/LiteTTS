@@ -32,6 +32,7 @@ class TestEmotionDetector:
     def test_update_conversation_history(self, detector):
         """Test updating conversation history"""
         import time
+
         emotion_profile = detector.detect_emotional_context("I'm happy!")
         detector.update_conversation_history("user", "Hello!", emotion_profile, time.time())
         result = detector.get_dialogue_state()
@@ -64,6 +65,7 @@ class TestEmotionDetectorEdgeCases:
     def test_update_conversation_multiple(self, detector):
         """Test updating conversation with multiple turns"""
         import time
+
         t = time.time()
         emotion_profile1 = detector.detect_emotional_context("I'm happy!")
         emotion_profile2 = detector.detect_emotional_context("Hello there.")

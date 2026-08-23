@@ -73,8 +73,12 @@ class TestAudioProcessor:
 
     def test_concatenate_segments_multiple(self, processor):
         """Test concatenating multiple segments"""
-        seg1 = AudioSegment(audio_data=np.random.randn(8000).astype(np.float32), sample_rate=16000, format="wav")
-        seg2 = AudioSegment(audio_data=np.random.randn(8000).astype(np.float32), sample_rate=16000, format="wav")
+        seg1 = AudioSegment(
+            audio_data=np.random.randn(8000).astype(np.float32), sample_rate=16000, format="wav"
+        )
+        seg2 = AudioSegment(
+            audio_data=np.random.randn(8000).astype(np.float32), sample_rate=16000, format="wav"
+        )
         result = processor.concatenate_segments([seg1, seg2])
         assert len(result.audio_data) == len(seg1.audio_data) + len(seg2.audio_data)
 
@@ -90,8 +94,12 @@ class TestAudioProcessor:
 
     def test_apply_crossfade_multiple(self, processor):
         """Test crossfade with multiple segments"""
-        seg1 = AudioSegment(audio_data=np.random.randn(8000).astype(np.float32), sample_rate=16000, format="wav")
-        seg2 = AudioSegment(audio_data=np.random.randn(8000).astype(np.float32), sample_rate=16000, format="wav")
+        seg1 = AudioSegment(
+            audio_data=np.random.randn(8000).astype(np.float32), sample_rate=16000, format="wav"
+        )
+        seg2 = AudioSegment(
+            audio_data=np.random.randn(8000).astype(np.float32), sample_rate=16000, format="wav"
+        )
         result = processor.apply_crossfade([seg1, seg2])
         assert result is not None
 
@@ -126,17 +134,21 @@ class TestAudioProcessorEdgeCases:
 
     def test_validate_audio_empty(self, processor):
         """Test validating empty audio"""
-        empty_segment = AudioSegment(audio_data=np.array([], dtype=np.float32), sample_rate=24000, format="wav")
+        empty_segment = AudioSegment(
+            audio_data=np.array([], dtype=np.float32), sample_rate=24000, format="wav"
+        )
         result = processor.validate_audio(empty_segment)
         assert isinstance(result, dict)
         assert result["is_valid"] is False
 
     def test_validate_audio_none_data(self, processor):
         """Test validating audio with None data"""
+
         class NoneSegment:
             audio_data = None
             sample_rate = 24000
             duration = 0.0
+
         result = processor.validate_audio(NoneSegment())
         assert isinstance(result, dict)
         assert result["is_valid"] is False
@@ -177,11 +189,13 @@ class TestAudioProcessorEdgeCases:
         """Test validating audio with invalid sample rate"""
         # Create a custom segment class to avoid the post_init check
         audio_data = np.random.randn(24000).astype(np.float32)
+
         class InvalidSegment:
             def __init__(self):
                 self.audio_data = audio_data
                 self.sample_rate = 0
                 self.duration = 1.0
+
         result = processor.validate_audio(InvalidSegment())
         assert isinstance(result, dict)
         assert result["is_valid"] is False

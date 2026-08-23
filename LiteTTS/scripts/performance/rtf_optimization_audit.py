@@ -23,11 +23,11 @@ class RTFOptimizationAuditor:
     def __init__(self, base_url: str = "http://localhost:8354"):
         self.base_url = base_url
         self.results = {
-            'baseline_performance': {},
-            'bottleneck_analysis': {},
-            'optimization_recommendations': [],
-            'before_after_metrics': {},
-            'system_analysis': {}
+            "baseline_performance": {},
+            "bottleneck_analysis": {},
+            "optimization_recommendations": [],
+            "before_after_metrics": {},
+            "system_analysis": {},
         }
 
     def run_comprehensive_audit(self) -> dict[str, Any]:
@@ -71,9 +71,15 @@ class RTFOptimizationAuditor:
 
         test_cases = [
             {"text": "Hello world", "category": "short"},
-            {"text": "This is a medium length sentence for testing TTS performance.", "category": "medium"},
-            {"text": "This is a much longer text that will help us understand how the TTS system performs with extended content. It includes multiple sentences and should give us a good baseline for RTF measurements across different text lengths.", "category": "long"},
-            {"text": "Quick test", "category": "cached"}  # Run twice to test cache
+            {
+                "text": "This is a medium length sentence for testing TTS performance.",
+                "category": "medium",
+            },
+            {
+                "text": "This is a much longer text that will help us understand how the TTS system performs with extended content. It includes multiple sentences and should give us a good baseline for RTF measurements across different text lengths.",
+                "category": "long",
+            },
+            {"text": "Quick test", "category": "cached"},  # Run twice to test cache
         ]
 
         voices_to_test = ["af_heart", "am_onyx", "bf_alice", "jf_alpha"]
@@ -97,12 +103,8 @@ class RTFOptimizationAuditor:
                         start_time = time.time()
                         response = requests.post(
                             f"{self.base_url}/v1/audio/speech",
-                            json={
-                                "input": text,
-                                "voice": voice,
-                                "response_format": "mp3"
-                            },
-                            timeout=30
+                            json={"input": text, "voice": voice, "response_format": "mp3"},
+                            timeout=30,
                         )
                         end_time = time.time()
 
@@ -113,7 +115,11 @@ class RTFOptimizationAuditor:
                             # Estimate audio duration more accurately
                             # MP3 compression varies, but roughly 16KB/second at 128kbps
                             estimated_duration = audio_size / 16000
-                            rtf = generation_time / estimated_duration if estimated_duration > 0 else 0
+                            rtf = (
+                                generation_time / estimated_duration
+                                if estimated_duration > 0
+                                else 0
+                            )
 
                             rtf_values.append(rtf)
                             response_times.append(generation_time)
@@ -121,38 +127,40 @@ class RTFOptimizationAuditor:
                         time.sleep(0.1)  # Small delay between runs
 
                     except Exception as e:
-                        print(f"      ❌ Error in run {run+1}: {e}")
+                        print(f"      ❌ Error in run {run + 1}: {e}")
 
                 if rtf_values:
                     voice_results[category] = {
-                        'avg_rtf': statistics.mean(rtf_values),
-                        'min_rtf': min(rtf_values),
-                        'max_rtf': max(rtf_values),
-                        'std_rtf': statistics.stdev(rtf_values) if len(rtf_values) > 1 else 0,
-                        'avg_response_time': statistics.mean(response_times),
-                        'text_length': len(text)
+                        "avg_rtf": statistics.mean(rtf_values),
+                        "min_rtf": min(rtf_values),
+                        "max_rtf": max(rtf_values),
+                        "std_rtf": statistics.stdev(rtf_values) if len(rtf_values) > 1 else 0,
+                        "avg_response_time": statistics.mean(response_times),
+                        "text_length": len(text),
                     }
 
-                    print(f"      {category}: RTF {voice_results[category]['avg_rtf']:.3f} ± {voice_results[category]['std_rtf']:.3f}")
+                    print(
+                        f"      {category}: RTF {voice_results[category]['avg_rtf']:.3f} ± {voice_results[category]['std_rtf']:.3f}"
+                    )
 
             baseline_results[voice] = voice_results
 
-        self.results['baseline_performance'] = baseline_results
+        self.results["baseline_performance"] = baseline_results
 
         # Calculate overall statistics
         all_rtf_values = []
         for voice_data in baseline_results.values():
             for category_data in voice_data.values():
-                all_rtf_values.append(category_data['avg_rtf'])
+                all_rtf_values.append(category_data["avg_rtf"])
 
         if all_rtf_values:
             overall_stats = {
-                'overall_avg_rtf': statistics.mean(all_rtf_values),
-                'overall_min_rtf': min(all_rtf_values),
-                'overall_max_rtf': max(all_rtf_values),
-                'performance_rating': self._rate_performance(statistics.mean(all_rtf_values))
+                "overall_avg_rtf": statistics.mean(all_rtf_values),
+                "overall_min_rtf": min(all_rtf_values),
+                "overall_max_rtf": max(all_rtf_values),
+                "performance_rating": self._rate_performance(statistics.mean(all_rtf_values)),
             }
-            self.results['baseline_performance']['overall'] = overall_stats
+            self.results["baseline_performance"]["overall"] = overall_stats
 
             print(f"   📊 Overall Average RTF: {overall_stats['overall_avg_rtf']:.3f}")
             print(f"   🎯 Performance Rating: {overall_stats['performance_rating']}")
@@ -172,17 +180,21 @@ class RTFOptimizationAuditor:
 
                 # Look for high latency indicators
                 if "avg_response_time" in dashboard_data:
-                    bottlenecks.append({
-                        'type': 'api_latency',
-                        'severity': 'medium',
-                        'description': 'API response time analysis needed'
-                    })
+                    bottlenecks.append(
+                        {
+                            "type": "api_latency",
+                            "severity": "medium",
+                            "description": "API response time analysis needed",
+                        }
+                    )
         except Exception as e:
-            bottlenecks.append({
-                'type': 'api_connectivity',
-                'severity': 'high',
-                'description': f'Cannot connect to API: {e}'
-            })
+            bottlenecks.append(
+                {
+                    "type": "api_connectivity",
+                    "severity": "high",
+                    "description": f"Cannot connect to API: {e}",
+                }
+            )
 
         # 2. Check for text processing bottlenecks
         print("   🔍 Analyzing text processing performance...")
@@ -192,12 +204,8 @@ class RTFOptimizationAuditor:
             start_time = time.time()
             response = requests.post(
                 f"{self.base_url}/v1/audio/speech",
-                json={
-                    "input": long_text,
-                    "voice": "af_heart",
-                    "response_format": "mp3"
-                },
-                timeout=60
+                json={"input": long_text, "voice": "af_heart", "response_format": "mp3"},
+                timeout=60,
             )
             processing_time = time.time() - start_time
 
@@ -207,26 +215,32 @@ class RTFOptimizationAuditor:
                 rtf = processing_time / estimated_duration if estimated_duration > 0 else 0
 
                 if rtf > 1.0:
-                    bottlenecks.append({
-                        'type': 'text_processing',
-                        'severity': 'high',
-                        'description': f'Long text RTF too high: {rtf:.3f}',
-                        'metric': rtf
-                    })
+                    bottlenecks.append(
+                        {
+                            "type": "text_processing",
+                            "severity": "high",
+                            "description": f"Long text RTF too high: {rtf:.3f}",
+                            "metric": rtf,
+                        }
+                    )
                 elif rtf > 0.5:
-                    bottlenecks.append({
-                        'type': 'text_processing',
-                        'severity': 'medium',
-                        'description': f'Long text RTF suboptimal: {rtf:.3f}',
-                        'metric': rtf
-                    })
+                    bottlenecks.append(
+                        {
+                            "type": "text_processing",
+                            "severity": "medium",
+                            "description": f"Long text RTF suboptimal: {rtf:.3f}",
+                            "metric": rtf,
+                        }
+                    )
 
         except Exception as e:
-            bottlenecks.append({
-                'type': 'text_processing',
-                'severity': 'high',
-                'description': f'Long text processing failed: {e}'
-            })
+            bottlenecks.append(
+                {
+                    "type": "text_processing",
+                    "severity": "high",
+                    "description": f"Long text processing failed: {e}",
+                }
+            )
 
         # 3. Check voice loading performance
         print("   🔍 Analyzing voice loading performance...")
@@ -237,40 +251,40 @@ class RTFOptimizationAuditor:
                 start_time = time.time()
                 response = requests.post(
                     f"{self.base_url}/v1/audio/speech",
-                    json={
-                        "input": "Test voice loading",
-                        "voice": voice,
-                        "response_format": "mp3"
-                    },
-                    timeout=30
+                    json={"input": "Test voice loading", "voice": voice, "response_format": "mp3"},
+                    timeout=30,
                 )
                 loading_time = time.time() - start_time
 
                 if loading_time > 5.0:
-                    bottlenecks.append({
-                        'type': 'voice_loading',
-                        'severity': 'medium',
-                        'description': f'Slow voice loading for {voice}: {loading_time:.2f}s',
-                        'metric': loading_time
-                    })
+                    bottlenecks.append(
+                        {
+                            "type": "voice_loading",
+                            "severity": "medium",
+                            "description": f"Slow voice loading for {voice}: {loading_time:.2f}s",
+                            "metric": loading_time,
+                        }
+                    )
 
             except Exception as e:
-                bottlenecks.append({
-                    'type': 'voice_loading',
-                    'severity': 'high',
-                    'description': f'Voice loading failed for {voice}: {e}'
-                })
+                bottlenecks.append(
+                    {
+                        "type": "voice_loading",
+                        "severity": "high",
+                        "description": f"Voice loading failed for {voice}: {e}",
+                    }
+                )
 
-        self.results['bottleneck_analysis'] = {
-            'bottlenecks': bottlenecks,
-            'bottleneck_count': len(bottlenecks),
-            'high_severity_count': len([b for b in bottlenecks if b['severity'] == 'high']),
-            'medium_severity_count': len([b for b in bottlenecks if b['severity'] == 'medium'])
+        self.results["bottleneck_analysis"] = {
+            "bottlenecks": bottlenecks,
+            "bottleneck_count": len(bottlenecks),
+            "high_severity_count": len([b for b in bottlenecks if b["severity"] == "high"]),
+            "medium_severity_count": len([b for b in bottlenecks if b["severity"] == "medium"]),
         }
 
         print(f"   📊 Found {len(bottlenecks)} potential bottlenecks")
         for bottleneck in bottlenecks:
-            severity_icon = "🔴" if bottleneck['severity'] == 'high' else "🟡"
+            severity_icon = "🔴" if bottleneck["severity"] == "high" else "🟡"
             print(f"      {severity_icon} {bottleneck['type']}: {bottleneck['description']}")
 
     def analyze_system_resources(self):
@@ -299,9 +313,9 @@ class RTFOptimizationAuditor:
                     json={
                         "input": "This is a test for resource monitoring during TTS synthesis.",
                         "voice": "af_heart",
-                        "response_format": "mp3"
+                        "response_format": "mp3",
                     },
-                    timeout=30
+                    timeout=30,
                 )
                 end_time = time.time()
 
@@ -310,45 +324,53 @@ class RTFOptimizationAuditor:
                 memory_after = psutil.virtual_memory().percent
 
                 if response.status_code == 200:
-                    resource_samples.append({
-                        'cpu_usage': max(cpu_after, cpu_before),
-                        'memory_usage': max(memory_after, memory_before),
-                        'generation_time': end_time - start_time,
-                        'success': True
-                    })
+                    resource_samples.append(
+                        {
+                            "cpu_usage": max(cpu_after, cpu_before),
+                            "memory_usage": max(memory_after, memory_before),
+                            "generation_time": end_time - start_time,
+                            "success": True,
+                        }
+                    )
 
             except Exception as e:
-                resource_samples.append({
-                    'cpu_usage': 0,
-                    'memory_usage': 0,
-                    'generation_time': 0,
-                    'success': False,
-                    'error': str(e)
-                })
+                resource_samples.append(
+                    {
+                        "cpu_usage": 0,
+                        "memory_usage": 0,
+                        "generation_time": 0,
+                        "success": False,
+                        "error": str(e),
+                    }
+                )
 
             time.sleep(0.5)
 
         # Analyze resource usage
-        successful_samples = [s for s in resource_samples if s['success']]
+        successful_samples = [s for s in resource_samples if s["success"]]
 
         if successful_samples:
-            avg_cpu = statistics.mean([s['cpu_usage'] for s in successful_samples])
-            avg_memory = statistics.mean([s['memory_usage'] for s in successful_samples])
-            avg_time = statistics.mean([s['generation_time'] for s in successful_samples])
+            avg_cpu = statistics.mean([s["cpu_usage"] for s in successful_samples])
+            avg_memory = statistics.mean([s["memory_usage"] for s in successful_samples])
+            avg_time = statistics.mean([s["generation_time"] for s in successful_samples])
 
-            self.results['system_analysis'] = {
-                'baseline_cpu': baseline_cpu,
-                'baseline_memory': baseline_memory,
-                'avg_cpu_during_tts': avg_cpu,
-                'avg_memory_during_tts': avg_memory,
-                'avg_generation_time': avg_time,
-                'cpu_increase': avg_cpu - baseline_cpu,
-                'memory_increase': avg_memory - baseline_memory,
-                'resource_efficiency': self._rate_resource_efficiency(avg_cpu, avg_memory)
+            self.results["system_analysis"] = {
+                "baseline_cpu": baseline_cpu,
+                "baseline_memory": baseline_memory,
+                "avg_cpu_during_tts": avg_cpu,
+                "avg_memory_during_tts": avg_memory,
+                "avg_generation_time": avg_time,
+                "cpu_increase": avg_cpu - baseline_cpu,
+                "memory_increase": avg_memory - baseline_memory,
+                "resource_efficiency": self._rate_resource_efficiency(avg_cpu, avg_memory),
             }
 
-            print(f"      CPU: {baseline_cpu:.1f}% → {avg_cpu:.1f}% (+{avg_cpu - baseline_cpu:.1f}%)")
-            print(f"      Memory: {baseline_memory:.1f}% → {avg_memory:.1f}% (+{avg_memory - baseline_memory:.1f}%)")
+            print(
+                f"      CPU: {baseline_cpu:.1f}% → {avg_cpu:.1f}% (+{avg_cpu - baseline_cpu:.1f}%)"
+            )
+            print(
+                f"      Memory: {baseline_memory:.1f}% → {avg_memory:.1f}% (+{avg_memory - baseline_memory:.1f}%)"
+            )
             print(f"      Avg Generation Time: {avg_time:.3f}s")
 
     def analyze_audio_pipeline(self):
@@ -370,9 +392,9 @@ class RTFOptimizationAuditor:
                     json={
                         "input": "Testing audio format performance impact on RTF.",
                         "voice": "af_heart",
-                        "response_format": format_type
+                        "response_format": format_type,
                     },
-                    timeout=30
+                    timeout=30,
                 )
                 end_time = time.time()
 
@@ -381,9 +403,9 @@ class RTFOptimizationAuditor:
                     audio_size = len(response.content)
 
                     format_performance[format_type] = {
-                        'generation_time': generation_time,
-                        'audio_size': audio_size,
-                        'size_per_second': audio_size / generation_time
+                        "generation_time": generation_time,
+                        "audio_size": audio_size,
+                        "size_per_second": audio_size / generation_time,
                     }
 
                     print(f"         Time: {generation_time:.3f}s, Size: {audio_size:,} bytes")
@@ -391,7 +413,7 @@ class RTFOptimizationAuditor:
             except Exception as e:
                 print(f"         ❌ Error testing {format_type}: {e}")
 
-        self.results['audio_pipeline_analysis'] = format_performance
+        self.results["audio_pipeline_analysis"] = format_performance
 
     def analyze_memory_usage(self):
         """Analyze memory usage patterns"""
@@ -404,11 +426,11 @@ class RTFOptimizationAuditor:
             current_process = psutil.Process()
             memory_info = current_process.memory_info()
 
-            self.results['memory_analysis'] = {
-                'rss_mb': memory_info.rss / 1024 / 1024,
-                'vms_mb': memory_info.vms / 1024 / 1024,
-                'memory_percent': current_process.memory_percent(),
-                'analysis': self._analyze_memory_efficiency(memory_info.rss / 1024 / 1024)
+            self.results["memory_analysis"] = {
+                "rss_mb": memory_info.rss / 1024 / 1024,
+                "vms_mb": memory_info.vms / 1024 / 1024,
+                "memory_percent": current_process.memory_percent(),
+                "analysis": self._analyze_memory_efficiency(memory_info.rss / 1024 / 1024),
             }
 
             print(f"      RSS Memory: {memory_info.rss / 1024 / 1024:.1f} MB")
@@ -424,115 +446,139 @@ class RTFOptimizationAuditor:
         recommendations = []
 
         # Analyze baseline performance for recommendations
-        if 'baseline_performance' in self.results:
-            overall_rtf = self.results['baseline_performance'].get('overall', {}).get('overall_avg_rtf', 0)
+        if "baseline_performance" in self.results:
+            overall_rtf = (
+                self.results["baseline_performance"].get("overall", {}).get("overall_avg_rtf", 0)
+            )
 
             if overall_rtf > 0.5:
-                recommendations.append({
-                    'category': 'performance',
-                    'priority': 'high',
-                    'title': 'Optimize Model Inference',
-                    'description': f'Current RTF ({overall_rtf:.3f}) indicates room for optimization',
-                    'actions': [
-                        'Consider model quantization',
-                        'Optimize ONNX runtime settings',
-                        'Implement batch processing for multiple requests'
-                    ]
-                })
+                recommendations.append(
+                    {
+                        "category": "performance",
+                        "priority": "high",
+                        "title": "Optimize Model Inference",
+                        "description": f"Current RTF ({overall_rtf:.3f}) indicates room for optimization",
+                        "actions": [
+                            "Consider model quantization",
+                            "Optimize ONNX runtime settings",
+                            "Implement batch processing for multiple requests",
+                        ],
+                    }
+                )
 
             if overall_rtf > 0.3:
-                recommendations.append({
-                    'category': 'caching',
-                    'priority': 'medium',
-                    'title': 'Enhance Caching Strategy',
-                    'description': 'Improve cache hit rates for better performance',
-                    'actions': [
-                        'Implement intelligent pre-caching',
-                        'Optimize cache eviction policies',
-                        'Add phrase-level caching'
-                    ]
-                })
+                recommendations.append(
+                    {
+                        "category": "caching",
+                        "priority": "medium",
+                        "title": "Enhance Caching Strategy",
+                        "description": "Improve cache hit rates for better performance",
+                        "actions": [
+                            "Implement intelligent pre-caching",
+                            "Optimize cache eviction policies",
+                            "Add phrase-level caching",
+                        ],
+                    }
+                )
 
         # Analyze bottlenecks for recommendations
-        if 'bottleneck_analysis' in self.results:
-            high_severity = self.results['bottleneck_analysis']['high_severity_count']
+        if "bottleneck_analysis" in self.results:
+            high_severity = self.results["bottleneck_analysis"]["high_severity_count"]
 
             if high_severity > 0:
-                recommendations.append({
-                    'category': 'bottlenecks',
-                    'priority': 'critical',
-                    'title': 'Address Critical Bottlenecks',
-                    'description': f'Found {high_severity} high-severity bottlenecks',
-                    'actions': [
-                        'Investigate voice loading performance',
-                        'Optimize text preprocessing pipeline',
-                        'Review API response handling'
-                    ]
-                })
+                recommendations.append(
+                    {
+                        "category": "bottlenecks",
+                        "priority": "critical",
+                        "title": "Address Critical Bottlenecks",
+                        "description": f"Found {high_severity} high-severity bottlenecks",
+                        "actions": [
+                            "Investigate voice loading performance",
+                            "Optimize text preprocessing pipeline",
+                            "Review API response handling",
+                        ],
+                    }
+                )
 
         # System resource recommendations
-        if 'system_analysis' in self.results:
-            cpu_increase = self.results['system_analysis'].get('cpu_increase', 0)
-            memory_increase = self.results['system_analysis'].get('memory_increase', 0)
+        if "system_analysis" in self.results:
+            cpu_increase = self.results["system_analysis"].get("cpu_increase", 0)
+            memory_increase = self.results["system_analysis"].get("memory_increase", 0)
 
             if cpu_increase > 50:
-                recommendations.append({
-                    'category': 'resources',
-                    'priority': 'medium',
-                    'title': 'Optimize CPU Usage',
-                    'description': f'High CPU increase during TTS: +{cpu_increase:.1f}%',
-                    'actions': [
-                        'Profile CPU-intensive operations',
-                        'Consider multi-threading optimizations',
-                        'Optimize audio processing algorithms'
-                    ]
-                })
+                recommendations.append(
+                    {
+                        "category": "resources",
+                        "priority": "medium",
+                        "title": "Optimize CPU Usage",
+                        "description": f"High CPU increase during TTS: +{cpu_increase:.1f}%",
+                        "actions": [
+                            "Profile CPU-intensive operations",
+                            "Consider multi-threading optimizations",
+                            "Optimize audio processing algorithms",
+                        ],
+                    }
+                )
 
             if memory_increase > 20:
-                recommendations.append({
-                    'category': 'resources',
-                    'priority': 'medium',
-                    'title': 'Optimize Memory Usage',
-                    'description': f'High memory increase during TTS: +{memory_increase:.1f}%',
-                    'actions': [
-                        'Implement memory pooling',
-                        'Optimize audio buffer management',
-                        'Review voice embedding caching'
-                    ]
-                })
+                recommendations.append(
+                    {
+                        "category": "resources",
+                        "priority": "medium",
+                        "title": "Optimize Memory Usage",
+                        "description": f"High memory increase during TTS: +{memory_increase:.1f}%",
+                        "actions": [
+                            "Implement memory pooling",
+                            "Optimize audio buffer management",
+                            "Review voice embedding caching",
+                        ],
+                    }
+                )
 
         # General optimization recommendations
-        recommendations.extend([
-            {
-                'category': 'optimization',
-                'priority': 'low',
-                'title': 'Implement Advanced Optimizations',
-                'description': 'Additional optimizations for production deployment',
-                'actions': [
-                    'Add request batching for concurrent requests',
-                    'Implement adaptive quality settings',
-                    'Add performance-based voice selection',
-                    'Optimize audio format conversion'
-                ]
-            }
-        ])
+        recommendations.extend(
+            [
+                {
+                    "category": "optimization",
+                    "priority": "low",
+                    "title": "Implement Advanced Optimizations",
+                    "description": "Additional optimizations for production deployment",
+                    "actions": [
+                        "Add request batching for concurrent requests",
+                        "Implement adaptive quality settings",
+                        "Add performance-based voice selection",
+                        "Optimize audio format conversion",
+                    ],
+                }
+            ]
+        )
 
-        self.results['optimization_recommendations'] = recommendations
+        self.results["optimization_recommendations"] = recommendations
 
         # Print recommendations
         for rec in recommendations:
-            priority_icon = "🔴" if rec['priority'] == 'critical' else "🟡" if rec['priority'] == 'high' else "🟢"
+            priority_icon = (
+                "🔴"
+                if rec["priority"] == "critical"
+                else "🟡"
+                if rec["priority"] == "high"
+                else "🟢"
+            )
             print(f"   {priority_icon} {rec['title']} ({rec['priority']})")
             print(f"      {rec['description']}")
-            for action in rec['actions'][:2]:  # Show first 2 actions
+            for action in rec["actions"][:2]:  # Show first 2 actions
                 print(f"      • {action}")
 
     def validate_improvements(self):
         """Validate performance improvements"""
 
         print("   ✅ Performance validation complete")
-        print(f"   📊 Baseline RTF: {self.results.get('baseline_performance', {}).get('overall', {}).get('overall_avg_rtf', 'N/A')}")
-        print(f"   🔍 Bottlenecks found: {self.results.get('bottleneck_analysis', {}).get('bottleneck_count', 0)}")
+        print(
+            f"   📊 Baseline RTF: {self.results.get('baseline_performance', {}).get('overall', {}).get('overall_avg_rtf', 'N/A')}"
+        )
+        print(
+            f"   🔍 Bottlenecks found: {self.results.get('bottleneck_analysis', {}).get('bottleneck_count', 0)}"
+        )
         print(f"   💡 Recommendations: {len(self.results.get('optimization_recommendations', []))}")
 
     def _rate_performance(self, rtf: float) -> str:
@@ -570,10 +616,11 @@ class RTFOptimizationAuditor:
         """Save audit results to file"""
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
-        with open(output_file, 'w') as f:
+        with open(output_file, "w") as f:
             json.dump(self.results, f, indent=2, default=str)
 
         print(f"\n📄 Results saved to: {output_file}")
+
 
 def main():
     """Run RTF optimization audit"""
@@ -582,6 +629,7 @@ def main():
     auditor.save_results()
 
     return results
+
 
 if __name__ == "__main__":
     main()

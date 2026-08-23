@@ -17,11 +17,11 @@ class KokoroError(Exception):
         details: dict[str, Any] | None = None,
         error_code: str | None = None,
         http_status: int = 500,
-        request_id: str | None = None
+        request_id: str | None = None,
     ):
         self.message = message
         self.details = details or {}
-        self.error_code = error_code or self.__class__.__name__.lower().replace('error', '')
+        self.error_code = error_code or self.__class__.__name__.lower().replace("error", "")
         self.http_status = http_status
         self.request_id = request_id
         self.timestamp = datetime.utcnow().isoformat()
@@ -36,7 +36,7 @@ class KokoroError(Exception):
             "message": self.message,
             "details": self.details,
             "request_id": self.request_id,
-            "timestamp": self.timestamp
+            "timestamp": self.timestamp,
         }
 
     def __str__(self) -> str:
@@ -47,12 +47,12 @@ class ModelError(KokoroError):
     """Raised when there are issues with the TTS model"""
 
     def __init__(self, message: str, model_path: str | None = None, **kwargs):
-        details = kwargs.get('details', {})
+        details = kwargs.get("details", {})
         if model_path:
-            details['model_path'] = model_path
-        kwargs['details'] = details
-        kwargs.setdefault('error_code', 'model_error')
-        kwargs.setdefault('http_status', 500)
+            details["model_path"] = model_path
+        kwargs["details"] = details
+        kwargs.setdefault("error_code", "model_error")
+        kwargs.setdefault("http_status", 500)
         super().__init__(message, **kwargs)
 
 
@@ -60,12 +60,12 @@ class VoiceError(KokoroError):
     """Raised when there are issues with voice processing"""
 
     def __init__(self, message: str, voice_name: str | None = None, **kwargs):
-        details = kwargs.get('details', {})
+        details = kwargs.get("details", {})
         if voice_name:
-            details['voice_name'] = voice_name
-        kwargs['details'] = details
-        kwargs.setdefault('error_code', 'voice_error')
-        kwargs.setdefault('http_status', 400)
+            details["voice_name"] = voice_name
+        kwargs["details"] = details
+        kwargs.setdefault("error_code", "voice_error")
+        kwargs.setdefault("http_status", 400)
         super().__init__(message, **kwargs)
 
 
@@ -73,12 +73,12 @@ class AudioError(KokoroError):
     """Raised when there are issues with audio processing"""
 
     def __init__(self, message: str, audio_format: str | None = None, **kwargs):
-        details = kwargs.get('details', {})
+        details = kwargs.get("details", {})
         if audio_format:
-            details['audio_format'] = audio_format
-        kwargs['details'] = details
-        kwargs.setdefault('error_code', 'audio_error')
-        kwargs.setdefault('http_status', 500)
+            details["audio_format"] = audio_format
+        kwargs["details"] = details
+        kwargs.setdefault("error_code", "audio_error")
+        kwargs.setdefault("http_status", 500)
         super().__init__(message, **kwargs)
 
 
@@ -86,14 +86,14 @@ class ValidationError(KokoroError):
     """Raised when input validation fails"""
 
     def __init__(self, message: str, field: str | None = None, value: Any | None = None, **kwargs):
-        details = kwargs.get('details', {})
+        details = kwargs.get("details", {})
         if field:
-            details['field'] = field
+            details["field"] = field
         if value is not None:
-            details['invalid_value'] = str(value)
-        kwargs['details'] = details
-        kwargs.setdefault('error_code', 'validation_error')
-        kwargs.setdefault('http_status', 400)
+            details["invalid_value"] = str(value)
+        kwargs["details"] = details
+        kwargs.setdefault("error_code", "validation_error")
+        kwargs.setdefault("http_status", 400)
         super().__init__(message, **kwargs)
 
 
@@ -101,12 +101,12 @@ class CacheError(KokoroError):
     """Raised when there are caching issues"""
 
     def __init__(self, message: str, cache_key: str | None = None, **kwargs):
-        details = kwargs.get('details', {})
+        details = kwargs.get("details", {})
         if cache_key:
-            details['cache_key'] = cache_key
-        kwargs['details'] = details
-        kwargs.setdefault('error_code', 'cache_error')
-        kwargs.setdefault('http_status', 500)
+            details["cache_key"] = cache_key
+        kwargs["details"] = details
+        kwargs.setdefault("error_code", "cache_error")
+        kwargs.setdefault("http_status", 500)
         super().__init__(message, **kwargs)
 
 
@@ -114,27 +114,29 @@ class ConfigurationError(KokoroError):
     """Raised when there are configuration issues"""
 
     def __init__(self, message: str, config_key: str | None = None, **kwargs):
-        details = kwargs.get('details', {})
+        details = kwargs.get("details", {})
         if config_key:
-            details['config_key'] = config_key
-        kwargs['details'] = details
-        kwargs.setdefault('error_code', 'configuration_error')
-        kwargs.setdefault('http_status', 500)
+            details["config_key"] = config_key
+        kwargs["details"] = details
+        kwargs.setdefault("error_code", "configuration_error")
+        kwargs.setdefault("http_status", 500)
         super().__init__(message, **kwargs)
 
 
 class DownloadError(KokoroError):
     """Raised when model/voice downloads fail"""
 
-    def __init__(self, message: str, url: str | None = None, file_path: str | None = None, **kwargs):
-        details = kwargs.get('details', {})
+    def __init__(
+        self, message: str, url: str | None = None, file_path: str | None = None, **kwargs
+    ):
+        details = kwargs.get("details", {})
         if url:
-            details['url'] = url
+            details["url"] = url
         if file_path:
-            details['file_path'] = file_path
-        kwargs['details'] = details
-        kwargs.setdefault('error_code', 'download_error')
-        kwargs.setdefault('http_status', 500)
+            details["file_path"] = file_path
+        kwargs["details"] = details
+        kwargs.setdefault("error_code", "download_error")
+        kwargs.setdefault("http_status", 500)
         super().__init__(message, **kwargs)
 
 
@@ -142,14 +144,14 @@ class RateLimitError(KokoroError):
     """Raised when rate limits are exceeded"""
 
     def __init__(self, message: str, limit: int | None = None, window: int | None = None, **kwargs):
-        details = kwargs.get('details', {})
+        details = kwargs.get("details", {})
         if limit:
-            details['rate_limit'] = limit
+            details["rate_limit"] = limit
         if window:
-            details['window_seconds'] = window
-        kwargs['details'] = details
-        kwargs.setdefault('error_code', 'rate_limit_exceeded')
-        kwargs.setdefault('http_status', 429)
+            details["window_seconds"] = window
+        kwargs["details"] = details
+        kwargs.setdefault("error_code", "rate_limit_exceeded")
+        kwargs.setdefault("http_status", 429)
         super().__init__(message, **kwargs)
 
 
@@ -157,8 +159,8 @@ class AuthenticationError(KokoroError):
     """Raised when authentication fails"""
 
     def __init__(self, message: str = "Authentication required", **kwargs):
-        kwargs.setdefault('error_code', 'authentication_required')
-        kwargs.setdefault('http_status', 401)
+        kwargs.setdefault("error_code", "authentication_required")
+        kwargs.setdefault("http_status", 401)
         super().__init__(message, **kwargs)
 
 
@@ -166,12 +168,12 @@ class TextProcessingError(KokoroError):
     """Raised when text processing fails"""
 
     def __init__(self, message: str, text_length: int | None = None, **kwargs):
-        details = kwargs.get('details', {})
+        details = kwargs.get("details", {})
         if text_length:
-            details['text_length'] = text_length
-        kwargs['details'] = details
-        kwargs.setdefault('error_code', 'text_processing_error')
-        kwargs.setdefault('http_status', 400)
+            details["text_length"] = text_length
+        kwargs["details"] = details
+        kwargs.setdefault("error_code", "text_processing_error")
+        kwargs.setdefault("http_status", 400)
         super().__init__(message, **kwargs)
 
 

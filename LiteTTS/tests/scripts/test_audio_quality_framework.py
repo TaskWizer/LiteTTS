@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 # Skip - these are manual validation scripts, not proper pytest tests
 pytestmark = pytest.mark.skip(reason="Manual validation scripts - not proper pytest tests")
 
+
 def test_framework_imports():
     """Test that all framework components can be imported"""
     print("🔍 Testing Framework Imports")
@@ -26,17 +27,21 @@ def test_framework_imports():
             AudioQualityTester,  # noqa: F401
             AudioTestCase,  # noqa: F401
         )
+
         print("✅ AudioQualityTester imported successfully")
 
         from LiteTTS.testing.espeak_integration_tests import (
             EspeakIntegrationTestSuite,  # noqa: F401
         )
+
         print("✅ EspeakIntegrationTestSuite imported successfully")
 
         from LiteTTS.testing.asr_integrations.base_asr_client import BaseASRClient  # noqa: F401
+
         print("✅ BaseASRClient imported successfully")
 
         from LiteTTS.testing.asr_integrations.deepgram_client import DeepgramASRClient  # noqa: F401
+
         print("✅ DeepgramASRClient imported successfully")
 
         return True
@@ -46,6 +51,7 @@ def test_framework_imports():
     except Exception as e:
         print(f"❌ Unexpected error: {e}")
         return False
+
 
 def test_configuration_loading():
     """Test configuration loading and validation"""
@@ -78,6 +84,7 @@ def test_configuration_loading():
     except Exception as e:
         print(f"❌ Configuration loading error: {e}")
         return False
+
 
 def test_test_case_creation():
     """Test creating test cases"""
@@ -112,6 +119,7 @@ def test_test_case_creation():
         print(f"❌ Test case creation error: {e}")
         return False
 
+
 def test_audio_quality_tester_init():
     """Test AudioQualityTester initialization"""
     print("\n🎯 Testing AudioQualityTester Initialization")
@@ -129,7 +137,9 @@ def test_audio_quality_tester_init():
         print(f"   Max Concurrent Tests: {tester.max_concurrent_tests}")
         print(f"   Cache Enabled: {tester.cache_enabled}")
         print(f"   External ASR Enabled: {tester.enable_external_asr}")
-        print(f"   ASR Services: {list(tester.asr_services.keys()) if tester.asr_services else 'None'}")
+        print(
+            f"   ASR Services: {list(tester.asr_services.keys()) if tester.asr_services else 'None'}"
+        )
 
         # Test quality thresholds
         thresholds = tester.quality_thresholds
@@ -141,8 +151,10 @@ def test_audio_quality_tester_init():
     except Exception as e:
         print(f"❌ AudioQualityTester initialization error: {e}")
         import traceback
+
         traceback.print_exc()
         return False
+
 
 async def test_basic_functionality():
     """Test basic functionality without requiring TTS API"""
@@ -177,7 +189,7 @@ async def test_basic_functionality():
             test_id="test",
             input_text="Hello?",
             expected_transcription="hello question mark",
-            expected_pronunciations={"?": "question mark"}
+            expected_pronunciations={"?": "question mark"},
         )
 
         transcription = "hello question mark"
@@ -192,8 +204,10 @@ async def test_basic_functionality():
     except Exception as e:
         print(f"❌ Basic functionality test error: {e}")
         import traceback
+
         traceback.print_exc()
         return False
+
 
 async def test_api_connectivity():
     """Test connectivity to TTS API (if available)"""
@@ -211,7 +225,7 @@ async def test_api_connectivity():
             test_id="connectivity_test",
             input_text="Hello world",
             expected_transcription="hello world",
-            voice_model="af_heart"
+            voice_model="af_heart",
         )
 
         print(f"Testing API connectivity to: {tester.api_base_url}")
@@ -239,6 +253,7 @@ async def test_api_connectivity():
     except Exception as e:
         print(f"❌ API connectivity test error: {e}")
         return False
+
 
 async def main():
     """Main test function"""
@@ -283,7 +298,9 @@ async def main():
         print("   - Framework ready for production use")
         print("\n🚀 Next steps:")
         print("   1. Configure external ASR services (optional)")
-        print("   2. Run: python LiteTTS/scripts/run_audio_quality_tests.py --test-type espeak --filter critical")
+        print(
+            "   2. Run: python LiteTTS/scripts/run_audio_quality_tests.py --test-type espeak --filter critical"
+        )
         print("   3. Review test results and establish baselines")
     else:
         print("❌ FRAMEWORK VALIDATION FAILED!")
@@ -291,6 +308,7 @@ async def main():
         print("   Check the error messages above.")
 
     return success
+
 
 if __name__ == "__main__":
     success = asyncio.run(main())

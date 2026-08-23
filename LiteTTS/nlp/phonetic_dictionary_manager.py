@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class DictionaryEntry:
     """Represents a single phonetic dictionary entry"""
+
     word: str
     phonetic: str
     notation: str  # 'ipa', 'arpabet', 'unisyn'
@@ -32,6 +33,7 @@ class DictionaryEntry:
 @dataclass
 class DictionaryStats:
     """Statistics for a loaded dictionary"""
+
     total_entries: int = 0
     notation_counts: dict[str, int] = field(default_factory=dict)
     accent_variants: set[str] = field(default_factory=set)
@@ -77,13 +79,13 @@ class PhoneticDictionaryManager:
             "dictionary_paths": {
                 "arpabet": "docs/dictionaries/cmudict.dict",
                 "ipa": "docs/dictionaries/ipa_dict.json",
-                "unisyn": "docs/dictionaries/unisyn_dict.json"
+                "unisyn": "docs/dictionaries/unisyn_dict.json",
             },
             "fallback_strategy": "grapheme_to_phoneme",
             "unknown_word_handling": "passthrough",
             "performance_monitoring": True,
             "cache_persistence": True,
-            "cache_file": "cache/phonetic_cache.pkl"
+            "cache_file": "cache/phonetic_cache.pkl",
         }
 
     def load_dictionary(self, notation: str, file_path: str, force_reload: bool = False) -> bool:
@@ -129,10 +131,12 @@ class PhoneticDictionaryManager:
                     notation_counts={notation: len(entries)},
                     accent_variants=set(entry.accent_variant for entry in entries.values()),
                     load_time=load_time,
-                    memory_usage=self._estimate_memory_usage(entries)
+                    memory_usage=self._estimate_memory_usage(entries),
                 )
 
-                logger.info(f"Loaded {len(entries)} entries from {notation} dictionary in {load_time:.2f}s")
+                logger.info(
+                    f"Loaded {len(entries)} entries from {notation} dictionary in {load_time:.2f}s"
+                )
                 return True
 
             except Exception as e:
@@ -143,12 +147,12 @@ class PhoneticDictionaryManager:
         """Load CMU pronunciation dictionary (Arpabet format)"""
         entries = {}
 
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             for line_num, line in enumerate(f, 1):
                 line = line.strip()
 
                 # Skip comments and empty lines
-                if not line or line.startswith(';;;'):
+                if not line or line.startswith(";;;"):
                     continue
 
                 try:
@@ -160,10 +164,10 @@ class PhoneticDictionaryManager:
                     word = parts[0].lower()
 
                     # Handle variant pronunciations (e.g., WORD(1), WORD(2))
-                    if '(' in word:
-                        word = word.split('(')[0]
+                    if "(" in word:
+                        word = word.split("(")[0]
 
-                    phonemes = ' '.join(parts[1:])
+                    phonemes = " ".join(parts[1:])
 
                     entries[word] = DictionaryEntry(
                         word=word,
@@ -171,7 +175,7 @@ class PhoneticDictionaryManager:
                         notation="arpabet",
                         confidence=0.95,  # CMU dict is high quality
                         frequency=self._estimate_word_frequency(word),
-                        accent_variant="american"
+                        accent_variant="american",
                     )
 
                 except Exception as e:
@@ -185,7 +189,7 @@ class PhoneticDictionaryManager:
         entries = {}
 
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
             for word, phonetic_data in data.items():
@@ -196,19 +200,19 @@ class PhoneticDictionaryManager:
                         phonetic=phonetic_data,
                         notation=notation,
                         confidence=0.8,
-                        frequency=self._estimate_word_frequency(word)
+                        frequency=self._estimate_word_frequency(word),
                     )
                 elif isinstance(phonetic_data, dict):
                     # Extended format with metadata
                     entries[word.lower()] = DictionaryEntry(
                         word=word.lower(),
-                        phonetic=phonetic_data.get('phonetic', ''),
+                        phonetic=phonetic_data.get("phonetic", ""),
                         notation=notation,
-                        confidence=phonetic_data.get('confidence', 0.8),
-                        frequency=phonetic_data.get('frequency', 0.0),
-                        accent_variant=phonetic_data.get('accent_variant', 'general'),
-                        part_of_speech=phonetic_data.get('pos'),
-                        stress_pattern=phonetic_data.get('stress')
+                        confidence=phonetic_data.get("confidence", 0.8),
+                        frequency=phonetic_data.get("frequency", 0.0),
+                        accent_variant=phonetic_data.get("accent_variant", "general"),
+                        part_of_speech=phonetic_data.get("pos"),
+                        stress_pattern=phonetic_data.get("stress"),
                     )
 
         except Exception as e:
@@ -222,7 +226,20 @@ class PhoneticDictionaryManager:
         base_freq = 1.0 / (len(word) + 1)
 
         # Common words get higher frequency
-        common_words = {'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by'}
+        common_words = {
+            "the",
+            "and",
+            "or",
+            "but",
+            "in",
+            "on",
+            "at",
+            "to",
+            "for",
+            "of",
+            "with",
+            "by",
+        }
         if word.lower() in common_words:
             base_freq *= 10
 
@@ -248,7 +265,9 @@ class PhoneticDictionaryManager:
         avg_size = total_size / sample_size
         return int(avg_size * len(entries))
 
-    def lookup(self, word: str, notation: str = None, accent_variant: str = None) -> DictionaryEntry | None:
+    def lookup(
+        self, word: str, notation: str = None, accent_variant: str = None
+    ) -> DictionaryEntry | None:
         """
         Look up phonetic representation for a word
 
@@ -281,7 +300,9 @@ class PhoneticDictionaryManager:
 
         return result
 
-    def _search_dictionaries(self, word: str, notation: str = None, accent_variant: str = None) -> DictionaryEntry | None:
+    def _search_dictionaries(
+        self, word: str, notation: str = None, accent_variant: str = None
+    ) -> DictionaryEntry | None:
         """Search loaded dictionaries for a word with priority order"""
         candidates = []
 
@@ -362,7 +383,7 @@ class PhoneticDictionaryManager:
             "lookup_count": self.lookup_count,
             "cache_hits": self.cache_hits,
             "cache_misses": self.cache_misses,
-            "dictionary_stats": self.stats
+            "dictionary_stats": self.stats,
         }
 
     def clear_cache(self):
@@ -388,11 +409,11 @@ class PhoneticDictionaryManager:
                 "stats": {
                     "cache_hits": self.cache_hits,
                     "cache_misses": self.cache_misses,
-                    "lookup_count": self.lookup_count
-                }
+                    "lookup_count": self.lookup_count,
+                },
             }
 
-            with open(file_path, 'wb') as f:
+            with open(file_path, "wb") as f:
                 pickle.dump(cache_data, f)
 
             logger.info(f"Phonetic cache saved to {file_path}")
@@ -411,7 +432,7 @@ class PhoneticDictionaryManager:
             if not os.path.exists(file_path):
                 return
 
-            with open(file_path, 'rb') as f:
+            with open(file_path, "rb") as f:
                 cache_data = pickle.load(f)
 
             self.cache = cache_data.get("cache", {})
@@ -427,8 +448,14 @@ class PhoneticDictionaryManager:
         except Exception as e:
             logger.error(f"Failed to load cache: {e}")
 
-    def add_custom_entry(self, word: str, phonetic: str, notation: str = "custom",
-                        confidence: float = 1.0, accent_variant: str = "general"):
+    def add_custom_entry(
+        self,
+        word: str,
+        phonetic: str,
+        notation: str = "custom",
+        confidence: float = 1.0,
+        accent_variant: str = "general",
+    ):
         """Add a custom phonetic entry"""
         with self._lock:
             if "custom" not in self.dictionaries:
@@ -439,7 +466,7 @@ class PhoneticDictionaryManager:
                 phonetic=phonetic,
                 notation=notation,
                 confidence=confidence,
-                accent_variant=accent_variant
+                accent_variant=accent_variant,
             )
 
             self.dictionaries["custom"][word.lower()] = entry
@@ -490,10 +517,10 @@ class PhoneticDictionaryManager:
                         "confidence": entry.confidence,
                         "frequency": entry.frequency,
                         "accent_variant": entry.accent_variant,
-                        "notation": entry.notation
+                        "notation": entry.notation,
                     }
 
-                with open(file_path, 'w', encoding='utf-8') as f:
+                with open(file_path, "w", encoding="utf-8") as f:
                     json.dump(export_data, f, indent=2, ensure_ascii=False)
 
             logger.info(f"Exported {notation} dictionary to {file_path}")

@@ -17,10 +17,11 @@ from .parser import BackgroundConfig, SSMLParser
 
 logger = logging.getLogger(__name__)
 
+
 class SSMLProcessor:
     """
     SSML Processor that handles background noise integration
-    
+
     Processes SSML markup, generates background audio, and mixes it with speech.
     """
 
@@ -33,34 +34,35 @@ class SSMLProcessor:
     def process_ssml(self, ssml_text: str) -> tuple[str, BackgroundConfig | None, dict[str, Any]]:
         """
         Process SSML text and extract components
-        
+
         Args:
             ssml_text: SSML markup text
-            
+
         Returns:
             Tuple of (plain_text, background_config, processing_metadata)
         """
         parsed = self.parser.parse(ssml_text)
 
         metadata = {
-            'has_background': parsed.background_config is not None,
-            'prosody_changes': parsed.prosody_changes,
-            'emphasis_spans': parsed.emphasis_spans,
-            'break_positions': parsed.break_positions,
-            'parsing_errors': parsed.errors
+            "has_background": parsed.background_config is not None,
+            "prosody_changes": parsed.prosody_changes,
+            "emphasis_spans": parsed.emphasis_spans,
+            "break_positions": parsed.break_positions,
+            "parsing_errors": parsed.errors,
         }
 
         return parsed.plain_text, parsed.background_config, metadata
 
-    def synthesize_with_background(self, speech_audio: AudioSegment,
-                                 background_config: BackgroundConfig) -> AudioSegment:
+    def synthesize_with_background(
+        self, speech_audio: AudioSegment, background_config: BackgroundConfig
+    ) -> AudioSegment:
         """
         Mix speech audio with background noise
-        
+
         Args:
             speech_audio: Primary speech audio
             background_config: Background noise configuration
-            
+
         Returns:
             Mixed audio with background
         """
@@ -82,22 +84,25 @@ class SSMLProcessor:
             # Return original speech audio as fallback
             return speech_audio
 
-    def _mix_audio_with_background(self, speech: AudioSegment, background: AudioSegment,
-                                 config: BackgroundConfig) -> AudioSegment:
+    def _mix_audio_with_background(
+        self, speech: AudioSegment, background: AudioSegment, config: BackgroundConfig
+    ) -> AudioSegment:
         """
         Mix speech and background audio with proper level balancing
-        
+
         Args:
             speech: Primary speech audio
             background: Background ambient audio
             config: Background configuration
-            
+
         Returns:
             Mixed audio segment
         """
         # Ensure both audio segments have the same sample rate
         if speech.sample_rate != background.sample_rate:
-            logger.warning(f"Sample rate mismatch: speech={speech.sample_rate}, background={background.sample_rate}")
+            logger.warning(
+                f"Sample rate mismatch: speech={speech.sample_rate}, background={background.sample_rate}"
+            )
             # For now, assume they match; in production, you'd resample
 
         # Get audio data
@@ -123,9 +128,7 @@ class SSMLProcessor:
         mixed_data = self._apply_soft_limiting(mixed_data)
 
         return AudioSegment(
-            audio_data=mixed_data,
-            sample_rate=speech.sample_rate,
-            format=speech.format
+            audio_data=mixed_data, sample_rate=speech.sample_rate, format=speech.format
         )
 
     def _apply_background_compression(self, background_data: np.ndarray) -> np.ndarray:
@@ -140,7 +143,7 @@ class SSMLProcessor:
             window = background_data[i:end]
 
             # Calculate RMS
-            rms = np.sqrt(np.mean(window ** 2))
+            rms = np.sqrt(np.mean(window**2))
 
             # Apply compression if RMS is above threshold
             threshold = 0.1
@@ -154,7 +157,9 @@ class SSMLProcessor:
 
         return compressed
 
-    def _apply_speech_ducking(self, speech_data: np.ndarray, background_data: np.ndarray) -> np.ndarray:
+    def _apply_speech_ducking(
+        self, speech_data: np.ndarray, background_data: np.ndarray
+    ) -> np.ndarray:
         """Apply speech-aware ducking to background audio"""
 
         # Calculate speech energy in overlapping windows
@@ -163,10 +168,10 @@ class SSMLProcessor:
         ducked = np.copy(background_data)
 
         for i in range(0, len(speech_data) - window_size, hop_size):
-            speech_window = speech_data[i:i + window_size]
+            speech_window = speech_data[i : i + window_size]
 
             # Calculate speech energy
-            speech_energy = np.sqrt(np.mean(speech_window ** 2))
+            speech_energy = np.sqrt(np.mean(speech_window**2))
 
             # Calculate ducking amount based on speech energy
             if speech_energy > 0.05:  # Speech present
@@ -199,41 +204,44 @@ class SSMLProcessor:
     def validate_ssml(self, ssml_text: str) -> dict[str, Any]:
         """
         Validate SSML markup
-        
+
         Args:
             ssml_text: SSML markup to validate
-            
+
         Returns:
             Validation result with errors and warnings
         """
         errors = self.parser.validate_ssml(ssml_text)
 
-        return {
-            'valid': len(errors) == 0,
-            'errors': errors,
-            'warnings': []
-        }
+        return {"valid": len(errors) == 0, "errors": errors, "warnings": []}
 
     def get_supported_background_types(self) -> list[str]:
         """Get list of supported background types"""
         return [
-            'coffee_shop', 'cafe',
-            'office', 'workplace',
-            'nature', 'forest',
-            'rain', 'rainfall',
-            'wind', 'windy',
-            'white_noise', 'pink_noise', 'brown_noise',
-            'custom'
+            "coffee_shop",
+            "cafe",
+            "office",
+            "workplace",
+            "nature",
+            "forest",
+            "rain",
+            "rainfall",
+            "wind",
+            "windy",
+            "white_noise",
+            "pink_noise",
+            "brown_noise",
+            "custom",
         ]
 
     def create_background_example(self, bg_type: str, duration: float = 5.0) -> AudioSegment | None:
         """
         Create an example of a background type for testing/preview
-        
+
         Args:
             bg_type: Background type name
             duration: Duration in seconds
-            
+
         Returns:
             AudioSegment with example background audio
         """
@@ -242,19 +250,19 @@ class SSMLProcessor:
 
             # Map string to enum
             type_mapping = {
-                'coffee_shop': BackgroundType.COFFEE_SHOP,
-                'cafe': BackgroundType.COFFEE_SHOP,
-                'office': BackgroundType.OFFICE,
-                'workplace': BackgroundType.OFFICE,
-                'nature': BackgroundType.NATURE,
-                'forest': BackgroundType.NATURE,
-                'rain': BackgroundType.RAIN,
-                'rainfall': BackgroundType.RAIN,
-                'wind': BackgroundType.WIND,
-                'windy': BackgroundType.WIND,
-                'white_noise': BackgroundType.WHITE_NOISE,
-                'pink_noise': BackgroundType.PINK_NOISE,
-                'brown_noise': BackgroundType.BROWN_NOISE
+                "coffee_shop": BackgroundType.COFFEE_SHOP,
+                "cafe": BackgroundType.COFFEE_SHOP,
+                "office": BackgroundType.OFFICE,
+                "workplace": BackgroundType.OFFICE,
+                "nature": BackgroundType.NATURE,
+                "forest": BackgroundType.NATURE,
+                "rain": BackgroundType.RAIN,
+                "rainfall": BackgroundType.RAIN,
+                "wind": BackgroundType.WIND,
+                "windy": BackgroundType.WIND,
+                "white_noise": BackgroundType.WHITE_NOISE,
+                "pink_noise": BackgroundType.PINK_NOISE,
+                "brown_noise": BackgroundType.BROWN_NOISE,
             }
 
             if bg_type not in type_mapping:
@@ -262,10 +270,7 @@ class SSMLProcessor:
                 return None
 
             config = BackgroundConfig(
-                type=type_mapping[bg_type],
-                volume=0.5,
-                fade_in=0.5,
-                fade_out=0.5
+                type=type_mapping[bg_type], volume=0.5, fade_in=0.5, fade_out=0.5
             )
 
             return self.background_generator.generate_background(config, duration)

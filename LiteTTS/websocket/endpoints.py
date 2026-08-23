@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 class WebSocketEndpoints:
     """
     WebSocket endpoints manager for LiteTTS FastAPI application.
-    
+
     Provides WebSocket endpoint implementations with proper connection
     handling, authentication, and error management.
     """
@@ -31,7 +31,7 @@ class WebSocketEndpoints:
     def __init__(self, app_instance):
         """
         Initialize WebSocket endpoints.
-        
+
         Args:
             app_instance: LiteTTSApplication instance
         """
@@ -59,7 +59,7 @@ class WebSocketEndpoints:
             # Create performance streamer
             self.performance_streamer = create_performance_streamer(
                 websocket_manager=self.websocket_manager,
-                update_interval=1.0  # 1 second updates
+                update_interval=1.0,  # 1 second updates
             )
 
             # Start performance streamer
@@ -104,8 +104,7 @@ class WebSocketEndpoints:
 
         # Register dashboard-specific message handlers
         self.websocket_manager.register_message_handler(
-            MessageType.DASHBOARD_UPDATE,
-            self._handle_dashboard_update
+            MessageType.DASHBOARD_UPDATE, self._handle_dashboard_update
         )
 
         self.logger.info("WebSocket message handlers registered")
@@ -123,12 +122,9 @@ class WebSocketEndpoints:
 
                     message = WebSocketMessage(
                         type=MessageType.DASHBOARD_UPDATE,
-                        data={
-                            "type": "full_data",
-                            "dashboard_data": dashboard_data
-                        },
+                        data={"type": "full_data", "dashboard_data": dashboard_data},
                         timestamp=time.time(),
-                        client_id=client_id
+                        client_id=client_id,
                     )
 
                     await self.websocket_manager.send_to_client(client_id, message)
@@ -141,12 +137,9 @@ class WebSocketEndpoints:
 
                     message = WebSocketMessage(
                         type=MessageType.DASHBOARD_UPDATE,
-                        data={
-                            "type": "metrics_history",
-                            "history": [asdict(m) for m in history]
-                        },
+                        data={"type": "metrics_history", "history": [asdict(m) for m in history]},
                         timestamp=time.time(),
-                        client_id=client_id
+                        client_id=client_id,
                     )
 
                     await self.websocket_manager.send_to_client(client_id, message)
@@ -157,7 +150,7 @@ class WebSocketEndpoints:
     async def dashboard_websocket_endpoint(self, websocket: WebSocket):
         """
         WebSocket endpoint for dashboard connectivity.
-        
+
         Args:
             websocket: FastAPI WebSocket instance
         """
@@ -177,12 +170,9 @@ class WebSocketEndpoints:
 
                 welcome_message = WebSocketMessage(
                     type=MessageType.DASHBOARD_UPDATE,
-                    data={
-                        "type": "welcome",
-                        "dashboard_data": dashboard_data
-                    },
+                    data={"type": "welcome", "dashboard_data": dashboard_data},
                     timestamp=time.time(),
-                    client_id=client_id
+                    client_id=client_id,
                 )
 
                 await self.websocket_manager.send_to_client(client_id, welcome_message)
@@ -203,12 +193,9 @@ class WebSocketEndpoints:
                     # Send error message to client
                     error_message = WebSocketMessage(
                         type=MessageType.ERROR,
-                        data={
-                            "error": str(e),
-                            "timestamp": time.time()
-                        },
+                        data={"error": str(e), "timestamp": time.time()},
                         timestamp=time.time(),
-                        client_id=client_id
+                        client_id=client_id,
                     )
 
                     try:
@@ -228,7 +215,7 @@ class WebSocketEndpoints:
     def update_performance_metrics(self, **metrics):
         """
         Update performance metrics for streaming.
-        
+
         Args:
             **metrics: Metric name-value pairs to update
         """
@@ -276,7 +263,7 @@ class WebSocketEndpoints:
 def setup_websocket_endpoints(app, app_instance):
     """
     Setup WebSocket endpoints for the FastAPI application.
-    
+
     Args:
         app: FastAPI application instance
         app_instance: LiteTTSApplication instance
@@ -311,7 +298,7 @@ def setup_websocket_endpoints(app, app_instance):
             raise HTTPException(status_code=500, detail=str(e))
 
     # Add cleanup to application lifespan
-    original_lifespan = getattr(app_instance, 'lifespan', None)
+    original_lifespan = getattr(app_instance, "lifespan", None)
 
     async def enhanced_lifespan(app):
         """Enhanced lifespan with WebSocket cleanup"""

@@ -25,19 +25,24 @@ from .unified_pronunciation_fix import unified_pronunciation_fix
 @dataclass
 class ProsodyInfo:
     """Prosody analysis information"""
+
     pauses: list[dict[str, Any]] = field(default_factory=list)
     emphasis: list[dict[str, Any]] = field(default_factory=list)
     intonation: list[dict[str, Any]] = field(default_factory=list)
 
+
 @dataclass
 class NormalizationOptions:
     """Text normalization configuration"""
+
     normalize: bool = True
     unit_normalization: bool = False
     url_normalization: bool = True
     email_normalization: bool = True
 
+
 logger = logging.getLogger(__name__)
+
 
 class NLPProcessor:
     """Main NLP processor that orchestrates all text processing"""
@@ -77,7 +82,9 @@ class NLPProcessor:
 
         # Step 0: Phonemizer preprocessing (CRITICAL FIX for HTML entities and pronunciation issues)
         # This handles HTML entity decoding, quote character removal, and other preprocessing
-        preprocessing_result = phonemizer_preprocessor.preprocess_text(text, preserve_word_count=True)
+        preprocessing_result = phonemizer_preprocessor.preprocess_text(
+            text, preserve_word_count=True
+        )
         text = preprocessing_result.processed_text
         if preprocessing_result.changes_made:
             logger.debug(f"Phonemizer preprocessing changes: {preprocessing_result.changes_made}")
@@ -148,9 +155,9 @@ class NLPProcessor:
         """Analyze text for prosody information"""
         prosody_data = self.prosody_analyzer.get_prosody_info(text)
         return ProsodyInfo(
-            pauses=prosody_data['pauses'],
-            emphasis=prosody_data['emphasis'],
-            intonation=prosody_data['intonation']
+            pauses=prosody_data["pauses"],
+            emphasis=prosody_data["emphasis"],
+            intonation=prosody_data["intonation"],
         )
 
     def spell_word(self, word: str) -> str:
@@ -161,8 +168,12 @@ class NLPProcessor:
         """Add a custom homograph"""
         self.homograph_resolver.add_homograph(word, pronunciations)
 
-    def process_text_enhanced(self, text: str, context_metadata: dict[str, Any] | None = None,
-                            options: NormalizationOptions = None) -> dict[str, Any]:
+    def process_text_enhanced(
+        self,
+        text: str,
+        context_metadata: dict[str, Any] | None = None,
+        options: NormalizationOptions = None,
+    ) -> dict[str, Any]:
         """Enhanced text processing with human-likeness features
 
         Args:
@@ -198,7 +209,7 @@ class NLPProcessor:
             "register": speech_context.register.value,
             "content_type": speech_context.content_type.value,
             "emotional_intensity": emotion_profile.intensity,
-            "emotion": emotion_profile.primary_emotion.value
+            "emotion": emotion_profile.primary_emotion.value,
         }
         naturalness_profile = self.naturalness_enhancer.enhance_naturalness(
             processed_text, naturalness_context
@@ -216,10 +227,12 @@ class NLPProcessor:
             "speech_context": speech_context,
             "emotion_profile": emotion_profile,
             "adaptation_parameters": adaptation_params,
-            "naturalness_profile": naturalness_profile
+            "naturalness_profile": naturalness_profile,
         }
 
-    def detect_emotion(self, text: str, conversation_history: list | None = None) -> EmotionProfile | None:
+    def detect_emotion(
+        self, text: str, conversation_history: list | None = None
+    ) -> EmotionProfile | None:
         """Detect emotional context in text
 
         Args:
@@ -234,7 +247,9 @@ class NLPProcessor:
 
         return self.emotion_detector.detect_emotional_context(text, conversation_history)
 
-    def adapt_for_context(self, text: str, metadata: dict[str, Any] | None = None) -> SpeechContext | None:
+    def adapt_for_context(
+        self, text: str, metadata: dict[str, Any] | None = None
+    ) -> SpeechContext | None:
         """Analyze and adapt for speech context
 
         Args:
@@ -249,7 +264,9 @@ class NLPProcessor:
 
         return self.context_adapter.analyze_context(text, metadata)
 
-    def enhance_naturalness(self, text: str, context: dict[str, Any] | None = None) -> NaturalnessProfile | None:
+    def enhance_naturalness(
+        self, text: str, context: dict[str, Any] | None = None
+    ) -> NaturalnessProfile | None:
         """Apply naturalness enhancements to text
 
         Args:
@@ -267,18 +284,18 @@ class NLPProcessor:
     def get_processing_stats(self) -> dict[str, Any]:
         """Get processing statistics"""
         stats = {
-            'homographs_loaded': len(self.homograph_resolver.list_homographs()),
-            'abbreviations_loaded': len(self.text_normalizer.abbreviation_dict),
-            'phonetic_mappings': len(self.phonetic_processor.ipa_mappings),
-            'conversational_patterns': len(self.prosody_analyzer.conversational_patterns)
+            "homographs_loaded": len(self.homograph_resolver.list_homographs()),
+            "abbreviations_loaded": len(self.text_normalizer.abbreviation_dict),
+            "phonetic_mappings": len(self.phonetic_processor.ipa_mappings),
+            "conversational_patterns": len(self.prosody_analyzer.conversational_patterns),
         }
 
         # Add phonetic processing statistics
         try:
             phonetic_stats = self.phonetic_processor.get_statistics()
-            stats['phonetic_processing'] = phonetic_stats
+            stats["phonetic_processing"] = phonetic_stats
         except Exception as e:
             logger.warning(f"Could not get phonetic processing stats: {e}")
-            stats['phonetic_processing'] = {'error': str(e)}
+            stats["phonetic_processing"] = {"error": str(e)}
 
         return stats

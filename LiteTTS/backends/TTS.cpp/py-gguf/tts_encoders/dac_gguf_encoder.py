@@ -14,15 +14,15 @@ DAC_RESIDUAL_UNIT_PARTS = {
 }
 
 DAC_DECODER_PARTS = {
-    'model.0.bias': "initial.bias",
-    'model.0.weight': "initial.weight",
-    'model.1': "decoder_block.1",
-    'model.2': "decoder_block.2",
-    'model.3': "decoder_block.3",
-    'model.4': "decoder_block.4",
+    "model.0.bias": "initial.bias",
+    "model.0.weight": "initial.weight",
+    "model.1": "decoder_block.1",
+    "model.2": "decoder_block.2",
+    "model.3": "decoder_block.3",
+    "model.4": "decoder_block.4",
     "model.5.alpha": "final.alpha",
-    'model.6.bias': "final.bias",
-    'model.6.weight': "final.weight",
+    "model.6.bias": "final.bias",
+    "model.6.weight": "final.weight",
 }
 
 DAC_DECODER_BLOCK_PARTS = {
@@ -76,7 +76,9 @@ class DACEncoder(TTSEncoder):
                     new_name.append(DAC_RESIDUAL_UNIT_PARTS[part])
                 else:
                     self.logger.exception(f"Found unexpected tensor in DAC model, '{name}'.")
-                    raise ValueError(f"DAC tensor '{name}' cannot be interpreted or encoded by {self.__class__}.")
+                    raise ValueError(
+                        f"DAC tensor '{name}' cannot be interpreted or encoded by {self.__class__}."
+                    )
             new_name = ".".join(new_name)
             self.set_tensor(new_name, param)
 
@@ -102,8 +104,13 @@ class DACEncoder(TTSEncoder):
         # It is static for all versions of DAC used by Parler-TTS
         self.gguf_writer.add_uint32("dac.up_scaling_factor", 512)
         for i in range(4):
-            self.gguf_writer.add_uint32(f"dac.dac_layer_stride_{i}", self.dac_model.decoder.model[i+1].block[1].stride[0])
-            self.gguf_writer.add_uint32(f"dac.dac_layer_padding_{i}", self.dac_model.decoder.model[i+1].block[1].padding[0])
+            self.gguf_writer.add_uint32(
+                f"dac.dac_layer_stride_{i}", self.dac_model.decoder.model[i + 1].block[1].stride[0]
+            )
+            self.gguf_writer.add_uint32(
+                f"dac.dac_layer_padding_{i}",
+                self.dac_model.decoder.model[i + 1].block[1].padding[0],
+            )
 
         # DAC audio token configuration
         self.gguf_writer.add_uint32("audio.bos_token_id", bos_token_id)

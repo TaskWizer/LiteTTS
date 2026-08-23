@@ -12,36 +12,43 @@ class TestVoiceModuleImports:
     def test_voice_downloader_importable(self):
         """Test VoiceDownloader is importable"""
         from LiteTTS.voice import VoiceDownloader
+
         assert VoiceDownloader is not None
 
     def test_voice_discovery_importable(self):
         """Test VoiceDiscovery is importable"""
         from LiteTTS.voice import VoiceDiscovery
+
         assert VoiceDiscovery is not None
 
     def test_voice_validator_importable(self):
         """Test VoiceValidator is importable"""
         from LiteTTS.voice import VoiceValidator
+
         assert VoiceValidator is not None
 
     def test_voice_cache_importable(self):
         """Test VoiceCache is importable"""
         from LiteTTS.voice import VoiceCache
+
         assert VoiceCache is not None
 
     def test_voice_manager_importable(self):
         """Test VoiceManager is importable"""
         from LiteTTS.voice import VoiceManager
+
         assert VoiceManager is not None
 
     def test_voice_blender_importable(self):
         """Test VoiceBlender is importable"""
         from LiteTTS.voice import VoiceBlender
+
         assert VoiceBlender is not None
 
     def test_dynamic_voice_manager_importable(self):
         """Test DynamicVoiceManager is importable"""
         from LiteTTS.voice import DynamicVoiceManager
+
         assert DynamicVoiceManager is not None
 
 
@@ -51,6 +58,7 @@ class TestFallbackVoiceDiscovery:
     def test_fallback_returns_empty_for_nonexistent_dir(self):
         """Test fallback returns empty list for non-existent directory"""
         from LiteTTS.voice import _fallback_voice_discovery
+
         result = _fallback_voice_discovery("/nonexistent/path/12345")
         assert result == []
 
@@ -59,8 +67,8 @@ class TestFallbackVoiceDiscovery:
         from LiteTTS.voice import _fallback_voice_discovery
 
         # Create some mock voice files
-        (tmp_path / "af_heart.bin").write_bytes(b'\x00' * 100)
-        (tmp_path / "am_puck.pt").write_bytes(b'\x00' * 100)
+        (tmp_path / "af_heart.bin").write_bytes(b"\x00" * 100)
+        (tmp_path / "am_puck.pt").write_bytes(b"\x00" * 100)
 
         result = _fallback_voice_discovery(str(tmp_path))
         assert "af_heart" in result
@@ -71,7 +79,7 @@ class TestFallbackVoiceDiscovery:
         from LiteTTS.voice import _fallback_voice_discovery
 
         # Create voice file with underscore
-        (tmp_path / "af_heart.bin").write_bytes(b'\x00' * 100)
+        (tmp_path / "af_heart.bin").write_bytes(b"\x00" * 100)
 
         result = _fallback_voice_discovery(str(tmp_path))
         assert "heart" in result  # Short name mapping
@@ -79,6 +87,7 @@ class TestFallbackVoiceDiscovery:
     def test_fallback_returns_empty_for_nonexistent_path(self):
         """Test fallback returns empty when path doesn't exist"""
         from LiteTTS.voice import _fallback_voice_discovery
+
         result = _fallback_voice_discovery("/nonexistent/path/12345")
         assert result == []
 
@@ -91,8 +100,8 @@ class TestGetAvailableVoices:
         from LiteTTS.voice import get_available_voices
 
         # Create mock voice files
-        (tmp_path / "voice1.bin").write_bytes(b'\x00' * 100)
-        (tmp_path / "voice2.bin").write_bytes(b'\x00' * 100)
+        (tmp_path / "voice1.bin").write_bytes(b"\x00" * 100)
+        (tmp_path / "voice2.bin").write_bytes(b"\x00" * 100)
 
         result = get_available_voices(str(tmp_path))
         assert "voice1" in result
@@ -102,7 +111,7 @@ class TestGetAvailableVoices:
         """Test get_available_voices handles errors gracefully"""
         from LiteTTS.voice import get_available_voices
 
-        with patch('LiteTTS.voice.get_voice_manager', side_effect=Exception("Test error")):
+        with patch("LiteTTS.voice.get_voice_manager", side_effect=Exception("Test error")):
             result = get_available_voices("/nonexistent")
             # Should fall back to basic discovery
             assert isinstance(result, list)
@@ -115,7 +124,7 @@ class TestResolveVoiceName:
         """Test resolve_voice_name returns input when manager fails"""
         from LiteTTS.voice import resolve_voice_name
 
-        with patch('LiteTTS.voice.get_voice_manager', side_effect=Exception("Test error")):
+        with patch("LiteTTS.voice.get_voice_manager", side_effect=Exception("Test error")):
             result = resolve_voice_name("test_voice")
             assert result == "test_voice"
 
@@ -126,7 +135,7 @@ class TestResolveVoiceName:
         mock_manager = Mock()
         mock_manager.resolve_voice_name.return_value = "full_voice_name"
 
-        with patch('LiteTTS.voice.get_voice_manager', return_value=mock_manager):
+        with patch("LiteTTS.voice.get_voice_manager", return_value=mock_manager):
             result = resolve_voice_name("short")
             assert result == "full_voice_name"
 
@@ -138,7 +147,7 @@ class TestEnsureVoiceDownloaded:
         """Test ensure_voice_downloaded returns False on error"""
         from LiteTTS.voice import ensure_voice_downloaded
 
-        with patch('LiteTTS.voice.get_voice_manager', side_effect=Exception("Test error")):
+        with patch("LiteTTS.voice.get_voice_manager", side_effect=Exception("Test error")):
             result = ensure_voice_downloaded("test_voice")
             assert result is False
 
@@ -149,7 +158,7 @@ class TestEnsureVoiceDownloaded:
         mock_manager = Mock()
         mock_manager.ensure_voice_downloaded.return_value = True
 
-        with patch('LiteTTS.voice.get_voice_manager', return_value=mock_manager):
+        with patch("LiteTTS.voice.get_voice_manager", return_value=mock_manager):
             result = ensure_voice_downloaded("test_voice")
             assert result is True
 
@@ -161,8 +170,8 @@ class TestGetVoiceManager:
         """Test get_voice_manager returns None when DynamicVoiceManager unavailable"""
         from LiteTTS.voice import get_voice_manager
 
-        with patch.dict('LiteTTS.voice.__dict__', {'_has_dynamic_manager': False}):
-            with patch('LiteTTS.voice.logger'):
+        with patch.dict("LiteTTS.voice.__dict__", {"_has_dynamic_manager": False}):
+            with patch("LiteTTS.voice.logger"):
                 result = get_voice_manager()
                 assert result is None
 
@@ -170,12 +179,13 @@ class TestGetVoiceManager:
         """Test get_voice_manager creates instance"""
         from LiteTTS.voice import get_voice_manager
 
-        with patch('LiteTTS.voice.DynamicVoiceManager') as mock_class:
+        with patch("LiteTTS.voice.DynamicVoiceManager") as mock_class:
             mock_instance = Mock()
             mock_class.return_value = mock_instance
 
             # Reset global
             import LiteTTS.voice
+
             LiteTTS.voice._voice_manager = None
 
             result = get_voice_manager("/fake/path")
@@ -189,6 +199,7 @@ class TestGetVoiceManager:
         mock_manager = Mock()
 
         import LiteTTS.voice
+
         original = LiteTTS.voice._voice_manager
         LiteTTS.voice._voice_manager = mock_manager
 

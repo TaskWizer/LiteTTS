@@ -19,6 +19,7 @@ import requests
 @dataclass
 class BenchmarkResult:
     """Individual benchmark test result"""
+
     test_name: str
     text: str
     voice: str
@@ -44,9 +45,11 @@ class BenchmarkResult:
     memory_usage: float
     cpu_usage: float
 
+
 @dataclass
 class BenchmarkSummary:
     """Summary of all benchmark results"""
+
     total_tests: int
     successful_tests: int
     failed_tests: int
@@ -69,6 +72,7 @@ class BenchmarkSummary:
     avg_audio_size: int
     avg_estimated_duration: float
 
+
 class TTSBenchmark:
     """Comprehensive TTS benchmarking system"""
 
@@ -83,7 +87,7 @@ class TTSBenchmark:
             "This is a simple test sentence.",
             "The quick brown fox jumps over the lazy dog.",
             "I am doing well, thank you for asking! As a large language model, I do not have feelings in the traditional sense.",
-            "Test with numbers: 123, 456, and symbols: @#$%^&*()_+{}|:\"<>?/~`",
+            'Test with numbers: 123, 456, and symbols: @#$%^&*()_+{}|:"<>?/~`',
             "Very long text to test performance with extended content that includes multiple sentences, various punctuation marks, and complex linguistic structures that might challenge the TTS system's processing capabilities.",
             "Contractions test: don't, won't, can't, shouldn't, wouldn't, I'm, you're, he's, she's, it's, we're, they're.",
             "Special characters and formatting: email@domain.com, https://example.com, file.txt, 50% discount, $100.00, 3:30 PM.",
@@ -93,25 +97,18 @@ class TTSBenchmark:
         self.test_formats = ["mp3", "wav", "ogg"]
         self.test_speeds = [0.8, 1.0, 1.2, 1.5]
 
-    def run_single_test(self, text: str, voice: str, format: str = "mp3", speed: float = 1.0) -> BenchmarkResult:
+    def run_single_test(
+        self, text: str, voice: str, format: str = "mp3", speed: float = 1.0
+    ) -> BenchmarkResult:
         """Run a single TTS test and collect metrics"""
         test_name = f"{voice}_{format}_{speed}_{len(text)}chars"
 
-        payload = {
-            "input": text,
-            "voice": voice,
-            "response_format": format,
-            "speed": speed
-        }
+        payload = {"input": text, "voice": voice, "response_format": format, "speed": speed}
 
         start_time = time.time()
 
         try:
-            response = requests.post(
-                f"{self.base_url}/v1/audio/speech",
-                json=payload,
-                timeout=30
-            )
+            response = requests.post(f"{self.base_url}/v1/audio/speech", json=payload, timeout=30)
 
             total_time = time.time() - start_time
 
@@ -139,7 +136,7 @@ class TTSBenchmark:
                     error_message="",
                     http_status=response.status_code,
                     memory_usage=0.0,  # Would need psutil for real metrics
-                    cpu_usage=0.0
+                    cpu_usage=0.0,
                 )
             else:
                 return BenchmarkResult(
@@ -158,7 +155,7 @@ class TTSBenchmark:
                     error_message=f"HTTP {response.status_code}",
                     http_status=response.status_code,
                     memory_usage=0.0,
-                    cpu_usage=0.0
+                    cpu_usage=0.0,
                 )
 
         except Exception as e:
@@ -179,7 +176,7 @@ class TTSBenchmark:
                 error_message=str(e),
                 http_status=0,
                 memory_usage=0.0,
-                cpu_usage=0.0
+                cpu_usage=0.0,
             )
 
     def _estimate_audio_duration(self, audio_size: int, format: str) -> float:
@@ -208,7 +205,9 @@ class TTSBenchmark:
                 result = self.run_single_test(text, voice)
                 self.results.append(result)
                 total_tests += 1
-                print(f"  ✓ {result.test_name}: {result.total_time:.3f}s ({'✅' if result.success else '❌'})")
+                print(
+                    f"  ✓ {result.test_name}: {result.total_time:.3f}s ({'✅' if result.success else '❌'})"
+                )
 
         # Format compatibility tests
         print("\n🎵 Running format compatibility tests...")
@@ -217,7 +216,9 @@ class TTSBenchmark:
             result = self.run_single_test(test_text, "af_heart", format)
             self.results.append(result)
             total_tests += 1
-            print(f"  ✓ Format {format}: {result.total_time:.3f}s ({'✅' if result.success else '❌'})")
+            print(
+                f"  ✓ Format {format}: {result.total_time:.3f}s ({'✅' if result.success else '❌'})"
+            )
 
         # Speed variation tests
         print("\n⚡ Running speed variation tests...")
@@ -225,7 +226,9 @@ class TTSBenchmark:
             result = self.run_single_test(test_text, "af_heart", "mp3", speed)
             self.results.append(result)
             total_tests += 1
-            print(f"  ✓ Speed {speed}x: {result.total_time:.3f}s ({'✅' if result.success else '❌'})")
+            print(
+                f"  ✓ Speed {speed}x: {result.total_time:.3f}s ({'✅' if result.success else '❌'})"
+            )
 
         # Cache performance tests
         print("\n🎯 Running cache performance tests...")
@@ -271,7 +274,9 @@ class TTSBenchmark:
             result = self.run_single_test(text, "af_heart")
             self.results.append(result)
             total_tests += 1
-            print(f"  ✓ Problematic text: {result.total_time:.3f}s ({'✅' if result.success else '❌'})")
+            print(
+                f"  ✓ Problematic text: {result.total_time:.3f}s ({'✅' if result.success else '❌'})"
+            )
 
         print(f"\n📊 Completed {total_tests} tests")
         return self._generate_summary()
@@ -292,17 +297,27 @@ class TTSBenchmark:
             avg_total_time = statistics.mean([r.total_time for r in successful_results])
             avg_generation_time = statistics.mean([r.generation_time for r in successful_results])
             avg_rtf = statistics.mean([r.rtf for r in successful_results if r.rtf > 0])
-            avg_audio_size = int(statistics.mean([r.audio_size for r in successful_results if r.audio_size > 0]))
-            avg_estimated_duration = statistics.mean([r.estimated_duration for r in successful_results if r.estimated_duration > 0])
+            avg_audio_size = int(
+                statistics.mean([r.audio_size for r in successful_results if r.audio_size > 0])
+            )
+            avg_estimated_duration = statistics.mean(
+                [r.estimated_duration for r in successful_results if r.estimated_duration > 0]
+            )
         else:
-            avg_total_time = avg_generation_time = avg_rtf = avg_audio_size = avg_estimated_duration = 0
+            avg_total_time = avg_generation_time = avg_rtf = avg_audio_size = (
+                avg_estimated_duration
+            ) = 0
 
         cache_hits = len([r for r in self.results if r.cache_hit])
         cache_hit_rate = cache_hits / total_tests if total_tests > 0 else 0
         cache_miss_rate = 1 - cache_hit_rate
 
         error_rate = failed_tests / total_tests if total_tests > 0 else 0
-        empty_audio_rate = len([r for r in self.results if r.success and r.audio_size == 0]) / total_tests if total_tests > 0 else 0
+        empty_audio_rate = (
+            len([r for r in self.results if r.success and r.audio_size == 0]) / total_tests
+            if total_tests > 0
+            else 0
+        )
 
         return BenchmarkSummary(
             total_tests=total_tests,
@@ -317,7 +332,7 @@ class TTSBenchmark:
             empty_audio_rate=empty_audio_rate,
             phonemizer_warning_rate=0.0,  # Would need log analysis
             avg_audio_size=avg_audio_size,
-            avg_estimated_duration=avg_estimated_duration
+            avg_estimated_duration=avg_estimated_duration,
         )
 
     def export_results(self, output_dir: str = "docs/benchmark_results"):
@@ -327,20 +342,24 @@ class TTSBenchmark:
 
         # JSON export
         json_file = f"{output_dir}/benchmark_{timestamp}.json"
-        with open(json_file, 'w') as f:
-            json.dump({
-                'metadata': {
-                    'timestamp': self.start_time.isoformat(),
-                    'base_url': self.base_url,
-                    'total_tests': len(self.results)
+        with open(json_file, "w") as f:
+            json.dump(
+                {
+                    "metadata": {
+                        "timestamp": self.start_time.isoformat(),
+                        "base_url": self.base_url,
+                        "total_tests": len(self.results),
+                    },
+                    "results": [asdict(r) for r in self.results],
+                    "summary": asdict(self._generate_summary()),
                 },
-                'results': [asdict(r) for r in self.results],
-                'summary': asdict(self._generate_summary())
-            }, f, indent=2)
+                f,
+                indent=2,
+            )
 
         # CSV export
         csv_file = f"{output_dir}/benchmark_{timestamp}.csv"
-        with open(csv_file, 'w', newline='') as f:
+        with open(csv_file, "w", newline="") as f:
             if self.results:
                 writer = csv.DictWriter(f, fieldnames=asdict(self.results[0]).keys())
                 writer.writeheader()
@@ -360,17 +379,19 @@ class TTSBenchmark:
         """Generate detailed markdown report"""
         summary = self._generate_summary()
 
-        with open(filename, 'w') as f:
+        with open(filename, "w") as f:
             f.write("# TTS Benchmark Report\n\n")
             f.write(f"**Generated:** {self.start_time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             f.write(f"**Base URL:** {self.base_url}\n\n")
 
             f.write("## Executive Summary\n\n")
             f.write(f"- **Total Tests:** {summary.total_tests}\n")
-            f.write(f"- **Success Rate:** {(summary.successful_tests/summary.total_tests*100):.1f}%\n")
+            f.write(
+                f"- **Success Rate:** {(summary.successful_tests / summary.total_tests * 100):.1f}%\n"
+            )
             f.write(f"- **Average Response Time:** {summary.avg_total_time:.3f}s\n")
             f.write(f"- **Average RTF:** {summary.avg_rtf:.3f}\n")
-            f.write(f"- **Cache Hit Rate:** {summary.cache_hit_rate*100:.1f}%\n\n")
+            f.write(f"- **Cache Hit Rate:** {summary.cache_hit_rate * 100:.1f}%\n\n")
 
             f.write("## Performance Metrics\n\n")
             f.write("| Metric | Value |\n")
@@ -382,8 +403,8 @@ class TTSBenchmark:
             f.write(f"| Average Duration | {summary.avg_estimated_duration:.2f}s |\n\n")
 
             f.write("## Error Analysis\n\n")
-            f.write(f"- **Error Rate:** {summary.error_rate*100:.1f}%\n")
-            f.write(f"- **Empty Audio Rate:** {summary.empty_audio_rate*100:.1f}%\n")
+            f.write(f"- **Error Rate:** {summary.error_rate * 100:.1f}%\n")
+            f.write(f"- **Empty Audio Rate:** {summary.empty_audio_rate * 100:.1f}%\n")
             f.write(f"- **Failed Tests:** {summary.failed_tests}\n\n")
 
             if summary.failed_tests > 0:
@@ -399,7 +420,10 @@ class TTSBenchmark:
 
             for result in self.results:
                 status = "✅" if result.success else "❌"
-                f.write(f"| {result.test_name} | {result.voice} | {result.format} | {result.speed} | {result.total_time:.3f}s | {result.rtf:.3f} | {result.audio_size:,} | {status} |\n")
+                f.write(
+                    f"| {result.test_name} | {result.voice} | {result.format} | {result.speed} | {result.total_time:.3f}s | {result.rtf:.3f} | {result.audio_size:,} | {status} |\n"
+                )
+
 
 def main():
     """Main benchmark execution"""
@@ -421,17 +445,19 @@ def main():
         print("\n" + "=" * 60)
         print("📊 BENCHMARK SUMMARY")
         print("=" * 60)
-        print(f"✅ Successful Tests: {summary.successful_tests}/{summary.total_tests} ({summary.successful_tests/summary.total_tests*100:.1f}%)")
+        print(
+            f"✅ Successful Tests: {summary.successful_tests}/{summary.total_tests} ({summary.successful_tests / summary.total_tests * 100:.1f}%)"
+        )
         print(f"⚡ Average Response Time: {summary.avg_total_time:.3f}s")
         print(f"🎵 Average RTF: {summary.avg_rtf:.3f}")
-        print(f"🎯 Cache Hit Rate: {summary.cache_hit_rate*100:.1f}%")
+        print(f"🎯 Cache Hit Rate: {summary.cache_hit_rate * 100:.1f}%")
         print(f"📦 Average Audio Size: {summary.avg_audio_size:,} bytes")
 
         if summary.error_rate > 0:
-            print(f"❌ Error Rate: {summary.error_rate*100:.1f}%")
+            print(f"❌ Error Rate: {summary.error_rate * 100:.1f}%")
 
         if summary.empty_audio_rate > 0:
-            print(f"⚠️ Empty Audio Rate: {summary.empty_audio_rate*100:.1f}%")
+            print(f"⚠️ Empty Audio Rate: {summary.empty_audio_rate * 100:.1f}%")
 
         benchmark.export_results()
 
@@ -444,6 +470,7 @@ def main():
     except Exception as e:
         print(f"\n❌ Benchmark failed: {e}")
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

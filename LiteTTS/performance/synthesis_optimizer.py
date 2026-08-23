@@ -23,9 +23,11 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class SynthesisPerformanceConfig:
     """Configuration for synthesis performance optimization"""
+
     # RTF targets
     target_rtf: float = 0.5
     critical_rtf_threshold: float = 1.0
@@ -44,11 +46,12 @@ class SynthesisPerformanceConfig:
 
     # Cache settings
     max_voice_embedding_cache: int = 100  # Max voice embeddings to cache
-    max_tokenization_cache: int = 1000    # Max tokenization results to cache
+    max_tokenization_cache: int = 1000  # Max tokenization results to cache
 
     # Timeout settings
     synthesis_timeout: float = 30.0  # 30s timeout for synthesis (increased for long texts)
     fast_path_timeout: float = 2.0
+
 
 class SynthesisOptimizer:
     """
@@ -59,12 +62,12 @@ class SynthesisOptimizer:
     def __init__(self, config: SynthesisPerformanceConfig | None = None):
         self.config = config or SynthesisPerformanceConfig()
         self.performance_stats = {
-            'total_requests': 0,
-            'fast_path_requests': 0,
-            'optimized_requests': 0,
-            'avg_rtf': 0.0,
-            'rtf_violations': 0,
-            'cache_hits': 0
+            "total_requests": 0,
+            "fast_path_requests": 0,
+            "optimized_requests": 0,
+            "avg_rtf": 0.0,
+            "rtf_violations": 0,
+            "cache_hits": 0,
         }
         self.stats_lock = threading.RLock()
 
@@ -75,59 +78,67 @@ class SynthesisOptimizer:
 
         logger.info("Synthesis optimizer initialized")
 
-    def optimize_synthesis_request(self, text: str, voice: str, speed: float = 1.0,
-                                 emotion: str | None = None,
-                                 emotion_strength: float = 1.0) -> dict[str, Any]:
+    def optimize_synthesis_request(
+        self,
+        text: str,
+        voice: str,
+        speed: float = 1.0,
+        emotion: str | None = None,
+        emotion_strength: float = 1.0,
+    ) -> dict[str, Any]:
         """
         Optimize a synthesis request for best performance
         Returns optimization strategy and cached data
         """
         optimization_strategy = {
-            'use_fast_path': False,
-            'use_pipeline_optimization': False,
-            'cached_voice_embedding': None,
-            'cached_tokens': None,
-            'skip_post_processing': False,
-            'expected_rtf': self.config.target_rtf
+            "use_fast_path": False,
+            "use_pipeline_optimization": False,
+            "cached_voice_embedding": None,
+            "cached_tokens": None,
+            "skip_post_processing": False,
+            "expected_rtf": self.config.target_rtf,
         }
 
         try:
             # Determine if fast path is applicable
-            if (self.config.enable_fast_path and
-                len(text) <= self.config.fast_path_text_length and
-                emotion is None and speed == 1.0):
-
-                optimization_strategy['use_fast_path'] = True
-                optimization_strategy['expected_rtf'] = 0.1  # Very fast for short text
+            if (
+                self.config.enable_fast_path
+                and len(text) <= self.config.fast_path_text_length
+                and emotion is None
+                and speed == 1.0
+            ):
+                optimization_strategy["use_fast_path"] = True
+                optimization_strategy["expected_rtf"] = 0.1  # Very fast for short text
 
                 # Check fast path cache (move to end for LRU)
                 fast_cache_key = f"{text}:{voice}"
                 if fast_cache_key in self.fast_path_cache:
                     self.fast_path_cache.move_to_end(fast_cache_key)
-                    optimization_strategy['cached_audio'] = self.fast_path_cache[fast_cache_key]
+                    optimization_strategy["cached_audio"] = self.fast_path_cache[fast_cache_key]
                     with self.stats_lock:
-                        self.performance_stats['cache_hits'] += 1
+                        self.performance_stats["cache_hits"] += 1
 
             # Check for cached voice embedding (move to end for LRU)
             if self.config.use_cached_voice_embeddings and voice in self.voice_embedding_cache:
                 self.voice_embedding_cache.move_to_end(voice)
-                optimization_strategy['cached_voice_embedding'] = self.voice_embedding_cache[voice]
+                optimization_strategy["cached_voice_embedding"] = self.voice_embedding_cache[voice]
 
             # Check for cached tokenization (move to end for LRU)
             token_cache_key = f"{text}:{voice}:{speed}:{emotion}:{emotion_strength}"
             if token_cache_key in self.tokenization_cache:
                 self.tokenization_cache.move_to_end(token_cache_key)
-                optimization_strategy['cached_tokens'] = self.tokenization_cache[token_cache_key]
+                optimization_strategy["cached_tokens"] = self.tokenization_cache[token_cache_key]
 
             # Enable pipeline optimization for longer text
-            if (self.config.enable_pipeline_optimization and
-                len(text) > self.config.fast_path_text_length):
-                optimization_strategy['use_pipeline_optimization'] = True
+            if (
+                self.config.enable_pipeline_optimization
+                and len(text) > self.config.fast_path_text_length
+            ):
+                optimization_strategy["use_pipeline_optimization"] = True
 
             # Skip unnecessary post-processing for simple requests
-            if (self.config.skip_unnecessary_processing and
-                emotion is None and speed == 1.0):
-                optimization_strategy['skip_post_processing'] = True
+            if self.config.skip_unnecessary_processing and emotion is None and speed == 1.0:
+                optimization_strategy["skip_post_processing"] = True
 
             return optimization_strategy
 
@@ -135,49 +146,62 @@ class SynthesisOptimizer:
             logger.warning(f"Optimization strategy failed: {e}")
             return optimization_strategy
 
-    def monitor_synthesis_performance(self, text: str, voice: str,
-                                    generation_time: float, audio_duration: float,
-                                    optimization_strategy: dict[str, Any]) -> dict[str, Any]:
+    def monitor_synthesis_performance(
+        self,
+        text: str,
+        voice: str,
+        generation_time: float,
+        audio_duration: float,
+        optimization_strategy: dict[str, Any],
+    ) -> dict[str, Any]:
         """Monitor and record synthesis performance"""
         rtf = generation_time / max(audio_duration, 0.001)  # Avoid division by zero
 
         performance_data = {
-            'rtf': rtf,
-            'generation_time': generation_time,
-            'audio_duration': audio_duration,
-            'text_length': len(text),
-            'voice': voice,
-            'used_fast_path': optimization_strategy.get('use_fast_path', False),
-            'used_pipeline_optimization': optimization_strategy.get('use_pipeline_optimization', False),
-            'target_met': rtf <= self.config.target_rtf,
-            'critical_violation': rtf > self.config.critical_rtf_threshold
+            "rtf": rtf,
+            "generation_time": generation_time,
+            "audio_duration": audio_duration,
+            "text_length": len(text),
+            "voice": voice,
+            "used_fast_path": optimization_strategy.get("use_fast_path", False),
+            "used_pipeline_optimization": optimization_strategy.get(
+                "use_pipeline_optimization", False
+            ),
+            "target_met": rtf <= self.config.target_rtf,
+            "critical_violation": rtf > self.config.critical_rtf_threshold,
         }
 
         # Update statistics
         with self.stats_lock:
-            self.performance_stats['total_requests'] += 1
+            self.performance_stats["total_requests"] += 1
 
-            if optimization_strategy.get('use_fast_path'):
-                self.performance_stats['fast_path_requests'] += 1
+            if optimization_strategy.get("use_fast_path"):
+                self.performance_stats["fast_path_requests"] += 1
 
-            if optimization_strategy.get('use_pipeline_optimization'):
-                self.performance_stats['optimized_requests'] += 1
+            if optimization_strategy.get("use_pipeline_optimization"):
+                self.performance_stats["optimized_requests"] += 1
 
             if rtf > self.config.critical_rtf_threshold:
-                self.performance_stats['rtf_violations'] += 1
+                self.performance_stats["rtf_violations"] += 1
 
             # Update running average RTF
-            total_requests = self.performance_stats['total_requests']
-            current_avg = self.performance_stats['avg_rtf']
-            self.performance_stats['avg_rtf'] = (current_avg * (total_requests - 1) + rtf) / total_requests
+            total_requests = self.performance_stats["total_requests"]
+            current_avg = self.performance_stats["avg_rtf"]
+            self.performance_stats["avg_rtf"] = (
+                current_avg * (total_requests - 1) + rtf
+            ) / total_requests
 
         # Log performance issues
         if rtf > self.config.critical_rtf_threshold:
-            logger.warning(f"RTF violation: {rtf:.3f} > {self.config.critical_rtf_threshold} "
-                         f"for text length {len(text)} with voice {voice}")
+            logger.warning(
+                f"RTF violation: {rtf:.3f} > {self.config.critical_rtf_threshold} "
+                f"for text length {len(text)} with voice {voice}"
+            )
         elif rtf > self.config.target_rtf:
-            logger.debug(f"RTF above target: {rtf:.3f} > {self.config.target_rtf} "
-                        f"for text length {len(text)}")
+            logger.debug(
+                f"RTF above target: {rtf:.3f} > {self.config.target_rtf} "
+                f"for text length {len(text)}"
+            )
 
         return performance_data
 
@@ -234,22 +258,36 @@ class SynthesisOptimizer:
             stats = self.performance_stats.copy()
 
             # Calculate additional metrics
-            if stats['total_requests'] > 0:
-                stats['fast_path_percentage'] = (stats['fast_path_requests'] / stats['total_requests']) * 100
-                stats['optimization_percentage'] = (stats['optimized_requests'] / stats['total_requests']) * 100
-                stats['violation_percentage'] = (stats['rtf_violations'] / stats['total_requests']) * 100
-                stats['cache_hit_percentage'] = (stats['cache_hits'] / stats['total_requests']) * 100
+            if stats["total_requests"] > 0:
+                stats["fast_path_percentage"] = (
+                    stats["fast_path_requests"] / stats["total_requests"]
+                ) * 100
+                stats["optimization_percentage"] = (
+                    stats["optimized_requests"] / stats["total_requests"]
+                ) * 100
+                stats["violation_percentage"] = (
+                    stats["rtf_violations"] / stats["total_requests"]
+                ) * 100
+                stats["cache_hit_percentage"] = (
+                    stats["cache_hits"] / stats["total_requests"]
+                ) * 100
             else:
-                stats['fast_path_percentage'] = 0
-                stats['optimization_percentage'] = 0
-                stats['violation_percentage'] = 0
-                stats['cache_hit_percentage'] = 0
+                stats["fast_path_percentage"] = 0
+                stats["optimization_percentage"] = 0
+                stats["violation_percentage"] = 0
+                stats["cache_hit_percentage"] = 0
 
             return stats
 
-    def optimize_synthesis_pipeline(self, synthesis_func, text: str, voice: str,
-                                  speed: float = 1.0, emotion: str | None = None,
-                                  emotion_strength: float = 1.0) -> tuple[Any, dict[str, Any]]:
+    def optimize_synthesis_pipeline(
+        self,
+        synthesis_func,
+        text: str,
+        voice: str,
+        speed: float = 1.0,
+        emotion: str | None = None,
+        emotion_strength: float = 1.0,
+    ) -> tuple[Any, dict[str, Any]]:
         """
         Execute optimized synthesis with performance monitoring
         Returns (audio_segment, performance_data)
@@ -263,8 +301,8 @@ class SynthesisOptimizer:
 
         try:
             # Check for cached result first
-            if 'cached_audio' in optimization_strategy:
-                audio_segment = optimization_strategy['cached_audio']
+            if "cached_audio" in optimization_strategy:
+                audio_segment = optimization_strategy["cached_audio"]
                 generation_time = time.perf_counter() - start_time
 
                 performance_data = self.monitor_synthesis_performance(
@@ -275,8 +313,11 @@ class SynthesisOptimizer:
                 return audio_segment, performance_data
 
             # Execute synthesis with timeout protection
-            timeout = (self.config.fast_path_timeout if optimization_strategy['use_fast_path']
-                      else self.config.synthesis_timeout)
+            timeout = (
+                self.config.fast_path_timeout
+                if optimization_strategy["use_fast_path"]
+                else self.config.synthesis_timeout
+            )
 
             # Call the actual synthesis function
             audio_segment = synthesis_func(text, voice, speed, emotion, emotion_strength)
@@ -289,7 +330,7 @@ class SynthesisOptimizer:
             )
 
             # Cache result if it's a fast path candidate
-            if optimization_strategy['use_fast_path'] and performance_data['target_met']:
+            if optimization_strategy["use_fast_path"] and performance_data["target_met"]:
                 self.cache_fast_path_result(text, voice, audio_segment)
 
             return audio_segment, performance_data
@@ -307,18 +348,20 @@ class SynthesisOptimizer:
 
         with self.stats_lock:
             self.performance_stats = {
-                'total_requests': 0,
-                'fast_path_requests': 0,
-                'optimized_requests': 0,
-                'avg_rtf': 0.0,
-                'rtf_violations': 0,
-                'cache_hits': 0
+                "total_requests": 0,
+                "fast_path_requests": 0,
+                "optimized_requests": 0,
+                "avg_rtf": 0.0,
+                "rtf_violations": 0,
+                "cache_hits": 0,
             }
 
         logger.info("Performance caches and stats reset")
 
+
 # Global synthesis optimizer instance
 _synthesis_optimizer: SynthesisOptimizer | None = None
+
 
 def get_synthesis_optimizer() -> SynthesisOptimizer:
     """Get or create global synthesis optimizer"""
@@ -326,6 +369,7 @@ def get_synthesis_optimizer() -> SynthesisOptimizer:
     if _synthesis_optimizer is None:
         _synthesis_optimizer = SynthesisOptimizer()
     return _synthesis_optimizer
+
 
 def initialize_synthesis_optimizer(config: SynthesisPerformanceConfig | None = None):
     """Initialize global synthesis optimizer with configuration"""

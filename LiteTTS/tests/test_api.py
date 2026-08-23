@@ -3,7 +3,6 @@
 Simple test script for the Kokoro ONNX TTS API
 """
 
-
 import requests
 
 
@@ -64,13 +63,13 @@ def test_api():
             "model": "kokoro",
             "voice": "af_heart",
             "response_format": "mp3",
-            "speed": 1.0
+            "speed": 1.0,
         }
 
         response = requests.post(
             f"{base_url}/v1/audio/speech",
             json=tts_request,
-            headers={"Content-Type": "application/json"}
+            headers={"Content-Type": "application/json"},
         )
 
         print(f"   Status: {response.status_code}")
@@ -87,6 +86,7 @@ def test_api():
         print(f"   Error: {e}")
 
     print("\n✅ API test complete!")
+
 
 if __name__ == "__main__":
     test_api()

@@ -19,7 +19,7 @@ def benchmark_tts(base_url: str, num_requests: int = 10, voice: str = "af_heart"
         "This is a test of the text-to-speech system.",
         "The quick brown fox jumps over the lazy dog.",
         "Performance testing with various text lengths and complexity.",
-        "Kokoro ONNX TTS API benchmark test with longer text to measure performance under different conditions."
+        "Kokoro ONNX TTS API benchmark test with longer text to measure performance under different conditions.",
     ]
 
     results = []
@@ -32,11 +32,7 @@ def benchmark_tts(base_url: str, num_requests: int = 10, voice: str = "af_heart"
     for i in range(num_requests):
         text = test_texts[i % len(test_texts)]
 
-        payload = {
-            "input": text,
-            "voice": voice,
-            "response_format": "mp3"
-        }
+        payload = {"input": text, "voice": voice, "response_format": "mp3"}
 
         start_time = time.time()
 
@@ -45,7 +41,7 @@ def benchmark_tts(base_url: str, num_requests: int = 10, voice: str = "af_heart"
                 f"{base_url}/v1/audio/speech",
                 json=payload,
                 headers={"Content-Type": "application/json"},
-                timeout=30
+                timeout=30,
             )
 
             end_time = time.time()
@@ -53,37 +49,45 @@ def benchmark_tts(base_url: str, num_requests: int = 10, voice: str = "af_heart"
 
             if response.status_code == 200:
                 audio_size = len(response.content)
-                results.append({
-                    "text_length": len(text),
-                    "response_time": response_time,
-                    "audio_size": audio_size,
-                    "success": True
-                })
+                results.append(
+                    {
+                        "text_length": len(text),
+                        "response_time": response_time,
+                        "audio_size": audio_size,
+                        "success": True,
+                    }
+                )
 
                 # Estimate if this was a cache hit (very fast response)
                 if response_time < 0.1:
                     cache_hits += 1
 
-                print(f"✅ Request {i+1}: {response_time:.3f}s ({len(text)} chars, {audio_size} bytes)")
+                print(
+                    f"✅ Request {i + 1}: {response_time:.3f}s ({len(text)} chars, {audio_size} bytes)"
+                )
             else:
-                print(f"❌ Request {i+1}: HTTP {response.status_code}")
-                results.append({
-                    "text_length": len(text),
-                    "response_time": response_time,
-                    "audio_size": 0,
-                    "success": False
-                })
+                print(f"❌ Request {i + 1}: HTTP {response.status_code}")
+                results.append(
+                    {
+                        "text_length": len(text),
+                        "response_time": response_time,
+                        "audio_size": 0,
+                        "success": False,
+                    }
+                )
 
         except Exception as e:
             end_time = time.time()
             response_time = end_time - start_time
-            print(f"❌ Request {i+1}: Error - {e}")
-            results.append({
-                "text_length": len(text),
-                "response_time": response_time,
-                "audio_size": 0,
-                "success": False
-            })
+            print(f"❌ Request {i + 1}: Error - {e}")
+            results.append(
+                {
+                    "text_length": len(text),
+                    "response_time": response_time,
+                    "audio_size": 0,
+                    "success": False,
+                }
+            )
 
     # Calculate statistics
     successful_results = [r for r in results if r["success"]]
@@ -104,16 +108,17 @@ def benchmark_tts(base_url: str, num_requests: int = 10, voice: str = "af_heart"
             "max": max(response_times),
             "mean": statistics.mean(response_times),
             "median": statistics.median(response_times),
-            "stdev": statistics.stdev(response_times) if len(response_times) > 1 else 0
+            "stdev": statistics.stdev(response_times) if len(response_times) > 1 else 0,
         },
         "audio_sizes": {
             "min": min(r["audio_size"] for r in successful_results),
             "max": max(r["audio_size"] for r in successful_results),
-            "mean": statistics.mean(r["audio_size"] for r in successful_results)
-        }
+            "mean": statistics.mean(r["audio_size"] for r in successful_results),
+        },
     }
 
     return stats
+
 
 def main():
     parser = argparse.ArgumentParser(description="Quick TTS API benchmark")
@@ -148,7 +153,9 @@ def main():
     print("=" * 50)
     print(f"Total Requests: {results['total_requests']}")
     print(f"Successful: {results['successful_requests']} ({results['success_rate']:.1f}%)")
-    print(f"Estimated Cache Hits: {results['estimated_cache_hits']} ({results['cache_hit_rate']:.1f}%)")
+    print(
+        f"Estimated Cache Hits: {results['estimated_cache_hits']} ({results['cache_hit_rate']:.1f}%)"
+    )
     print()
     print("Response Times:")
     print(f"  Min: {results['response_times']['min']:.3f}s")
@@ -163,7 +170,7 @@ def main():
     print(f"  Mean: {results['audio_sizes']['mean']:,.0f} bytes")
 
     # Performance assessment
-    mean_time = results['response_times']['mean']
+    mean_time = results["response_times"]["mean"]
     if mean_time < 0.1:
         rating = "🟢 Excellent (mostly cached)"
     elif mean_time < 0.5:
@@ -177,6 +184,7 @@ def main():
 
     print(f"\n🎯 Performance Rating: {rating}")
     print(f"📈 Estimated RTF: ~{mean_time / 2.0:.2f} (assuming 2s audio average)")
+
 
 if __name__ == "__main__":
     main()

@@ -23,18 +23,14 @@ class TestPerformanceBenchmarks:
         test_texts = [
             "Hello",  # Short text
             "Hello, world! This is a test.",  # Medium text
-            "This is a longer text that should take more time to process and generate audio."  # Long text
+            "This is a longer text that should take more time to process and generate audio.",  # Long text
         ]
 
         for text in test_texts:
             latencies = []
 
             for _ in range(5):  # Run 5 times for average
-                payload = {
-                    "model": "kokoro",
-                    "input": text,
-                    "voice": "af_heart"
-                }
+                payload = {"model": "kokoro", "input": text, "voice": "af_heart"}
 
                 start_time = time.time()
                 try:
@@ -70,11 +66,7 @@ class TestPerformanceBenchmarks:
         import concurrent.futures
 
         endpoint = f"{self.BASE_URL}/v1/audio/speech"
-        payload = {
-            "model": "kokoro",
-            "input": "Concurrent test",
-            "voice": "af_heart"
-        }
+        payload = {"model": "kokoro", "input": "Concurrent test", "voice": "af_heart"}
 
         def make_request():
             try:
@@ -84,15 +76,10 @@ class TestPerformanceBenchmarks:
                 return {
                     "status_code": response.status_code,
                     "latency": end_time - start_time,
-                    "success": response.status_code == 200
+                    "success": response.status_code == 200,
                 }
             except Exception as e:
-                return {
-                    "status_code": 0,
-                    "latency": 30.0,
-                    "success": False,
-                    "error": str(e)
-                }
+                return {"status_code": 0, "latency": 30.0, "success": False, "error": str(e)}
 
         # Test with 5 concurrent requests
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
@@ -126,11 +113,7 @@ class TestPerformanceBenchmarks:
 
         # Make several requests
         endpoint = f"{self.BASE_URL}/v1/audio/speech"
-        payload = {
-            "model": "kokoro",
-            "input": "Memory test",
-            "voice": "af_heart"
-        }
+        payload = {"model": "kokoro", "input": "Memory test", "voice": "af_heart"}
 
         for _ in range(10):
             try:
@@ -143,6 +126,7 @@ class TestPerformanceBenchmarks:
 
         # Memory growth should be minimal for this test process
         assert memory_growth < 50, f"Excessive memory growth: {memory_growth:.1f}MB"
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "-m", "performance"])

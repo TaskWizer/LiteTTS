@@ -23,7 +23,9 @@ class TestVoiceConsistencyManager:
     def test_start_consistency_session(self, manager):
         """Test starting a consistency session"""
         params = {"speed": 1.0, "pitch": 1.0}
-        result = manager.start_consistency_session("test_session", "af_heart", "Hello world", params)
+        result = manager.start_consistency_session(
+            "test_session", "af_heart", "Hello world", params
+        )
         assert isinstance(result, str)
 
     def test_end_consistency_session(self, manager):

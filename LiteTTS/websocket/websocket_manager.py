@@ -18,6 +18,7 @@ from typing import Any
 try:
     from fastapi import WebSocket, WebSocketDisconnect
     from websockets.exceptions import ConnectionClosed
+
     FASTAPI_AVAILABLE = True
 except ImportError:
     FASTAPI_AVAILABLE = False
@@ -30,6 +31,7 @@ logger = logging.getLogger(__name__)
 
 class MessageType(Enum):
     """WebSocket message types"""
+
     PERFORMANCE_UPDATE = "performance_update"
     SYSTEM_STATUS = "system_status"
     VOICE_STATUS = "voice_status"
@@ -42,6 +44,7 @@ class MessageType(Enum):
 @dataclass
 class ClientInfo:
     """Information about a connected WebSocket client"""
+
     client_id: str
     websocket: WebSocket
     connected_at: float
@@ -54,6 +57,7 @@ class ClientInfo:
 @dataclass
 class WebSocketMessage:
     """Structured WebSocket message"""
+
     type: MessageType
     data: dict[str, Any]
     timestamp: float
@@ -61,18 +65,20 @@ class WebSocketMessage:
 
     def to_json(self) -> str:
         """Convert message to JSON string"""
-        return json.dumps({
-            "type": self.type.value,
-            "data": self.data,
-            "timestamp": self.timestamp,
-            "client_id": self.client_id
-        })
+        return json.dumps(
+            {
+                "type": self.type.value,
+                "data": self.data,
+                "timestamp": self.timestamp,
+                "client_id": self.client_id,
+            }
+        )
 
 
 class WebSocketManager:
     """
     WebSocket connection manager for real-time communication.
-    
+
     Handles client connections, message broadcasting, heartbeat monitoring,
     and connection lifecycle management for the LiteTTS dashboard.
     """
@@ -80,7 +86,7 @@ class WebSocketManager:
     def __init__(self, heartbeat_interval: float = 30.0, cleanup_interval: float = 60.0):
         """
         Initialize WebSocket manager.
-        
+
         Args:
             heartbeat_interval: Interval for heartbeat checks (seconds)
             cleanup_interval: Interval for connection cleanup (seconds)
@@ -107,7 +113,7 @@ class WebSocketManager:
             "messages_sent": 0,
             "messages_received": 0,
             "errors": 0,
-            "start_time": time.time()
+            "start_time": time.time(),
         }
 
     async def start(self):
@@ -155,11 +161,11 @@ class WebSocketManager:
     async def connect(self, websocket: WebSocket, client_type: str = "dashboard") -> str:
         """
         Accept a new WebSocket connection.
-        
+
         Args:
             websocket: FastAPI WebSocket instance
             client_type: Type of client connecting
-            
+
         Returns:
             str: Unique client ID
         """
@@ -173,7 +179,7 @@ class WebSocketManager:
         user_agent = headers.get("user-agent")
 
         # Get client IP (simplified)
-        ip_address = getattr(websocket.client, 'host', 'unknown') if websocket.client else 'unknown'
+        ip_address = getattr(websocket.client, "host", "unknown") if websocket.client else "unknown"
 
         # Create client info
         client_info = ClientInfo(
@@ -183,7 +189,7 @@ class WebSocketManager:
             last_heartbeat=time.time(),
             client_type=client_type,
             user_agent=user_agent,
-            ip_address=ip_address
+            ip_address=ip_address,
         )
 
         # Store client
@@ -196,23 +202,26 @@ class WebSocketManager:
         self.logger.info(f"✅ Client connected: {client_id} ({client_type}) from {ip_address}")
 
         # Send welcome message
-        await self.send_to_client(client_id, WebSocketMessage(
-            type=MessageType.CLIENT_INFO,
-            data={
-                "client_id": client_id,
-                "server_time": time.time(),
-                "message": "Connected to LiteTTS WebSocket"
-            },
-            timestamp=time.time(),
-            client_id=client_id
-        ))
+        await self.send_to_client(
+            client_id,
+            WebSocketMessage(
+                type=MessageType.CLIENT_INFO,
+                data={
+                    "client_id": client_id,
+                    "server_time": time.time(),
+                    "message": "Connected to LiteTTS WebSocket",
+                },
+                timestamp=time.time(),
+                client_id=client_id,
+            ),
+        )
 
         return client_id
 
     async def disconnect(self, client_id: str, reason: str = "Client disconnected"):
         """
         Disconnect a WebSocket client.
-        
+
         Args:
             client_id: Client ID to disconnect
             reason: Reason for disconnection
@@ -239,11 +248,11 @@ class WebSocketManager:
     async def send_to_client(self, client_id: str, message: WebSocketMessage) -> bool:
         """
         Send message to a specific client.
-        
+
         Args:
             client_id: Target client ID
             message: Message to send
-            
+
         Returns:
             bool: True if sent successfully
         """
@@ -267,11 +276,11 @@ class WebSocketManager:
     async def broadcast(self, message: WebSocketMessage, client_type: str | None = None) -> int:
         """
         Broadcast message to all connected clients.
-        
+
         Args:
             message: Message to broadcast
             client_type: Optional filter by client type
-            
+
         Returns:
             int: Number of clients message was sent to
         """
@@ -293,7 +302,7 @@ class WebSocketManager:
     async def handle_client_message(self, client_id: str, message_data: str):
         """
         Handle incoming message from client.
-        
+
         Args:
             client_id: Client ID that sent the message
             message_data: Raw message data
@@ -312,12 +321,15 @@ class WebSocketManager:
 
             # Handle heartbeat
             if message_type == MessageType.HEARTBEAT:
-                await self.send_to_client(client_id, WebSocketMessage(
-                    type=MessageType.HEARTBEAT,
-                    data={"pong": True, "server_time": time.time()},
-                    timestamp=time.time(),
-                    client_id=client_id
-                ))
+                await self.send_to_client(
+                    client_id,
+                    WebSocketMessage(
+                        type=MessageType.HEARTBEAT,
+                        data={"pong": True, "server_time": time.time()},
+                        timestamp=time.time(),
+                        client_id=client_id,
+                    ),
+                )
                 return
 
             # Call registered handlers
@@ -335,7 +347,7 @@ class WebSocketManager:
     def register_message_handler(self, message_type: MessageType, handler: Callable):
         """
         Register a message handler for a specific message type.
-        
+
         Args:
             message_type: Type of message to handle
             handler: Async function to handle the message
@@ -367,7 +379,7 @@ class WebSocketManager:
                     heartbeat_message = WebSocketMessage(
                         type=MessageType.HEARTBEAT,
                         data={"ping": True, "server_time": current_time},
-                        timestamp=current_time
+                        timestamp=current_time,
                     )
                     await self.broadcast(heartbeat_message)
 
@@ -412,10 +424,10 @@ class WebSocketManager:
                     "connected_at": info.connected_at,
                     "connection_duration": current_time - info.connected_at,
                     "last_heartbeat": info.last_heartbeat,
-                    "ip_address": info.ip_address
+                    "ip_address": info.ip_address,
                 }
                 for client_id, info in self.clients.items()
-            }
+            },
         }
 
     def get_client_count(self, client_type: str | None = None) -> int:

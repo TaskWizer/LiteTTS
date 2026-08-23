@@ -35,18 +35,19 @@ class TestBasicLoadHandling:
         try:
             start_time = time.time()
             response = self.client.post(
-                self.base_endpoint,
-                json={"input": f"{text} {request_id}", "voice": "af_heart"}
+                self.base_endpoint, json={"input": f"{text} {request_id}", "voice": "af_heart"}
             )
             duration = time.time() - start_time
 
-            self.results.append({
-                "id": request_id,
-                "duration": duration,
-                "status_code": response.status_code,
-                "success": response.status_code == 200,
-                "audio_size": len(response.content) if response.status_code == 200 else 0
-            })
+            self.results.append(
+                {
+                    "id": request_id,
+                    "duration": duration,
+                    "status_code": response.status_code,
+                    "success": response.status_code == 200,
+                    "audio_size": len(response.content) if response.status_code == 200 else 0,
+                }
+            )
         except Exception as e:
             self.errors.append(f"Request {request_id}: {e!s}")
 
@@ -76,7 +77,9 @@ class TestBasicLoadHandling:
         successful_requests = [r for r in self.results if r["success"]]
         success_rate = len(successful_requests) / num_requests
 
-        print(f"✅ Light load: {len(successful_requests)}/{num_requests} successful ({success_rate:.1%})")
+        print(
+            f"✅ Light load: {len(successful_requests)}/{num_requests} successful ({success_rate:.1%})"
+        )
         print(f"   Total time: {total_time:.3f}s")
 
         # Should handle light load well
@@ -93,10 +96,7 @@ class TestBasicLoadHandling:
         with ThreadPoolExecutor(max_workers=num_requests) as executor:
             start_time = time.time()
 
-            futures = [
-                executor.submit(self._make_request, text, i)
-                for i in range(num_requests)
-            ]
+            futures = [executor.submit(self._make_request, text, i) for i in range(num_requests)]
 
             for future in as_completed(futures):
                 future.result()
@@ -111,8 +111,12 @@ class TestBasicLoadHandling:
             avg_duration = statistics.mean(r["duration"] for r in successful_requests)
             max_duration = max(r["duration"] for r in successful_requests)
 
-            print(f"✅ Medium load: {len(successful_requests)}/{num_requests} successful ({success_rate:.1%})")
-            print(f"   Total: {total_time:.3f}s, Avg: {avg_duration:.3f}s, Max: {max_duration:.3f}s")
+            print(
+                f"✅ Medium load: {len(successful_requests)}/{num_requests} successful ({success_rate:.1%})"
+            )
+            print(
+                f"   Total: {total_time:.3f}s, Avg: {avg_duration:.3f}s, Max: {max_duration:.3f}s"
+            )
 
         # Should handle medium load reasonably
         assert success_rate >= 0.6, f"Success rate {success_rate:.1%} too low for medium load"
@@ -128,10 +132,7 @@ class TestBasicLoadHandling:
         with ThreadPoolExecutor(max_workers=num_requests) as executor:
             start_time = time.time()
 
-            futures = [
-                executor.submit(self._make_request, text, i)
-                for i in range(num_requests)
-            ]
+            futures = [executor.submit(self._make_request, text, i) for i in range(num_requests)]
 
             for future in as_completed(futures):
                 try:
@@ -145,7 +146,9 @@ class TestBasicLoadHandling:
         successful_requests = [r for r in self.results if r["success"]]
         success_rate = len(successful_requests) / num_requests if num_requests > 0 else 0
 
-        print(f"✅ Heavy load: {len(successful_requests)}/{num_requests} successful ({success_rate:.1%})")
+        print(
+            f"✅ Heavy load: {len(successful_requests)}/{num_requests} successful ({success_rate:.1%})"
+        )
         print(f"   Total time: {total_time:.3f}s, Errors: {len(self.errors)}")
 
         # Heavy load may have lower success rate, but should not crash
@@ -171,18 +174,13 @@ class TestStressScenarios:
         for i in range(num_requests):
             try:
                 response = self.client.post(
-                    self.base_endpoint,
-                    json={"input": f"{text} {i}", "voice": "af_heart"}
+                    self.base_endpoint, json={"input": f"{text} {i}", "voice": "af_heart"}
                 )
-                results.append({
-                    "success": response.status_code == 200,
-                    "status": response.status_code
-                })
+                results.append(
+                    {"success": response.status_code == 200, "status": response.status_code}
+                )
             except Exception as e:
-                results.append({
-                    "success": False,
-                    "error": str(e)
-                })
+                results.append({"success": False, "error": str(e)})
 
         total_time = time.time() - start_time
         successful = sum(1 for r in results if r["success"])
@@ -202,22 +200,15 @@ class TestStressScenarios:
             try:
                 response = self.client.post(
                     self.base_endpoint,
-                    json={
-                        "input": f"Mixed voice test {request_id}",
-                        "voice": voice
-                    }
+                    json={"input": f"Mixed voice test {request_id}", "voice": voice},
                 )
                 return {
                     "voice": voice,
                     "success": response.status_code == 200,
-                    "status": response.status_code
+                    "status": response.status_code,
                 }
             except Exception as e:
-                return {
-                    "voice": voice,
-                    "success": False,
-                    "error": str(e)
-                }
+                return {"voice": voice, "success": False, "error": str(e)}
 
         with ThreadPoolExecutor(max_workers=len(voices) * num_requests_per_voice) as executor:
             futures = []
@@ -245,8 +236,9 @@ class TestStressScenarios:
         text_templates = [
             "Short",
             "This is a medium length text for testing purposes.",
-            "This is a much longer text that we're using to test how the system handles longer inputs under concurrent load conditions. " * 2,
-            "Very long text. " * 20
+            "This is a much longer text that we're using to test how the system handles longer inputs under concurrent load conditions. "
+            * 2,
+            "Very long text. " * 20,
         ]
 
         results = []
@@ -255,8 +247,7 @@ class TestStressScenarios:
             try:
                 start_time = time.time()
                 response = self.client.post(
-                    self.base_endpoint,
-                    json={"input": f"{text} {request_id}", "voice": "af_heart"}
+                    self.base_endpoint, json={"input": f"{text} {request_id}", "voice": "af_heart"}
                 )
                 duration = time.time() - start_time
 
@@ -264,26 +255,17 @@ class TestStressScenarios:
                     "category": length_category,
                     "length": len(text),
                     "duration": duration,
-                    "success": response.status_code == 200
+                    "success": response.status_code == 200,
                 }
             except Exception as e:
-                return {
-                    "category": length_category,
-                    "success": False,
-                    "error": str(e)
-                }
+                return {"category": length_category, "success": False, "error": str(e)}
 
         with ThreadPoolExecutor(max_workers=12) as executor:
             futures = []
 
             for i, text in enumerate(text_templates):
                 for j in range(3):  # 3 requests per text length
-                    future = executor.submit(
-                        make_length_request,
-                        text,
-                        f"length_{i}",
-                        j
-                    )
+                    future = executor.submit(make_length_request, text, f"length_{i}", j)
                     futures.append(future)
 
             for future in as_completed(futures):
@@ -299,7 +281,9 @@ class TestStressScenarios:
             print(f"✅ {category}: {successful}/{len(category_results)} successful")
 
             # Each category should handle some requests
-            assert successful >= len(category_results) // 3, f"Category {category} handled too few requests"
+            assert successful >= len(category_results) // 3, (
+                f"Category {category} handled too few requests"
+            )
 
 
 class TestResourceExhaustion:
@@ -322,24 +306,21 @@ class TestResourceExhaustion:
             try:
                 response = self.client.post(
                     self.base_endpoint,
-                    json={
-                        "input": f"Sustained load test {request_count}",
-                        "voice": "af_heart"
+                    json={"input": f"Sustained load test {request_count}", "voice": "af_heart"},
+                )
+                results.append(
+                    {
+                        "timestamp": time.time() - start_time,
+                        "success": response.status_code == 200,
+                        "status": response.status_code,
                     }
                 )
-                results.append({
-                    "timestamp": time.time() - start_time,
-                    "success": response.status_code == 200,
-                    "status": response.status_code
-                })
                 request_count += 1
 
             except Exception as e:
-                results.append({
-                    "timestamp": time.time() - start_time,
-                    "success": False,
-                    "error": str(e)
-                })
+                results.append(
+                    {"timestamp": time.time() - start_time, "success": False, "error": str(e)}
+                )
 
             time.sleep(request_interval)
 
@@ -365,29 +346,24 @@ class TestResourceExhaustion:
                 start_time = time.time()
                 response = self.client.post(
                     self.base_endpoint,
-                    json={
-                        "input": f"{large_text} Request {i}",
-                        "voice": "af_heart"
-                    }
+                    json={"input": f"{large_text} Request {i}", "voice": "af_heart"},
                 )
                 duration = time.time() - start_time
 
-                results.append({
-                    "request_id": i,
-                    "duration": duration,
-                    "success": response.status_code == 200,
-                    "status": response.status_code
-                })
+                results.append(
+                    {
+                        "request_id": i,
+                        "duration": duration,
+                        "success": response.status_code == 200,
+                        "status": response.status_code,
+                    }
+                )
 
                 # Brief pause between large requests
                 time.sleep(0.1)
 
             except Exception as e:
-                results.append({
-                    "request_id": i,
-                    "success": False,
-                    "error": str(e)
-                })
+                results.append({"request_id": i, "success": False, "error": str(e)})
 
         successful = sum(1 for r in results if r["success"])
 

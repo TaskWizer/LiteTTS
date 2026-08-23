@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 # Skip - manual validation script
 pytestmark = pytest.mark.skip(reason="Manual validation script - not proper pytest test")
 
+
 def test_text_processing_pipeline():
     """Test the text processing pipeline with eSpeak enhancements"""
     print("🔧 Testing Text Processing Pipeline with eSpeak Enhancements")
@@ -40,29 +41,26 @@ def test_text_processing_pipeline():
             {
                 "input": "Hello? How are you?",
                 "description": "Question mark pronunciation test",
-                "expected_contains": ["question mark"]
+                "expected_contains": ["question mark"],
             },
             {
                 "input": "Use the * symbol carefully",
                 "description": "Asterisk pronunciation test",
-                "expected_contains": ["asterisk"]
+                "expected_contains": ["asterisk"],
             },
             {
                 "input": "What is 2 * 3? The answer is 6!",
                 "description": "Combined symbols test",
-                "expected_contains": ["asterisk", "question mark"]
+                "expected_contains": ["asterisk", "question mark"],
             },
             {
                 "input": "The cost is $50.99",
                 "description": "Currency processing test",
-                "expected_contains": ["dollars"]
-            }
+                "expected_contains": ["dollars"],
+            },
         ]
 
-        options = ProcessingOptions(
-            mode=ProcessingMode.ENHANCED,
-            use_espeak_enhanced_symbols=True
-        )
+        options = ProcessingOptions(mode=ProcessingMode.ENHANCED, use_espeak_enhanced_symbols=True)
 
         passed_tests = 0
         total_tests = len(test_cases)
@@ -72,7 +70,7 @@ def test_text_processing_pipeline():
             print(f"   Input: '{test_case['input']}'")
 
             try:
-                result = processor.process_text(test_case['input'], options)
+                result = processor.process_text(test_case["input"], options)
 
                 print(f"   ✅ Output: '{result.processed_text}'")
                 print(f"   ⏱️  Time: {result.processing_time:.3f}s")
@@ -90,7 +88,9 @@ def test_text_processing_pipeline():
                     print(f"   ✅ Found expected content: {', '.join(found_expected)}")
                     passed_tests += 1
                 else:
-                    print(f"   ⚠️  Expected content not found: {test_case.get('expected_contains', [])}")
+                    print(
+                        f"   ⚠️  Expected content not found: {test_case.get('expected_contains', [])}"
+                    )
 
                 # Check if eSpeak-enhanced symbol processing was applied
                 if "espeak_enhanced_symbols" in result.stages_completed:
@@ -112,6 +112,7 @@ def test_text_processing_pipeline():
         print(f"❌ Text processing test failed: {e}")
         return False
 
+
 async def test_audio_generation():
     """Test audio generation with eSpeak-enhanced text"""
     print("\n🎵 Testing Audio Generation with eSpeak Enhancements")
@@ -119,22 +120,10 @@ async def test_audio_generation():
 
     # Test cases specifically for our eSpeak improvements
     test_cases = [
-        {
-            "text": "Hello? How are you?",
-            "description": "Question mark audio test"
-        },
-        {
-            "text": "Use the * symbol carefully",
-            "description": "Asterisk audio test"
-        },
-        {
-            "text": "The cost is $25.99",
-            "description": "Currency audio test"
-        },
-        {
-            "text": "Hello world",
-            "description": "Basic regression test"
-        }
+        {"text": "Hello? How are you?", "description": "Question mark audio test"},
+        {"text": "Use the * symbol carefully", "description": "Asterisk audio test"},
+        {"text": "The cost is $25.99", "description": "Currency audio test"},
+        {"text": "Hello world", "description": "Basic regression test"},
     ]
 
     api_url = "http://localhost:8354/v1/audio/speech"
@@ -148,19 +137,16 @@ async def test_audio_generation():
 
         payload = {
             "model": "kokoro",
-            "input": test_case['text'],
+            "input": test_case["text"],
             "voice": "af_heart",
             "response_format": "wav",
-            "speed": 1.0
+            "speed": 1.0,
         }
 
         try:
             start_time = time.perf_counter()
             response = requests.post(
-                api_url,
-                json=payload,
-                headers={"Content-Type": "application/json"},
-                timeout=30
+                api_url, json=payload, headers={"Content-Type": "application/json"}, timeout=30
             )
 
             processing_time = time.perf_counter() - start_time
@@ -170,7 +156,9 @@ async def test_audio_generation():
 
                 # Estimate audio duration (rough calculation)
                 estimated_duration = audio_size / (24000 * 2)  # 24kHz, 16-bit
-                rtf = processing_time / estimated_duration if estimated_duration > 0 else float('inf')
+                rtf = (
+                    processing_time / estimated_duration if estimated_duration > 0 else float("inf")
+                )
 
                 print(f"   ✅ Success: {audio_size} bytes")
                 print(f"   ⏱️  Processing time: {processing_time:.3f}s")
@@ -201,6 +189,7 @@ async def test_audio_generation():
 
     return success_rate >= 0.75
 
+
 def test_configuration_validation():
     """Test that our configuration changes are working"""
     print("\n⚙️  Testing Configuration Validation")
@@ -210,7 +199,7 @@ def test_configuration_validation():
         import json
 
         # Load configuration
-        with open("config.json", 'r') as f:
+        with open("config.json", "r") as f:
             config = json.load(f)
 
         # Check audio quality testing configuration
@@ -229,7 +218,9 @@ def test_configuration_validation():
         if espeak_config:
             print("✅ eSpeak-enhanced processing configuration found")
             print(f"   Enabled: {espeak_config.get('enabled', False)}")
-            print(f"   Fix question mark: {espeak_config.get('fix_question_mark_pronunciation', False)}")
+            print(
+                f"   Fix question mark: {espeak_config.get('fix_question_mark_pronunciation', False)}"
+            )
             print(f"   Fix asterisk: {espeak_config.get('fix_asterisk_pronunciation', False)}")
         else:
             print("⚠️  eSpeak-enhanced processing configuration not found")
@@ -247,6 +238,7 @@ def test_configuration_validation():
     except Exception as e:
         print(f"❌ Configuration validation failed: {e}")
         return False
+
 
 async def main():
     """Main validation function"""
@@ -287,6 +279,7 @@ async def main():
         print("   Check the error messages above for details.")
 
     return success
+
 
 if __name__ == "__main__":
     success = asyncio.run(main())

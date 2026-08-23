@@ -3,7 +3,6 @@
 Unit tests for JSON sanitizer module
 """
 
-
 import pytest
 
 from LiteTTS.utils.json_sanitizer import (
@@ -32,12 +31,12 @@ class TestSanitizeFloat:
     def test_sanitize_float_nan(self):
         """Test sanitizing NaN returns default (0.0)"""
         # sanitize_float converts NaN to 0.0 (the default)
-        assert sanitize_float(float('nan')) == 0.0
+        assert sanitize_float(float("nan")) == 0.0
 
     def test_sanitize_float_inf(self):
         """Test sanitizing infinity"""
-        assert sanitize_float(float('inf')) == 0.0
-        assert sanitize_float(float('-inf')) == 0.0
+        assert sanitize_float(float("inf")) == 0.0
+        assert sanitize_float(float("-inf")) == 0.0
 
     def test_sanitize_float_non_numeric(self):
         """Test sanitizing non-numeric values"""
@@ -47,7 +46,7 @@ class TestSanitizeFloat:
 
     def test_sanitize_float_custom_default(self):
         """Test sanitizing with custom default"""
-        assert sanitize_float(float('nan'), default=-1.0) == -1.0
+        assert sanitize_float(float("nan"), default=-1.0) == -1.0
         assert sanitize_float("string", default=99.0) == 99.0
 
 
@@ -58,18 +57,18 @@ class TestSanitizeValue:
         """Test sanitizing float values"""
         assert sanitize_value(1.5) == 1.5
         # NaN gets converted to 0.0 by sanitize_float
-        assert sanitize_value(float('nan')) == 0.0
+        assert sanitize_value(float("nan")) == 0.0
 
     def test_sanitize_value_dict(self):
         """Test sanitizing dictionary values"""
-        result = sanitize_value({"a": 1.0, "b": float('nan')})
+        result = sanitize_value({"a": 1.0, "b": float("nan")})
         assert result["a"] == 1.0
         # NaN gets converted to 0.0
         assert result["b"] == 0.0
 
     def test_sanitize_value_list(self):
         """Test sanitizing list values"""
-        result = sanitize_value([1.0, float('nan'), 3.0])
+        result = sanitize_value([1.0, float("nan"), 3.0])
         assert result[0] == 1.0
         # NaN gets converted to 0.0
         assert result[1] == 0.0
@@ -77,7 +76,7 @@ class TestSanitizeValue:
 
     def test_sanitize_value_tuple(self):
         """Test sanitizing tuple values"""
-        result = sanitize_value((1.0, float('nan')))
+        result = sanitize_value((1.0, float("nan")))
         assert result[0] == 1.0
         # NaN gets converted to 0.0
         assert result[1] == 0.0
@@ -97,7 +96,7 @@ class TestSanitizeValue:
 
     def test_sanitize_value_nested(self):
         """Test sanitizing nested structures"""
-        result = sanitize_value({"a": [1.0, float('nan')], "b": {"c": float('inf')}})
+        result = sanitize_value({"a": [1.0, float("nan")], "b": {"c": float("inf")}})
         assert result["a"][0] == 1.0
         # NaN gets converted to 0.0, inf to 0.0
         assert result["a"][1] == 0.0
@@ -115,7 +114,7 @@ class TestSanitizeDashboardData:
 
     def test_sanitize_dashboard_data_with_nan(self):
         """Test dashboard data with NaN values"""
-        data = {"requests": 100, "performance": {"avg_rtf": float('nan')}}
+        data = {"requests": 100, "performance": {"avg_rtf": float("nan")}}
         result = sanitize_dashboard_data(data)
         # NaN gets converted to 0.0
         assert result["performance"]["avg_rtf"] == 0.0
@@ -136,18 +135,14 @@ class TestSanitizePerformanceSummary:
 
     def test_sanitize_performance_summary_defaults(self):
         """Test performance summary with default values"""
-        data = {
-            "total_requests": 100,
-            "cache_hit_rate_percent": 0.5,
-            "avg_rtf": 0.3
-        }
+        data = {"total_requests": 100, "cache_hit_rate_percent": 0.5, "avg_rtf": 0.3}
         result = sanitize_performance_summary(data)
         assert result["total_requests"] == 100
         assert result["cache_hit_rate_percent"] == 0.5
 
     def test_sanitize_performance_summary_inf(self):
         """Test performance summary with infinity values"""
-        data = {"min_rtf": float('inf'), "max_rtf": float('inf')}
+        data = {"min_rtf": float("inf"), "max_rtf": float("inf")}
         result = sanitize_performance_summary(data)
         assert result["min_rtf"] is None
         assert result["max_rtf"] == 0.0
@@ -171,7 +166,7 @@ class TestSafeDivision:
 
     def test_safe_division_inf_result(self):
         """Test division resulting in infinity"""
-        result = safe_division(float('inf'), 1)
+        result = safe_division(float("inf"), 1)
         assert result == 0.0
 
 
@@ -203,7 +198,7 @@ class TestJSONSafeEncoder:
     def test_encode_with_nan(self):
         """Test encoding with NaN value"""
         encoder = JSONSafeEncoder()
-        result = encoder.encode({"a": float('nan')})
+        result = encoder.encode({"a": float("nan")})
         # Should not raise, NaN should be sanitized
         assert '"a"' in result
 
@@ -218,13 +213,13 @@ class TestDumpsSafe:
 
     def test_dumps_safe_with_nan(self):
         """Test dumping object with NaN"""
-        result = dumps_safe({"a": float('nan')})
+        result = dumps_safe({"a": float("nan")})
         # Should not raise
         assert '"a"' in result
 
     def test_dumps_safe_with_inf(self):
         """Test dumping object with infinity"""
-        result = dumps_safe({"a": float('inf')})
+        result = dumps_safe({"a": float("inf")})
         # Should not raise
         assert '"a"' in result
 
@@ -242,14 +237,16 @@ class TestValidateJsonSerializable:
 
     def test_validate_invalid(self):
         """Test validating invalid object (unserializable)"""
+
         class Unserializable:
             pass
+
         assert validate_json_serializable(Unserializable()) is False
 
     def test_validate_with_nan(self):
         """Test validating with NaN returns True (passes through)"""
         # NaN passes validation since sanitize_float is only used in encoding, not validation
-        assert validate_json_serializable(float('nan')) is True
+        assert validate_json_serializable(float("nan")) is True
 
     def test_validate_string(self):
         """Test validating string"""

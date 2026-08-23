@@ -26,7 +26,9 @@ class TestPhonemizationPreprocessor:
     def setup_method(self):
         """Set up test fixtures"""
         try:
-            module = load_module_from_path('phonemizer_preprocessor', 'LiteTTS/text/phonemizer_preprocessor.py')
+            module = load_module_from_path(
+                "phonemizer_preprocessor", "LiteTTS/text/phonemizer_preprocessor.py"
+            )
             self.PhonemizationPreprocessor = module.PhonemizationPreprocessor
             self.processor = self.PhonemizationPreprocessor()
         except ImportError as e:
@@ -58,11 +60,11 @@ class TestPhonemizationPreprocessor:
     def test_preprocess_returns_result_object(self):
         """Test that preprocess returns PreprocessingResult"""
         result = self.processor.preprocess_text("Test text")
-        assert hasattr(result, 'processed_text')
-        assert hasattr(result, 'original_text')
-        assert hasattr(result, 'changes_made')
-        assert hasattr(result, 'confidence_score')
-        assert hasattr(result, 'warnings')
+        assert hasattr(result, "processed_text")
+        assert hasattr(result, "original_text")
+        assert hasattr(result, "changes_made")
+        assert hasattr(result, "confidence_score")
+        assert hasattr(result, "warnings")
 
     def test_preprocess_with_empty_text(self):
         """Test preprocessing empty text"""
@@ -101,11 +103,13 @@ class TestPhonemizationPreprocessor:
             "Testing 123",
             "Special chars: @#$%",
             "",
-            "Longer text with multiple words to process"
+            "Longer text with multiple words to process",
         ]
         for text in test_cases:
             result = self.processor.preprocess_text(text)
-            assert 0.0 <= result.confidence_score <= 1.0, f"Confidence score out of bounds for: {text}"
+            assert 0.0 <= result.confidence_score <= 1.0, (
+                f"Confidence score out of bounds for: {text}"
+            )
 
     def test_changes_made_is_list(self):
         """Test that changes_made is always a list"""
@@ -119,15 +123,15 @@ class TestPhonemizationPreprocessor:
 
     def test_contractions_map_loaded(self):
         """Test that contractions map is loaded"""
-        assert hasattr(self.processor, 'contractions_map')
+        assert hasattr(self.processor, "contractions_map")
         assert isinstance(self.processor.contractions_map, dict)
 
     def test_number_words_map_loaded(self):
         """Test that number words map is loaded"""
-        assert hasattr(self.processor, 'number_words_map')
+        assert hasattr(self.processor, "number_words_map")
         assert isinstance(self.processor.number_words_map, dict)
 
     def test_problematic_patterns_loaded(self):
         """Test that problematic patterns are loaded"""
-        assert hasattr(self.processor, 'problematic_patterns')
+        assert hasattr(self.processor, "problematic_patterns")
         assert isinstance(self.processor.problematic_patterns, list)

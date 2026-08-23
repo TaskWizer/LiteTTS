@@ -9,6 +9,7 @@ import re
 
 logger = logging.getLogger(__name__)
 
+
 class EnhancedDateTimeProcessor:
     """Enhanced date and time processing for natural TTS pronunciation"""
 
@@ -29,119 +30,161 @@ class EnhancedDateTimeProcessor:
         """Load date pattern matching rules"""
         return [
             # Written dates with ordinals (PRIORITY: Handle first)
-            (r'\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2})(st|nd|rd|th),?\s+(\d{4})\b', 'written_date_ordinal'),
-            (r'\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+(\d{1,2})(st|nd|rd|th),?\s+(\d{4})\b', 'written_date_abbrev_ordinal'),
-
+            (
+                r"\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2})(st|nd|rd|th),?\s+(\d{4})\b",
+                "written_date_ordinal",
+            ),
+            (
+                r"\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+(\d{1,2})(st|nd|rd|th),?\s+(\d{4})\b",
+                "written_date_abbrev_ordinal",
+            ),
             # ISO format: YYYY-MM-DD (the problematic one)
-            (r'\b(\d{4})-(\d{1,2})-(\d{1,2})\b', 'iso_date'),
-
+            (r"\b(\d{4})-(\d{1,2})-(\d{1,2})\b", "iso_date"),
             # US format: MM/DD/YYYY
-            (r'\b(\d{1,2})/(\d{1,2})/(\d{4})\b', 'us_date'),
-
+            (r"\b(\d{1,2})/(\d{1,2})/(\d{4})\b", "us_date"),
             # European format: DD/MM/YYYY
-            (r'\b(\d{1,2})\.(\d{1,2})\.(\d{4})\b', 'eu_date'),
-
+            (r"\b(\d{1,2})\.(\d{1,2})\.(\d{4})\b", "eu_date"),
             # Alternative dash format: MM-DD-YYYY
-            (r'\b(\d{1,2})-(\d{1,2})-(\d{4})\b', 'us_dash_date'),
-
+            (r"\b(\d{1,2})-(\d{1,2})-(\d{4})\b", "us_dash_date"),
             # Short year formats
-            (r'\b(\d{1,2})/(\d{1,2})/(\d{2})\b', 'short_us_date'),
-            (r'\b(\d{1,2})-(\d{1,2})-(\d{2})\b', 'short_dash_date'),
-
+            (r"\b(\d{1,2})/(\d{1,2})/(\d{2})\b", "short_us_date"),
+            (r"\b(\d{1,2})-(\d{1,2})-(\d{2})\b", "short_dash_date"),
             # Month-day format: MM-DD or MM/DD (avoid matching time ranges)
-            (r'(?<!\d:)(?<!\d\d:)\b(\d{1,2})-(\d{1,2})\b(?!\d)(?!:)', 'month_day_dash'),
-            (r'(?<!\d:)(?<!\d\d:)\b(\d{1,2})/(\d{1,2})\b(?!\d)(?!:)', 'month_day_slash'),
-
+            (r"(?<!\d:)(?<!\d\d:)\b(\d{1,2})-(\d{1,2})\b(?!\d)(?!:)", "month_day_dash"),
+            (r"(?<!\d:)(?<!\d\d:)\b(\d{1,2})/(\d{1,2})\b(?!\d)(?!:)", "month_day_slash"),
             # Year only
-            (r'\b(19|20)\d{2}\b', 'year_only'),
-
+            (r"\b(19|20)\d{2}\b", "year_only"),
             # Relative dates
-            (r'\b(today|tomorrow|yesterday)\b', 'relative_date'),
-            (r'\b(next|last)\s+(week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b', 'relative_period'),
-
+            (r"\b(today|tomorrow|yesterday)\b", "relative_date"),
+            (
+                r"\b(next|last)\s+(week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b",
+                "relative_period",
+            ),
             # Written dates: January 1, 2023 or 1 January 2023
-            (r'\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2}),?\s+(\d{4})\b', 'written_date_us'),
-            (r'\b(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})\b', 'written_date_eu'),
-
+            (
+                r"\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2}),?\s+(\d{4})\b",
+                "written_date_us",
+            ),
+            (
+                r"\b(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})\b",
+                "written_date_eu",
+            ),
             # Abbreviated months
-            (r'\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+(\d{1,2}),?\s+(\d{4})\b', 'abbrev_date'),
+            (
+                r"\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+(\d{1,2}),?\s+(\d{4})\b",
+                "abbrev_date",
+            ),
         ]
 
     def _load_time_patterns(self) -> list[tuple[str, str]]:
         """Load time pattern matching rules"""
         return [
             # Enhanced time ranges (PRIORITY: Handle first)
-            (r'\b([0-2]?\d):([0-5]\d)\s*-\s*([0-2]?\d):([0-5]\d)\b', 'time_range_24'),
-            (r'\b([0-1]?\d):([0-5]\d)\s*(AM|PM|am|pm)\s*-\s*([0-1]?\d):([0-5]\d)\s*(AM|PM|am|pm)\b', 'time_range_12_ampm'),
-            (r'\b([0-1]?\d)\s*(AM|PM|am|pm)\s*-\s*([0-1]?\d)\s*(AM|PM|am|pm)\b', 'time_range_hour_ampm'),
-
+            (r"\b([0-2]?\d):([0-5]\d)\s*-\s*([0-2]?\d):([0-5]\d)\b", "time_range_24"),
+            (
+                r"\b([0-1]?\d):([0-5]\d)\s*(AM|PM|am|pm)\s*-\s*([0-1]?\d):([0-5]\d)\s*(AM|PM|am|pm)\b",
+                "time_range_12_ampm",
+            ),
+            (
+                r"\b([0-1]?\d)\s*(AM|PM|am|pm)\s*-\s*([0-1]?\d)\s*(AM|PM|am|pm)\b",
+                "time_range_hour_ampm",
+            ),
             # 12-hour format with AM/PM
-            (r'\b([0-1]?\d):([0-5]\d)\s*(AM|PM|am|pm|a\.m\.|p\.m\.)(?=\s|$|[^\w.])', 'time_12_ampm'),
-
+            (
+                r"\b([0-1]?\d):([0-5]\d)\s*(AM|PM|am|pm|a\.m\.|p\.m\.)(?=\s|$|[^\w.])",
+                "time_12_ampm",
+            ),
             # 24-hour format: HH:MM:SS (not followed by AM/PM) - only for hours 13-23
-            (r'\b(1[3-9]|2[0-3]):([0-5]\d):([0-5]\d)\b(?!\s*(?:AM|PM|am|pm|a\.m\.|p\.m\.))', 'time_24_seconds'),
-
+            (
+                r"\b(1[3-9]|2[0-3]):([0-5]\d):([0-5]\d)\b(?!\s*(?:AM|PM|am|pm|a\.m\.|p\.m\.))",
+                "time_24_seconds",
+            ),
             # 24-hour format: HH:MM (not followed by AM/PM) - only for hours 13-23
-            (r'\b(1[3-9]|2[0-3]):([0-5]\d)\b(?!\s*(?:AM|PM|am|pm|a\.m\.|p\.m\.))', 'time_24'),
-
+            (r"\b(1[3-9]|2[0-3]):([0-5]\d)\b(?!\s*(?:AM|PM|am|pm|a\.m\.|p\.m\.))", "time_24"),
             # 12-hour bare format: H:MM or HH:MM (1-12, not followed by AM/PM)
-            (r'\b(1[0-2]|[1-9]):([0-5]\d)\b(?!\s*(?:AM|PM|am|pm|a\.m\.|p\.m\.))', 'time_12_bare'),
-
+            (r"\b(1[0-2]|[1-9]):([0-5]\d)\b(?!\s*(?:AM|PM|am|pm|a\.m\.|p\.m\.))", "time_12_bare"),
             # Time with seconds and AM/PM
-            (r'\b([0-1]?\d):([0-5]\d):([0-5]\d)\s*(AM|PM|am|pm|a\.m\.|p\.m\.)(?=\s|$|[^\w.])', 'time_12_seconds_ampm'),
-
+            (
+                r"\b([0-1]?\d):([0-5]\d):([0-5]\d)\s*(AM|PM|am|pm|a\.m\.|p\.m\.)(?=\s|$|[^\w.])",
+                "time_12_seconds_ampm",
+            ),
             # Casual time expressions
-            (r'\b(noon|midnight|midday)\b', 'casual_time'),
-            (r'\b(\d{1,2})\s*o\'?clock\b', 'oclock_time'),
+            (r"\b(noon|midnight|midday)\b", "casual_time"),
+            (r"\b(\d{1,2})\s*o\'?clock\b", "oclock_time"),
         ]
 
     def _load_month_names(self) -> dict[str, str]:
         """Load month number to name mappings"""
         return {
-            '1': 'January', '01': 'January',
-            '2': 'February', '02': 'February',
-            '3': 'March', '03': 'March',
-            '4': 'April', '04': 'April',
-            '5': 'May', '05': 'May',
-            '6': 'June', '06': 'June',
-            '7': 'July', '07': 'July',
-            '8': 'August', '08': 'August',
-            '9': 'September', '09': 'September',
-            '10': 'October',
-            '11': 'November',
-            '12': 'December'
+            "1": "January",
+            "01": "January",
+            "2": "February",
+            "02": "February",
+            "3": "March",
+            "03": "March",
+            "4": "April",
+            "04": "April",
+            "5": "May",
+            "05": "May",
+            "6": "June",
+            "06": "June",
+            "7": "July",
+            "07": "July",
+            "8": "August",
+            "08": "August",
+            "9": "September",
+            "09": "September",
+            "10": "October",
+            "11": "November",
+            "12": "December",
         }
 
     def _load_ordinal_suffixes(self) -> dict[str, str]:
         """Load ordinal number suffixes"""
         return {
-            '1': 'first', '21': 'twenty-first', '31': 'thirty-first',
-            '2': 'second', '22': 'twenty-second',
-            '3': 'third', '23': 'twenty-third',
-            '4': 'fourth', '24': 'twenty-fourth',
-            '5': 'fifth', '25': 'twenty-fifth',
-            '6': 'sixth', '26': 'twenty-sixth',
-            '7': 'seventh', '27': 'twenty-seventh',
-            '8': 'eighth', '28': 'twenty-eighth',
-            '9': 'ninth', '29': 'twenty-ninth',
-            '10': 'tenth', '30': 'thirtieth',
-            '11': 'eleventh',
-            '12': 'twelfth',
-            '13': 'thirteenth',
-            '14': 'fourteenth',
-            '15': 'fifteenth',
-            '16': 'sixteenth',
-            '17': 'seventeenth',
-            '18': 'eighteenth',
-            '19': 'nineteenth',
-            '20': 'twentieth'
+            "1": "first",
+            "21": "twenty-first",
+            "31": "thirty-first",
+            "2": "second",
+            "22": "twenty-second",
+            "3": "third",
+            "23": "twenty-third",
+            "4": "fourth",
+            "24": "twenty-fourth",
+            "5": "fifth",
+            "25": "twenty-fifth",
+            "6": "sixth",
+            "26": "twenty-sixth",
+            "7": "seventh",
+            "27": "twenty-seventh",
+            "8": "eighth",
+            "28": "twenty-eighth",
+            "9": "ninth",
+            "29": "twenty-ninth",
+            "10": "tenth",
+            "30": "thirtieth",
+            "11": "eleventh",
+            "12": "twelfth",
+            "13": "thirteenth",
+            "14": "fourteenth",
+            "15": "fifteenth",
+            "16": "sixteenth",
+            "17": "seventeenth",
+            "18": "eighteenth",
+            "19": "nineteenth",
+            "20": "twentieth",
         }
 
     def _load_weekday_names(self) -> dict[int, str]:
         """Load weekday names"""
         return {
-            0: 'Monday', 1: 'Tuesday', 2: 'Wednesday', 3: 'Thursday',
-            4: 'Friday', 5: 'Saturday', 6: 'Sunday'
+            0: "Monday",
+            1: "Tuesday",
+            2: "Wednesday",
+            3: "Thursday",
+            4: "Friday",
+            5: "Saturday",
+            6: "Sunday",
         }
 
     def process_dates_and_times(self, text: str) -> str:
@@ -166,7 +209,7 @@ class EnhancedDateTimeProcessor:
             for match in reversed(matches):
                 natural_date = self._convert_date_to_natural(match, date_type)
                 if natural_date:
-                    text = text[:match.start()] + natural_date + text[match.end():]
+                    text = text[: match.start()] + natural_date + text[match.end() :]
 
         return text
 
@@ -181,9 +224,12 @@ class EnhancedDateTimeProcessor:
             for match in reversed(matches):
                 # Check if this match overlaps with already processed ranges
                 match_start, match_end = match.start(), match.end()
-                overlaps = any(start <= match_start < end or start < match_end <= end or
-                             (match_start <= start and match_end >= end)
-                             for start, end in processed_ranges)
+                overlaps = any(
+                    start <= match_start < end
+                    or start < match_end <= end
+                    or (match_start <= start and match_end >= end)
+                    for start, end in processed_ranges
+                )
 
                 if not overlaps:
                     natural_time = self._convert_time_to_natural(match, time_type)
@@ -191,9 +237,13 @@ class EnhancedDateTimeProcessor:
                         text = text[:match_start] + natural_time + text[match_end:]
                         # Update processed ranges (adjust for text length change)
                         length_change = len(natural_time) - (match_end - match_start)
-                        processed_ranges = [(s + length_change if s >= match_start else s,
-                                           e + length_change if e > match_start else e)
-                                          for s, e in processed_ranges]
+                        processed_ranges = [
+                            (
+                                s + length_change if s >= match_start else s,
+                                e + length_change if e > match_start else e,
+                            )
+                            for s, e in processed_ranges
+                        ]
                         processed_ranges.append((match_start, match_start + len(natural_time)))
 
         return text
@@ -201,78 +251,78 @@ class EnhancedDateTimeProcessor:
     def _convert_date_to_natural(self, match, date_type: str) -> str | None:
         """Convert a date match to natural language"""
         try:
-            if date_type == 'written_date_ordinal':
+            if date_type == "written_date_ordinal":
                 # January 1st, 2024 format
                 month_name, day, ordinal_suffix, year = match.groups()
                 return self._format_written_date(month_name, day, year)
 
-            elif date_type == 'written_date_abbrev_ordinal':
+            elif date_type == "written_date_abbrev_ordinal":
                 # Jan. 1st, 2024 format
                 month_abbrev, day, ordinal_suffix, year = match.groups()
                 month_name = self._expand_month_abbreviation(month_abbrev)
                 return self._format_written_date(month_name, day, year)
 
-            elif date_type == 'iso_date':
+            elif date_type == "iso_date":
                 # YYYY-MM-DD format (the problematic one)
                 year, month, day = match.groups()
                 return self._format_natural_date(year, month, day)
 
-            elif date_type == 'us_date':
+            elif date_type == "us_date":
                 # MM/DD/YYYY format
                 month, day, year = match.groups()
                 return self._format_natural_date(year, month, day)
 
-            elif date_type == 'eu_date':
+            elif date_type == "eu_date":
                 # DD.MM.YYYY format
                 day, month, year = match.groups()
                 return self._format_natural_date(year, month, day)
 
-            elif date_type == 'us_dash_date':
+            elif date_type == "us_dash_date":
                 # MM-DD-YYYY format
                 month, day, year = match.groups()
                 return self._format_natural_date(year, month, day)
 
-            elif date_type == 'short_us_date':
+            elif date_type == "short_us_date":
                 # MM/DD/YY format
                 month, day, year = match.groups()
                 full_year = f"20{year}" if int(year) < 50 else f"19{year}"
                 return self._format_natural_date(full_year, month, day)
 
-            elif date_type == 'short_dash_date':
+            elif date_type == "short_dash_date":
                 # MM-DD-YY format
                 month, day, year = match.groups()
                 full_year = f"20{year}" if int(year) < 50 else f"19{year}"
                 return self._format_natural_date(full_year, month, day)
 
-            elif date_type == 'month_day_dash' or date_type == 'month_day_slash':
+            elif date_type == "month_day_dash" or date_type == "month_day_slash":
                 # MM-DD or MM/DD format
                 month, day = match.groups()
                 return self._format_natural_date(None, month, day)
 
-            elif date_type == 'year_only':
+            elif date_type == "year_only":
                 # Just a year
                 year = match.group(0)
                 return self._format_year(year)
 
-            elif date_type == 'relative_date':
+            elif date_type == "relative_date":
                 # today, tomorrow, yesterday
                 return match.group(0)  # Keep as-is, they're already natural
 
-            elif date_type == 'relative_period':
+            elif date_type == "relative_period":
                 # next week, last month, etc.
                 return match.group(0)  # Keep as-is, they're already natural
 
-            elif date_type == 'written_date_us':
+            elif date_type == "written_date_us":
                 # January 1, 2023
                 month_name, day, year = match.groups()
                 return self._format_written_date(month_name, day, year)
 
-            elif date_type == 'written_date_eu':
+            elif date_type == "written_date_eu":
                 # 1 January 2023
                 day, month_name, year = match.groups()
                 return self._format_written_date(month_name, day, year)
 
-            elif date_type == 'abbrev_date':
+            elif date_type == "abbrev_date":
                 # Jan 1, 2023
                 month_abbrev, day, year = match.groups()
                 month_name = self._expand_month_abbreviation(month_abbrev)
@@ -287,7 +337,7 @@ class EnhancedDateTimeProcessor:
     def _convert_time_to_natural(self, match, time_type: str) -> str | None:
         """Convert a time match to natural language"""
         try:
-            if time_type == 'time_range_24':
+            if time_type == "time_range_24":
                 # 24-hour time range: 09:00-17:00
                 groups = match.groups()
                 start_hour, start_minute, end_hour, end_minute = [int(g) for g in groups]
@@ -295,15 +345,19 @@ class EnhancedDateTimeProcessor:
                 end_time = self._format_natural_time(end_hour, end_minute, is_24_hour=True)
                 return f"{start_time} to {end_time}"
 
-            elif time_type == 'time_range_12_ampm':
+            elif time_type == "time_range_12_ampm":
                 # 12-hour time range with AM/PM: 9:00 AM - 5:00 PM
                 groups = match.groups()
                 start_hour, start_minute, start_ampm, end_hour, end_minute, end_ampm = groups
-                start_time = self._format_natural_time(int(start_hour), int(start_minute), ampm=start_ampm.upper())
-                end_time = self._format_natural_time(int(end_hour), int(end_minute), ampm=end_ampm.upper())
+                start_time = self._format_natural_time(
+                    int(start_hour), int(start_minute), ampm=start_ampm.upper()
+                )
+                end_time = self._format_natural_time(
+                    int(end_hour), int(end_minute), ampm=end_ampm.upper()
+                )
                 return f"{start_time} to {end_time}"
 
-            elif time_type == 'time_range_hour_ampm':
+            elif time_type == "time_range_hour_ampm":
                 # Hour-only time range: 9 AM - 5 PM
                 groups = match.groups()
                 start_hour, start_ampm, end_hour, end_ampm = groups
@@ -311,7 +365,7 @@ class EnhancedDateTimeProcessor:
                 end_time = self._format_natural_time(int(end_hour), 0, ampm=end_ampm.upper())
                 return f"{start_time} to {end_time}"
 
-            elif time_type == 'time_24' or time_type == 'time_24_seconds':
+            elif time_type == "time_24" or time_type == "time_24_seconds":
                 # 24-hour format - read literally for TTS (e.g., "fourteen thirty")
                 groups = match.groups()
                 hour = int(groups[0])
@@ -332,7 +386,7 @@ class EnhancedDateTimeProcessor:
 
                 return time_str
 
-            elif time_type == 'time_12_ampm' or time_type == 'time_12_seconds_ampm':
+            elif time_type == "time_12_ampm" or time_type == "time_12_seconds_ampm":
                 # 12-hour format with AM/PM
                 groups = match.groups()
                 hour = int(groups[0])
@@ -341,16 +395,16 @@ class EnhancedDateTimeProcessor:
                 ampm_raw = groups[-1]
 
                 # Normalize AM/PM format
-                if ampm_raw.lower() in ['a.m.', 'am']:
-                    ampm = 'AM'
-                elif ampm_raw.lower() in ['p.m.', 'pm']:
-                    ampm = 'PM'
+                if ampm_raw.lower() in ["a.m.", "am"]:
+                    ampm = "AM"
+                elif ampm_raw.lower() in ["p.m.", "pm"]:
+                    ampm = "PM"
                 else:
                     ampm = ampm_raw.upper()
 
                 return self._format_natural_time(hour, minute, seconds, ampm=ampm)
 
-            elif time_type == 'time_12_bare':
+            elif time_type == "time_12_bare":
                 # 12-hour bare format without AM/PM (e.g., "7:15")
                 groups = match.groups()
                 hour = int(groups[0])
@@ -359,11 +413,11 @@ class EnhancedDateTimeProcessor:
                 # Process as 12-hour format without AM/PM (no auto-addition)
                 return self._format_natural_time(hour, minute, ampm=None, is_24_hour=False)
 
-            elif time_type == 'casual_time':
+            elif time_type == "casual_time":
                 # noon, midnight, etc.
                 return match.group(0)  # Keep as-is
 
-            elif time_type == 'oclock_time':
+            elif time_type == "oclock_time":
                 # 3 o'clock
                 hour = match.group(1)
                 return f"{self._number_to_words(hour)} o'clock"
@@ -427,8 +481,14 @@ class EnhancedDateTimeProcessor:
             # Default to reading as a regular number
             return self._number_to_words(year)
 
-    def _format_natural_time(self, hour: int, minute: int, seconds: int | None = None,
-                           ampm: str | None = None, is_24_hour: bool = False) -> str:
+    def _format_natural_time(
+        self,
+        hour: int,
+        minute: int,
+        seconds: int | None = None,
+        ampm: str | None = None,
+        is_24_hour: bool = False,
+    ) -> str:
         """Format time in natural language"""
         if is_24_hour and not ampm:
             # For 24-hour format, read literally without AM/PM conversion for TTS
@@ -509,10 +569,18 @@ class EnhancedDateTimeProcessor:
     def _expand_month_abbreviation(self, abbrev: str) -> str:
         """Expand month abbreviation to full name"""
         abbrev_map = {
-            'Jan': 'January', 'Feb': 'February', 'Mar': 'March',
-            'Apr': 'April', 'May': 'May', 'Jun': 'June',
-            'Jul': 'July', 'Aug': 'August', 'Sep': 'September',
-            'Oct': 'October', 'Nov': 'November', 'Dec': 'December'
+            "Jan": "January",
+            "Feb": "February",
+            "Mar": "March",
+            "Apr": "April",
+            "May": "May",
+            "Jun": "June",
+            "Jul": "July",
+            "Aug": "August",
+            "Sep": "September",
+            "Oct": "October",
+            "Nov": "November",
+            "Dec": "December",
         }
         return abbrev_map.get(abbrev, abbrev)
 
@@ -537,26 +605,65 @@ class EnhancedDateTimeProcessor:
             num = int(number_str)
 
             if num == 0:
-                return 'zero'
+                return "zero"
             elif 1 <= num <= 31:
                 number_map = {
-                    1: 'one', 2: 'two', 3: 'three', 4: 'four', 5: 'five',
-                    6: 'six', 7: 'seven', 8: 'eight', 9: 'nine', 10: 'ten',
-                    11: 'eleven', 12: 'twelve', 13: 'thirteen', 14: 'fourteen',
-                    15: 'fifteen', 16: 'sixteen', 17: 'seventeen', 18: 'eighteen',
-                    19: 'nineteen', 20: 'twenty', 21: 'twenty-one', 22: 'twenty-two',
-                    23: 'twenty-three', 24: 'twenty-four', 25: 'twenty-five',
-                    26: 'twenty-six', 27: 'twenty-seven', 28: 'twenty-eight',
-                    29: 'twenty-nine', 30: 'thirty', 31: 'thirty-one'
+                    1: "one",
+                    2: "two",
+                    3: "three",
+                    4: "four",
+                    5: "five",
+                    6: "six",
+                    7: "seven",
+                    8: "eight",
+                    9: "nine",
+                    10: "ten",
+                    11: "eleven",
+                    12: "twelve",
+                    13: "thirteen",
+                    14: "fourteen",
+                    15: "fifteen",
+                    16: "sixteen",
+                    17: "seventeen",
+                    18: "eighteen",
+                    19: "nineteen",
+                    20: "twenty",
+                    21: "twenty-one",
+                    22: "twenty-two",
+                    23: "twenty-three",
+                    24: "twenty-four",
+                    25: "twenty-five",
+                    26: "twenty-six",
+                    27: "twenty-seven",
+                    28: "twenty-eight",
+                    29: "twenty-nine",
+                    30: "thirty",
+                    31: "thirty-one",
                 }
                 return number_map.get(num, number_str)
             elif 32 <= num <= 99:
                 tens = num // 10
                 ones = num % 10
-                tens_map = {3: 'thirty', 4: 'forty', 5: 'fifty', 6: 'sixty',
-                           7: 'seventy', 8: 'eighty', 9: 'ninety'}
-                ones_map = {1: 'one', 2: 'two', 3: 'three', 4: 'four', 5: 'five',
-                           6: 'six', 7: 'seven', 8: 'eight', 9: 'nine'}
+                tens_map = {
+                    3: "thirty",
+                    4: "forty",
+                    5: "fifty",
+                    6: "sixty",
+                    7: "seventy",
+                    8: "eighty",
+                    9: "ninety",
+                }
+                ones_map = {
+                    1: "one",
+                    2: "two",
+                    3: "three",
+                    4: "four",
+                    5: "five",
+                    6: "six",
+                    7: "seven",
+                    8: "eight",
+                    9: "nine",
+                }
 
                 if ones == 0:
                     return tens_map.get(tens, number_str)
@@ -570,39 +677,44 @@ class EnhancedDateTimeProcessor:
     def analyze_datetime_patterns(self, text: str) -> dict[str, list[str]]:
         """Analyze text for date and time patterns"""
         info = {
-            'iso_dates': [],
-            'us_dates': [],
-            'times': [],
-            'relative_dates': [],
-            'problematic_patterns': []
+            "iso_dates": [],
+            "us_dates": [],
+            "times": [],
+            "relative_dates": [],
+            "problematic_patterns": [],
         }
 
         # Find ISO dates (the problematic ones)
-        iso_dates = re.findall(r'\b(\d{4})-(\d{1,2})-(\d{1,2})\b', text)
-        info['iso_dates'] = [f"{y}-{m}-{d}" for y, m, d in iso_dates]
+        iso_dates = re.findall(r"\b(\d{4})-(\d{1,2})-(\d{1,2})\b", text)
+        info["iso_dates"] = [f"{y}-{m}-{d}" for y, m, d in iso_dates]
 
         # Find US dates
-        us_dates = re.findall(r'\b(\d{1,2})/(\d{1,2})/(\d{4})\b', text)
-        info['us_dates'] = [f"{m}/{d}/{y}" for m, d, y in us_dates]
+        us_dates = re.findall(r"\b(\d{1,2})/(\d{1,2})/(\d{4})\b", text)
+        info["us_dates"] = [f"{m}/{d}/{y}" for m, d, y in us_dates]
 
         # Find times
-        times = re.findall(r'\b(\d{1,2}):(\d{2})\b', text)
-        info['times'] = [f"{h}:{m}" for h, m in times]
+        times = re.findall(r"\b(\d{1,2}):(\d{2})\b", text)
+        info["times"] = [f"{h}:{m}" for h, m in times]
 
         # Find relative dates
-        relative_dates = re.findall(r'\b(today|tomorrow|yesterday|next|last)\b', text, re.IGNORECASE)
-        info['relative_dates'] = relative_dates
+        relative_dates = re.findall(
+            r"\b(today|tomorrow|yesterday|next|last)\b", text, re.IGNORECASE
+        )
+        info["relative_dates"] = relative_dates
 
         # Check for problematic patterns
-        if re.search(r'\d{4}-\d{1,2}-\d{1,2}', text):
-            info['problematic_patterns'].append('ISO date format (causes dash pronunciation)')
+        if re.search(r"\d{4}-\d{1,2}-\d{1,2}", text):
+            info["problematic_patterns"].append("ISO date format (causes dash pronunciation)")
 
         return info
 
-    def set_configuration(self, use_ordinal_dates: bool = None,
-                         use_full_month_names: bool = None,
-                         use_natural_time_format: bool = None,
-                         handle_relative_dates: bool = None):
+    def set_configuration(
+        self,
+        use_ordinal_dates: bool = None,
+        use_full_month_names: bool = None,
+        use_natural_time_format: bool = None,
+        handle_relative_dates: bool = None,
+    ):
         """Set configuration options"""
         if use_ordinal_dates is not None:
             self.use_ordinal_dates = use_ordinal_dates
@@ -613,8 +725,10 @@ class EnhancedDateTimeProcessor:
         if handle_relative_dates is not None:
             self.handle_relative_dates = handle_relative_dates
 
-        logger.info(f"DateTime processor configuration updated: "
-                   f"use_ordinal_dates={self.use_ordinal_dates}, "
-                   f"use_full_month_names={self.use_full_month_names}, "
-                   f"use_natural_time_format={self.use_natural_time_format}, "
-                   f"handle_relative_dates={self.handle_relative_dates}")
+        logger.info(
+            f"DateTime processor configuration updated: "
+            f"use_ordinal_dates={self.use_ordinal_dates}, "
+            f"use_full_month_names={self.use_full_month_names}, "
+            f"use_natural_time_format={self.use_natural_time_format}, "
+            f"handle_relative_dates={self.handle_relative_dates}"
+        )

@@ -17,25 +17,30 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from LiteTTS.nlp.text_normalizer import TextNormalizer
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class PronunciationTestCase:
     """Individual pronunciation test case"""
+
     category: str
     input_text: str
     expected_output: str
     description: str
     priority: str = "medium"  # low, medium, high, critical
 
+
 @dataclass
 class PronunciationTestResult:
     """Result of a pronunciation test"""
+
     test_case: PronunciationTestCase
     actual_output: str
     passed: bool
     error_message: str = ""
+
 
 class ComprehensivePronunciationTestSuite:
     """Comprehensive test suite for all pronunciation improvements"""
@@ -67,13 +72,15 @@ class ComprehensivePronunciationTestSuite:
         ]
 
         for input_text, expected, description in contraction_tests:
-            test_cases.append(PronunciationTestCase(
-                category="contractions",
-                input_text=input_text,
-                expected_output=expected,
-                description=description,
-                priority="high"
-            ))
+            test_cases.append(
+                PronunciationTestCase(
+                    category="contractions",
+                    input_text=input_text,
+                    expected_output=expected,
+                    description=description,
+                    priority="high",
+                )
+            )
 
         # Symbol processing tests
         symbol_tests = [
@@ -90,17 +97,23 @@ class ComprehensivePronunciationTestSuite:
         ]
 
         for input_text, expected, description in symbol_tests:
-            test_cases.append(PronunciationTestCase(
-                category="symbols",
-                input_text=input_text,
-                expected_output=expected,
-                description=description,
-                priority="medium"
-            ))
+            test_cases.append(
+                PronunciationTestCase(
+                    category="symbols",
+                    input_text=input_text,
+                    expected_output=expected,
+                    description=description,
+                    priority="medium",
+                )
+            )
 
         # Currency processing tests
         currency_tests = [
-            ("$123.45", "one hundred twenty-three dollars and forty-five cents", "Currency with cents"),
+            (
+                "$123.45",
+                "one hundred twenty-three dollars and forty-five cents",
+                "Currency with cents",
+            ),
             ("$1,000", "one thousand dollars", "Currency with thousands"),
             ("$5", "five dollars", "Simple currency"),
             ("€50", "fifty euros", "Euro currency"),
@@ -109,32 +122,40 @@ class ComprehensivePronunciationTestSuite:
         ]
 
         for input_text, expected, description in currency_tests:
-            test_cases.append(PronunciationTestCase(
-                category="currency",
-                input_text=input_text,
-                expected_output=expected,
-                description=description,
-                priority="medium"
-            ))
+            test_cases.append(
+                PronunciationTestCase(
+                    category="currency",
+                    input_text=input_text,
+                    expected_output=expected,
+                    description=description,
+                    priority="medium",
+                )
+            )
 
         # Date and time processing tests
         datetime_tests = [
             ("2023-10-27", "October twenty-seventh, twenty twenty-three", "ISO date format"),
             ("10/27/2023", "October twenty-seventh, twenty twenty-three", "US date format"),
-            ("27/10/2023", "twenty-seventh of October, twenty twenty-three", "European date format"),
+            (
+                "27/10/2023",
+                "twenty-seventh of October, twenty twenty-three",
+                "European date format",
+            ),
             ("3:30 PM", "three thirty PM", "Time with PM"),
             ("15:45", "fifteen forty-five", "24-hour time"),
             ("Dec 15th", "December fifteenth", "Month abbreviation with ordinal"),
         ]
 
         for input_text, expected, description in datetime_tests:
-            test_cases.append(PronunciationTestCase(
-                category="datetime",
-                input_text=input_text,
-                expected_output=expected,
-                description=description,
-                priority="medium"
-            ))
+            test_cases.append(
+                PronunciationTestCase(
+                    category="datetime",
+                    input_text=input_text,
+                    expected_output=expected,
+                    description=description,
+                    priority="medium",
+                )
+            )
 
         # URL and email processing tests
         url_tests = [
@@ -146,13 +167,15 @@ class ComprehensivePronunciationTestSuite:
         ]
 
         for input_text, expected, description in url_tests:
-            test_cases.append(PronunciationTestCase(
-                category="urls",
-                input_text=input_text,
-                expected_output=expected,
-                description=description,
-                priority="low"
-            ))
+            test_cases.append(
+                PronunciationTestCase(
+                    category="urls",
+                    input_text=input_text,
+                    expected_output=expected,
+                    description=description,
+                    priority="low",
+                )
+            )
 
         # Number processing tests
         number_tests = [
@@ -167,13 +190,15 @@ class ComprehensivePronunciationTestSuite:
         ]
 
         for input_text, expected, description in number_tests:
-            test_cases.append(PronunciationTestCase(
-                category="numbers",
-                input_text=input_text,
-                expected_output=expected,
-                description=description,
-                priority="medium"
-            ))
+            test_cases.append(
+                PronunciationTestCase(
+                    category="numbers",
+                    input_text=input_text,
+                    expected_output=expected,
+                    description=description,
+                    priority="medium",
+                )
+            )
 
         # Specific pronunciation fixes
         pronunciation_tests = [
@@ -188,13 +213,15 @@ class ComprehensivePronunciationTestSuite:
         ]
 
         for input_text, expected, description in pronunciation_tests:
-            test_cases.append(PronunciationTestCase(
-                category="pronunciation_fixes",
-                input_text=input_text,
-                expected_output=expected,
-                description=description,
-                priority="high"
-            ))
+            test_cases.append(
+                PronunciationTestCase(
+                    category="pronunciation_fixes",
+                    input_text=input_text,
+                    expected_output=expected,
+                    description=description,
+                    priority="high",
+                )
+            )
 
         # Interjection and filler word tests
         interjection_tests = [
@@ -207,41 +234,45 @@ class ComprehensivePronunciationTestSuite:
         ]
 
         for input_text, expected, description in interjection_tests:
-            test_cases.append(PronunciationTestCase(
-                category="interjections",
-                input_text=input_text,
-                expected_output=expected,
-                description=description,
-                priority="low"
-            ))
+            test_cases.append(
+                PronunciationTestCase(
+                    category="interjections",
+                    input_text=input_text,
+                    expected_output=expected,
+                    description=description,
+                    priority="low",
+                )
+            )
 
         # Complex sentence tests
         complex_tests = [
             (
                 "I'll visit https://www.example.com at 3:30 PM on 2023-10-27 & pay $123.45.",
                 "eye will visit example dot com at three thirty PM on October twenty-seventh, twenty twenty-three and pay one hundred twenty-three dollars and forty-five cents.",
-                "Complex sentence with multiple elements"
+                "Complex sentence with multiple elements",
             ),
             (
                 "The CEO said 'ASAP' but I think it's 50% likely by Dec 15th.",
                 "The C E O said A S A P but I think its fifty percent likely by December fifteenth.",
-                "Complex sentence with quotes and mixed elements"
+                "Complex sentence with quotes and mixed elements",
             ),
             (
                 "Contact support@company.com or call (555) 123-4567 for help.",
                 "Contact support at company dot com or call five five five one two three four five six seven for help.",
-                "Contact information processing"
+                "Contact information processing",
             ),
         ]
 
         for input_text, expected, description in complex_tests:
-            test_cases.append(PronunciationTestCase(
-                category="complex_sentences",
-                input_text=input_text,
-                expected_output=expected,
-                description=description,
-                priority="critical"
-            ))
+            test_cases.append(
+                PronunciationTestCase(
+                    category="complex_sentences",
+                    input_text=input_text,
+                    expected_output=expected,
+                    description=description,
+                    priority="critical",
+                )
+            )
 
         return test_cases
 
@@ -252,8 +283,8 @@ class ComprehensivePronunciationTestSuite:
             actual_output = self.text_normalizer.normalize_text(test_case.input_text)
 
             # Check if the output matches expected (case-insensitive, whitespace normalized)
-            expected_normalized = ' '.join(test_case.expected_output.lower().split())
-            actual_normalized = ' '.join(actual_output.lower().split())
+            expected_normalized = " ".join(test_case.expected_output.lower().split())
+            actual_normalized = " ".join(actual_output.lower().split())
 
             passed = expected_normalized == actual_normalized
 
@@ -261,7 +292,9 @@ class ComprehensivePronunciationTestSuite:
                 test_case=test_case,
                 actual_output=actual_output,
                 passed=passed,
-                error_message="" if passed else f"Expected: '{test_case.expected_output}', Got: '{actual_output}'"
+                error_message=""
+                if passed
+                else f"Expected: '{test_case.expected_output}', Got: '{actual_output}'",
             )
 
         except Exception as e:
@@ -269,7 +302,7 @@ class ComprehensivePronunciationTestSuite:
                 test_case=test_case,
                 actual_output="",
                 passed=False,
-                error_message=f"Exception: {e!s}"
+                error_message=f"Exception: {e!s}",
             )
 
     def run_category_tests(self, category: str) -> list[PronunciationTestResult]:
@@ -313,8 +346,10 @@ class ComprehensivePronunciationTestSuite:
             total_passed += category_passed
             total_tests += category_total
 
-            logger.info(f"Category '{category}': {category_passed}/{category_total} passed "
-                       f"({(category_passed/category_total*100):.1f}%)")
+            logger.info(
+                f"Category '{category}': {category_passed}/{category_total} passed "
+                f"({(category_passed / category_total * 100):.1f}%)"
+            )
 
         # Calculate overall statistics
         success_rate = (total_passed / total_tests * 100) if total_tests > 0 else 0
@@ -328,19 +363,18 @@ class ComprehensivePronunciationTestSuite:
                 cat: {
                     "passed": sum(1 for r in results if r.passed),
                     "total": len(results),
-                    "success_rate": (sum(1 for r in results if r.passed) / len(results) * 100) if results else 0
+                    "success_rate": (sum(1 for r in results if r.passed) / len(results) * 100)
+                    if results
+                    else 0,
                 }
                 for cat, results in all_results.items()
-            }
+            },
         }
 
         # Store results for detailed analysis
         self.results = all_results
 
-        return {
-            "summary": summary,
-            "detailed_results": all_results
-        }
+        return {"summary": summary, "detailed_results": all_results}
 
     def generate_detailed_report(self, output_file: str = "pronunciation_test_report.json"):
         """Generate detailed test report"""
@@ -355,18 +389,21 @@ class ComprehensivePronunciationTestSuite:
             serializable_results[category] = []
 
             for result in results:
-                serializable_results[category].append({
-                    "test_case": asdict(result.test_case),
-                    "actual_output": result.actual_output,
-                    "passed": result.passed,
-                    "error_message": result.error_message
-                })
+                serializable_results[category].append(
+                    {
+                        "test_case": asdict(result.test_case),
+                        "actual_output": result.actual_output,
+                        "passed": result.passed,
+                        "error_message": result.error_message,
+                    }
+                )
 
         # Calculate priority-based statistics
         priority_stats = {}
         for priority in ["critical", "high", "medium", "low"]:
             priority_tests = [
-                result for results in self.results.values()
+                result
+                for results in self.results.values()
                 for result in results
                 if result.test_case.priority == priority
             ]
@@ -376,7 +413,7 @@ class ComprehensivePronunciationTestSuite:
                 priority_stats[priority] = {
                     "total": len(priority_tests),
                     "passed": priority_passed,
-                    "success_rate": (priority_passed / len(priority_tests) * 100)
+                    "success_rate": (priority_passed / len(priority_tests) * 100),
                 }
 
         report_data = {
@@ -384,16 +421,16 @@ class ComprehensivePronunciationTestSuite:
                 "total_categories": len(self.results),
                 "total_tests": sum(len(results) for results in self.results.values()),
                 "overall_success_rate": self._calculate_overall_success_rate(),
-                "priority_breakdown": priority_stats
+                "priority_breakdown": priority_stats,
             },
             "category_results": serializable_results,
             "failed_tests": self._get_failed_tests_summary(),
-            "recommendations": self._generate_recommendations()
+            "recommendations": self._generate_recommendations(),
         }
 
         # Save report
         try:
-            with open(output_file, 'w') as f:
+            with open(output_file, "w") as f:
                 json.dump(report_data, f, indent=2)
             logger.info(f"Detailed report saved to {output_file}")
         except Exception as e:
@@ -415,15 +452,17 @@ class ComprehensivePronunciationTestSuite:
         for category, results in self.results.items():
             for result in results:
                 if not result.passed:
-                    failed_tests.append({
-                        "category": category,
-                        "description": result.test_case.description,
-                        "input": result.test_case.input_text,
-                        "expected": result.test_case.expected_output,
-                        "actual": result.actual_output,
-                        "priority": result.test_case.priority,
-                        "error": result.error_message
-                    })
+                    failed_tests.append(
+                        {
+                            "category": category,
+                            "description": result.test_case.description,
+                            "input": result.test_case.input_text,
+                            "expected": result.test_case.expected_output,
+                            "actual": result.actual_output,
+                            "priority": result.test_case.priority,
+                            "error": result.error_message,
+                        }
+                    )
 
         # Sort by priority (critical first)
         priority_order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
@@ -442,20 +481,27 @@ class ComprehensivePronunciationTestSuite:
             success_rate = (passed / total * 100) if total > 0 else 0
 
             if success_rate < 80:
-                recommendations.append(f"Category '{category}' has low success rate ({success_rate:.1f}%) - needs attention")
+                recommendations.append(
+                    f"Category '{category}' has low success rate ({success_rate:.1f}%) - needs attention"
+                )
             elif success_rate < 95:
-                recommendations.append(f"Category '{category}' has moderate success rate ({success_rate:.1f}%) - consider improvements")
+                recommendations.append(
+                    f"Category '{category}' has moderate success rate ({success_rate:.1f}%) - consider improvements"
+                )
 
         # Check critical priority tests
         critical_tests = [
-            result for results in self.results.values()
+            result
+            for results in self.results.values()
             for result in results
             if result.test_case.priority == "critical"
         ]
 
         critical_failed = [r for r in critical_tests if not r.passed]
         if critical_failed:
-            recommendations.append(f"{len(critical_failed)} critical tests failed - immediate attention required")
+            recommendations.append(
+                f"{len(critical_failed)} critical tests failed - immediate attention required"
+            )
 
         # Overall recommendations
         overall_success = self._calculate_overall_success_rate()
@@ -465,6 +511,7 @@ class ComprehensivePronunciationTestSuite:
             recommendations.append("Excellent pronunciation accuracy - system ready for production")
 
         return recommendations
+
 
 def main():
     """Main test execution"""
@@ -485,7 +532,9 @@ def main():
 
         print("\n📋 Category Breakdown:")
         for category, stats in summary["categories"].items():
-            print(f"   {category}: {stats['passed']}/{stats['total']} ({stats['success_rate']:.1f}%)")
+            print(
+                f"   {category}: {stats['passed']}/{stats['total']} ({stats['success_rate']:.1f}%)"
+            )
 
         # Generate detailed report
         report = test_suite.generate_detailed_report()
@@ -507,7 +556,7 @@ def main():
                 print(f"      Actual: '{test['actual']}'")
                 print()
 
-        success = summary['success_rate'] >= 90
+        success = summary["success_rate"] >= 90
 
         if success:
             print("🎉 Pronunciation test suite passed! System ready for production.")
@@ -520,6 +569,7 @@ def main():
         logger.error(f"Test suite execution failed: {e}")
         print(f"\n❌ Test suite failed: {e}")
         return False
+
 
 if __name__ == "__main__":
     success = main()

@@ -16,14 +16,17 @@ from .downloader import VoiceDownloader
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class VoiceEmbedding:
     """Voice embedding data structure"""
+
     name: str
     embedding_data: np.ndarray
     metadata: dict[str, Any]
     file_path: str
     checksum: str
+
 
 class DynamicVoiceManager:
     """Dynamic voice manager with HuggingFace integration and smart caching"""
@@ -33,11 +36,12 @@ class DynamicVoiceManager:
         if voices_dir is None:
             try:
                 from ..config import config
+
                 # Handle both object-style and dictionary-style config
-                if hasattr(config, 'paths'):
+                if hasattr(config, "paths"):
                     voices_dir = config.paths.voices_dir
                 elif isinstance(config, dict):
-                    voices_dir = config.get('paths', {}).get('voices_dir', "LiteTTS/voices")
+                    voices_dir = config.get("paths", {}).get("voices_dir", "LiteTTS/voices")
                 else:
                     voices_dir = "LiteTTS/voices"  # Fallback
             except (ImportError, AttributeError):
@@ -60,7 +64,9 @@ class DynamicVoiceManager:
         # Initialize voice system
         self._initialize_voice_system()
 
-        logger.info(f"Dynamic voice manager initialized with {len(self.get_available_voices())} voices")
+        logger.info(
+            f"Dynamic voice manager initialized with {len(self.get_available_voices())} voices"
+        )
 
     def _initialize_voice_system(self) -> None:
         """Initialize the voice system with discovery and mapping generation"""
@@ -84,8 +90,8 @@ class DynamicVoiceManager:
         for voice_name in available_voices:
             # Extract short name from full voice name
             # Examples: af_heart -> heart, am_puck -> puck, bf_alice -> alice
-            if '_' in voice_name:
-                parts = voice_name.split('_', 1)
+            if "_" in voice_name:
+                parts = voice_name.split("_", 1)
                 if len(parts) == 2:
                     prefix, short_name = parts
 
@@ -94,7 +100,9 @@ class DynamicVoiceManager:
                         self.voice_mappings[short_name] = voice_name
                     else:
                         # Handle conflicts by using the first one found
-                        logger.debug(f"Short name conflict for '{short_name}': keeping {self.voice_mappings[short_name]}")
+                        logger.debug(
+                            f"Short name conflict for '{short_name}': keeping {self.voice_mappings[short_name]}"
+                        )
 
         logger.info(f"Generated {len(self.voice_mappings)} voice mappings")
 
@@ -104,7 +112,7 @@ class DynamicVoiceManager:
             return
 
         try:
-            with open(self.mappings_cache_file, 'r') as f:
+            with open(self.mappings_cache_file, "r") as f:
                 self.voice_mappings = json.load(f)
             logger.debug(f"Loaded {len(self.voice_mappings)} voice mappings from cache")
         except Exception as e:
@@ -114,7 +122,7 @@ class DynamicVoiceManager:
     def _save_voice_mappings(self) -> None:
         """Save voice mappings to cache"""
         try:
-            with open(self.mappings_cache_file, 'w') as f:
+            with open(self.mappings_cache_file, "w") as f:
                 json.dump(self.voice_mappings, f, indent=2)
             logger.debug(f"Saved {len(self.voice_mappings)} voice mappings to cache")
         except Exception as e:
@@ -206,14 +214,15 @@ class DynamicVoiceManager:
             metadata = {}
             if voice_info:
                 metadata = {
-                    'language': voice_info.language,
-                    'gender': voice_info.gender,
-                    'nationality': voice_info.nationality,
-                    'source': voice_info.source
+                    "language": voice_info.language,
+                    "gender": voice_info.gender,
+                    "nationality": voice_info.nationality,
+                    "source": voice_info.source,
                 }
 
             # Calculate checksum
             import hashlib
+
             checksum = hashlib.sha256(voice_data.tobytes()).hexdigest()
 
             # Create voice embedding
@@ -222,7 +231,7 @@ class DynamicVoiceManager:
                 embedding_data=voice_data,
                 metadata=metadata,
                 file_path=str(voice_file),
-                checksum=checksum
+                checksum=checksum,
             )
 
             self.loaded_voices[voice_name] = voice_embedding
@@ -241,11 +250,11 @@ class DynamicVoiceManager:
     def get_download_status(self) -> dict[str, Any]:
         """Get download status for all voices"""
         return {
-            'discovered_voices': len(self.downloader.discovered_voices),
-            'downloaded_voices': len(self.downloader.get_downloaded_voices()),
-            'missing_voices': len(self.downloader.get_missing_voices()),
-            'voice_mappings': len(self.voice_mappings),
-            'loaded_voices': len(self.loaded_voices)
+            "discovered_voices": len(self.downloader.discovered_voices),
+            "downloaded_voices": len(self.downloader.get_downloaded_voices()),
+            "missing_voices": len(self.downloader.get_missing_voices()),
+            "voice_mappings": len(self.voice_mappings),
+            "loaded_voices": len(self.loaded_voices),
         }
 
     def refresh_discovery(self) -> bool:

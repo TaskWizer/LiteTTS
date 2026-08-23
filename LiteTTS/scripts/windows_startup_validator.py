@@ -15,7 +15,8 @@ from pathlib import Path
 from typing import Any
 
 # Add project root to path
-sys.path.insert(0, '.')
+sys.path.insert(0, ".")
+
 
 class WindowsStartupValidator:
     """Validates Windows startup process"""
@@ -36,7 +37,7 @@ class WindowsStartupValidator:
         self.validation_results[step] = {
             "success": success,
             "details": details,
-            "timestamp": time.time()
+            "timestamp": time.time(),
         }
 
     def validate_environment(self) -> bool:
@@ -56,16 +57,14 @@ class WindowsStartupValidator:
         self.log_step(
             "Python Version",
             python_ok,
-            f"Python {python_version.major}.{python_version.minor}.{python_version.micro}"
+            f"Python {python_version.major}.{python_version.minor}.{python_version.micro}",
         )
 
         # Check console encoding
-        stdout_encoding = getattr(sys.stdout, 'encoding', 'unknown')
-        stderr_encoding = getattr(sys.stderr, 'encoding', 'unknown')
+        stdout_encoding = getattr(sys.stdout, "encoding", "unknown")
+        stderr_encoding = getattr(sys.stderr, "encoding", "unknown")
         self.log_step(
-            "Console Encoding",
-            True,
-            f"stdout: {stdout_encoding}, stderr: {stderr_encoding}"
+            "Console Encoding", True, f"stdout: {stdout_encoding}, stderr: {stderr_encoding}"
         )
 
         return is_windows and python_ok
@@ -76,6 +75,7 @@ class WindowsStartupValidator:
 
         # Capture warnings
         captured_warnings = []
+
         def warning_handler(message, category, filename, lineno, file=None, line=None):
             captured_warnings.append(f"{category.__name__}: {message}")
 
@@ -90,25 +90,30 @@ class WindowsStartupValidator:
             from LiteTTS.utils.platform_emojis import (
                 is_windows_with_encoding_issues,
             )
+
             encoding_issues = is_windows_with_encoding_issues()
             self.log_step("Platform Emojis", True, f"Encoding issues detected: {encoding_issues}")
 
             # Test startup module
             from LiteTTS.startup import configure_windows_console
+
             console_result = configure_windows_console()
-            self.log_step("Windows Console Config", console_result, f"Configuration result: {console_result}")
+            self.log_step(
+                "Windows Console Config", console_result, f"Configuration result: {console_result}"
+            )
 
             # Test deprecation warnings
             from LiteTTS.utils.deprecation_warnings import initialize_warning_suppression
+
             initialize_warning_suppression()
             self.log_step("Warning Suppression", True)
 
             # Check for pkg_resources warnings
-            pkg_warnings = [w for w in captured_warnings if 'pkg_resources' in w]
+            pkg_warnings = [w for w in captured_warnings if "pkg_resources" in w]
             self.log_step(
                 "pkg_resources Warnings",
                 len(pkg_warnings) == 0,
-                f"Found {len(pkg_warnings)} pkg_resources warnings"
+                f"Found {len(pkg_warnings)} pkg_resources warnings",
             )
 
             return len(pkg_warnings) == 0
@@ -128,18 +133,18 @@ class WindowsStartupValidator:
 
             # Test various emojis
             test_emojis = [
-                ('rocket', '🚀'),
-                ('clipboard', '📋'),
-                ('check', '✅'),
-                ('folder', '📁'),
-                ('chart', '📊')
+                ("rocket", "🚀"),
+                ("clipboard", "📋"),
+                ("check", "✅"),
+                ("folder", "📁"),
+                ("chart", "📊"),
             ]
 
             emoji_results = []
             for name, emoji in test_emojis:
                 try:
                     # Test emoji display
-                    safe_emoji = get_emoji(name, f'[{name.upper()}]')
+                    safe_emoji = get_emoji(name, f"[{name.upper()}]")
                     message = format_log_message(name, f"Test message with {name}")
 
                     # Try to print it
@@ -154,7 +159,7 @@ class WindowsStartupValidator:
             self.log_step(
                 "Emoji Display",
                 success,
-                f"{sum(emoji_results)}/{len(emoji_results)} emojis displayed successfully"
+                f"{sum(emoji_results)}/{len(emoji_results)} emojis displayed successfully",
             )
 
             return success
@@ -169,22 +174,23 @@ class WindowsStartupValidator:
 
         try:
             # Test config file reading
-            config_files = [
-                "config/settings.json",
-                "config.json"
-            ]
+            config_files = ["config/settings.json", "config.json"]
 
             config_found = False
             for config_file in config_files:
                 if Path(config_file).exists():
                     try:
-                        with open(config_file, 'r', encoding='utf-8') as f:
+                        with open(config_file, "r", encoding="utf-8") as f:
                             config_data = json.load(f)
                         config_found = True
-                        self.log_step("Config File Reading", True, f"Successfully read {config_file}")
+                        self.log_step(
+                            "Config File Reading", True, f"Successfully read {config_file}"
+                        )
                         break
                     except Exception as e:
-                        self.log_step("Config File Reading", False, f"Failed to read {config_file}: {e}")
+                        self.log_step(
+                            "Config File Reading", False, f"Failed to read {config_file}: {e}"
+                        )
 
             if not config_found:
                 self.log_step("Config File Reading", True, "No config files found (using defaults)")
@@ -193,7 +199,7 @@ class WindowsStartupValidator:
             dashboard_file = Path("static/dashboard/index.html")
             if dashboard_file.exists():
                 try:
-                    with open(dashboard_file, 'r', encoding='utf-8') as f:
+                    with open(dashboard_file, "r", encoding="utf-8") as f:
                         html_content = f.read()
                     self.log_step("HTML File Reading", True, f"Read {len(html_content)} characters")
                 except Exception as e:
@@ -244,11 +250,13 @@ class WindowsStartupValidator:
             self.log_step("Config Module", True)
 
             from LiteTTS import __version__
+
             self.log_step("Package Version", True, f"Version: {__version__}")
 
             # Test optional imports
             try:
                 from LiteTTS.audio.watermarking import WatermarkingManager  # noqa: F401
+
                 self.log_step("Watermarking Module", True)
             except ImportError:
                 self.log_step("Watermarking Module", True, "Optional module not available")
@@ -271,7 +279,7 @@ class WindowsStartupValidator:
             self.validate_emoji_display,
             self.validate_file_operations,
             self.validate_logging_system,
-            self.validate_core_imports
+            self.validate_core_imports,
         ]
 
         all_passed = True
@@ -289,7 +297,7 @@ class WindowsStartupValidator:
         print("📊 Validation Summary")
         print("=" * 50)
 
-        passed_count = sum(1 for r in self.validation_results.values() if r['success'])
+        passed_count = sum(1 for r in self.validation_results.values() if r["success"])
         total_count = len(self.validation_results)
 
         print(f"Steps Passed: {passed_count}/{total_count}")
@@ -303,7 +311,7 @@ class WindowsStartupValidator:
             print("Please review the failed steps above.")
 
             # Show failed steps
-            failed_steps = [k for k, v in self.validation_results.items() if not v['success']]
+            failed_steps = [k for k, v in self.validation_results.items() if not v["success"]]
             if failed_steps:
                 print(f"Failed steps: {', '.join(failed_steps)}")
 
@@ -316,22 +324,23 @@ class WindowsStartupValidator:
             "startup_log": self.startup_log,
             "platform": platform.platform(),
             "python_version": sys.version,
-            "timestamp": time.time()
+            "timestamp": time.time(),
         }
 
         results_file = Path("test_results") / "windows_startup_validation.json"
         results_file.parent.mkdir(exist_ok=True)
 
-        with open(results_file, 'w', encoding='utf-8') as f:
+        with open(results_file, "w", encoding="utf-8") as f:
             json.dump(results, f, indent=2, ensure_ascii=False, default=str)
 
         print(f"\n📄 Detailed results saved to: {results_file}")
 
         return results
 
+
 def main():
     """Main validation execution"""
-    if len(sys.argv) > 1 and sys.argv[1] == '--help':
+    if len(sys.argv) > 1 and sys.argv[1] == "--help":
         print(__doc__)
         return
 
@@ -339,7 +348,8 @@ def main():
     results = validator.run_validation()
 
     # Exit with appropriate code
-    sys.exit(0 if results['overall_success'] else 1)
+    sys.exit(0 if results["overall_success"] else 1)
+
 
 if __name__ == "__main__":
     main()

@@ -16,9 +16,11 @@ except ImportError:
     # Fallback import from models.py file
     import sys
     from pathlib import Path
+
     models_path = Path(__file__).parent.parent / "models.py"
     if models_path.exists():
         import importlib.util
+
         spec = importlib.util.spec_from_file_location("models", models_path)
         models_module = importlib.util.module_from_spec(spec)
         sys.modules["models"] = models_module
@@ -36,17 +38,21 @@ except ImportError:
             language: str = "en-us"
             description: str = ""
 
+
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class VoiceStats:
     """Voice usage statistics"""
+
     total_requests: int = 0
     total_duration: float = 0.0
     average_request_length: float = 0.0
     last_used: datetime | None = None
     error_count: int = 0
     success_rate: float = 1.0
+
 
 class VoiceMetadataManager:
     """Manages voice metadata and categorization"""
@@ -64,7 +70,7 @@ class VoiceMetadataManager:
                 voice_type="neural",
                 quality_rating=4.5,
                 language="en-us",
-                description="Warm, natural female voice with excellent clarity"
+                description="Warm, natural female voice with excellent clarity",
             ),
             "af_bella": VoiceMetadata(
                 name="af_bella",
@@ -73,7 +79,7 @@ class VoiceMetadataManager:
                 voice_type="neural",
                 quality_rating=4.3,
                 language="en-us",
-                description="Clear, articulate female voice perfect for professional content"
+                description="Clear, articulate female voice perfect for professional content",
             ),
             "af_alloy": VoiceMetadata(
                 name="af_alloy",
@@ -82,7 +88,7 @@ class VoiceMetadataManager:
                 voice_type="neural",
                 quality_rating=4.2,
                 language="en-us",
-                description="Smooth, professional female voice with consistent tone"
+                description="Smooth, professional female voice with consistent tone",
             ),
             "af_aoede": VoiceMetadata(
                 name="af_aoede",
@@ -91,7 +97,7 @@ class VoiceMetadataManager:
                 voice_type="neural",
                 quality_rating=4.1,
                 language="en-us",
-                description="Expressive female voice with dynamic range"
+                description="Expressive female voice with dynamic range",
             ),
             "af_jessica": VoiceMetadata(
                 name="af_jessica",
@@ -100,7 +106,7 @@ class VoiceMetadataManager:
                 voice_type="neural",
                 quality_rating=4.0,
                 language="en-us",
-                description="Friendly, approachable female voice"
+                description="Friendly, approachable female voice",
             ),
             "af_nicole": VoiceMetadata(
                 name="af_nicole",
@@ -109,7 +115,7 @@ class VoiceMetadataManager:
                 voice_type="neural",
                 quality_rating=4.2,
                 language="en-us",
-                description="Confident, authoritative female voice"
+                description="Confident, authoritative female voice",
             ),
             "af_sky": VoiceMetadata(
                 name="af_sky",
@@ -118,7 +124,7 @@ class VoiceMetadataManager:
                 voice_type="neural",
                 quality_rating=3.9,
                 language="en-us",
-                description="Light, airy female voice with youthful tone"
+                description="Light, airy female voice with youthful tone",
             ),
             "am_puck": VoiceMetadata(
                 name="am_puck",
@@ -127,7 +133,7 @@ class VoiceMetadataManager:
                 voice_type="neural",
                 quality_rating=4.4,
                 language="en-us",
-                description="Natural, conversational male voice with warm tone"
+                description="Natural, conversational male voice with warm tone",
             ),
             "am_liam": VoiceMetadata(
                 name="am_liam",
@@ -136,8 +142,8 @@ class VoiceMetadataManager:
                 voice_type="neural",
                 quality_rating=4.3,
                 language="en-us",
-                description="Deep, authoritative male voice perfect for narration"
-            )
+                description="Deep, authoritative male voice perfect for narration",
+            ),
         }
 
         self.voice_metadata = {}
@@ -148,20 +154,22 @@ class VoiceMetadataManager:
         """Load metadata from file"""
         try:
             if self.metadata_file.exists():
-                with open(self.metadata_file, 'r') as f:
+                with open(self.metadata_file, "r") as f:
                     data = json.load(f)
 
                 # Load voice metadata
-                if 'voices' in data:
-                    for voice_name, voice_data in data['voices'].items():
+                if "voices" in data:
+                    for voice_name, voice_data in data["voices"].items():
                         self.voice_metadata[voice_name] = VoiceMetadata(**voice_data)
 
                 # Load voice statistics
-                if 'stats' in data:
-                    for voice_name, stats_data in data['stats'].items():
+                if "stats" in data:
+                    for voice_name, stats_data in data["stats"].items():
                         # Convert datetime string back to datetime object
-                        if stats_data.get('last_used'):
-                            stats_data['last_used'] = datetime.fromisoformat(stats_data['last_used'])
+                        if stats_data.get("last_used"):
+                            stats_data["last_used"] = datetime.fromisoformat(
+                                stats_data["last_used"]
+                            )
                         self.voice_stats[voice_name] = VoiceStats(**stats_data)
 
                 logger.info(f"Loaded metadata for {len(self.voice_metadata)} voices")
@@ -180,25 +188,21 @@ class VoiceMetadataManager:
     def save_metadata(self):
         """Save metadata to file"""
         try:
-            data = {
-                'voices': {},
-                'stats': {},
-                'last_updated': datetime.now().isoformat()
-            }
+            data = {"voices": {}, "stats": {}, "last_updated": datetime.now().isoformat()}
 
             # Save voice metadata
             for voice_name, metadata in self.voice_metadata.items():
-                data['voices'][voice_name] = asdict(metadata)
+                data["voices"][voice_name] = asdict(metadata)
 
             # Save voice statistics
             for voice_name, stats in self.voice_stats.items():
                 stats_dict = asdict(stats)
                 # Convert datetime to string for JSON serialization
-                if stats_dict['last_used']:
-                    stats_dict['last_used'] = stats_dict['last_used'].isoformat()
-                data['stats'][voice_name] = stats_dict
+                if stats_dict["last_used"]:
+                    stats_dict["last_used"] = stats_dict["last_used"].isoformat()
+                data["stats"][voice_name] = stats_dict
 
-            with open(self.metadata_file, 'w') as f:
+            with open(self.metadata_file, "w") as f:
                 json.dump(data, f, indent=2)
 
             logger.debug("Metadata saved successfully")
@@ -259,7 +263,8 @@ class VoiceMetadataManager:
     def get_voices_by_quality(self, min_rating: float = 4.0) -> list[VoiceMetadata]:
         """Get voices with quality rating above threshold"""
         return [
-            metadata for metadata in self.voice_metadata.values()
+            metadata
+            for metadata in self.voice_metadata.values()
             if metadata.quality_rating >= min_rating
         ]
 
@@ -276,11 +281,7 @@ class VoiceMetadataManager:
             success_score = stats.success_rate
 
             # Weighted combination
-            recommendation_score = (
-                quality_score * 0.5 +
-                usage_score * 0.2 +
-                success_score * 0.3
-            )
+            recommendation_score = quality_score * 0.5 + usage_score * 0.2 + success_score * 0.3
 
             voices_with_scores.append((metadata, recommendation_score))
 
@@ -288,8 +289,7 @@ class VoiceMetadataManager:
         voices_with_scores.sort(key=lambda x: x[1], reverse=True)
         return [voice for voice, score in voices_with_scores[:count]]
 
-    def update_voice_stats(self, voice_name: str, request_duration: float,
-                          success: bool = True):
+    def update_voice_stats(self, voice_name: str, request_duration: float, success: bool = True):
         """Update usage statistics for a voice"""
         if voice_name not in self.voice_stats:
             self.voice_stats[voice_name] = VoiceStats()
@@ -324,19 +324,23 @@ class VoiceMetadataManager:
         most_used = max(
             self.voice_stats.items(),
             key=lambda x: x[1].total_requests,
-            default=(None, VoiceStats())
+            default=(None, VoiceStats()),
         )
 
         return {
-            'total_requests': total_requests,
-            'total_duration': total_duration,
-            'total_errors': total_errors,
-            'overall_success_rate': (total_requests - total_errors) / total_requests if total_requests > 0 else 1.0,
-            'average_request_duration': total_duration / total_requests if total_requests > 0 else 0.0,
-            'most_used_voice': most_used[0],
-            'most_used_requests': most_used[1].total_requests,
-            'total_voices': len(self.voice_metadata),
-            'active_voices': len([s for s in self.voice_stats.values() if s.total_requests > 0])
+            "total_requests": total_requests,
+            "total_duration": total_duration,
+            "total_errors": total_errors,
+            "overall_success_rate": (total_requests - total_errors) / total_requests
+            if total_requests > 0
+            else 1.0,
+            "average_request_duration": total_duration / total_requests
+            if total_requests > 0
+            else 0.0,
+            "most_used_voice": most_used[0],
+            "most_used_requests": most_used[1].total_requests,
+            "total_voices": len(self.voice_metadata),
+            "active_voices": len([s for s in self.voice_stats.values() if s.total_requests > 0]),
         }
 
     def add_custom_voice(self, voice_name: str, metadata: VoiceMetadata):
@@ -371,29 +375,31 @@ class VoiceMetadataManager:
     def get_voice_categories(self) -> dict[str, list[str]]:
         """Get voices organized by categories"""
         categories = {
-            'female': [],
-            'male': [],
-            'high_quality': [],
-            'professional': [],
-            'conversational': []
+            "female": [],
+            "male": [],
+            "high_quality": [],
+            "professional": [],
+            "conversational": [],
         }
 
         for voice_name, metadata in self.voice_metadata.items():
             # Gender categories
-            if metadata.gender == 'female':
-                categories['female'].append(voice_name)
-            elif metadata.gender == 'male':
-                categories['male'].append(voice_name)
+            if metadata.gender == "female":
+                categories["female"].append(voice_name)
+            elif metadata.gender == "male":
+                categories["male"].append(voice_name)
 
             # Quality categories
             if metadata.quality_rating >= 4.2:
-                categories['high_quality'].append(voice_name)
+                categories["high_quality"].append(voice_name)
 
             # Style categories (based on description keywords)
             description_lower = metadata.description.lower()
-            if any(word in description_lower for word in ['professional', 'authoritative', 'clear']):
-                categories['professional'].append(voice_name)
-            if any(word in description_lower for word in ['conversational', 'natural', 'warm']):
-                categories['conversational'].append(voice_name)
+            if any(
+                word in description_lower for word in ["professional", "authoritative", "clear"]
+            ):
+                categories["professional"].append(voice_name)
+            if any(word in description_lower for word in ["conversational", "natural", "warm"]):
+                categories["conversational"].append(voice_name)
 
         return categories

@@ -3,7 +3,6 @@
 Unit tests for voice validator module
 """
 
-
 import numpy as np
 import pytest
 
@@ -22,7 +21,7 @@ class TestValidationResult:
             file_size=1024,
             errors=[],
             warnings=[],
-            metadata={"embedding_dim": 256}
+            metadata={"embedding_dim": 256},
         )
         assert result.is_valid is True
         assert result.voice_name == "test_voice"
@@ -41,7 +40,7 @@ class TestValidationResult:
             file_size=100,
             errors=["File too small"],
             warnings=["Unusual format"],
-            metadata={}
+            metadata={},
         )
         assert result.is_valid is False
         assert len(result.errors) == 1
@@ -55,8 +54,8 @@ class TestVoiceValidator:
         """Test validator initializes correctly"""
         validator = VoiceValidator()
         assert validator.expected_properties is not None
-        assert validator.expected_properties['embedding_dim'] == 256
-        assert validator.expected_properties['min_file_size'] == 1024 * 1024
+        assert validator.expected_properties["embedding_dim"] == 256
+        assert validator.expected_properties["min_file_size"] == 1024 * 1024
 
     def test_validate_voice_file_not_found(self, tmp_path):
         """Test validating non-existent voice file"""
@@ -70,7 +69,7 @@ class TestVoiceValidator:
         """Test validating .bin file that is too small"""
         validator = VoiceValidator()
         voice_file = tmp_path / "tiny.bin"
-        voice_file.write_bytes(b'\x00' * 50)
+        voice_file.write_bytes(b"\x00" * 50)
 
         result = validator.validate_voice("tiny", voice_file)
         assert result.is_valid is False
@@ -87,8 +86,8 @@ class TestVoiceValidator:
         result = validator.validate_voice("valid", voice_file)
         assert result.is_valid is True
         assert result.file_size > 0
-        assert result.metadata.get('loaded_successfully') is True
-        assert result.metadata.get('embedding_dim') == 256
+        assert result.metadata.get("loaded_successfully") is True
+        assert result.metadata.get("embedding_dim") == 256
 
     def test_validate_voice_bin_file_unusual_size(self, tmp_path):
         """Test validating .bin file with unusual (but valid) size"""
@@ -112,14 +111,14 @@ class TestVoiceValidator:
 
         result = validator.validate_voice("exact", voice_file)
         # May have warnings about unusual size but should still load
-        assert result.metadata.get('loaded_successfully') is True
+        assert result.metadata.get("loaded_successfully") is True
 
     def test_validate_voice_too_large(self, tmp_path):
         """Test validating file that exceeds max size"""
         validator = VoiceValidator()
         voice_file = tmp_path / "large.bin"
         # Create a valid .bin file - validator only checks if > min_file_size
-        voice_file.write_bytes(b'\x00' * 100)
+        voice_file.write_bytes(b"\x00" * 100)
 
         result = validator.validate_voice("large", voice_file)
         # Should have an error about file being too small (not too large warning)
@@ -163,10 +162,10 @@ class TestVoiceValidator:
         """Test getting validation summary with no results"""
         validator = VoiceValidator()
         summary = validator.get_validation_summary({})
-        assert summary['total_voices'] == 0
-        assert summary['valid_voices'] == 0
-        assert summary['invalid_voices'] == 0
-        assert summary['validation_rate'] == 0
+        assert summary["total_voices"] == 0
+        assert summary["valid_voices"] == 0
+        assert summary["invalid_voices"] == 0
+        assert summary["validation_rate"] == 0
 
     def test_get_validation_summary_mixed(self):
         """Test getting validation summary with mixed results"""
@@ -176,10 +175,10 @@ class TestVoiceValidator:
             "voice2": ValidationResult(False, "voice2", "/v2.bin", 100, ["Error"], [], {}),
         }
         summary = validator.get_validation_summary(results)
-        assert summary['total_voices'] == 2
-        assert summary['valid_voices'] == 1
-        assert summary['invalid_voices'] == 1
-        assert summary['total_errors'] == 1
+        assert summary["total_voices"] == 2
+        assert summary["valid_voices"] == 1
+        assert summary["invalid_voices"] == 1
+        assert summary["total_errors"] == 1
 
     def test_get_validation_summary_all_valid(self):
         """Test getting validation summary with all valid results"""
@@ -189,9 +188,9 @@ class TestVoiceValidator:
             "voice2": ValidationResult(True, "voice2", "/v2.bin", 1024, [], [], {}),
         }
         summary = validator.get_validation_summary(results)
-        assert summary['validation_rate'] == 1.0
-        assert summary['total_errors'] == 0
-        assert summary['total_warnings'] == 0
+        assert summary["validation_rate"] == 1.0
+        assert summary["total_errors"] == 0
+        assert summary["total_warnings"] == 0
 
     def test_get_validation_summary_all_invalid(self):
         """Test getting validation summary with all invalid results"""
@@ -201,9 +200,9 @@ class TestVoiceValidator:
             "voice2": ValidationResult(False, "voice2", "/v2.bin", 50, ["Error2"], ["Warn2"], {}),
         }
         summary = validator.get_validation_summary(results)
-        assert summary['validation_rate'] == 0.0
-        assert summary['total_errors'] == 2
-        assert summary['total_warnings'] == 2
+        assert summary["validation_rate"] == 0.0
+        assert summary["total_errors"] == 2
+        assert summary["total_warnings"] == 2
 
     def test_get_validation_summary_with_warnings(self):
         """Test getting validation summary with warnings but valid"""
@@ -212,22 +211,22 @@ class TestVoiceValidator:
             "voice1": ValidationResult(True, "voice1", "/v1.bin", 1024, [], ["Minor warning"], {}),
         }
         summary = validator.get_validation_summary(results)
-        assert summary['valid_voices'] == 1
-        assert summary['total_warnings'] == 1
+        assert summary["valid_voices"] == 1
+        assert summary["total_warnings"] == 1
 
     def test_expected_properties_accessible(self):
         """Test expected properties are accessible"""
         validator = VoiceValidator()
 
-        assert 'embedding_dim' in validator.expected_properties
-        assert 'min_file_size' in validator.expected_properties
-        assert 'max_file_size' in validator.expected_properties
+        assert "embedding_dim" in validator.expected_properties
+        assert "min_file_size" in validator.expected_properties
+        assert "max_file_size" in validator.expected_properties
 
     def test_validate_voice_load_error(self, tmp_path):
         """Test validating voice when load fails"""
         validator = VoiceValidator()
         voice_file = tmp_path / "corrupt.pt"
-        voice_file.write_bytes(b'\x00\x01\x02\x03')  # Invalid data
+        voice_file.write_bytes(b"\x00\x01\x02\x03")  # Invalid data
 
         result = validator.validate_voice("corrupt", voice_file)
         assert result.is_valid is False
@@ -244,8 +243,8 @@ class TestVoiceValidator:
         result = validator.validate_voice("valid", voice_file)
         assert result.is_valid is True
         assert result.file_size > 0
-        assert result.metadata.get('loaded_successfully') is True
-        assert result.metadata.get('embedding_dim') == 256
+        assert result.metadata.get("loaded_successfully") is True
+        assert result.metadata.get("embedding_dim") == 256
 
     def test_validate_voice_file_too_large_warning(self, tmp_path):
         """Test validating file that is very large"""
@@ -253,7 +252,7 @@ class TestVoiceValidator:
         voice_file = tmp_path / "large.bin"
         # Create file larger than max_file_size (100MB)
         # We'll just create one with a warning instead
-        voice_file.write_bytes(b'\x00' * (200 * 1024 * 1024))  # 200MB
+        voice_file.write_bytes(b"\x00" * (200 * 1024 * 1024))  # 200MB
 
         result = validator.validate_voice("large", voice_file)
         # Should have warnings about large file size
@@ -290,11 +289,11 @@ class TestVoiceValidator:
         """Test compatibility check with load error"""
         validator = VoiceValidator()
         voice_file = tmp_path / "error_test.pt"
-        voice_file.write_bytes(b'\x00\x01\x02\x03')  # Invalid data
+        voice_file.write_bytes(b"\x00\x01\x02\x03")  # Invalid data
 
         result = validator.check_compatibility("error_test", voice_file)
-        assert result['compatible'] is False
-        assert len(result['issues']) > 0
+        assert result["compatible"] is False
+        assert len(result["issues"]) > 0
 
     def test_validate_all_voices_empty_dir(self, tmp_path):
         """Test validating all voices in empty directory"""
@@ -306,9 +305,13 @@ class TestVoiceValidator:
         """Test that unique_errors and unique_warnings are computed"""
         validator = VoiceValidator()
         results = {
-            "voice1": ValidationResult(False, "v1", "/v1.bin", 100, ["Error1", "Error1"], ["Warn1"], {}),
-            "voice2": ValidationResult(False, "v2", "/v2.bin", 50, ["Error1", "Error2"], ["Warn1"], {}),
+            "voice1": ValidationResult(
+                False, "v1", "/v1.bin", 100, ["Error1", "Error1"], ["Warn1"], {}
+            ),
+            "voice2": ValidationResult(
+                False, "v2", "/v2.bin", 50, ["Error1", "Error2"], ["Warn1"], {}
+            ),
         }
         summary = validator.get_validation_summary(results)
-        assert len(summary['unique_errors']) == 2  # Error1, Error2
-        assert len(summary['unique_warnings']) == 1  # Warn1
+        assert len(summary["unique_errors"]) == 2  # Error1, Error2
+        assert len(summary["unique_warnings"]) == 1  # Warn1

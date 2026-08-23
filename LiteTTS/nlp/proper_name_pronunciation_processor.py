@@ -9,6 +9,7 @@ import re
 
 logger = logging.getLogger(__name__)
 
+
 class ProperNamePronunciationProcessor:
     """Processor for fixing specific proper name and word pronunciation issues"""
 
@@ -29,6 +30,7 @@ class ProperNamePronunciationProcessor:
         try:
             # Try to import and use the centralized config system
             from ..config import config as app_config
+
             return app_config.to_dict()
         except ImportError:
             logger.warning("Could not load centralized config, using defaults")
@@ -36,19 +38,15 @@ class ProperNamePronunciationProcessor:
 
     def _get_fallback_config(self) -> dict:
         """Get fallback configuration if centralized config is not available"""
-        return {
-            'text_processing': {
-                'proper_name_pronunciation': {
-                    'enabled': True
-                }
-            }
-        }
+        return {"text_processing": {"proper_name_pronunciation": {"enabled": True}}}
 
     def _is_enabled(self) -> bool:
         """Check if proper name pronunciation fixes are enabled"""
-        return (self.config.get('text_processing', {})
-                .get('proper_name_handling', {})
-                .get('enabled', True))
+        return (
+            self.config.get("text_processing", {})
+            .get("proper_name_handling", {})
+            .get("enabled", True)
+        )
 
     def _load_proper_name_fixes(self) -> dict[str, str]:
         """Load proper name pronunciation fixes
@@ -71,9 +69,11 @@ class ProperNamePronunciationProcessor:
         }
 
         # Get fixes from config, fall back to defaults
-        config_fixes = (self.config.get('text_processing', {})
-                       .get('proper_name_handling', {})
-                       .get('name_pronunciations', {}))
+        config_fixes = (
+            self.config.get("text_processing", {})
+            .get("proper_name_handling", {})
+            .get("name_pronunciations", {})
+        )
 
         # Merge config fixes with defaults
         fixes = default_fixes.copy()
@@ -103,9 +103,11 @@ class ProperNamePronunciationProcessor:
         }
 
         # Get fixes from config
-        config_fixes = (self.config.get('text_processing', {})
-                       .get('proper_name_handling', {})
-                       .get('word_pronunciations', {}))
+        config_fixes = (
+            self.config.get("text_processing", {})
+            .get("proper_name_handling", {})
+            .get("word_pronunciations", {})
+        )
 
         # Merge config fixes with defaults
         fixes = default_fixes.copy()
@@ -149,7 +151,7 @@ class ProperNamePronunciationProcessor:
         """Apply proper name pronunciation fixes"""
         for name, pronunciation in self.proper_name_fixes.items():
             # Use word boundaries to avoid partial matches
-            pattern = r'\b' + re.escape(name) + r'\b'
+            pattern = r"\b" + re.escape(name) + r"\b"
 
             # Apply case-insensitive replacement while preserving original case
             def replace_with_case_preservation(match):
@@ -173,7 +175,7 @@ class ProperNamePronunciationProcessor:
         """Apply general word pronunciation fixes"""
         for word, pronunciation in self.word_pronunciation_fixes.items():
             # Use word boundaries to avoid partial matches
-            pattern = r'\b' + re.escape(word) + r'\b'
+            pattern = r"\b" + re.escape(word) + r"\b"
 
             # Apply case-insensitive replacement while preserving original case
             def replace_with_case_preservation(match):
@@ -199,7 +201,7 @@ class ProperNamePronunciationProcessor:
             # Check if the context pattern matches
             if re.search(context_pattern, text, re.IGNORECASE):
                 # Apply the pronunciation fix within the context
-                word_pattern = r'\b' + re.escape(word) + r'\b'
+                word_pattern = r"\b" + re.escape(word) + r"\b"
 
                 def replace_with_case_preservation(match):
                     original = match.group(0)
@@ -214,7 +216,9 @@ class ProperNamePronunciationProcessor:
                     else:
                         return pronunciation.lower()
 
-                text = re.sub(word_pattern, replace_with_case_preservation, text, flags=re.IGNORECASE)
+                text = re.sub(
+                    word_pattern, replace_with_case_preservation, text, flags=re.IGNORECASE
+                )
                 logger.debug(f"Applied context-sensitive fix: {description}")
 
         return text
@@ -222,31 +226,29 @@ class ProperNamePronunciationProcessor:
     def analyze_pronunciation_issues(self, text: str) -> dict:
         """Analyze potential pronunciation issues in text"""
         analysis = {
-            'proper_names_found': [],
-            'words_with_fixes': [],
-            'context_sensitive_matches': [],
-            'potential_issues': [],
-            'suggestions': []
+            "proper_names_found": [],
+            "words_with_fixes": [],
+            "context_sensitive_matches": [],
+            "potential_issues": [],
+            "suggestions": [],
         }
 
         # Check for proper names
         for name in self.proper_name_fixes.keys():
-            if re.search(r'\b' + re.escape(name) + r'\b', text, re.IGNORECASE):
-                analysis['proper_names_found'].append(name)
+            if re.search(r"\b" + re.escape(name) + r"\b", text, re.IGNORECASE):
+                analysis["proper_names_found"].append(name)
 
         # Check for words with fixes
         for word in self.word_pronunciation_fixes.keys():
-            if re.search(r'\b' + re.escape(word) + r'\b', text, re.IGNORECASE):
-                analysis['words_with_fixes'].append(word)
+            if re.search(r"\b" + re.escape(word) + r"\b", text, re.IGNORECASE):
+                analysis["words_with_fixes"].append(word)
 
         # Check for context-sensitive matches
         for word, context_pattern, pronunciation, description in self.context_sensitive_fixes:
             if re.search(context_pattern, text, re.IGNORECASE):
-                analysis['context_sensitive_matches'].append({
-                    'word': word,
-                    'context': description,
-                    'pronunciation': pronunciation
-                })
+                analysis["context_sensitive_matches"].append(
+                    {"word": word, "context": description, "pronunciation": pronunciation}
+                )
 
         return analysis
 
@@ -262,10 +264,11 @@ class ProperNamePronunciationProcessor:
     def get_all_fixes(self) -> dict:
         """Get all pronunciation fixes"""
         return {
-            'proper_names': self.proper_name_fixes.copy(),
-            'words': self.word_pronunciation_fixes.copy(),
-            'context_sensitive': self.context_sensitive_fixes.copy()
+            "proper_names": self.proper_name_fixes.copy(),
+            "words": self.word_pronunciation_fixes.copy(),
+            "context_sensitive": self.context_sensitive_fixes.copy(),
         }
+
 
 # Example usage and testing
 if __name__ == "__main__":
@@ -284,7 +287,7 @@ if __name__ == "__main__":
         "I read the book yesterday",
         "I will read it tomorrow",
         "She's the lead developer",
-        "Lead pipes are dangerous"
+        "Lead pipes are dangerous",
     ]
 
     print("🔧 Testing Proper Name & Word Pronunciation Processor")
@@ -298,7 +301,9 @@ if __name__ == "__main__":
             print(f"⚪ '{text}' (no changes)")
 
     # Analyze sample text
-    sample_text = "Elon announced the acquisition of a company. Joy will resume work on the live project."
+    sample_text = (
+        "Elon announced the acquisition of a company. Joy will resume work on the live project."
+    )
     analysis = processor.analyze_pronunciation_issues(sample_text)
     print(f"\n🔍 Analysis of: {sample_text}")
     print("=" * 40)
