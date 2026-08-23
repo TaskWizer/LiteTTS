@@ -4,6 +4,8 @@ Tests to ensure API backward compatibility across versions
 """
 
 import json
+import os
+from pathlib import Path
 
 import pytest
 import requests

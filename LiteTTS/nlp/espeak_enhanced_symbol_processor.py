@@ -83,8 +83,6 @@ class EspeakEnhancedSymbolProcessor:
             "'": "",  # Remove apostrophes in quote context
             """: "",  # Smart quotes
             """: "",
-            "'": "",
-            "'": "",
         }
 
     def _load_punctuation_mappings(self) -> dict[str, str]:

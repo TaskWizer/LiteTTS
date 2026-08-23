@@ -122,7 +122,8 @@ class TestVoiceDownloader:
                 download_url="http://example.com/test.bin",
             )
             downloader._save_discovery_cache()
-            assert cache_file.exists() if "cache_file" in dir() else True
+            cache_file = downloader.discovery_cache_file
+            assert cache_file.exists()
 
     def test_discovery_cache_file_path(self, tmp_path):
         """Test discovery cache file is in correct location"""

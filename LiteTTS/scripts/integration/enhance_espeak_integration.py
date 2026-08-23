@@ -381,8 +381,6 @@ class EspeakIntegrationEnhancer:
             "'": "",  # Remove apostrophes in quotes
             """: "",  # Smart quotes
             """: "",
-            "'": "",
-            "'": "",
         }
 
         # Save enhanced mappings

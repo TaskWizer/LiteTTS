@@ -104,6 +104,11 @@ packages = ["."]
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+exclude = [
+    "LiteTTS/backends/",  # Vendored C++ code
+    ".git/",
+    "__pycache__/",
+]
 
 [tool.black]
 line-length = 100

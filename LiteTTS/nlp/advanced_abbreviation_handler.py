@@ -120,7 +120,6 @@ class AdvancedAbbreviationHandler:
             "FBI": "F B I",
             "CIA": "C I A",
             "NASA": "N A S A",
-            "CEO": "C E O",
             "TSLA": "T S L A",  # Tesla stock ticker
             "NSA": "N S A",
             "IRS": "I R S",

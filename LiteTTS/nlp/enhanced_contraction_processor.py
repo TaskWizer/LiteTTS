@@ -117,19 +117,15 @@ class EnhancedContractionProcessor:
         """Load phonetic representations for natural-sounding contractions"""
         return {
             # Phonetic spellings that sound more natural
-            "I'll": "I'll",  # Keep as-is but ensure proper pronunciation
-            "you'll": "you'll",  # Keep as-is but ensure proper pronunciation
-            "I'd": "I'd",  # Keep as-is but ensure proper pronunciation
+            "I'll": "I-will",  # Hyphenated to preserve natural flow
+            "you'll": "you-will",  # Hyphenated to preserve natural flow
+            "I'd": "I-would",  # Hyphenated to preserve natural flow
             "he'll": "he'll",
             "she'll": "she'll",
             "it'll": "it'll",
             "we'll": "we'll",
             "they'll": "they'll",
             "that'll": "that'll",
-            # Alternative phonetic representations
-            "I'll": "I-will",  # Hyphenated to preserve natural flow
-            "you'll": "you-will",  # Hyphenated to preserve natural flow
-            "I'd": "I-would",  # Hyphenated to preserve natural flow
         }
 
     def process_contractions(self, text: str, mode: str | None = None) -> str:

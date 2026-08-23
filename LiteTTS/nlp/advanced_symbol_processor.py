@@ -56,10 +56,6 @@ class AdvancedSymbolProcessor:
             "₤": " lira ",
             "₥": " mill ",
             "₧": " peseta ",
-            "₨": " rupee ",
-            "₩": " won ",
-            "₪": " shekel ",
-            "₫": " dong ",
             # Special characters (ENHANCED)
             "©": " copyright ",
             "®": " registered trademark ",
@@ -111,15 +107,6 @@ class AdvancedSymbolProcessor:
             "⇓": " double down arrow ",
             "↔": " left right arrow ",
             "⇔": " double left right arrow ",
-            # Mathematical symbols
-            "±": " plus or minus ",
-            "×": " times ",
-            "÷": " divided by ",
-            "≈": " approximately ",
-            "≠": " not equal to ",
-            "≤": " less than or equal to ",
-            "≥": " greater than or equal to ",
-            "∞": " infinity ",
         }
 
     def _load_quote_patterns(self) -> list[tuple[str, str]]:

@@ -6,6 +6,7 @@ Implements specific optimizations to improve Real-Time Factor (RTF) performance
 based on the audit results and best practices.
 """
 
+import re
 import time
 from pathlib import Path
 from typing import Any

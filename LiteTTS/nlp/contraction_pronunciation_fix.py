@@ -39,13 +39,12 @@ class ContractionPronunciationFix:
         """Load contraction pronunciation fixes"""
         return {
             # First person contractions
-            "I'm": "I am",  # Expand to ensure proper pronunciation
-            "I'll": "I will",
-            "I'd": "I would",
-            "I've": "I have",
-            "I're": "I are",  # Non-standard but sometimes used
-            # Alternative phonetic approach for problematic contractions
             "I'm": "I-am",  # Hyphenated to ensure separation
+            "I'll": "I-will",
+            "I'd": "I-would",
+            "I've": "I-have",
+            "I're": "I-are",  # Non-standard but sometimes used
+            # Phonetic approach for problematic contractions
             "you're": "you-are",
             "we're": "we-are",
             "they're": "they-are",
@@ -93,19 +92,14 @@ class ContractionPronunciationFix:
         """Load phonetic representations for contractions"""
         return {
             # Phonetic spellings to ensure proper pronunciation
-            "I'm": "I-M",  # Emphasize both parts
-            "you're": "YOU-R",
-            "we're": "WE-R",
-            "they're": "THEY-R",
-            "he's": "HE-Z",
-            "she's": "SHE-Z",
-            "it's": "IT-S",
-            # Alternative approach: spell out the sounds
-            "I'm": "eye-m",
+            "I'm": "eye-m",  # Emphasize both parts
             "you're": "you-r",
             "we're": "we-r",
             "they're": "they-r",
-            # For very problematic cases, use full expansion
+            "he's": "HE-Z",
+            "she's": "SHE-Z",
+            "it's": "IT-S",
+            # Full expansion for problematic cases
             "I'll": "I will",
             "you'll": "you will",
             "he'll": "he will",

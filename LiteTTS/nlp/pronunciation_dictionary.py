@@ -271,7 +271,6 @@ class PronunciationDictionary:
             "anime": "AN-ih-may",
             "manga": "MAHN-gah",
             # Other languages
-            "schadenfreude": "SHAH-den-froy-duh",  # German
             "fjord": "fee-YORD",  # Norwegian
             "sauna": "SOW-nah",  # Finnish
             "yoga": "YOH-gah",  # Sanskrit
