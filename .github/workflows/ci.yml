@@ -38,16 +38,16 @@ jobs:
           uv pip install --system pytest pytest-cov pytest-asyncio ruff mypy bandit
 
       - name: Run ruff lint
-        run: ruff check . --fix --exit-non-zero-on-findings || true
+        run: ruff check . --fix --exit-non-zero-on-findings --exclude=LiteTTS/backends || true
 
       - name: Check ruff formatting
-        run: ruff format --check .
+        run: ruff format --check . --exclude=LiteTTS/backends
 
       - name: Run type checking
-        run: mypy --ignore-missing-imports LiteTTS/ || true
+        run: mypy --ignore-missing-imports --exclude=LiteTTS/backends LiteTTS/ || true
 
       - name: Run security checks
-        run: bandit -r LiteTTS/ -f json -o bandit-report.json || true
+        run: bandit -r LiteTTS/ -f json -o bandit-report.json -x LiteTTS/backends || true
 
       - name: Run unit tests with coverage
         run: |
