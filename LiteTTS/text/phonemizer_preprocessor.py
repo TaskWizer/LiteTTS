@@ -14,9 +14,9 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-# Import enhanced contraction processor for better contraction handling
+# Import enhanced contraction processor for better contraction handling (V2 to avoid deprecation warning)
 try:
-    from ..nlp.enhanced_contraction_processor import EnhancedContractionProcessor
+    from ..nlp.enhanced_contraction_processor_v2 import EnhancedContractionProcessorV2
 
     ENHANCED_CONTRACTIONS_AVAILABLE = True  # pragma: no cover - import success path
 except ImportError:
@@ -58,8 +58,8 @@ class PhonemizationPreprocessor:
 
         # Initialize enhanced contraction processor for better contraction handling
         if ENHANCED_CONTRACTIONS_AVAILABLE:  # pragma: no cover - import success path
-            self.enhanced_contraction_processor = EnhancedContractionProcessor(config=self.config)
-            logger.debug("Enhanced contraction processor initialized with config")
+            self.enhanced_contraction_processor = EnhancedContractionProcessorV2(config=self.config)
+            logger.debug("Enhanced contraction processor V2 initialized with config")
         else:  # pragma: no cover - import failure path
             self.enhanced_contraction_processor = None
 
