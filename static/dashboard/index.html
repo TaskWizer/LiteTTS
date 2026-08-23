@@ -708,8 +708,8 @@
                     </div>
                     <div id="tts-result" role="alert" aria-live="assertive"></div>
                     <div id="tts-error" class="error" role="alert" aria-live="assertive" style="display: none;"></div>
-                    <audio id="audio-player" controls aria-label="Audio playback" style="width: 100%; margin-top: 10px;"></audio>
-                    <div id="streaming-text" class="streaming-text" style="display: none;" aria-live="polite" aria-atomic="true" role="status"></div>
+                    <audio id="audio-player" controls aria-label="Synthesized speech audio player" style="width: 100%; margin-top: 10px;"></audio>
+                    <div id="streaming-text" class="streaming-text" style="display: none;" aria-live="polite" aria-atomic="true" role="status" aria-label="Word-by-word streaming text display"></div>
                     <div class="streaming-progress" style="display: none;" role="progressbar" aria-label="Streaming progress" aria-valuemin="0" aria-valuemax="100">
                         <div class="streaming-progress-bar" id="streaming-progress-bar" style="width: 0%"></div>
                     </div>
@@ -1270,14 +1270,6 @@
         }
 
         // Stop audio playback
-        function stopAudio() {
-            if (currentAudio) {
-                currentAudio.pause();
-                currentAudio.currentTime = 0;
-            }
-        }
-
-        // Stop audio
         function stopAudio() {
             if (currentAudio) {
                 currentAudio.pause();
