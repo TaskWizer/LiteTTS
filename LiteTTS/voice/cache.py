@@ -11,7 +11,11 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-import torch
+
+try:
+    import torch
+except (ImportError, ValueError):
+    torch = None  # type: ignore
 
 try:
     from ..models import VoiceEmbedding, VoiceMetadata
@@ -392,11 +396,11 @@ class VoiceCache:
                         continue
 
                     # Check for NaN or infinite values
-                    if torch.any(torch.isnan(embedding.embedding_data)):
+                    if torch is not None and torch.any(torch.isnan(embedding.embedding_data)):
                         results[voice_name] = False
                         continue
 
-                    if torch.any(torch.isinf(embedding.embedding_data)):
+                    if torch is not None and torch.any(torch.isinf(embedding.embedding_data)):
                         results[voice_name] = False
                         continue
 

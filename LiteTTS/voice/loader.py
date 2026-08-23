@@ -18,7 +18,7 @@ try:
     import torch
     _TORCH_AVAILABLE = True
     logger.debug("Torch available for voice loading")
-except ImportError:
+except (ImportError, ValueError):
     _TORCH_AVAILABLE = False
     logger.info("Torch not available, using fallback voice loading")
 
