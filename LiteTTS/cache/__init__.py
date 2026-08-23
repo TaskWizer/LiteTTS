@@ -19,7 +19,12 @@ _ENHANCED_AVAILABLE = (
 )
 
 # Build exports list
-__all__ = ["cache_manager"]
+__all__ = [
+    "cache_manager",
+    "ICache",
+    "ILRUCache",
+    "LRUCache",
+]
 
 if _ENHANCED_AVAILABLE:
     __all__.extend(

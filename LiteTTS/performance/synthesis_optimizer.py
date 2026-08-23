@@ -8,10 +8,11 @@ tokenization_cache, fast_path_cache) that could benefit from consolidation
 with:
 - EnhancedCacheManager in LiteTTS/cache/manager.py
 - VoiceCache in LiteTTS/voice/cache.py
+- LRUCache base in LiteTTS/cache/interfaces.py (new shared interface)
 
 All three caches use similar patterns (LRU with OrderedDict) but have
-independent implementations. A future refactoring could create a unified
-cache base class to reduce duplication.
+independent implementations. The new LRUCache base class in interfaces.py
+provides a shared foundation that each can extend for future consolidation.
 """
 
 import logging
