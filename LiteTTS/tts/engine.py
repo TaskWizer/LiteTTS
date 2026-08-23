@@ -809,18 +809,6 @@ class KokoroTTSEngine:
             },
         }
 
-        # Simple linear interpolation for speed adjustment
-        original_length = len(audio_data)
-        new_length = int(original_length / speed)
-
-        # Create new time indices
-        old_indices = np.linspace(0, original_length - 1, new_length)
-
-        # Interpolate
-        adjusted_audio = np.interp(old_indices, np.arange(original_length), audio_data)
-
-        return adjusted_audio.astype(np.float32)
-
     def load_voice(self, voice_name: str) -> VoiceEmbedding:
         """Load a voice embedding"""
         return self.voice_manager.get_voice_embedding(voice_name)

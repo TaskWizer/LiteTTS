@@ -73,7 +73,7 @@ class VoiceQualityMetrics:
     snr_db: float  # Signal-to-noise ratio
     silence_ratio: float  # Ratio of silence in audio
     clipping_ratio: float  # Ratio of clipped samples
-    frequency_range_hz: Tuple[float, float]  # Frequency range
+    frequency_range_hz: tuple[float, float]  # Frequency range
     dynamic_range_db: float  # Dynamic range
     spectral_centroid: float  # Spectral centroid
     voice_activity_ratio: float  # Ratio of voice activity
@@ -88,7 +88,7 @@ class AudioPreprocessor:
 
     def preprocess_audio(
         self, audio_data: np.ndarray, sample_rate: int
-    ) -> Tuple[np.ndarray, VoiceQualityMetrics]:
+    ) -> tuple[np.ndarray, VoiceQualityMetrics]:
         """Comprehensive audio preprocessing"""
         processed_audio = audio_data.copy()
 
