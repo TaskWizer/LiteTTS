@@ -355,7 +355,7 @@ class PhoneticContractionProcessor:
             # Create a closure that captures the current contraction and fix
             def make_replacer(current_contraction, current_fix):
                 def replace_contraction(match):
-                    matched_contraction = match.group(1).lower()
+                    _matched_contraction = match.group(1).lower()
 
                     # Handle context-sensitive contractions
                     if current_fix.context_sensitive:

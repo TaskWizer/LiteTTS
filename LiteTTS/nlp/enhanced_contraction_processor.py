@@ -178,7 +178,7 @@ class EnhancedContractionProcessor:
     def _process_expanded_mode(self, text: str) -> str:
         """Expand all contractions to full forms"""
         # Combine all contraction dictionaries for full expansion
-        all_contractions = {**self.natural_contractions, **self.problematic_contractions}
+        _all_contractions = {**self.natural_contractions, **self.problematic_contractions}
 
         # Convert natural contractions to expanded forms
         expanded_contractions = {}

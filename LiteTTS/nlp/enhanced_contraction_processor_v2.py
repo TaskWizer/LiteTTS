@@ -293,7 +293,7 @@ class EnhancedContractionProcessorV2:
         if not text or not text.strip():
             return text
 
-        original_text = text
+        _original_text = _text
         processed_text = text
         changes_made = []
 

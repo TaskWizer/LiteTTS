@@ -565,7 +565,7 @@ class TickerSymbolProcessor:
         try:
             # Step 1: Process known ticker symbols explicitly
             if self.process_known_tickers:
-                old_text = text
+                _old_text = text
                 text, found_tickers = self._process_known_tickers(text)
                 if found_tickers:
                     tickers_found.extend(found_tickers)
@@ -573,7 +573,7 @@ class TickerSymbolProcessor:
 
             # Step 2: Process contextual ticker symbols
             if self.process_contextual_tickers:
-                old_text = text
+                _old_text = text
                 text, contextual_tickers = self._process_contextual_tickers(text)
                 if contextual_tickers:
                     tickers_found.extend(contextual_tickers)

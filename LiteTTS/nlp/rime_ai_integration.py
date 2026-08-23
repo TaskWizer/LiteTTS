@@ -329,7 +329,7 @@ class RIMEAIIntegration:
         processed_words = []
 
         for word in words:
-            original_word = word
+            _original_word = word
 
             # Apply word-initial rules
             for pattern, replacement in self.context_rules["word_initial"].items():

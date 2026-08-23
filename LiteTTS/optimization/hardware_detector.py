@@ -222,7 +222,7 @@ class HardwareDetector:
             # Test read speed
             start_time = time.time()
             with open(test_file, "rb") as f:
-                data = f.read()
+                _data = f.read()
             read_time = time.time() - start_time
             read_speed = (test_size / (1024 * 1024)) / read_time  # MB/s
 

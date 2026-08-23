@@ -36,7 +36,7 @@ except Exception as e:
     config = None
 
 # Import Whisper-specific configuration
-from .whisper_config_loader import (
+from .whisper_config_loader import (  # noqa: E402
     WhisperConfigLoader,
     WhisperSettings,
     get_whisper_config,

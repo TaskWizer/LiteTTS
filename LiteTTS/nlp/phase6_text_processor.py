@@ -342,7 +342,7 @@ class Phase6TextProcessor:
             mode = self.mode
 
         start_time = time.perf_counter()
-        original_text = text
+        _original_text = _text
         changes_by_category = {}
         processing_stages = []
         warnings = []
@@ -414,7 +414,7 @@ class Phase6TextProcessor:
     def _process_numbers(self, text: str) -> tuple[str, int]:
         """Process numbers, currency, and dates for better TTS pronunciation"""
         changes = 0
-        original_text = text
+        _original_text = _text
 
         # Stage 1: Process currency using advanced processor
         if self.use_advanced_currency:
@@ -561,7 +561,7 @@ class Phase6TextProcessor:
         if not text or not text.strip():
             return text, 0
 
-        original_text = text
+        _original_text = _text
 
         # Use enhanced contraction processor if available
         if self.use_enhanced_contractions:

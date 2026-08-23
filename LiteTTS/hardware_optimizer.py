@@ -131,7 +131,7 @@ class HardwareOptimizer:
         logger.info("   📈 CPU performance test...")
         cpu_start = time.time()
         # Simple CPU-intensive task
-        result = sum(i * i for i in range(100000))
+        _result = sum(i * i for i in range(100000))
         cpu_time = time.time() - cpu_start
         benchmarks["cpu_performance"] = 1.0 / cpu_time  # Higher is better
 
@@ -152,7 +152,7 @@ class HardwareOptimizer:
             with open(test_file, "w") as f:
                 f.writelines(f"benchmark line {i}\n" for i in range(1000))
             with open(test_file, "r") as f:
-                content = f.read()
+                _content = f.read()
             test_file.unlink()
         except Exception as e:
             logger.warning(f"I/O benchmark failed: {e}")

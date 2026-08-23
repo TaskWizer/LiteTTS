@@ -85,7 +85,7 @@ class TTSSynthesizer:
 
         # Get individual configuration settings
         interjection_enabled = interjection_config.get("enabled", False)
-        voice_modulation_enabled = voice_modulation_config.get("enabled", False)
+        _voice_modulation_enabled = voice_modulation_config.get("enabled", False)
 
         self.processing_options = ProcessingOptions(
             mode=ProcessingMode.ENHANCED,  # Use enhanced mode for production

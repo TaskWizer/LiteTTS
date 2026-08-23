@@ -123,7 +123,7 @@ class AudioCache:
         for phrase in phrases:
             # This would typically be called after synthesis
             # For now, we just mark the intent to cache these phrases
-            cache_key = self._generate_audio_cache_key(phrase, voice, 1.0, "wav")
+            _cache_key = self._generate_audio_cache_key(phrase, voice, 1.0, "wav")
             results[phrase] = True  # Placeholder
 
         logger.info(f"Marked {len(phrases)} phrases for preloading")
@@ -314,7 +314,7 @@ class CacheWarmer:
         results = {}
 
         for text in user_texts:
-            cache_key = self.audio_cache._generate_audio_cache_key(text, voice, 1.0, "wav")
+            _cache_key = self.audio_cache._generate_audio_cache_key(text, voice, 1.0, "wav")
             results[text] = True  # Placeholder
 
         logger.info(f"Warmed cache with {len(user_texts)} user pattern texts")

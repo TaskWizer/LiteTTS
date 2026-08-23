@@ -218,7 +218,7 @@ class DynamicBatchOptimizer:
     async def _process_batch(self, batch: list[BatchRequest], category: str):
         """Process a batch of requests"""
         start_time = time.time()
-        batch_id = f"{category}_{int(start_time * 1000)}"
+        _batch_id = f"{category}_{int(start_time * 1000)}"
 
         try:
             logger.debug(f"Processing {category} batch with {len(batch)} requests")
@@ -277,7 +277,7 @@ class DynamicBatchOptimizer:
         # For now, simulate batch processing
 
         results = {}
-        texts = [req.text for req in requests]
+        _texts = [req.text for req in requests]
 
         # Simulate batch TTS processing
         # In real implementation, this would call the TTS engine with batched inputs

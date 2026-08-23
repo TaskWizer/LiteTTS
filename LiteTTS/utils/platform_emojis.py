@@ -39,7 +39,7 @@ def is_windows_with_encoding_issues() -> bool:
 
         test_stream = io.StringIO()
         test_stream.write(test_emoji)
-        test_content = test_stream.getvalue()
+        _test_content = test_stream.getvalue()
 
         # If we can encode to console encodings, check if it's actually cp1252
         # which is the problematic encoding on Windows

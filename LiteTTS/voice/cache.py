@@ -255,7 +255,7 @@ class VoiceCache:
                     lru_voice = min(non_preloaded, key=lambda v: self.cache[v].last_accessed)
 
             # Evict the LRU entry
-            evicted_entry = self.cache.pop(lru_voice)
+            _evicted_entry = self.cache.pop(lru_voice)
             logger.info(
                 f"Evicted voice from cache: {lru_voice} "
                 f"(accessed {evicted_entry.access_count} times)"
@@ -317,7 +317,7 @@ class VoiceCache:
         """Manually evict a voice from cache"""
         with self.cache_lock:
             if voice_name in self.cache:
-                evicted_entry = self.cache.pop(voice_name)
+                _evicted_entry = self.cache.pop(voice_name)
                 logger.info(f"Manually evicted voice: {voice_name}")
                 return True
             return False

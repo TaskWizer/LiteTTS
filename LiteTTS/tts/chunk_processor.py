@@ -365,13 +365,13 @@ class ChunkProcessor:
 
         merged_chunks = []
         current_chunk_text = ""
-        current_chunk_index = 0
+        _current_chunk_index = 0
 
         for chunk in chunks:
             if len(current_chunk_text) == 0:
                 # Start new chunk
                 current_chunk_text = chunk.text
-                current_chunk_index = chunk.chunk_index
+                _current_chunk_index = chunk.chunk_index
             elif len(current_chunk_text) + len(chunk.text) < self.max_chunk_length:
                 # Merge with current chunk
                 current_chunk_text += " " + chunk.text
@@ -388,7 +388,7 @@ class ChunkProcessor:
                     merged_chunks.append(merged_chunk)
 
                 current_chunk_text = chunk.text
-                current_chunk_index = chunk.chunk_index
+                _current_chunk_index = chunk.chunk_index
 
         # Add final chunk
         if current_chunk_text:

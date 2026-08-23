@@ -598,7 +598,7 @@ class KokoroTTSEngine:
             onnx_inputs = {}
             for name in input_names:
                 input_data = model_inputs[name]
-                expected_type = model_input_info[name].type
+                _expected_type = model_input_info[name].type
 
                 # Validate shape is present
                 if input_data.shape == ():

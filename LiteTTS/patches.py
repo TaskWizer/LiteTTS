@@ -203,7 +203,7 @@ def patch_kokoro_onnx():
                 logger.warning(f"Model warm-up failed: {e}")
 
         # Store original _create_audio method
-        original_create_audio = kokoro_onnx.Kokoro._create_audio
+        _original_create_audio = kokoro_onnx.Kokoro._create_audio
 
         # Note: MAX_PHONEME_LENGTH is kept at kokoro's default 510
         # Voice vectors are sized for 510 phonemes, so we keep chunks small (30 chars)
@@ -222,14 +222,14 @@ def patch_kokoro_onnx():
 
                 # Get text length optimizations
                 text_length = len(phonemes) if isinstance(phonemes, str) else len(str(phonemes))
-                optimizations = model_optimizer.optimize_for_text_length(text_length)
+                _optimizations = model_optimizer.optimize_for_text_length(text_length)
 
                 # Use optimized phoneme length limit
                 MAX_PHONEME_LENGTH = model_optimizer.config.max_phoneme_duration or 510
 
             except ImportError:
                 MAX_PHONEME_LENGTH = 510
-                optimizations = {}
+                _optimizations = {}
 
             if len(phonemes) > MAX_PHONEME_LENGTH:
                 log.warning(f"Phonemes are too long, truncating to {MAX_PHONEME_LENGTH} phonemes")

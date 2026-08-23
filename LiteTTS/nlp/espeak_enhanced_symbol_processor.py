@@ -157,7 +157,7 @@ class EspeakEnhancedSymbolProcessor:
 
         start_time = time.perf_counter()
 
-        original_text = text
+        _original_text = _text
         changes_made = []
         symbols_processed = 0
 

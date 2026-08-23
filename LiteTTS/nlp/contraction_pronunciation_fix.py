@@ -218,7 +218,7 @@ class ContractionPronunciationFix:
                 logger.debug(f"Expanded problematic contraction: {pattern} → {replacement}")
 
         # Keep natural contractions as-is
-        natural_contractions = [
+        _natural_contractions = [
             "don't",
             "doesn't",
             "didn't",

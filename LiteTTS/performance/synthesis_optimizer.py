@@ -314,7 +314,7 @@ class SynthesisOptimizer:
                 return audio_segment, performance_data
 
             # Execute synthesis with timeout protection
-            timeout = (
+            _timeout = (
                 self.config.fast_path_timeout
                 if optimization_strategy["use_fast_path"]
                 else self.config.synthesis_timeout

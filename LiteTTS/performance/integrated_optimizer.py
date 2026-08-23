@@ -58,7 +58,7 @@ class IntegratedPerformanceOptimizer:
     """
 
     def __init__(self, config: dict[str, Any] | None = None):
-        self.config = config or {}
+        self._config = config or {}
 
         # Initialize optimizers
         self.memory_optimizer = MemoryOptimizer()
@@ -159,7 +159,7 @@ class IntegratedPerformanceOptimizer:
         """Optimize memory usage"""
         try:
             # Calculate optimal memory configuration
-            config = self.memory_optimizer.calculate_optimal_config(self.targets.max_memory_mb)
+            _config = self.memory_optimizer.calculate_optimal_config(self.targets.max_memory_mb)
 
             # Apply memory optimizations
             optimization_results = self.memory_optimizer.run_comprehensive_optimization(

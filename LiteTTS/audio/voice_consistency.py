@@ -186,9 +186,6 @@ class VoiceConsistencyManager:
         voice_profile = session["voice_profile"]
         consistency_state = session["consistency_state"]
 
-        # Calculate position-based adjustments
-        position_factor = chunk_position / max(total_chunks - 1, 1)
-
         # Prosody adjustments based on position and context
         prosody_adjustments = self._calculate_prosody_adjustments(
             chunk_text, chunk_position, total_chunks, consistency_state
