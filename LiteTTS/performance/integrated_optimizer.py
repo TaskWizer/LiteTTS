@@ -68,10 +68,10 @@ class IntegratedPerformanceOptimizer:
 
         # Performance targets
         self.targets = PerformanceTargets(
-            max_memory_mb=self.config.get("max_memory_mb", 150),
-            target_rtf=self.config.get("target_rtf", 0.25),
-            max_cpu_usage=self.config.get("max_cpu_usage", 85.0),
-            min_cache_hit_rate=self.config.get("min_cache_hit_rate", 0.7),
+            max_memory_mb=self._config.get("max_memory_mb", 150),
+            target_rtf=self._config.get("target_rtf", 0.25),
+            max_cpu_usage=self._config.get("max_cpu_usage", 85.0),
+            min_cache_hit_rate=self._config.get("min_cache_hit_rate", 0.7),
         )
 
         # Optimization state
