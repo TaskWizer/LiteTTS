@@ -425,35 +425,6 @@ class TextNormalizer:
 
         return text
 
-        # Full expansion mode (legacy behavior)
-        # Percentages
-        text = self.number_patterns["percentage"].sub(
-            lambda m: f"{self._number_to_words(m.group().rstrip('%'))} percent", text
-        )
-
-        # Fractions
-        text = self.number_patterns["fraction"].sub(
-            lambda m: self._fraction_to_words(m.group()), text
-        )
-
-        # Ordinals
-        text = self.number_patterns["ordinal"].sub(
-            lambda m: self._ordinal_to_words(m.group(1)), text
-        )
-
-        # Decimal numbers (before cardinal to avoid conflicts)
-        text = self.number_patterns["decimal"].sub(lambda m: self._number_to_words(m.group()), text)
-
-        # Years (special handling)
-        text = self.number_patterns["year"].sub(lambda m: self._year_to_words(m.group()), text)
-
-        # Cardinal numbers (integers only, decimals handled above)
-        text = self.number_patterns["cardinal"].sub(
-            lambda m: self._number_to_words(m.group()) if "." not in m.group() else m.group(), text
-        )
-
-        return text
-
     def _normalize_dates_times(self, text: str) -> str:
         """Normalize date and time expressions"""
 

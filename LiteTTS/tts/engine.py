@@ -753,6 +753,17 @@ class KokoroTTSEngine:
         if speed == 1.0:
             return audio_data
 
+        # Apply speed adjustment using resampling
+        # Speed > 1.0 means faster (fewer samples), Speed < 1.0 means slower (more samples)
+        target_length = int(len(audio_data) / speed)
+        if target_length <= 0:
+            return audio_data
+
+        # Use linear interpolation for speed adjustment
+        indices = np.linspace(0, len(audio_data) - 1, target_length)
+        adjusted = np.interp(indices, np.arange(len(audio_data)), audio_data).astype(audio_data.dtype)
+        return adjusted
+
     def should_use_chunked_generation(self, text: str, streaming: bool = False) -> bool:
         """
         Determine if chunked generation should be used
