@@ -484,7 +484,7 @@ class EnhancedVoiceCloner:
 
         # Calculate spectral features
         fft = np.fft.fft(audio_data)
-        magnitude = np.abs(fft)
+        _magnitude = np.abs(fft)
 
         # Extract mel-scale features (simplified)
         n_mels = 128

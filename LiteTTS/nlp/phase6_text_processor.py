@@ -414,7 +414,7 @@ class Phase6TextProcessor:
     def _process_numbers(self, text: str) -> tuple[str, int]:
         """Process numbers, currency, and dates for better TTS pronunciation"""
         changes = 0
-        original_text = text
+        _original_text = text
 
         # Stage 1: Process currency using advanced processor
         if self.use_advanced_currency:

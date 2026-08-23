@@ -317,7 +317,7 @@ class VoiceCache:
         """Manually evict a voice from cache"""
         with self.cache_lock:
             if voice_name in self.cache:
-                evicted_entry = self.cache.pop(voice_name)
+                _evicted_entry = self.cache.pop(voice_name)
                 logger.info(f"Manually evicted voice: {voice_name}")
                 return True
             return False
