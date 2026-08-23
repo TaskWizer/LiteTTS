@@ -131,20 +131,19 @@ class WebSocketEndpoints:
 
                     await self.websocket_manager.send_to_client(client_id, message)
 
-            elif update_type == "request_metrics_history":
+            elif update_type == "request_metrics_history" and self.performance_streamer:
                 # Send metrics history
-                if self.performance_streamer:
-                    limit = data.get("limit", 60)
-                    history = self.performance_streamer.get_metrics_history(limit)
+                limit = data.get("limit", 60)
+                history = self.performance_streamer.get_metrics_history(limit)
 
-                    message = WebSocketMessage(
-                        type=MessageType.DASHBOARD_UPDATE,
-                        data={"type": "metrics_history", "history": [asdict(m) for m in history]},
-                        timestamp=time.time(),
-                        client_id=client_id,
-                    )
+                message = WebSocketMessage(
+                    type=MessageType.DASHBOARD_UPDATE,
+                    data={"type": "metrics_history", "history": [asdict(m) for m in history]},
+                    timestamp=time.time(),
+                    client_id=client_id,
+                )
 
-                    await self.websocket_manager.send_to_client(client_id, message)
+                await self.websocket_manager.send_to_client(client_id, message)
 
         except Exception as e:
             self.logger.error(f"Error handling dashboard update: {e}")

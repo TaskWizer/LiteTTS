@@ -293,11 +293,12 @@ class VoiceValidator:
                             model_data[key] = torch.nan_to_num(value, posinf=1.0, neginf=-1.0)
                             repaired = True
 
-            elif isinstance(model_data, torch.Tensor):
-                if torch.any(torch.isnan(model_data)) or torch.any(torch.isinf(model_data)):
-                    logger.info("Removing NaN/infinite values from tensor")
-                    model_data = torch.nan_to_num(model_data, nan=0.0, posinf=1.0, neginf=-1.0)
-                    repaired = True
+            elif isinstance(model_data, torch.Tensor) and (
+                torch.any(torch.isnan(model_data)) or torch.any(torch.isinf(model_data))
+            ):
+                logger.info("Removing NaN/infinite values from tensor")
+                model_data = torch.nan_to_num(model_data, nan=0.0, posinf=1.0, neginf=-1.0)
+                repaired = True
 
             # Save repaired model if changes were made
             if repaired:

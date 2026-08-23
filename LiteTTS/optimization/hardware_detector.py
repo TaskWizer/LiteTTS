@@ -136,13 +136,12 @@ class HardwareDetector:
 
         try:
             # Try to detect other GPU types (AMD, Intel)
-            if not gpu_info["cuda_available"]:
+            if not gpu_info["cuda_available"] and platform.system() == "Linux":
                 # This is a simplified detection - could be expanded
-                if platform.system() == "Linux":
-                    result = subprocess.run(["lspci"], capture_output=True, text=True, timeout=5)
-                    if "VGA" in result.stdout or "Display" in result.stdout:
-                        gpu_info["gpu_count"] = 1
-                        gpu_info["gpu_names"] = ["Integrated/Other GPU"]
+                result = subprocess.run(["lspci"], capture_output=True, text=True, timeout=5)
+                if "VGA" in result.stdout or "Display" in result.stdout:
+                    gpu_info["gpu_count"] = 1
+                    gpu_info["gpu_names"] = ["Integrated/Other GPU"]
 
         except Exception as e:
             logger.debug(f"Could not detect other GPUs: {e}")

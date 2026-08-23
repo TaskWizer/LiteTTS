@@ -168,12 +168,11 @@ class DynamicBatchOptimizer:
         # Check if we have enough requests for a full batch
         if len(queue) >= batch_size:
             await self._process_batch_now(category)
-        elif len(queue) > 0:
+        elif len(queue) > 0 and category not in self.batch_timers:
             # Start timeout timer if not already running
-            if category not in self.batch_timers:
-                self.batch_timers[category] = asyncio.create_task(
-                    self._batch_timeout_handler(category, timeout)
-                )
+            self.batch_timers[category] = asyncio.create_task(
+                self._batch_timeout_handler(category, timeout)
+            )
 
     async def _batch_timeout_handler(self, category: str, timeout_ms: float):
         """Handle batch timeout - process partial batch"""

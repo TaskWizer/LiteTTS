@@ -1345,10 +1345,9 @@ class PhonemizationPreprocessor:
                         result_parts.append(c)
                 else:
                     # Non-Latin character
-                    if last_was_comma:
+                    if last_was_comma and result_parts and result_parts[-1] != " ":
                         # We skipped a comma before this group - add space separator
-                        if result_parts and result_parts[-1] != " ":
-                            result_parts.append(" ")
+                        result_parts.append(" ")
                     in_international = True
                     current_group.append(c)
                     last_was_comma = False

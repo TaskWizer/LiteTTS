@@ -120,10 +120,10 @@ class ModelOptimizer:
             return self.phonemizer_cache[cache_key]
 
         # Short text fast path
-        if self.config.short_text_fast_path and len(text) <= self.config.short_text_threshold:
-            if cache_key in self.short_text_cache:
-                logger.debug(f"Short text cache hit for: {text}")
-                return self.short_text_cache[cache_key]
+        if (self.config.short_text_fast_path and len(text) <= self.config.short_text_threshold
+                and cache_key in self.short_text_cache):
+            logger.debug(f"Short text cache hit for: {text}")
+            return self.short_text_cache[cache_key]
 
         return None
 

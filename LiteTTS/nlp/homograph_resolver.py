@@ -225,19 +225,18 @@ class HomographResolver:
         for word, patterns in self.context_patterns.items():
             if word in text.lower():
                 for pattern, pronunciation_key in patterns:
-                    if pattern.search(text):
+                    if pattern.search(text) and (
+                        word in self.homograph_dict
+                        and pronunciation_key in self.homograph_dict[word]
+                    ):
                         # Replace the word with its pronunciation
-                        if (
-                            word in self.homograph_dict
-                            and pronunciation_key in self.homograph_dict[word]
-                        ):
-                            pronunciation = self.homograph_dict[word][pronunciation_key]
-                            # Replace all instances of the word in the matched context
-                            word_pattern = re.compile(
-                                r"\b" + re.escape(word) + r"\b", re.IGNORECASE
-                            )
-                            text = word_pattern.sub(pronunciation, text)
-                            break  # Use first matching pattern
+                        pronunciation = self.homograph_dict[word][pronunciation_key]
+                        # Replace all instances of the word in the matched context
+                        word_pattern = re.compile(
+                            r"\b" + re.escape(word) + r"\b", re.IGNORECASE
+                        )
+                        text = word_pattern.sub(pronunciation, text)
+                        break  # Use first matching pattern
 
         return text
 
