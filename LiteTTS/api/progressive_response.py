@@ -345,7 +345,7 @@ class ProgressiveResponseHandler:
     def get_active_streams(self) -> dict[str, dict[str, Any]]:
         """Get information about all active streams"""
         return {
-            stream_id: self.get_stream_status(stream_id) for stream_id in self.active_streams.keys()
+            stream_id: self.get_stream_status(stream_id) for stream_id in self.active_streams
         }
 
     def cleanup_expired_streams(self, max_age_seconds: int = 3600):

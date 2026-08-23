@@ -113,7 +113,7 @@ class InterjectionProcessor:
         analysis = {"interjections_found": [], "hesitation_sounds": [], "potential_fixes": []}
 
         # Find all interjections
-        for interjection in self.interjection_fixes.keys():
+        for interjection in self.interjection_fixes:
             pattern = r"\b" + re.escape(interjection) + r"\b"
             matches = re.finditer(pattern, text)
             for match in matches:

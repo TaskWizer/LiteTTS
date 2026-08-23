@@ -554,7 +554,7 @@ class AdvancedCurrencyProcessor:
         }
 
         # Find currency amounts
-        for symbol in self.currency_symbols.keys():
+        for symbol in self.currency_symbols:
             escaped_symbol = re.escape(symbol)
             pattern = rf"{escaped_symbol}[\d,.]+"
             matches = re.findall(pattern, text)

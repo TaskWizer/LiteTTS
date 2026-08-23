@@ -68,7 +68,7 @@ def setup_logging(
     # Default format with better structure
     if format_string is None:
         if json_format:
-            format_string = '{"timestamp": "%(asctime)s", "level": "%(levelname)s", "logger": "%(name)s", "message": "%(message)s"}'  # noqa: E501
+            format_string = '{"timestamp": "%(asctime)s", "level": "%(levelname)s", "logger": "%(name)s", "message": "%(message)s"}'
         else:
             format_string = "%(asctime)s | %(levelname)-8s | %(name)-25s | %(message)s"
 

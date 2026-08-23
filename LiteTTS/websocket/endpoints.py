@@ -202,7 +202,7 @@ class WebSocketEndpoints:
 
                     try:
                         await self.websocket_manager.send_to_client(client_id, error_message)
-                    except:  # noqa: E722
+                    except:
                         break  # Connection likely closed
 
         except WebSocketDisconnect:

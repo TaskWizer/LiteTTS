@@ -142,7 +142,7 @@ class IntegratedPerformanceOptimizer:
 
                 logger.info(f"✅ Optimization complete in {results.optimization_time:.2f}s")
                 logger.info(
-                    f"📈 Memory: {baseline_memory:.1f}MB → {optimized_memory:.1f}MB ({results.memory_reduction_percent:+.1f}%)"  # noqa: E501
+                    f"📈 Memory: {baseline_memory:.1f}MB → {optimized_memory:.1f}MB ({results.memory_reduction_percent:+.1f}%)"
                 )
                 logger.info(
                     f"📈 RTF: {baseline_rtf:.3f} → {optimized_rtf:.3f} ({results.rtf_improvement_percent:+.1f}%)"
@@ -460,7 +460,7 @@ class IntegratedPerformanceOptimizer:
             result["performance_hints"]["memory_budget_mb"] = self.targets.max_memory_mb
 
             logger.debug(
-                f"Request optimization completed in {optimization_time * 1000:.1f}ms: {len(result['optimizations_applied'])} optimizations applied"  # noqa: E501
+                f"Request optimization completed in {optimization_time * 1000:.1f}ms: {len(result['optimizations_applied'])} optimizations applied"
             )
 
             return result

@@ -142,7 +142,7 @@ class VoiceDiscovery:
 
         # Remove voices from cache that no longer exist on disk
         voices_to_remove = []
-        for voice_name in self.voice_cache.keys():
+        for voice_name in self.voice_cache:
             if voice_name not in current_voice_files:
                 voices_to_remove.append(voice_name)
 

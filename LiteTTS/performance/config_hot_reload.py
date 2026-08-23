@@ -184,7 +184,7 @@ class ConfigHotReloadManager:
             "active_watchers": len(self.observers),
             "watched_directories": len(self.watched_files),
             "registered_files": len(self.reload_callbacks),
-            "config_files": list(Path(f).name for f in self.reload_callbacks.keys()),
+            "config_files": list(Path(f).name for f in self.reload_callbacks),
         }
 
     def stop(self):

@@ -177,9 +177,8 @@ class DebugMiddleware:
         mobile_indicators = ["mobile", "iphone", "android", "ipad"]
 
         # If it's a mobile browser accessing TTS endpoints, likely OpenWebUI
-        if any(indicator in user_agent_lower for indicator in mobile_indicators):
-            if "/audio/" in url:
-                return True
+        if any(indicator in user_agent_lower for indicator in mobile_indicators) and "/audio/" in url:
+            return True
 
         return False
 

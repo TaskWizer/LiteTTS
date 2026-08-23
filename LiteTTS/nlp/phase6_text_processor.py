@@ -534,7 +534,7 @@ class Phase6TextProcessor:
             r"\d{1,2}\s+(AM|PM|a\.m\.|p\.m\.)\s+in\s+the\s+(morning|afternoon|evening|night)",  # "7 PM in the evening"
             r"in\s+the\s+(morning|afternoon|evening|night)",  # "in the morning"
             r"in\s+\d+\s+(minutes?|hours?|days?|weeks?|months?|years?)",  # "in 5 minutes"
-            r"in\s+(January|February|March|April|May|June|July|August|September|October|November|December)",  # "in January"  # noqa: E501
+            r"in\s+(January|February|March|April|May|June|July|August|September|October|November|December)",  # "in January"
             r"in\s+\d{4}",  # "in 2024"
         ]
 
@@ -572,7 +572,7 @@ class Phase6TextProcessor:
                 changes = 0
                 if processed_text != original_text:
                     # Simple heuristic: count the number of contractions that were likely processed
-                    for contraction in self.enhanced_contraction_processor.contraction_rules.keys():
+                    for contraction in self.enhanced_contraction_processor.contraction_rules:
                         original_count = len(
                             re.findall(
                                 r"\b" + re.escape(contraction) + r"\b", original_text, re.IGNORECASE

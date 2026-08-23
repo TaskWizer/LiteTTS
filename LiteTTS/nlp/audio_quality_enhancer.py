@@ -78,7 +78,7 @@ class AudioQualityEnhancer:
         """Load patterns for emotion detection"""
         return {
             # Positive emotions
-            r"\b(great|wonderful|amazing|fantastic|excellent|perfect|love|adore|excited|thrilled|delighted)\b": EmotionType.HAPPY,  # noqa: E501
+            r"\b(great|wonderful|amazing|fantastic|excellent|perfect|love|adore|excited|thrilled|delighted)\b": EmotionType.HAPPY,
             r"\b(yay|hooray|awesome|brilliant|superb|marvelous|incredible)\b": EmotionType.EXCITED,
             r"\b(calm|peaceful|serene|relaxed|tranquil|gentle|soothing)\b": EmotionType.CALM,
             r"\b(confident|sure|certain|determined|strong|powerful)\b": EmotionType.CONFIDENT,
@@ -362,7 +362,7 @@ class AudioQualityEnhancer:
 
         def list_replacer(match):
             item1, item2, item3 = match.groups()
-            return f'<prosody pitch="+5%">{item1}</prosody>, <prosody pitch="+3%">{item2}</prosody>, and <prosody pitch="-2%">{item3}</prosody>'  # noqa: E501
+            return f'<prosody pitch="+5%">{item1}</prosody>, <prosody pitch="+3%">{item2}</prosody>, and <prosody pitch="-2%">{item3}</prosody>'
 
         text = re.sub(list_pattern, list_replacer, text)
 

@@ -470,7 +470,7 @@ class VoiceCloner:
             # Ensure embedding has correct shape
             if embedding_data.shape != (self.num_style_vectors, self.embedding_dim):
                 logger.error(
-                    f"Invalid embedding shape: {embedding_data.shape}, expected: ({self.num_style_vectors}, {self.embedding_dim})"  # noqa: E501
+                    f"Invalid embedding shape: {embedding_data.shape}, expected: ({self.num_style_vectors}, {self.embedding_dim})"
                 )
                 return None
 

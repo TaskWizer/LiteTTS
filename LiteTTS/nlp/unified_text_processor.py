@@ -512,7 +512,7 @@ class UnifiedTextProcessor:
                 )
                 result.stages_completed.append("phase6_processing")
                 logger.debug(
-                    f"Phase 6 processing: {phase6_result.total_changes} enhancements applied in {phase6_result.processing_time:.3f}s"  # noqa: E501
+                    f"Phase 6 processing: {phase6_result.total_changes} enhancements applied in {phase6_result.processing_time:.3f}s"
                 )
 
                 # Add detailed changes by category

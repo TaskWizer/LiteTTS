@@ -370,7 +370,7 @@ class TTSSynthesizer:
                 )
 
                 logger.debug(
-                    f"Time-stretching metrics: RTF {stretch_metrics.rtf_original:.3f} → {stretch_metrics.rtf_stretched:.3f}"  # noqa: E501
+                    f"Time-stretching metrics: RTF {stretch_metrics.rtf_original:.3f} → {stretch_metrics.rtf_stretched:.3f}"
                 )
 
             # Step 5: Background audio mixing (if SSML background specified)

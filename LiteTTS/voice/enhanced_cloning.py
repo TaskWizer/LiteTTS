@@ -394,7 +394,7 @@ class EnhancedVoiceCloner:
 
                 if total_duration > self.config.max_total_reference_duration:
                     raise ValueError(
-                        f"Total duration exceeds limit: {total_duration:.1f}s > {self.config.max_total_reference_duration}s"  # noqa: E501
+                        f"Total duration exceeds limit: {total_duration:.1f}s > {self.config.max_total_reference_duration}s"
                     )
 
             except Exception as e:
@@ -611,7 +611,7 @@ class EnhancedVoiceCloner:
 
         # Average metrics across clips
         combined_metrics = {}
-        for key in all_metrics[0].keys():
+        for key in all_metrics[0]:
             values = [metrics[key] for metrics in all_metrics]
             combined_metrics[key] = np.mean(values)
 

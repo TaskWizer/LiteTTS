@@ -245,7 +245,7 @@ class EspeakEnhancedSymbolProcessor:
         for symbol, replacement in critical_fixes.items():
             if symbol in text:
                 # Only replace standalone symbols, not those in words
-                pattern = rf"\b{re.escape(symbol)}\b|\s{re.escape(symbol)}\s|{re.escape(symbol)}\s|\s{re.escape(symbol)}"  # noqa: E501
+                pattern = rf"\b{re.escape(symbol)}\b|\s{re.escape(symbol)}\s|{re.escape(symbol)}\s|\s{re.escape(symbol)}"
                 if re.search(pattern, text):
                     text = re.sub(pattern, f" {replacement} ", text)
                     text = re.sub(r"\s+", " ", text).strip()

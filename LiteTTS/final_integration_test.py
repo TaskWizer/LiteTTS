@@ -341,7 +341,7 @@ def test_performance_targets():
         f"{'✅ PASS' if duration_pass else '❌ FAIL'}"
     )
     logger.info(
-        f"  Accuracy: {results['accuracy_achieved']:.1%} >= {targets['accuracy_target']:.1%} {'✅ PASS' if accuracy_pass else '❌ FAIL'}"  # noqa: E501
+        f"  Accuracy: {results['accuracy_achieved']:.1%} >= {targets['accuracy_target']:.1%} {'✅ PASS' if accuracy_pass else '❌ FAIL'}"
     )
 
     all_targets_met = rtf_pass and memory_pass and duration_pass and accuracy_pass

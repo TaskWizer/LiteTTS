@@ -256,7 +256,7 @@ class ColdStartOptimizer:
         }
 
         logger.info(
-            f"📈 Cold start improvement: {baseline_cold_start:.1f}ms → {optimized_cold_start:.1f}ms ({improvement_percent:.1f}% better)"  # noqa: E501
+            f"📈 Cold start improvement: {baseline_cold_start:.1f}ms → {optimized_cold_start:.1f}ms ({improvement_percent:.1f}% better)"
         )
 
         return results
@@ -350,7 +350,7 @@ def main():
 
     improvement = results["improvement_results"]
     print(
-        f"\nImprovement: {improvement['baseline_ms']:.1f}ms → {improvement['optimized_ms']:.1f}ms ({improvement['improvement_percent']:.1f}% better)"  # noqa: E501
+        f"\nImprovement: {improvement['baseline_ms']:.1f}ms → {improvement['optimized_ms']:.1f}ms ({improvement['improvement_percent']:.1f}% better)"
     )
 
 

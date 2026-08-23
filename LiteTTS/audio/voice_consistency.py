@@ -358,9 +358,8 @@ class VoiceConsistencyManager:
             "sentence_boundary_pause": 0.5,
         }
 
-        if base_parameters:
-            if "speed" in base_parameters:
-                timing_profile["speech_rate"] = base_parameters["speed"]
+        if base_parameters and "speed" in base_parameters:
+            timing_profile["speech_rate"] = base_parameters["speed"]
 
         return timing_profile
 
@@ -376,9 +375,8 @@ class VoiceConsistencyManager:
             "fade_characteristics": 0.1,
         }
 
-        if base_parameters:
-            if "volume" in base_parameters:
-                energy_profile["volume_level"] = base_parameters["volume"]
+        if base_parameters and "volume" in base_parameters:
+            energy_profile["volume_level"] = base_parameters["volume"]
 
         return energy_profile
 

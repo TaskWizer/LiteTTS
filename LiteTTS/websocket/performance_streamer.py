@@ -245,7 +245,7 @@ class PerformanceStreamer:
         try:
             disk = psutil.disk_usage("/")
             disk_usage_percent = (disk.used / disk.total) * 100
-        except:  # noqa: E722
+        except:
             disk_usage_percent = 0.0
 
         # Temperature (if available)
@@ -258,7 +258,7 @@ class PerformanceStreamer:
                     if sensor_list:
                         temperature = sensor_list[0].current
                         break
-        except:  # noqa: E722
+        except:
             pass
 
         # GPU info (basic check)

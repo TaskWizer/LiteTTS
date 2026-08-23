@@ -196,7 +196,7 @@ class AlertManager:
                 {
                     "type": "memory_exceeded",
                     "severity": "high",
-                    "message": f"Memory usage {metrics.memory_usage_mb:.1f}MB exceeds threshold {self.thresholds.max_memory_mb}MB",  # noqa: E501
+                    "message": f"Memory usage {metrics.memory_usage_mb:.1f}MB exceeds threshold {self.thresholds.max_memory_mb}MB",
                     "value": metrics.memory_usage_mb,
                     "threshold": self.thresholds.max_memory_mb,
                 }
@@ -208,7 +208,7 @@ class AlertManager:
                 {
                     "type": "cpu_exceeded",
                     "severity": "medium",
-                    "message": f"CPU usage {metrics.cpu_usage_percent:.1f}% exceeds threshold {self.thresholds.max_cpu_percent}%",  # noqa: E501
+                    "message": f"CPU usage {metrics.cpu_usage_percent:.1f}% exceeds threshold {self.thresholds.max_cpu_percent}%",
                     "value": metrics.cpu_usage_percent,
                     "threshold": self.thresholds.max_cpu_percent,
                 }

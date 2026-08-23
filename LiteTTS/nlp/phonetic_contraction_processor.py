@@ -306,7 +306,7 @@ class PhoneticContractionProcessor:
     def _compile_patterns(self):
         """Compile regex patterns for efficiency"""
         # Create pattern for all contractions (case-insensitive) with capturing group
-        contraction_words = "|".join(re.escape(word) for word in self.contraction_fixes.keys())
+        contraction_words = "|".join(re.escape(word) for word in self.contraction_fixes)
         self.contraction_pattern = re.compile(rf"\b({contraction_words})\b", re.IGNORECASE)
 
         # Compile context patterns

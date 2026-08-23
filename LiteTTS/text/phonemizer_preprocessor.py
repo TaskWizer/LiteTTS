@@ -1117,7 +1117,7 @@ class PhonemizationPreprocessor:
         text = re.sub(r"\bCOO\b", "C O O", text, flags=re.IGNORECASE)
 
         # CRITICAL: Fix URLs AFTER acronym replacements so api/v2 in URLs stays lowercase
-        # Format: H-T-T-P-S, forward slash, forward slash, example dot org, slash api, slash V-two, question mark, I-D equals forty-two  # noqa: E501
+        # Format: H-T-T-P-S, forward slash, forward slash, example dot org, slash api, slash V-two, question mark, I-D equals forty-two
         if re.search(r"https?://[^\s]+", text):
 
             def url_to_words(match):
@@ -1172,7 +1172,7 @@ class PhonemizationPreprocessor:
                             hundreds = n_int // 100
                             rest = number_to_words(str(n_int % 100))
                             return f"{number_to_words(str(hundreds))} hundred {rest}".strip()
-                    except:  # noqa: E722
+                    except:
                         return n
 
                 def word_or_hyphenate(s, upper=False):
@@ -1950,7 +1950,7 @@ def _get_global_config():
             with open(config_path) as f:
                 config = json.load(f)
                 logger.debug(
-                    f"Global config loaded: expand_contractions={config.get('text_processing', {}).get('expand_contractions', 'not set')}"  # noqa: E501
+                    f"Global config loaded: expand_contractions={config.get('text_processing', {}).get('expand_contractions', 'not set')}"
                 )
                 return config
     except Exception as e:

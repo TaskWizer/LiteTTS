@@ -375,7 +375,7 @@ if __name__ == "__main__":
         print(f"  GPUs: {', '.join(info['gpu_info']['gpu_names'])}")
     if info["gpu_info"]["total_vram_gb"] > 0:
         print(
-            f"  VRAM: {info['gpu_info']['total_vram_gb']} GB total, {info['gpu_info']['available_vram_gb']} GB available"  # noqa: E501
+            f"  VRAM: {info['gpu_info']['total_vram_gb']} GB total, {info['gpu_info']['available_vram_gb']} GB available"
         )
 
     print("\n💿 Storage Info:")
@@ -383,7 +383,7 @@ if __name__ == "__main__":
     print(f"  Total: {info['storage_info']['total_storage_gb']} GB")
     print(f"  Free: {info['storage_info']['free_storage_gb']} GB")
     print(
-        f"  Speed: {info['storage_info']['read_speed_mbps']} MB/s read, {info['storage_info']['write_speed_mbps']} MB/s write"  # noqa: E501
+        f"  Speed: {info['storage_info']['read_speed_mbps']} MB/s read, {info['storage_info']['write_speed_mbps']} MB/s write"
     )
 
     print("\n📊 Performance Scores:")

@@ -136,7 +136,7 @@ class TextNormalizer:
             "b/w": "between",
             "aka": "also known as",
             "a.k.a.": "also known as",
-            # 'FAQ': 'frequently asked questions', 'F.A.Q.': 'frequently asked questions',  # Preserve FAQ as natural acronym  # noqa: E501
+            # 'FAQ': 'frequently asked questions', 'F.A.Q.': 'frequently asked questions',  # Preserve FAQ as natural acronym
             "CEO": "C E O",
             "CFO": "C F O",
             "CTO": "C T O",
@@ -518,7 +518,7 @@ class TextNormalizer:
         text = re.sub(url_pattern, lambda m: self._url_to_words(m.group(1)), text)
 
         # Domain names without protocols (e.g., example.com, domain.org)
-        domain_pattern = r"\b[A-Za-z0-9.-]+\.(com|org|net|edu|gov|mil|int|co|uk|de|fr|jp|cn|au|ca|br|in|ru|it|es|nl|se|no|dk|fi|pl|cz|hu|gr|pt|ie|be|at|ch|lu|li|is|mt|cy|lv|lt|ee|sk|si|bg|ro|hr|rs|ba|mk|al|me|md|ua|by|kz|uz|kg|tj|tm|az|ge|am|tr|il|jo|lb|sy|iq|ir|af|pk|bd|lk|mv|np|bt|mm|th|la|kh|vn|my|sg|id|ph|bn|tl|pg|sb|vu|fj|to|ws|tv|nr|ki|mh|fm|pw|ck|nu|tk|pf|nc|wf|as|gu|mp|vi|pr|um|aq)\b"  # noqa: E501
+        domain_pattern = r"\b[A-Za-z0-9.-]+\.(com|org|net|edu|gov|mil|int|co|uk|de|fr|jp|cn|au|ca|br|in|ru|it|es|nl|se|no|dk|fi|pl|cz|hu|gr|pt|ie|be|at|ch|lu|li|is|mt|cy|lv|lt|ee|sk|si|bg|ro|hr|rs|ba|mk|al|me|md|ua|by|kz|uz|kg|tj|tm|az|ge|am|tr|il|jo|lb|sy|iq|ir|af|pk|bd|lk|mv|np|bt|mm|th|la|kh|vn|my|sg|id|ph|bn|tl|pg|sb|vu|fj|to|ws|tv|nr|ki|mh|fm|pw|ck|nu|tk|pf|nc|wf|as|gu|mp|vi|pr|um|aq)\b"
         text = re.sub(
             domain_pattern, lambda m: self._domain_to_words(m.group()), text, flags=re.IGNORECASE
         )

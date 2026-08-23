@@ -308,12 +308,11 @@ class EmotionDetector:
                 emotions[emotion] = emotions.get(emotion, 0) + 0.2
 
             # Emotional contrast - detect emotional shifts
-            if len(recent_emotions) >= 2:
-                if recent_emotions[-1] != recent_emotions[-2]:
-                    # Emotional shift detected
-                    emotions[EmotionCategory.SURPRISE] = (
-                        emotions.get(EmotionCategory.SURPRISE, 0) + 0.1
-                    )
+            if len(recent_emotions) >= 2 and recent_emotions[-1] != recent_emotions[-2]:
+                # Emotional shift detected
+                emotions[EmotionCategory.SURPRISE] = (
+                    emotions.get(EmotionCategory.SURPRISE, 0) + 0.1
+                )
 
         return emotions
 

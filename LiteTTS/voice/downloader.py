@@ -297,7 +297,7 @@ class VoiceDownloader:
         """Download all available voices"""
         results = {}
 
-        for voice_name in self.discovered_voices.keys():
+        for voice_name in self.discovered_voices:
             results[voice_name] = self.download_voice(voice_name, progress_callback)
 
         successful = sum(1 for success in results.values() if success)
@@ -329,7 +329,7 @@ class VoiceDownloader:
         """Get list of downloaded voices"""
         downloaded = []
 
-        for voice_name in self.discovered_voices.keys():
+        for voice_name in self.discovered_voices:
             if self.is_voice_downloaded(voice_name):
                 downloaded.append(voice_name)
 
@@ -339,7 +339,7 @@ class VoiceDownloader:
         """Get list of voices that need to be downloaded"""
         missing = []
 
-        for voice_name in self.discovered_voices.keys():
+        for voice_name in self.discovered_voices:
             if not self.is_voice_downloaded(voice_name):
                 missing.append(voice_name)
 

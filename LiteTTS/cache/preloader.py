@@ -246,7 +246,7 @@ class IntelligentPreloader:
                 f"Scheduled {len(startup_tasks)} CRITICAL startup tasks + {len(background_tasks)} background tasks"
             )
             logger.info(
-                f"Startup cache limit: {self.config.startup_cache_limit}, Timeout: {self.config.startup_timeout_seconds}s"  # noqa: E501
+                f"Startup cache limit: {self.config.startup_cache_limit}, Timeout: {self.config.startup_timeout_seconds}s"
             )
 
     def _warming_worker(self):
@@ -326,7 +326,7 @@ class IntelligentPreloader:
 
             batch_type = "STARTUP" if is_startup_batch else "BACKGROUND"
             logger.info(
-                f"Completed {batch_type} warming {successful_warmings}/{len(tasks)} cache entries in {warming_time:.2f}s"  # noqa: E501
+                f"Completed {batch_type} warming {successful_warmings}/{len(tasks)} cache entries in {warming_time:.2f}s"
             )
 
         finally:

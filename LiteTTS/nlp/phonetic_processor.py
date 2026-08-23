@@ -86,7 +86,7 @@ class PhoneticProcessor:
         }
 
     def _load_ipa_mappings(self) -> dict[str, str]:
-        """Load IPA (International Phonetic Alphabet) to readable mappings - Enhanced with RIME AI inspired phonetic alphabet"""  # noqa: E501
+        """Load IPA (International Phonetic Alphabet) to readable mappings - Enhanced with RIME AI inspired phonetic alphabet"""
         return {
             # Vowels - Enhanced mapping based on RIME AI phonetic alphabet
             "ɪ": "I",

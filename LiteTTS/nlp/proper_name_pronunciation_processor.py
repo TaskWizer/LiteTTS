@@ -234,12 +234,12 @@ class ProperNamePronunciationProcessor:
         }
 
         # Check for proper names
-        for name in self.proper_name_fixes.keys():
+        for name in self.proper_name_fixes:
             if re.search(r"\b" + re.escape(name) + r"\b", text, re.IGNORECASE):
                 analysis["proper_names_found"].append(name)
 
         # Check for words with fixes
-        for word in self.word_pronunciation_fixes.keys():
+        for word in self.word_pronunciation_fixes:
             if re.search(r"\b" + re.escape(word) + r"\b", text, re.IGNORECASE):
                 analysis["words_with_fixes"].append(word)
 

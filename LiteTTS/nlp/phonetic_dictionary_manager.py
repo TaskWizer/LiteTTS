@@ -489,7 +489,7 @@ class PhoneticDictionaryManager:
                         removed = True
 
             # Clear from cache
-            cache_keys_to_remove = [key for key in self.cache.keys() if key.startswith(f"{word}:")]
+            cache_keys_to_remove = [key for key in self.cache if key.startswith(f"{word}:")]
             for key in cache_keys_to_remove:
                 del self.cache[key]
                 if key in self.cache_access_order:

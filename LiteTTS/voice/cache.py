@@ -250,7 +250,7 @@ class VoiceCache:
             # Don't evict preloaded voices unless absolutely necessary
             if lru_voice in self.preload_voices and len(self.cache) < self.max_cache_size * 2:
                 # Find next LRU that's not preloaded
-                non_preloaded = [v for v in self.cache.keys() if v not in self.preload_voices]
+                non_preloaded = [v for v in self.cache if v not in self.preload_voices]
                 if non_preloaded:
                     lru_voice = min(non_preloaded, key=lambda v: self.cache[v].last_accessed)
 
@@ -327,7 +327,7 @@ class VoiceCache:
         with self.cache_lock:
             if keep_preloaded:
                 # Keep only preloaded voices
-                voices_to_remove = [v for v in self.cache.keys() if v not in self.preload_voices]
+                voices_to_remove = [v for v in self.cache if v not in self.preload_voices]
                 for voice_name in voices_to_remove:
                     self.cache.pop(voice_name)
                 logger.info(f"Cleared cache, kept {len(self.cache)} preloaded voices")

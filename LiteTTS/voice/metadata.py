@@ -212,7 +212,7 @@ class VoiceMetadataManager:
 
     def _initialize_stats(self):
         """Initialize statistics for all voices"""
-        for voice_name in self.voice_metadata.keys():
+        for voice_name in self.voice_metadata:
             if voice_name not in self.voice_stats:
                 self.voice_stats[voice_name] = VoiceStats()
 
@@ -243,10 +243,9 @@ class VoiceMetadataManager:
                         if attr_value != value:
                             match = False
                             break
-                    elif isinstance(value, list):
-                        if attr_value not in value:
-                            match = False
-                            break
+                    elif isinstance(value, list) and attr_value not in value:
+                        match = False
+                        break
                 else:
                     match = False
                     break

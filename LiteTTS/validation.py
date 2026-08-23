@@ -142,7 +142,7 @@ class InputValidator:
         if sanitized_voice not in [v.lower() for v in available_voices]:
             return ValidationResult(
                 is_valid=False,
-                error_message=f"Voice '{voice}' not found. Available voices: {', '.join(available_voices[:10])}{'...' if len(available_voices) > 10 else ''}",  # noqa: E501
+                error_message=f"Voice '{voice}' not found. Available voices: {', '.join(available_voices[:10])}{'...' if len(available_voices) > 10 else ''}",
             )
 
         # Find the actual voice name (preserve case)
@@ -189,7 +189,7 @@ class InputValidator:
         if sanitized_format not in cls.SUPPORTED_FORMATS:
             return ValidationResult(
                 is_valid=False,
-                error_message=f"Unsupported format '{format_str}'. Supported formats: {', '.join(cls.SUPPORTED_FORMATS)}",  # noqa: E501
+                error_message=f"Unsupported format '{format_str}'. Supported formats: {', '.join(cls.SUPPORTED_FORMATS)}",
             )
 
         return ValidationResult(is_valid=True, sanitized_value=sanitized_format)

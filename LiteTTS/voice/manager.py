@@ -225,7 +225,7 @@ class VoiceManager:
         available = []
 
         # Get HuggingFace discovered voices
-        for voice_name in self.downloader.discovered_voices.keys():
+        for voice_name in self.downloader.discovered_voices:
             if self.is_voice_ready(voice_name):
                 available.append(voice_name)
 
