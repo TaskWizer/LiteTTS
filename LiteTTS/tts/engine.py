@@ -1037,7 +1037,22 @@ class KokoroTTSEngine:
         self, requests: list[dict[str, Any]], max_workers: int = None
     ) -> list[AudioSegment]:
         """
-        Synthesize multiple TTS requests in parallel for improved throughput
+        Synthesize multiple TTS requests in parallel for improved throughput.
+
+        For advanced batch processing with adaptive batching based on text length,
+        system resources, and performance metrics, use DynamicBatchOptimizer from
+        LiteTTS.performance.batch_optimizer:
+
+            from LiteTTS.performance.batch_optimizer import DynamicBatchOptimizer
+            optimizer = DynamicBatchOptimizer()
+            # Use optimizer.add_request() for async adaptive batching
+
+        This method provides simple parallel processing using ThreadPoolExecutor.
+        For production workloads with many concurrent requests, consider the
+        DynamicBatchOptimizer which provides:
+        - Adaptive batch sizing based on text length
+        - Memory-aware batch scheduling
+        - Auto-tuning based on performance metrics
 
         Args:
             requests: List of synthesis requests, each containing:
