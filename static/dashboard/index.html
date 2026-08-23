@@ -546,27 +546,27 @@
 </head>
 <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
-    <div class="container" id="main-content">
-        <div class="header">
-            <div class="header-content">
-                <div class="header-text">
-                    <h1>🎵 LiteTTS API Dashboard</h1>
-                    <p>Real-time monitoring and management interface</p>
-                </div>
-                <div class="header-nav">
-                    <a href="/examples" class="nav-link" target="_blank" title="View API Examples and Documentation">
-                        📚 Examples
-                    </a>
-                    <a href="/docs" class="nav-link" target="_blank" title="View Technical Documentation">
-                        📖 Docs
-                    </a>
-                </div>
+    <header class="header" role="banner" aria-label="Site header">
+        <div class="header-content">
+            <div class="header-text">
+                <h1>🎵 LiteTTS API Dashboard</h1>
+                <p>Real-time monitoring and management interface</p>
             </div>
-            <div class="connection-status">🔄 Connecting...</div>
+            <nav class="header-nav" aria-label="Main navigation">
+                <a href="/examples" class="nav-link" target="_blank" title="View API Examples and Documentation">
+                    📚 Examples
+                </a>
+                <a href="/docs" class="nav-link" target="_blank" title="View Technical Documentation">
+                    📖 Docs
+                </a>
+            </nav>
         </div>
+        <div class="connection-status" role="status" aria-live="polite" aria-label="Connection status">🔄 Connecting...</div>
+    </header>
 
+    <main id="main-content" role="main" aria-label="Main content">
         <!-- Status Bar -->
-        <div class="status-bar">
+        <section class="status-bar" aria-label="System status">
             <div class="status-card">
                 <div class="status-value" id="total-requests">-</div>
                 <div class="status-label">Total Requests</div>
@@ -611,31 +611,32 @@
             </div>
 
             <!-- Voice Management -->
-            <div class="dashboard-card">
+            <section class="dashboard-card" aria-labelledby="voice-title">
                 <div class="card-header">
                     <div class="card-icon">🎙️</div>
-                    <div class="card-title">Voice Management</div>
+                    <div class="card-title" id="voice-title">Voice Management</div>
                 </div>
-                <div class="voice-grid" id="voice-grid">
+                <div class="voice-grid" id="voice-grid" role="listbox" aria-label="Available voices" aria-busy="true">
                     <div class="loading">Loading voices...</div>
                 </div>
-            </div>
+            </section>
 
             <!-- Real-time TTS Testing -->
-            <div class="dashboard-card">
+            <section class="dashboard-card" aria-labelledby="tts-title">
                 <div class="card-header">
                     <div class="card-icon">🎤</div>
-                    <div class="card-title">Real-time TTS Testing</div>
+                    <div class="card-title" id="tts-title">Real-time TTS Testing</div>
                 </div>
-                <div class="tts-controls">
+                <form class="tts-controls" aria-label="Text-to-speech form" onsubmit="return false;">
                     <label for="tts-text" class="sr-only">Text to synthesize</label>
-                    <textarea class="tts-input" id="tts-text" placeholder="Enter text to synthesize..." rows="3">Hello! This is a test of the LiteTTS streaming system.</textarea>
+                    <textarea class="tts-input" id="tts-text" placeholder="Enter text to synthesize..." rows="3" required aria-describedby="tts-text-help">Hello! This is a test of the LiteTTS streaming system.</textarea>
+                    <span id="tts-text-help" class="sr-only">Enter the text you want to convert to speech</span>
                     <label for="tts-voice" class="sr-only">Voice selection</label>
-                    <select class="tts-input" id="tts-voice">
+                    <select class="tts-input" id="tts-voice" required aria-required="true">
                         <option value="">Loading voices...</option>
                     </select>
                     <div style="margin: 8px 0;">
-                        <input type="checkbox" id="ssml-mode" onchange="toggleSSMLMode()"> <label for="ssml-mode">SSML Mode</label>
+                        <input type="checkbox" id="ssml-mode" onchange="toggleSSMLMode()" aria-describedby="ssml-help"> <label for="ssml-mode">SSML Mode</label>
                     </div>
                     <div id="ssml-help" style="display: none; font-size: 12px; color: #666; margin-bottom: 8px;">
                         <b>SSML Examples:</b><br>
@@ -656,36 +657,36 @@
                             <span class="metric-value" id="live-status">Ready</span>
                         </div>
                     </div>
-                    <div class="tts-buttons">
-                        <button class="btn" onclick="testTTS()">🎵 Generate Speech</button>
-                        <button class="btn btn-secondary" onclick="stopAudio()">⏹️ Stop</button>
-                        <button class="btn btn-info" onclick="validateVoice()">🔍 Test Voice</button>
+                    <div class="tts-buttons" role="group" aria-label="TTS controls">
+                        <button class="btn" onclick="testTTS()" aria-label="Generate speech from text">🎵 Generate Speech</button>
+                        <button class="btn btn-secondary" onclick="stopAudio()" aria-label="Stop audio playback">⏹️ Stop</button>
+                        <button class="btn btn-info" onclick="validateVoice()" aria-label="Test voice availability">🔍 Test Voice</button>
                     </div>
-                    <div id="tts-result"></div>
-                    <audio id="audio-player" controls style="width: 100%; margin-top: 10px;"></audio>
-                    <div id="streaming-text" class="streaming-text" style="display: none;"></div>
-                    <div class="streaming-progress" style="display: none;">
+                    <div id="tts-result" role="status" aria-live="polite"></div>
+                    <audio id="audio-player" controls aria-label="Audio playback" style="width: 100%; margin-top: 10px;"></audio>
+                    <div id="streaming-text" class="streaming-text" style="display: none;" aria-live="polite" aria-atomic="true"></div>
+                    <div class="streaming-progress" style="display: none;" role="progressbar" aria-label="Streaming progress" aria-valuemin="0" aria-valuemax="100">
                         <div class="streaming-progress-bar" id="streaming-progress-bar" style="width: 0%"></div>
                     </div>
                 </div>
             </div>
 
             <!-- System Configuration -->
-            <div class="dashboard-card">
+            <section class="dashboard-card" aria-labelledby="config-title">
                 <div class="card-header">
                     <div class="card-icon">⚙️</div>
-                    <div class="card-title">System Configuration</div>
+                    <div class="card-title" id="config-title">System Configuration</div>
                 </div>
-                <table class="config-table" id="config-table">
+                <table class="config-table" id="config-table" aria-label="Current system configuration">
                     <tr><td colspan="2" class="loading">Loading configuration...</td></tr>
                 </table>
-            </div>
+            </section>
 
             <!-- API Usage Analytics -->
-            <div class="dashboard-card">
+            <section class="dashboard-card" aria-labelledby="analytics-title">
                 <div class="card-header">
                     <div class="card-icon">📈</div>
-                    <div class="card-title">API Usage Analytics</div>
+                    <div class="card-title" id="analytics-title">API Usage Analytics</div>
                 </div>
                 <div class="chart-container">
                     <canvas id="usage-chart"></canvas>
@@ -693,44 +694,44 @@
             </div>
 
             <!-- Error Rates -->
-            <div class="dashboard-card">
+            <section class="dashboard-card" aria-labelledby="error-title">
                 <div class="card-header">
                     <div class="card-icon">⚠️</div>
-                    <div class="card-title">Error Monitoring</div>
+                    <div class="card-title" id="error-title">Error Monitoring</div>
                 </div>
                 <div class="chart-container">
-                    <canvas id="error-chart"></canvas>
+                    <canvas id="error-chart" aria-label="Error rate chart"></canvas>
                 </div>
-            </div>
+            </section>
 
             <!-- Debug Information Panel -->
-            <div class="dashboard-card">
+            <section class="dashboard-card" aria-labelledby="debug-title">
                 <div class="card-header">
                     <div class="card-icon">🔧</div>
-                    <div class="card-title">Debug Information</div>
+                    <div class="card-title" id="debug-title">Debug Information</div>
                 </div>
-                <div class="debug-panel">
+                <div class="debug-panel" role="region" aria-label="Debug information">
                     <div class="debug-section">
                         <h4>System Status</h4>
-                        <div id="debug-system-status">Loading...</div>
+                        <div id="debug-system-status" role="status" aria-live="polite">Loading...</div>
                     </div>
                     <div class="debug-section">
                         <h4>Last API Response</h4>
-                        <pre id="debug-api-response">No data yet</pre>
+                        <pre id="debug-api-response" aria-label="Last API response">No data yet</pre>
                     </div>
                     <div class="debug-section">
                         <h4>Console Logs</h4>
-                        <div id="debug-console-logs" class="console-logs">
+                        <div id="debug-console-logs" class="console-logs" role="log" aria-live="polite" aria-label="Console logs">
                             <div class="log-entry">Dashboard initialized</div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
         </div>
-    </div>
+    </main>
 
     <!-- Refresh Button -->
-    <button class="refresh-btn" onclick="refreshDashboard()" title="Refresh Dashboard">🔄</button>
+    <button class="refresh-btn" onclick="refreshDashboard()" title="Refresh Dashboard" aria-label="Refresh dashboard data">🔄</button>
 
     <script>
         // Global variables
