@@ -10,7 +10,7 @@ from typing import Any
 
 try:
     import torch
-except ImportError:
+except (ImportError, ValueError):
     torch = None  # type: ignore
 
 logger = logging.getLogger(__name__)
