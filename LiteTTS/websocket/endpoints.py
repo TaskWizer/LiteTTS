@@ -6,6 +6,8 @@ application, including dashboard connectivity and real-time communication.
 """
 
 import logging
+import time
+from dataclasses import asdict
 
 from fastapi import HTTPException, WebSocket, WebSocketDisconnect
 

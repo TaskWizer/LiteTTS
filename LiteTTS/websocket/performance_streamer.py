@@ -7,9 +7,10 @@ clients, including RTF, memory usage, processing metrics, and system status.
 
 import asyncio
 import logging
+import threading
 import time
 from collections import deque
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import Any
 
 import psutil
@@ -277,6 +278,9 @@ class PerformanceStreamer:
         with self._metrics_lock:
             error_rate = self.app_metrics["error_rate"]
             last_error = self.app_metrics["last_error"]
+
+        # CPU usage
+        cpu_percent = psutil.cpu_percent(interval=None)
 
         # Determine overall status
         status = "healthy"
