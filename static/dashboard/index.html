@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="no-js">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -104,6 +104,37 @@
         .nav-link:focus-visible {
             outline: 3px solid #ffd700;
             outline-offset: 2px;
+        }
+
+        /* Respect reduced motion preferences (WCAG 2.1 AAA) */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+        /* Enhanced focus visibility for keyboard users (WCAG 2.1 AAA 2.4.11) */
+        *:focus-visible {
+            outline: 3px solid #ffd700;
+            outline-offset: 2px;
+            box-shadow: 0 0 0 6px rgba(255, 215, 0, 0.3);
+        }
+
+        /* High contrast mode support */
+        @media (forced-colors: active) {
+            .status-card:hover,
+            .dashboard-card:hover,
+            .voice-item:hover,
+            .btn:hover,
+            .btn:focus {
+                transform: none;
+                box-shadow: 2px solid ButtonText;
+            }
         }
 
         .connection-status {
@@ -498,6 +529,18 @@
             }
         }
 
+        /* Text spacing overrides (WCAG 2.1 AAA 1.4.12) */
+        /* Ensure content remains readable with user-style overrides */
+        body {
+            line-height: 1.5 !important;
+            letter-spacing: 0.12em !important;
+            word-spacing: 0.16em !important;
+        }
+
+        p {
+            margin-bottom: 2em !important;
+        }
+
         /* Word highlighting for streaming audio */
         .streaming-text {
             font-size: 1.3em;
@@ -632,9 +675,10 @@
                     <textarea class="tts-input" id="tts-text" placeholder="Enter text to synthesize..." rows="3" required aria-describedby="tts-text-help">Hello! This is a test of the LiteTTS streaming system.</textarea>
                     <span id="tts-text-help" class="sr-only">Enter the text you want to convert to speech</span>
                     <label for="tts-voice" class="sr-only">Voice selection</label>
-                    <select class="tts-input" id="tts-voice" required aria-required="true">
+                    <select class="tts-input" id="tts-voice" required aria-required="true" aria-describedby="tts-voice-help">
                         <option value="">Loading voices...</option>
                     </select>
+                    <span id="tts-voice-help" class="sr-only">Select a voice from the dropdown to use for text-to-speech</span>
                     <div style="margin: 8px 0;">
                         <input type="checkbox" id="ssml-mode" onchange="toggleSSMLMode()" aria-describedby="ssml-help"> <label for="ssml-mode">SSML Mode</label>
                     </div>
@@ -662,9 +706,10 @@
                         <button class="btn btn-secondary" onclick="stopAudio()" aria-label="Stop audio playback">⏹️ Stop</button>
                         <button class="btn btn-info" onclick="validateVoice()" aria-label="Test voice availability">🔍 Test Voice</button>
                     </div>
-                    <div id="tts-result" role="status" aria-live="polite"></div>
+                    <div id="tts-result" role="alert" aria-live="assertive"></div>
+                    <div id="tts-error" class="error" role="alert" aria-live="assertive" style="display: none;"></div>
                     <audio id="audio-player" controls aria-label="Audio playback" style="width: 100%; margin-top: 10px;"></audio>
-                    <div id="streaming-text" class="streaming-text" style="display: none;" aria-live="polite" aria-atomic="true"></div>
+                    <div id="streaming-text" class="streaming-text" style="display: none;" aria-live="polite" aria-atomic="true" role="status"></div>
                     <div class="streaming-progress" style="display: none;" role="progressbar" aria-label="Streaming progress" aria-valuemin="0" aria-valuemax="100">
                         <div class="streaming-progress-bar" id="streaming-progress-bar" style="width: 0%"></div>
                     </div>
@@ -1302,7 +1347,10 @@
         // Show error message
         function showError(message) {
             const resultDiv = document.getElementById('tts-result');
-            resultDiv.innerHTML = `<div class="error">${message}</div>`;
+            const errorDiv = document.getElementById('tts-error');
+            resultDiv.innerHTML = '';
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
         }
 
         // Refresh dashboard
