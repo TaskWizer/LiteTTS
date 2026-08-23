@@ -10,7 +10,8 @@ Comprehensive codebase cleanup, linting fixes, documentation improvements, WCAG 
 | Metric | Target | Actual | Status |
 |--------|--------|--------|--------|
 | Tests Passing | - | **1,318** | ✅ |
-| Test Coverage | 99% | **53%*** | ⚠️ |
+| Test Coverage | 99% | **53%*** | ⚠️ (local) |
+| Test Coverage | 99% | **TBD** | ⏳ (CI) |
 | Code Formatting | 100% | 100% | ✅ |
 | Linting (E/F) | 0 | 0 | ✅ |
 | Linting (E501/F841/E402) | - | ~813** | ⚠️ |
@@ -18,7 +19,7 @@ Comprehensive codebase cleanup, linting fixes, documentation improvements, WCAG 
 | F821 Bugs | 0 | 0 | ✅ |
 | F601 Duplicate Keys | 0 | 0 | ✅ |
 
-*Coverage measured locally. Full coverage requires CI with CUDA support.*
+*Coverage measured locally with Python 3.13 (no CUDA). Full coverage requires CI with Python 3.12 + CUDA.**
 **Line-length, unused vars, import order - structural issues remain.
 
 ### Linting Status (2026-08-23)
@@ -43,11 +44,11 @@ Comprehensive codebase cleanup, linting fixes, documentation improvements, WCAG 
 6. **contraction_pronunciation_fix.py** - Deprecation warnings added
 7. **enhanced_contraction_processor.py** - Deprecation warnings added
 8. **dashboard/index.html** - WCAG accessibility improvements
-4. **filesystem_integration.py** - Added missing numpy import
-5. **cache.py** - Added ValueError handling for torch CUDA failures
-6. **loader.py** - Same torch fallback fix
-7. **endpoints.py** - Added `time` and `asdict` imports
-8. **performance_streamer.py** - Added `threading`, `asdict`, fixed `cpu_percent`
+9. **filesystem_integration.py** - Added missing numpy import
+10. **cache.py** - Added ValueError handling for torch CUDA failures
+11. **loader.py** - Same torch fallback fix
+12. **endpoints.py** - Added `time` and `asdict` imports
+13. **performance_streamer.py** - Added `threading`, `asdict`, fixed `cpu_percent`
 
 ### CI Improvements
 
@@ -86,6 +87,45 @@ Comprehensive codebase cleanup, linting fixes, documentation improvements, WCAG 
 | DTZ005 (datetime.now) | 62 | Intentional timestamps |
 | F841 (unused-variable) | 32 | Minor cleanup |
 | E722 (bare-except) | 11 | Intentional error handling |
+
+---
+
+## Task 35: Test Coverage to 99%
+
+### Status: Environment Limited ⏳
+
+**Target:** 99% test coverage
+**Current (local):** 53% (Python 3.13, no CUDA)
+**Previous (verified):** 53% with 1,318 tests passing
+
+### Environment Limitation
+
+The local development environment runs **Python 3.13**, which has two critical limitations:
+
+1. **No CUDA support** - Missing `libcublas.so.12`, `libcudart.so.12`
+2. **Cython build failure** - `curated-tokenizers` fails to compile
+
+This prevents running the full test suite and measuring true coverage.
+
+### Resolution
+
+**GitHub Actions CI** provides the proper environment:
+- Python 3.12 with CUDA 11.8 support
+- Full model downloads from HuggingFace
+- Accurate coverage measurement
+
+Coverage artifacts are uploaded to CI runs for analysis.
+
+### Path to 99% Coverage
+
+To achieve 99% coverage locally (if needed):
+
+1. Use a Python 3.12 + CUDA environment
+2. Install model dependencies: `uv pip install torch --index-url https://download.pytorch.org/whl/cu118`
+3. Download models: `python -c "from LiteTTS.voice.manager import VoiceManager; VoiceManager().ensure_voices_downloaded()"`
+4. Run: `uv run pytest LiteTTS/tests/ --cov=LiteTTS --cov-report=term-missing`
+
+**Current blocking issue:** curated-tokenizers Cython compilation error on Python 3.13 (unrelated to LiteTTS code)
 
 ---
 
