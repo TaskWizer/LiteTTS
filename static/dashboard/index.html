@@ -14,6 +14,19 @@
             box-sizing: border-box;
         }
 
+        /* Screen reader only - accessible hide */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -25,6 +38,25 @@
             max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
+        }
+
+        /* Skip link for keyboard navigation */
+        .skip-link {
+            position: absolute;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            z-index: 1000;
+            text-decoration: none;
+            border-radius: 0 0 8px 8px;
+            font-weight: bold;
+        }
+
+        .skip-link:focus {
+            top: 0;
         }
 
         .header {
@@ -62,10 +94,16 @@
             font-weight: 500;
         }
 
-        .nav-link:hover {
+        .nav-link:hover,
+        .nav-link:focus {
             background: rgba(255, 255, 255, 0.2);
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-link:focus-visible {
+            outline: 3px solid #ffd700;
+            outline-offset: 2px;
         }
 
         .connection-status {
@@ -261,8 +299,16 @@
             transition: background 0.2s;
         }
 
-        .btn:hover {
+        .btn:hover,
+        .btn:focus {
             background: #5a6fd8;
+            outline: 2px solid #5a6fd8;
+            outline-offset: 2px;
+        }
+
+        .btn:focus-visible {
+            outline: 3px solid #ffd700;
+            outline-offset: 2px;
         }
 
         .btn-secondary {
@@ -499,7 +545,8 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <div class="container" id="main-content">
         <div class="header">
             <div class="header-content">
                 <div class="header-text">
@@ -581,7 +628,9 @@
                     <div class="card-title">Real-time TTS Testing</div>
                 </div>
                 <div class="tts-controls">
+                    <label for="tts-text" class="sr-only">Text to synthesize</label>
                     <textarea class="tts-input" id="tts-text" placeholder="Enter text to synthesize..." rows="3">Hello! This is a test of the LiteTTS streaming system.</textarea>
+                    <label for="tts-voice" class="sr-only">Voice selection</label>
                     <select class="tts-input" id="tts-voice">
                         <option value="">Loading voices...</option>
                     </select>
