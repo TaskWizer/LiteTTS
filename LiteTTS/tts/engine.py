@@ -340,7 +340,7 @@ class KokoroTTSEngine:
 
             # Prepare inputs for ONNX model
             model_inputs = self._prepare_model_inputs(
-                tokens, voice_embedding, speed, emotion, emotion_strength
+                tokens, voice_embedding, speed, emotion, emotion_strength, text=text
             )
 
             # Run inference
@@ -538,6 +538,7 @@ class KokoroTTSEngine:
         speed: float,
         emotion: str | None,
         emotion_strength: float,
+        text: str = "",
     ) -> dict[str, np.ndarray]:
         """Prepare inputs for the ONNX model"""
         # Get voice embedding data
@@ -552,8 +553,9 @@ class KokoroTTSEngine:
         # Validate tokens are not empty before ONNX inference
         if tokens.size == 0:
             logger.error("Tokenization produced empty tokens for non-empty text")
+            text_preview = text[:50] + "..." if len(text) > 50 else text
             raise ValueError(
-                f"Tokenization failed: produced empty tokens for text '{text[:50]}...'. "
+                f"Tokenization failed: produced empty tokens for text '{text_preview}'. "
                 "This may indicate a phonemization failure."
             )
 
@@ -974,7 +976,7 @@ class KokoroTTSEngine:
 
             # Prepare inputs for ONNX model using blended voice
             model_inputs = self._prepare_model_inputs(
-                tokens, blended_voice, speed, emotion, emotion_strength
+                tokens, blended_voice, speed, emotion, emotion_strength, text=text
             )
 
             # Run inference
