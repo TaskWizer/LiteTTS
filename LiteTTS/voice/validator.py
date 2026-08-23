@@ -8,6 +8,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+try:
+    import torch
+except ImportError:
+    torch = None  # type: ignore
+
 logger = logging.getLogger(__name__)
 
 
