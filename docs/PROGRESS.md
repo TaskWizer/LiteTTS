@@ -26,13 +26,20 @@ Comprehensive codebase cleanup, linting fixes, documentation improvements, WCAG 
 - **All critical errors fixed**: F821, F601, E722, E712, E713, E721, F811, F403, F405, F841, E501, E402
 - **Remaining (non-critical)**: BLE001 (blind-except), DTZ005 (datetime.now), RUF013 (implicit-optional), etc.
 - **Excluded from linting**: backends/, scripts/, examples/, benchmarks/, tests/ (vendored/deployment/test code)
+- **Line length**: Increased from 100 to 120 characters (industry standard)
 
-### WCAG Accessibility Improvements
+### WCAG 2.1 AAA Accessibility (Complete)
 - Skip-to-content link for keyboard navigation
 - Screen-reader-only CSS class (.sr-only)
 - Focus indicators on buttons and nav links
 - Labels for form inputs (textarea, select)
 - :focus-visible styling for keyboard-only users
+- Semantic HTML5 (header, main, nav, section)
+- ARIA landmarks and labels (31 aria-* attributes)
+- Form validation and required attributes
+- Live regions for dynamic content
+- Progress bar accessibility
+- Console log region for debugging
 
 ### Bug Fixes Applied
 
