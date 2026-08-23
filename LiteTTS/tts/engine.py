@@ -476,6 +476,61 @@ class KokoroTTSEngine:
                     f"Voice data too small: {voice_data.shape}, need at least 256 elements"
                 )
 
+    def _validate_voice_embedding_bounds(
+        self, style_vector: np.ndarray, voice_name: str
+    ) -> np.ndarray:
+        """
+        Validate and enforce bounds on voice embedding vector.
+
+        Voice embeddings can sometimes contain NaN, Inf, or extreme values
+        due to model issues or corrupted voice files. This can cause ONNX
+        inference to fail or produce garbage output.
+
+        Strategy:
+        1. Detect NaN/Inf values - replace with zero
+        2. Detect extreme values (>10.0) - clip to reasonable range
+        3. If vector is all-zero or mostly corrupted, use default neutral embedding
+
+        Args:
+            style_vector: Voice embedding array with shape (1, 256)
+            voice_name: Name of the voice for logging purposes
+
+        Returns:
+            Validated and bounds-clipped voice embedding array
+        """
+        # Check for NaN or Inf values
+        if not np.isfinite(style_vector).all():
+            nan_count = np.isnan(style_vector).sum()
+            inf_count = np.isinf(style_vector).sum()
+            logger.warning(
+                f"Voice '{voice_name}' embedding contains NaN/Inf values "
+                f"(NaN: {nan_count}, Inf: {inf_count}). Clipping to zero."
+            )
+            style_vector = np.where(np.isfinite(style_vector), style_vector, 0.0)
+
+        # Check for extreme values and clip
+        max_val = np.abs(style_vector).max()
+        if max_val > 10.0:
+            logger.warning(
+                f"Voice '{voice_name}' embedding has extreme values (max: {max_val:.2f}). Clipping."
+            )
+            style_vector = np.clip(style_vector, -10.0, 10.0)
+
+        # Check if vector became all-zero (fully corrupted)
+        if np.abs(style_vector).sum() < 1e-6:
+            logger.warning(
+                f"Voice '{voice_name}' embedding is near-zero after validation. "
+                f"Using default neutral embedding."
+            )
+            style_vector = np.zeros((1, 256), dtype=np.float32)
+            # Use a small default values that represent neutral voice characteristics
+            style_vector.fill(0.001)
+
+        logger.debug(
+            f"Voice embedding validated: range=[{style_vector.min():.4f}, {style_vector.max():.4f}]"
+        )
+        return style_vector.astype(np.float32)
+
     def _prepare_model_inputs(
         self,
         tokens: np.ndarray,
@@ -490,6 +545,17 @@ class KokoroTTSEngine:
 
         # Normalize voice embedding to [1, 256]
         style_vector = self._normalize_voice_embedding_shape(voice_data)
+
+        # Validate and enforce voice embedding bounds
+        style_vector = self._validate_voice_embedding_bounds(style_vector, voice_embedding.voice_name)
+
+        # Validate tokens are not empty before ONNX inference
+        if tokens.size == 0:
+            logger.error("Tokenization produced empty tokens for non-empty text")
+            raise ValueError(
+                f"Tokenization failed: produced empty tokens for text '{text[:50]}...'. "
+                "This may indicate a phonemization failure."
+            )
 
         # Basic input preparation with correct input names for ONNX model
         inputs = {
