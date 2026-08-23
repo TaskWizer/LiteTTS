@@ -399,6 +399,9 @@ class KokoroTTSEngine:
                 logger.warning(f"Phoneme tokenization failed: {e}, falling back to character-based")
 
         # Fallback to character-based tokenization
+        if self.tokenizer is None:
+            logger.error("Tokenizer not initialized, cannot tokenize text")
+            return []
         if self.tokenizer["type"] == "character":
             char_to_id = self.tokenizer["char_to_id"]
             unk_id = self.tokenizer["unk_token_id"]
@@ -845,8 +848,9 @@ class KokoroTTSEngine:
 
         # Complete performance tracking
         if self.performance_monitor and generation_id:
-            total_audio_size = sum(len(chunk.audio_data) for chunk in [chunk_result])
-            estimated_duration = chunk_result.duration if "chunk_result" in locals() else 1.0
+            # chunk_result is only defined if the loop ran at least once
+            total_audio_size = sum(len(chunk.audio_data) for chunk in [chunk_result]) if 'chunk_result' in dir() else 0
+            estimated_duration = chunk_result.duration if 'chunk_result' in dir() else 1.0
 
             self.performance_monitor.complete_generation_tracking(
                 generation_id, total_audio_size, estimated_duration

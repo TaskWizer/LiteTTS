@@ -292,9 +292,9 @@ class TTSAPIRouter:
 
                 # Determine overall health
                 is_healthy = (
-                    system_status["engine"]["model_loaded"]
-                    and system_status["voices"]["system_health"]["default_voices_ready"]
-                    and len(system_status["voices"]["voices"]["ready"]) > 0
+                    system_status.get("engine", {}).get("model_loaded", False)
+                    and system_status.get("voices", {}).get("system_health", {}).get("default_voices_ready", False)
+                    and len(system_status.get("voices", {}).get("ready", [])) > 0
                 )
 
                 return {
