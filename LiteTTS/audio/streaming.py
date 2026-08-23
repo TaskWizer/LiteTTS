@@ -4,10 +4,12 @@ Audio streaming utilities for chunked responses
 """
 
 import asyncio
-import numpy as np
-from typing import Iterator, AsyncIterator, Optional, Dict, Any
-from dataclasses import dataclass
 import logging
+from collections.abc import AsyncIterator, Iterator
+from dataclasses import dataclass
+from typing import Any
+
+import numpy as np
 
 from .audio_segment import AudioSegment
 from .format_converter import AudioFormatConverter
@@ -19,8 +21,8 @@ class StreamChunk:
     """Represents a chunk of streaming audio data"""
     data: bytes
     chunk_index: int
-    total_chunks: Optional[int] = None
-    metadata: Dict[str, Any] = None
+    total_chunks: int | None = None
+    metadata: dict[str, Any] = None
     is_final: bool = False
 
 class AudioStreamer:
@@ -130,7 +132,7 @@ class AudioStreamer:
         logger.debug(f"Completed async audio stream, {total_chunks} chunks")
 
     def create_streaming_response_headers(self, format: str,
-                                        estimated_size: Optional[int] = None) -> Dict[str, str]:
+                                        estimated_size: int | None = None) -> dict[str, str]:
         """Create headers for streaming audio response"""
         headers = {
             'Content-Type': self.format_converter.get_content_type(format),

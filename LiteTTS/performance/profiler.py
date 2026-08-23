@@ -11,20 +11,22 @@ This module provides systematic performance profiling tools including:
 """
 
 import cProfile
-import pstats
-import io
-import time
-import psutil
-import threading
 import functools
+import io
+import json
 import logging
-from typing import Dict, List, Optional, Any, Callable, Tuple
+import pstats
+import threading
+import time
+import tracemalloc
+from collections import defaultdict
+from collections.abc import Callable
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
-import json
-from contextlib import contextmanager
-from collections import defaultdict
-import tracemalloc
+from typing import Any
+
+import psutil
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +41,7 @@ class PerformanceMetrics:
     audio_duration: float = 0.0
     rtf: float = 0.0  # Real-Time Factor
     timestamp: float = field(default_factory=time.time)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 @dataclass
 class ProfilingSession:
@@ -48,11 +50,11 @@ class ProfilingSession:
     start_time: float
     end_time: float
     total_duration: float
-    operations: List[PerformanceMetrics] = field(default_factory=list)
-    memory_snapshots: List[Dict] = field(default_factory=list)
-    cpu_snapshots: List[float] = field(default_factory=list)
-    bottlenecks: List[Dict] = field(default_factory=list)
-    summary: Dict[str, Any] = field(default_factory=dict)
+    operations: list[PerformanceMetrics] = field(default_factory=list)
+    memory_snapshots: list[dict] = field(default_factory=list)
+    cpu_snapshots: list[float] = field(default_factory=list)
+    bottlenecks: list[dict] = field(default_factory=list)
+    summary: dict[str, Any] = field(default_factory=dict)
 
 class PerformanceProfiler:
     """Comprehensive performance profiler for LiteTTS"""
@@ -68,13 +70,13 @@ class PerformanceProfiler:
         self.enable_cpu_tracking = enable_cpu_tracking
 
         # Profiling data storage
-        self.current_session: Optional[ProfilingSession] = None
-        self.sessions: List[ProfilingSession] = []
-        self.operation_metrics: Dict[str, List[PerformanceMetrics]] = defaultdict(list)
+        self.current_session: ProfilingSession | None = None
+        self.sessions: list[ProfilingSession] = []
+        self.operation_metrics: dict[str, list[PerformanceMetrics]] = defaultdict(list)
 
         # Monitoring threads
         self._monitoring_active = False
-        self._monitor_thread: Optional[threading.Thread] = None
+        self._monitor_thread: threading.Thread | None = None
 
         # Results directory
         self.results_dir = Path("performance_results")
@@ -296,7 +298,7 @@ class PerformanceProfiler:
             if self.current_session:
                 self.current_session.operations.append(metrics)
 
-    def profile_with_cprofile(self, func: Callable, *args, **kwargs) -> Tuple[Any, pstats.Stats]:
+    def profile_with_cprofile(self, func: Callable, *args, **kwargs) -> tuple[Any, pstats.Stats]:
         """Profile function with cProfile for detailed analysis
         
         Args:
@@ -321,7 +323,7 @@ class PerformanceProfiler:
 
         return result, stats
 
-    def _generate_session_summary(self) -> Dict[str, Any]:
+    def _generate_session_summary(self) -> dict[str, Any]:
         """Generate summary for current session"""
         if not self.current_session:
             return {}
@@ -404,7 +406,7 @@ class PerformanceProfiler:
         logger.info(f"Saved profiling report: {report_path}")
         return report_path
 
-    def get_operation_statistics(self, operation_name: str) -> Dict[str, Any]:
+    def get_operation_statistics(self, operation_name: str) -> dict[str, Any]:
         """Get statistics for a specific operation
         
         Args:
@@ -445,7 +447,7 @@ class PerformanceProfiler:
         }
 
 # Global profiler instance
-_profiler: Optional[PerformanceProfiler] = None
+_profiler: PerformanceProfiler | None = None
 
 def get_profiler() -> PerformanceProfiler:
     """Get the global profiler instance"""

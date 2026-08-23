@@ -4,15 +4,12 @@ Automated Technical Documentation Generation System
 Generates comprehensive documentation from code, docstrings, and configuration files
 """
 
-import os
-import sys
-import subprocess
-import logging
-import json
 import ast
+import json
+import logging
+import subprocess
+import sys
 from pathlib import Path
-from typing import Dict, List, Any, Optional
-import re
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -256,7 +253,7 @@ class TechnicalDocumentationGenerator:
             logger.warning(f"Failed to document {config_file}: {e}")
             return f"**File:** `{config_file.name}` - *Documentation generation failed*\n\n"
 
-    def _add_config_descriptions(self, config_data: Dict) -> str:
+    def _add_config_descriptions(self, config_data: dict) -> str:
         """Add descriptions for configuration sections"""
         descriptions = {
             "text_processing": "Text processing and normalization settings",

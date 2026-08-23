@@ -3,8 +3,6 @@
 Unit tests for performance streamer
 """
 
-import pytest
-from unittest.mock import Mock
 from LiteTTS.websocket.performance_streamer import PerformanceMetrics, SystemStatus
 
 

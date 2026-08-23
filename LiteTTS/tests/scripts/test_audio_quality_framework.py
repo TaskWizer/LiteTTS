@@ -5,8 +5,8 @@ Test script to validate the automated audio quality testing framework
 
 import asyncio
 import sys
-import time
 from pathlib import Path
+
 import pytest
 
 # Add the project root to the path
@@ -21,7 +21,11 @@ def test_framework_imports():
     print("=" * 50)
 
     try:
-        from LiteTTS.testing.audio_quality_tester import AudioQualityTester, AudioTestCase, AudioQualityMetrics
+        from LiteTTS.testing.audio_quality_tester import (
+            AudioQualityMetrics,
+            AudioQualityTester,
+            AudioTestCase,
+        )
         print("✅ AudioQualityTester imported successfully")
 
         from LiteTTS.testing.espeak_integration_tests import EspeakIntegrationTestSuite

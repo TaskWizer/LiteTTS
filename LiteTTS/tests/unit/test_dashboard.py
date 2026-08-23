@@ -3,9 +3,11 @@
 Unit tests for dashboard analytics
 """
 
-import pytest
 from datetime import datetime
-from LiteTTS.api.dashboard import DashboardAnalytics, RequestMetric, ConcurrencyMetric
+
+import pytest
+
+from LiteTTS.api.dashboard import ConcurrencyMetric, DashboardAnalytics, RequestMetric
 
 
 class TestDashboardAnalytics:

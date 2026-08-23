@@ -4,10 +4,9 @@ Voice modulation system for TTS
 Implements whisper/quiet mode for parenthetical text and other voice effects
 """
 
-import re
-from typing import Dict, List, Tuple, Optional, Union
-from dataclasses import dataclass
 import logging
+import re
+from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +43,7 @@ class VoiceModulationSystem:
         self.enable_voice_blending = True
         self.default_whisper_voice = "af_nicole"
 
-    def _load_modulation_patterns(self) -> List[Tuple[str, str, Dict]]:
+    def _load_modulation_patterns(self) -> list[tuple[str, str, dict]]:
         """Load text patterns that trigger voice modulation"""
         return [
             # Parenthetical text - enhanced whisper mode with af_nicole blend
@@ -152,7 +151,7 @@ class VoiceModulationSystem:
             }),
         ]
 
-    def _load_voice_profiles(self) -> Dict[str, VoiceModulation]:
+    def _load_voice_profiles(self) -> dict[str, VoiceModulation]:
         """Load predefined voice profiles"""
         return {
             'whisper': VoiceModulation(
@@ -217,7 +216,7 @@ class VoiceModulationSystem:
             ),
         }
 
-    def _load_ssml_markers(self) -> Dict[str, str]:
+    def _load_ssml_markers(self) -> dict[str, str]:
         """Load SSML-like markers for voice modulation"""
         return {
             # Volume markers
@@ -240,7 +239,7 @@ class VoiceModulationSystem:
             '<emphasis level="moderate">': '*',
         }
 
-    def process_voice_modulation(self, text: str, base_voice: str = "default") -> Tuple[str, List[ModulationSegment]]:
+    def process_voice_modulation(self, text: str, base_voice: str = "default") -> tuple[str, list[ModulationSegment]]:
         """Process text for voice modulation and return processed text with modulation segments"""
         logger.debug(f"Processing voice modulation in: {text[:100]}...")
 
@@ -267,7 +266,7 @@ class VoiceModulationSystem:
             text = text.replace(ssml_marker, internal_marker)
         return text
 
-    def _find_modulation_segments(self, text: str, base_voice: str) -> List[ModulationSegment]:
+    def _find_modulation_segments(self, text: str, base_voice: str) -> list[ModulationSegment]:
         """Find all text segments that need voice modulation"""
         segments = []
 
@@ -312,7 +311,7 @@ class VoiceModulationSystem:
 
         return text
 
-    def generate_ssml_with_modulation(self, text: str, segments: List[ModulationSegment],
+    def generate_ssml_with_modulation(self, text: str, segments: list[ModulationSegment],
                                     base_voice: str = "default") -> str:
         """Generate SSML with voice modulation markers"""
         if not segments:
@@ -388,7 +387,7 @@ class VoiceModulationSystem:
 
         return f"{opening_tags}{content}{closing_tags}"
 
-    def analyze_modulation_opportunities(self, text: str) -> Dict[str, List[str]]:
+    def analyze_modulation_opportunities(self, text: str) -> dict[str, list[str]]:
         """Analyze text for potential voice modulation opportunities"""
         info = {
             'parenthetical_text': [],
@@ -422,7 +421,7 @@ class VoiceModulationSystem:
 
         return info
 
-    def _add_breathing_pauses(self, text: str, segments: List[ModulationSegment]) -> Tuple[str, List[ModulationSegment]]:
+    def _add_breathing_pauses(self, text: str, segments: list[ModulationSegment]) -> tuple[str, list[ModulationSegment]]:
         """Add breathing pauses before and after parenthetical content"""
         if not segments:
             return text, segments
@@ -550,6 +549,6 @@ class VoiceModulationSystem:
                    f"voice_blending={self.enable_voice_blending}, "
                    f"default_whisper_voice={self.default_whisper_voice}")
 
-    def get_voice_profiles(self) -> Dict[str, VoiceModulation]:
+    def get_voice_profiles(self) -> dict[str, VoiceModulation]:
         """Get all available voice profiles"""
         return self.voice_profiles.copy()

@@ -4,12 +4,12 @@ Perth Audio Watermarking System for Kokoro ONNX TTS API
 Responsible AI watermarking for generated audio content
 """
 
-import numpy as np
 import logging
-from typing import Dict, Any, Optional
-from dataclasses import dataclass
-from pathlib import Path
 import time
+from dataclasses import dataclass
+from typing import Any
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -42,22 +42,22 @@ except ImportError:
 class WatermarkResult:
     """Result of watermarking operation"""
     success: bool
-    watermarked_audio: Optional[np.ndarray]
-    original_audio: Optional[np.ndarray]
-    watermark_id: Optional[str]
+    watermarked_audio: np.ndarray | None
+    original_audio: np.ndarray | None
+    watermark_id: str | None
     processing_time_ms: float
-    quality_metrics: Optional[Dict[str, float]]
-    error_message: Optional[str] = None
+    quality_metrics: dict[str, float] | None
+    error_message: str | None = None
 
 @dataclass
 class WatermarkDetectionResult:
     """Result of watermark detection operation"""
     success: bool
     watermark_detected: bool
-    watermark_id: Optional[str]
+    watermark_id: str | None
     confidence_score: float
     processing_time_ms: float
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
 class AudioWatermarker:
     """
@@ -147,7 +147,7 @@ class AudioWatermarker:
     def apply_watermark(self,
                        audio: np.ndarray,
                        sample_rate: int,
-                       watermark_id: Optional[str] = None) -> WatermarkResult:
+                       watermark_id: str | None = None) -> WatermarkResult:
         """
         Apply watermark to audio
         
@@ -318,7 +318,7 @@ class AudioWatermarker:
 
     def _calculate_quality_metrics(self,
                                   original: np.ndarray,
-                                  watermarked: np.ndarray) -> Dict[str, float]:
+                                  watermarked: np.ndarray) -> dict[str, float]:
         """Calculate audio quality metrics"""
         try:
             # Signal-to-Noise Ratio (SNR)
@@ -351,7 +351,7 @@ class AudioWatermarker:
             logger.warning(f"Failed to calculate quality metrics: {e}")
             return {}
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get watermarking statistics"""
         stats = self.stats.copy()
 
@@ -387,7 +387,7 @@ class AudioWatermarker:
         logger.info("Watermarking statistics reset")
 
 # Global watermarker instance
-_audio_watermarker: Optional[AudioWatermarker] = None
+_audio_watermarker: AudioWatermarker | None = None
 
 def get_audio_watermarker(config=None) -> AudioWatermarker:
     """Get or create the global audio watermarker instance"""

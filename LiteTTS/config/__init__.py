@@ -35,7 +35,12 @@ except Exception as e:
     config = None
 
 # Import Whisper-specific configuration
-from .whisper_config_loader import get_whisper_config, get_whisper_settings, WhisperConfigLoader, WhisperSettings
+from .whisper_config_loader import (
+    WhisperConfigLoader,
+    WhisperSettings,
+    get_whisper_config,
+    get_whisper_settings,
+)
 
 __all__ = [
     "ConfigManager",

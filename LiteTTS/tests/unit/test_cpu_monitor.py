@@ -3,8 +3,7 @@
 Unit tests for CPU monitor
 """
 
-import pytest
-from LiteTTS.performance.cpu_monitor import CPUThresholds, CPUAllocation
+from LiteTTS.performance.cpu_monitor import CPUAllocation, CPUThresholds
 
 
 class TestCPUThresholds:

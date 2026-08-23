@@ -6,11 +6,16 @@ application, including dashboard connectivity and real-time communication.
 """
 
 import logging
-from typing import Optional
-from fastapi import WebSocket, WebSocketDisconnect, HTTPException
 
-from .websocket_manager import WebSocketManager, WebSocketMessage, MessageType, get_websocket_manager
+from fastapi import HTTPException, WebSocket, WebSocketDisconnect
+
 from .performance_streamer import PerformanceStreamer, create_performance_streamer
+from .websocket_manager import (
+    MessageType,
+    WebSocketManager,
+    WebSocketMessage,
+    get_websocket_manager,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -34,8 +39,8 @@ class WebSocketEndpoints:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
         # WebSocket infrastructure
-        self.websocket_manager: Optional[WebSocketManager] = None
-        self.performance_streamer: Optional[PerformanceStreamer] = None
+        self.websocket_manager: WebSocketManager | None = None
+        self.performance_streamer: PerformanceStreamer | None = None
 
         # Initialize flag
         self._initialized = False

@@ -4,10 +4,9 @@ Voice caching system validation script
 """
 
 import json
-import hashlib
 import time
 from pathlib import Path
-from typing import Dict, Any
+
 
 def validate_voice_cache_file():
     """Validate the voice cache JSON file"""

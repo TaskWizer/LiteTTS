@@ -3,13 +3,14 @@
 Error handling for TTS API
 """
 
-from fastapi import HTTPException
-from fastapi.responses import JSONResponse
-from typing import Dict, Any
 import logging
 import traceback
+from typing import Any
 
-from ..models import TTSError, VoiceNotFoundError, ModelLoadError, AudioGenerationError
+from fastapi import HTTPException
+from fastapi.responses import JSONResponse
+
+from ..models import AudioGenerationError, ModelLoadError, TTSError, VoiceNotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -149,7 +150,7 @@ class ErrorHandler:
         )
 
     def _create_error_response(self, status_code: int, error_code: str,
-                              message: str, details: Dict[str, Any]) -> JSONResponse:
+                              message: str, details: dict[str, Any]) -> JSONResponse:
         """Create standardized error response"""
         # Track error counts
         self.error_counts[error_code] = self.error_counts.get(error_code, 0) + 1
@@ -187,7 +188,7 @@ class ErrorHandler:
         import time
         return time.time()
 
-    def get_error_stats(self) -> Dict[str, Any]:
+    def get_error_stats(self) -> dict[str, Any]:
         """Get error statistics"""
         total_errors = sum(self.error_counts.values())
 

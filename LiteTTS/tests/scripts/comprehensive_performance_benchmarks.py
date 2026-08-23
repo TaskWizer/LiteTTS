@@ -4,21 +4,20 @@ Comprehensive Performance Benchmarking Framework
 Enhanced RTF benchmarking with CPU utilization, thermal monitoring, and multi-model testing
 """
 
-import os
-import sys
+import asyncio
 import json
 import logging
-import asyncio
-import aiohttp
-import time
-import psutil
+import os
 import statistics
+import sys
 import threading
+import time
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, asdict, field
-from concurrent.futures import ThreadPoolExecutor
-import subprocess
+from typing import Any
+
+import aiohttp
+import psutil
 
 # Add the project root to the path
 project_root = Path(__file__).parent.parent
@@ -85,7 +84,7 @@ class SystemMonitor:
         self.monitor_thread = threading.Thread(target=self._monitor_loop)
         self.monitor_thread.start()
 
-    def stop_monitoring(self) -> Dict[str, float]:
+    def stop_monitoring(self) -> dict[str, float]:
         """Stop monitoring and return statistics"""
         self.monitoring = False
         if self.monitor_thread:
@@ -148,7 +147,7 @@ class ComprehensivePerformanceBenchmarker:
         # Create comprehensive test cases
         self.test_cases = self._create_performance_test_cases()
 
-    def _create_performance_test_cases(self) -> List[Dict[str, Any]]:
+    def _create_performance_test_cases(self) -> list[dict[str, Any]]:
         """Create comprehensive performance test cases"""
         test_cases = []
 
@@ -222,7 +221,7 @@ class ComprehensivePerformanceBenchmarker:
 
         return test_cases
 
-    async def generate_audio_with_monitoring(self, text: str, voice: str = "af_heart") -> Tuple[bool, bytes, float, Dict[str, float], str]:
+    async def generate_audio_with_monitoring(self, text: str, voice: str = "af_heart") -> tuple[bool, bytes, float, dict[str, float], str]:
         """Generate audio with system monitoring"""
         try:
             # Start system monitoring
@@ -260,11 +259,11 @@ class ComprehensivePerformanceBenchmarker:
             system_stats = self.system_monitor.stop_monitoring()
             return False, b"", generation_time, system_stats, str(e)
 
-    def analyze_audio_properties(self, audio_data: bytes) -> Dict[str, Any]:
+    def analyze_audio_properties(self, audio_data: bytes) -> dict[str, Any]:
         """Analyze audio properties"""
         try:
-            import wave
             import tempfile
+            import wave
 
             with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_file:
                 temp_file.write(audio_data)
@@ -294,7 +293,7 @@ class ComprehensivePerformanceBenchmarker:
                 "size_bytes": len(audio_data)
             }
 
-    async def benchmark_single_case(self, test_case: Dict[str, Any], voice: str = "af_heart", model_variant: str = "model_q4.onnx") -> BenchmarkResult:
+    async def benchmark_single_case(self, test_case: dict[str, Any], voice: str = "af_heart", model_variant: str = "model_q4.onnx") -> BenchmarkResult:
         """Benchmark a single test case"""
         logger.info(f"Benchmarking: {test_case['test_id']} - {test_case['description']} (Voice: {voice}, Model: {model_variant})")
 
@@ -355,7 +354,7 @@ class ComprehensivePerformanceBenchmarker:
             success=True
         )
 
-    async def run_comprehensive_benchmarks(self, max_concurrent: int = 2) -> Dict[str, Any]:
+    async def run_comprehensive_benchmarks(self, max_concurrent: int = 2) -> dict[str, Any]:
         """Run comprehensive performance benchmarks"""
         logger.info("Starting comprehensive performance benchmarks...")
 
@@ -440,7 +439,7 @@ class ComprehensivePerformanceBenchmarker:
         logger.info(f"Comprehensive benchmarks completed. Results saved to: {results_file}")
         return report
 
-    def _calculate_category_grade(self, results: List[BenchmarkResult]) -> str:
+    def _calculate_category_grade(self, results: list[BenchmarkResult]) -> str:
         """Calculate performance grade for a category"""
         if not results:
             return "N/A"
@@ -459,7 +458,7 @@ class ComprehensivePerformanceBenchmarker:
         else:
             return "D"
 
-    def _calculate_overall_stats(self, results: List[BenchmarkResult]) -> Dict[str, Any]:
+    def _calculate_overall_stats(self, results: list[BenchmarkResult]) -> dict[str, Any]:
         """Calculate overall performance statistics"""
         if not results:
             return {}
@@ -481,7 +480,7 @@ class ComprehensivePerformanceBenchmarker:
             "overall_grade": self._calculate_overall_grade(results)
         }
 
-    def _calculate_short_text_compliance(self, results: List[BenchmarkResult]) -> float:
+    def _calculate_short_text_compliance(self, results: list[BenchmarkResult]) -> float:
         """Calculate RTF compliance for short text (< 20 chars)"""
         short_text_results = [r for r in results if r.metrics.text_length < 20]
         if not short_text_results:
@@ -490,7 +489,7 @@ class ComprehensivePerformanceBenchmarker:
         compliant = sum(1 for r in short_text_results if r.metrics.rtf <= 0.2)
         return compliant / len(short_text_results)
 
-    def _calculate_overall_grade(self, results: List[BenchmarkResult]) -> str:
+    def _calculate_overall_grade(self, results: list[BenchmarkResult]) -> str:
         """Calculate overall performance grade"""
         if not results:
             return "N/A"
@@ -527,7 +526,7 @@ class ComprehensivePerformanceBenchmarker:
         else:
             return "D"
 
-    def _analyze_performance_trends(self, results: List[BenchmarkResult]) -> Dict[str, Any]:
+    def _analyze_performance_trends(self, results: list[BenchmarkResult]) -> dict[str, Any]:
         """Analyze performance trends"""
         trends = {
             "text_length_correlation": self._analyze_text_length_correlation(results),
@@ -537,7 +536,7 @@ class ComprehensivePerformanceBenchmarker:
         }
         return trends
 
-    def _analyze_text_length_correlation(self, results: List[BenchmarkResult]) -> Dict[str, float]:
+    def _analyze_text_length_correlation(self, results: list[BenchmarkResult]) -> dict[str, float]:
         """Analyze correlation between text length and performance"""
         if len(results) < 2:
             return {"correlation": 0.0}
@@ -560,7 +559,7 @@ class ComprehensivePerformanceBenchmarker:
             "interpretation": "positive" if correlation > 0.3 else "negative" if correlation < -0.3 else "weak"
         }
 
-    def _analyze_cpu_patterns(self, results: List[BenchmarkResult]) -> Dict[str, Any]:
+    def _analyze_cpu_patterns(self, results: list[BenchmarkResult]) -> dict[str, Any]:
         """Analyze CPU utilization patterns"""
         cpu_values = [r.metrics.cpu_usage_avg for r in results]
         cpu_peaks = [r.metrics.cpu_usage_peak for r in results]
@@ -572,7 +571,7 @@ class ComprehensivePerformanceBenchmarker:
             "high_utilization_tests": sum(1 for cpu in cpu_values if cpu > 80)
         }
 
-    def _analyze_memory_patterns(self, results: List[BenchmarkResult]) -> Dict[str, Any]:
+    def _analyze_memory_patterns(self, results: list[BenchmarkResult]) -> dict[str, Any]:
         """Analyze memory usage patterns"""
         memory_values = [r.metrics.memory_usage_mb for r in results]
         memory_peaks = [r.metrics.memory_peak_mb for r in results]
@@ -584,7 +583,7 @@ class ComprehensivePerformanceBenchmarker:
             "high_memory_tests": sum(1 for mem in memory_values if mem > 500)
         }
 
-    def _identify_bottlenecks(self, results: List[BenchmarkResult]) -> List[str]:
+    def _identify_bottlenecks(self, results: list[BenchmarkResult]) -> list[str]:
         """Identify performance bottlenecks"""
         bottlenecks = []
 
@@ -605,7 +604,7 @@ class ComprehensivePerformanceBenchmarker:
 
         return bottlenecks
 
-    def _generate_optimization_recommendations(self, overall_stats: Dict[str, Any], category_stats: Dict[str, Any]) -> List[str]:
+    def _generate_optimization_recommendations(self, overall_stats: dict[str, Any], category_stats: dict[str, Any]) -> list[str]:
         """Generate optimization recommendations"""
         recommendations = []
 
@@ -632,7 +631,7 @@ class ComprehensivePerformanceBenchmarker:
 
         return recommendations
 
-    def _analyze_system_requirements(self, results: List[BenchmarkResult]) -> Dict[str, Any]:
+    def _analyze_system_requirements(self, results: list[BenchmarkResult]) -> dict[str, Any]:
         """Analyze system requirements based on benchmark results"""
         if not results:
             return {}

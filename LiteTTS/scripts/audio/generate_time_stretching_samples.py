@@ -4,15 +4,15 @@ Generate time-stretching test samples without requiring full TTS system
 Creates synthetic audio samples for testing time-stretching algorithms
 """
 
-import os
-import sys
-import json
 import csv
-import time
+import json
 import logging
-import numpy as np
+import sys
+import time
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Any
+
+import numpy as np
 
 # Setup logging
 logging.basicConfig(
@@ -99,7 +99,7 @@ class TimeStretchingSampleGenerator:
         stretch_ratio = 1.0 / speed_multiplier
         return self.apply_time_stretching(audio, stretch_ratio)
 
-    def benchmark_rate(self, original_audio: np.ndarray, rate: int) -> Dict[str, Any]:
+    def benchmark_rate(self, original_audio: np.ndarray, rate: int) -> dict[str, Any]:
         """Benchmark a specific time-stretching rate"""
         logger.info(f"Benchmarking rate: {rate}%")
 
@@ -162,7 +162,6 @@ class TimeStretchingSampleGenerator:
     def _write_wav_simple(self, path: Path, audio: np.ndarray, sample_rate: int):
         """Simple WAV file writing without external dependencies"""
         # This is a very basic WAV writer - for production use proper libraries
-        import struct
         import wave
 
         # Convert float32 to int16

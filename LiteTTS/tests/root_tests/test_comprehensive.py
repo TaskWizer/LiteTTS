@@ -4,19 +4,15 @@ Comprehensive Test Suite for Kokoro ONNX TTS API
 Tests all API endpoints, performance optimizations, and production features
 """
 
-import pytest
-import asyncio
-import time
-import json
-import tempfile
-import os
-from pathlib import Path
-from typing import Dict, Any
-import httpx
-from fastapi.testclient import TestClient
 
 # Add project root to path
 import sys
+import time
+from pathlib import Path
+
+import pytest
+from fastapi.testclient import TestClient
+
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from app import LiteTTSApplication as TTSApp
@@ -328,8 +324,8 @@ class TestKokoroTTSAPI:
 
     def test_concurrent_requests(self, client):
         """Test handling of concurrent requests"""
-        import threading
         import queue
+        import threading
 
         results = queue.Queue()
 

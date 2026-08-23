@@ -10,13 +10,16 @@ Since text processing preserves "Boy" correctly, the issue is likely in:
 This script implements pronunciation overrides for problematic words.
 """
 
-import sys
 import os
+import sys
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import json
 
 from LiteTTS.nlp.homograph_resolver import HomographResolver
 from LiteTTS.nlp.phonetic_processor import PhoneticProcessor
-import json
+
 
 def add_pronunciation_overrides():
     """Add pronunciation overrides for words with known issues"""

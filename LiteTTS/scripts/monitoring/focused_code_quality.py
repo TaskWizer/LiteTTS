@@ -4,14 +4,13 @@ Focused Code Quality Assessment for Project Code Only
 Reviews only the main project code, excluding dependencies and vendor code
 """
 
-import os
 import ast
-import re
 import json
+import logging
+import re
 import sys
 from pathlib import Path
-from typing import Dict, List, Any
-import logging
+from typing import Any
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -76,7 +75,7 @@ class FocusedCodeQualityAssessor:
         # Check if in included directories
         return path_parts[0] in self.include_dirs
 
-    def analyze_python_file(self, file_path: Path) -> Dict[str, Any]:
+    def analyze_python_file(self, file_path: Path) -> dict[str, Any]:
         """Analyze a single Python file"""
         analysis = {
             "path": str(file_path.relative_to(self.project_root)),
@@ -173,7 +172,7 @@ class FocusedCodeQualityAssessor:
 
         return analysis
 
-    def _analyze_ast(self, tree: ast.AST, content: str) -> Dict[str, Any]:
+    def _analyze_ast(self, tree: ast.AST, content: str) -> dict[str, Any]:
         """Analyze AST for code metrics"""
         analysis = {
             "functions": 0,
@@ -203,7 +202,7 @@ class FocusedCodeQualityAssessor:
 
         return analysis
 
-    def check_configuration_files(self) -> Dict[str, Any]:
+    def check_configuration_files(self) -> dict[str, Any]:
         """Check configuration files for issues"""
         logger.info("🔧 Analyzing configuration files...")
 
@@ -259,7 +258,7 @@ class FocusedCodeQualityAssessor:
 
         return config_analysis
 
-    def run_focused_assessment(self) -> Dict[str, Any]:
+    def run_focused_assessment(self) -> dict[str, Any]:
         """Run focused code quality assessment"""
         logger.info("🚀 Starting focused code quality assessment")
         logger.info("=" * 70)
@@ -330,7 +329,7 @@ class FocusedCodeQualityAssessor:
 
         return assessment_results
 
-    def _generate_recommendations(self) -> List[Dict[str, str]]:
+    def _generate_recommendations(self) -> list[dict[str, str]]:
         """Generate improvement recommendations"""
         recommendations = []
 
@@ -368,7 +367,7 @@ class FocusedCodeQualityAssessor:
 
         return recommendations
 
-    def _generate_assessment_report(self, results: Dict[str, Any]):
+    def _generate_assessment_report(self, results: dict[str, Any]):
         """Generate assessment report"""
         logger.info("\n" + "=" * 70)
         logger.info("📊 FOCUSED CODE QUALITY ASSESSMENT REPORT")

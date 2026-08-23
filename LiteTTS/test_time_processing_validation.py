@@ -4,10 +4,10 @@ CRITICAL TIME PROCESSING VALIDATION SCRIPT
 Comprehensive testing of time format processing to identify and fix regressions
 """
 
-import sys
-import os
 import logging
-from typing import Dict, List, Tuple, Any
+import os
+import sys
+from typing import Any
 
 # Add the project root to the path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -81,7 +81,7 @@ class TimeProcessingValidator:
 
         self.results = {}
 
-    def test_individual_processors(self) -> Dict[str, Any]:
+    def test_individual_processors(self) -> dict[str, Any]:
         """Test each processor individually to identify the source of corruption"""
         results = {
             'enhanced_datetime': {},
@@ -144,7 +144,7 @@ class TimeProcessingValidator:
 
         return results
 
-    def analyze_corruption_patterns(self, results: Dict[str, Any]) -> Dict[str, Any]:
+    def analyze_corruption_patterns(self, results: dict[str, Any]) -> dict[str, Any]:
         """Analyze the results to identify corruption patterns"""
         analysis = {
             'corrupted_processors': [],
@@ -186,7 +186,7 @@ class TimeProcessingValidator:
 
         return analysis
 
-    def test_am_pm_processing(self) -> Dict[str, Any]:
+    def test_am_pm_processing(self) -> dict[str, Any]:
         """Specifically test AM/PM processing to identify the exact issue"""
         print("\n" + "="*80)
         print("AM/PM PROCESSING DEEP DIVE")
@@ -222,7 +222,7 @@ class TimeProcessingValidator:
 
         return results
 
-    def run_comprehensive_validation(self) -> Dict[str, Any]:
+    def run_comprehensive_validation(self) -> dict[str, Any]:
         """Run the complete validation suite"""
         print("🚀 STARTING COMPREHENSIVE TIME PROCESSING VALIDATION")
         print("="*80)
@@ -248,7 +248,7 @@ class TimeProcessingValidator:
 
         return final_report
 
-    def _generate_summary(self, corruption_analysis: Dict[str, Any]) -> Dict[str, Any]:
+    def _generate_summary(self, corruption_analysis: dict[str, Any]) -> dict[str, Any]:
         """Generate a summary of findings"""
         return {
             'total_corrupted_processors': len(corruption_analysis['corrupted_processors']),
@@ -258,7 +258,7 @@ class TimeProcessingValidator:
                                           key=lambda x: x['corruption_rate'])['name'] if corruption_analysis['corrupted_processors'] else None
         }
 
-    def _print_final_report(self, report: Dict[str, Any]) -> None:
+    def _print_final_report(self, report: dict[str, Any]) -> None:
         """Print the final validation report"""
         print("\n" + "="*80)
         print("FINAL VALIDATION REPORT")

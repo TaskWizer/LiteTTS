@@ -4,10 +4,9 @@ CPU-only installation script for Kokoro ONNX TTS API
 Ensures no GPU/CUDA dependencies are installed
 """
 
+import logging
 import subprocess
 import sys
-import logging
-from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -99,12 +98,12 @@ def verify_installation():
     try:
         # Test imports
         import fastapi
-        import uvicorn
-        import soundfile
         import numpy
-        import requests
-        import pydantic
         import onnxruntime
+        import pydantic
+        import requests
+        import soundfile
+        import uvicorn
 
         logger.info("✅ Core dependencies imported successfully")
 

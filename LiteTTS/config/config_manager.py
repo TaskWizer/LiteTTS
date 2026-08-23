@@ -5,19 +5,19 @@ Bridges user-friendly config.json with internal technical configuration
 """
 
 import json
+import logging
 import os
 import sys
-from typing import Dict, Any
-import logging
+from typing import Any
 
 # Add the parent directory to the path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 try:
-    from LiteTTS.config.internal_config import get_internal_config, InternalConfig
+    from LiteTTS.config.internal_config import InternalConfig, get_internal_config
 except ImportError:
     # Fallback for direct execution
-    from internal_config import get_internal_config, InternalConfig
+    from internal_config import get_internal_config
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ class ConfigManager:
         self.internal_config = get_internal_config()
         self.merged_config = self._merge_configs()
 
-    def _load_user_config(self) -> Dict[str, Any]:
+    def _load_user_config(self) -> dict[str, Any]:
         """Load user-facing configuration from config.json"""
         try:
             with open(self.config_path, 'r', encoding='utf-8') as f:
@@ -55,7 +55,7 @@ class ConfigManager:
             logger.error(f"Error loading config from {self.config_path}: {e}")
             return self._get_default_user_config()
 
-    def _get_default_user_config(self) -> Dict[str, Any]:
+    def _get_default_user_config(self) -> dict[str, Any]:
         """Get default user configuration"""
         return {
             "model": {
@@ -116,7 +116,7 @@ class ConfigManager:
             }
         }
 
-    def _merge_configs(self) -> Dict[str, Any]:
+    def _merge_configs(self) -> dict[str, Any]:
         """Merge user config with internal config based on user preferences"""
         merged = self.user_config.copy()
 
@@ -181,19 +181,19 @@ class ConfigManager:
 
         return value
 
-    def get_user_config(self) -> Dict[str, Any]:
+    def get_user_config(self) -> dict[str, Any]:
         """Get the user-facing configuration"""
         return self.user_config.copy()
 
-    def get_internal_config(self) -> Dict[str, Any]:
+    def get_internal_config(self) -> dict[str, Any]:
         """Get the internal configuration"""
         return self.internal_config.get_all_config()
 
-    def get_merged_config(self) -> Dict[str, Any]:
+    def get_merged_config(self) -> dict[str, Any]:
         """Get the merged configuration"""
         return self.merged_config.copy()
 
-    def update_user_config(self, updates: Dict[str, Any]):
+    def update_user_config(self, updates: dict[str, Any]):
         """Update user configuration and save to file"""
         def deep_update(base_dict, update_dict):
             for key, value in update_dict.items():
@@ -236,7 +236,7 @@ class ConfigManager:
 
         return feature_map.get(feature, False)
 
-    def get_processing_options(self) -> Dict[str, bool]:
+    def get_processing_options(self) -> dict[str, bool]:
         """Get processing options for the unified text processor"""
         # Respect pronunciation_dictionary.enabled setting
         pronunciation_dict = self.get('pronunciation_dictionary', {})
@@ -254,7 +254,7 @@ class ConfigManager:
             'use_clean_normalizer': self.get('use_clean_normalizer', True)
         }
 
-    def validate_config(self) -> Dict[str, Any]:
+    def validate_config(self) -> dict[str, Any]:
         """Validate the current configuration"""
         validation = {
             'valid': True,

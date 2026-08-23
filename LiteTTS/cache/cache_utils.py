@@ -6,8 +6,8 @@ This module provides consistent cache key generation across all components
 
 import hashlib
 import json
-from typing import Optional, Dict, Any
 import logging
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ class CacheKeyGenerator:
         speed: float = 1.0,
         format: str = "mp3",
         language: str = "en-us",
-        emotion: Optional[str] = None,
+        emotion: str | None = None,
         emotion_strength: float = 1.0
     ) -> str:
         """
@@ -141,7 +141,7 @@ class CacheMetrics:
             return 0.0
         return self.errors / self.total_requests
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get comprehensive cache statistics"""
         return {
             "total_requests": self.total_requests,
@@ -187,7 +187,7 @@ def normalize_cache_parameters(
     speed: float,
     format: str,
     language: str = "en-us"
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Normalize cache parameters to ensure consistency
     
@@ -208,7 +208,7 @@ def debug_cache_key_generation(
     speed: float = 1.0,
     format: str = "mp3",
     language: str = "en-us"
-) -> Dict[str, str]:
+) -> dict[str, str]:
     """
     Debug cache key generation by showing intermediate steps
     Useful for troubleshooting cache key inconsistencies

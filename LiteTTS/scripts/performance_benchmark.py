@@ -11,26 +11,29 @@ This script provides systematic performance testing including:
 - Performance regression testing
 """
 
-import sys
-import os
-import time
 import asyncio
 import json
-import statistics
-from pathlib import Path
-from typing import Dict, List, Any, Tuple
 import logging
+import statistics
+import sys
+import time
+from pathlib import Path
+from typing import Any
 
 # Add project root to path
 sys.path.insert(0, '.')
 
 # Import LiteTTS components
 try:
-    from LiteTTS.performance.profiler import PerformanceProfiler, get_profiler, profile_tts_operation
-    from LiteTTS.tts.synthesizer import TTSSynthesizer
     from LiteTTS.config import config
-    from LiteTTS.nlp.unified_text_processor import UnifiedTextProcessor
     from LiteTTS.models import TTSConfiguration
+    from LiteTTS.nlp.unified_text_processor import UnifiedTextProcessor
+    from LiteTTS.performance.profiler import (
+        PerformanceProfiler,
+        get_profiler,
+        profile_tts_operation,
+    )
+    from LiteTTS.tts.synthesizer import TTSSynthesizer
 except ImportError as e:
     print(f"Error importing LiteTTS components: {e}")
     sys.exit(1)
@@ -99,7 +102,7 @@ class PerformanceBenchmark:
 
         logger.info("Performance benchmark suite initialized")
 
-    async def run_comprehensive_benchmark(self) -> Dict[str, Any]:
+    async def run_comprehensive_benchmark(self) -> dict[str, Any]:
         """Run comprehensive performance benchmark
         
         Returns:
@@ -139,9 +142,10 @@ class PerformanceBenchmark:
             report_path = self.profiler.save_session_report(session)
             logger.info(f"Profiling report saved: {report_path}")
 
-    def _get_environment_info(self) -> Dict[str, Any]:
+    def _get_environment_info(self) -> dict[str, Any]:
         """Get execution environment information"""
         import platform
+
         import psutil
 
         return {
@@ -154,7 +158,7 @@ class PerformanceBenchmark:
             'disk_usage': psutil.disk_usage('.')._asdict()
         }
 
-    async def _measure_baseline_performance(self) -> Dict[str, Any]:
+    async def _measure_baseline_performance(self) -> dict[str, Any]:
         """Measure baseline performance metrics"""
         logger.info("📊 Measuring baseline performance")
 
@@ -245,7 +249,7 @@ class PerformanceBenchmark:
         # For now, we'll simulate the processing
         return text.upper()
 
-    async def _analyze_rtf_performance(self) -> Dict[str, Any]:
+    async def _analyze_rtf_performance(self) -> dict[str, Any]:
         """Analyze Real-Time Factor performance"""
         logger.info("⏱️ Analyzing RTF performance")
 
@@ -277,7 +281,7 @@ class PerformanceBenchmark:
         logger.info("✅ RTF performance analysis complete")
         return rtf_analysis
 
-    async def _analyze_memory_usage(self) -> Dict[str, Any]:
+    async def _analyze_memory_usage(self) -> dict[str, Any]:
         """Analyze memory usage patterns"""
         logger.info("💾 Analyzing memory usage")
 
@@ -296,7 +300,7 @@ class PerformanceBenchmark:
         logger.info("✅ Memory usage analysis complete")
         return memory_analysis
 
-    async def _identify_bottlenecks(self) -> Dict[str, Any]:
+    async def _identify_bottlenecks(self) -> dict[str, Any]:
         """Identify performance bottlenecks"""
         logger.info("🔍 Identifying performance bottlenecks")
 
@@ -333,7 +337,7 @@ class PerformanceBenchmark:
         logger.info("✅ Bottleneck identification complete")
         return bottleneck_analysis
 
-    async def _analyze_cold_start(self) -> Dict[str, Any]:
+    async def _analyze_cold_start(self) -> dict[str, Any]:
         """Analyze cold start performance"""
         logger.info("🥶 Analyzing cold start performance")
 
@@ -351,7 +355,7 @@ class PerformanceBenchmark:
         logger.info("✅ Cold start analysis complete")
         return cold_start_analysis
 
-    async def _analyze_voice_switching(self) -> Dict[str, Any]:
+    async def _analyze_voice_switching(self) -> dict[str, Any]:
         """Analyze voice switching performance"""
         logger.info("🎭 Analyzing voice switching performance")
 
@@ -365,7 +369,7 @@ class PerformanceBenchmark:
         logger.info("✅ Voice switching analysis complete")
         return voice_switching_analysis
 
-    async def _check_performance_regression(self) -> Dict[str, Any]:
+    async def _check_performance_regression(self) -> dict[str, Any]:
         """Check for performance regression"""
         logger.info("📈 Checking performance regression")
 
@@ -379,7 +383,7 @@ class PerformanceBenchmark:
         logger.info("✅ Performance regression check complete")
         return regression_analysis
 
-    def _generate_recommendations(self, results: Dict[str, Any]) -> List[str]:
+    def _generate_recommendations(self, results: dict[str, Any]) -> list[str]:
         """Generate performance optimization recommendations"""
         recommendations = []
 
@@ -401,7 +405,7 @@ class PerformanceBenchmark:
 
         return recommendations
 
-    def _calculate_performance_score(self, results: Dict[str, Any]) -> float:
+    def _calculate_performance_score(self, results: dict[str, Any]) -> float:
         """Calculate overall performance score (0-100)"""
         score = 100.0
 
@@ -423,7 +427,7 @@ class PerformanceBenchmark:
 
         return max(0.0, score)
 
-    def save_benchmark_results(self, results: Dict[str, Any], filename: str = None) -> Path:
+    def save_benchmark_results(self, results: dict[str, Any], filename: str = None) -> Path:
         """Save benchmark results to file"""
         if filename is None:
             timestamp = int(time.time())

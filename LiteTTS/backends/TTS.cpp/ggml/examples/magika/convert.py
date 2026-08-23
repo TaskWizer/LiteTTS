@@ -1,6 +1,8 @@
 import sys
-from tensorflow import keras
+
 import gguf
+from tensorflow import keras
+
 
 def convert(model_name):
     model = keras.models.load_model(model_name, compile=False)

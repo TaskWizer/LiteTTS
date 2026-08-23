@@ -4,13 +4,14 @@ Enhanced Voice Cloning Demo for LiteTTS
 Demonstrates the new 120s audio support, multiple clips, and intelligent segmentation
 """
 
-import sys
-import os
-import time
 import logging
+import os
+import sys
 import tempfile
-import numpy as np
+import time
 from pathlib import Path
+
+import numpy as np
 
 # Add LiteTTS to path
 sys.path.insert(0, str(Path(__file__).parent.parent))

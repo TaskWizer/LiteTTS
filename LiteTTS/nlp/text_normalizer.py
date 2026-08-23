@@ -3,9 +3,8 @@
 Advanced text normalization for TTS processing
 """
 
-import re
-from typing import Dict, List, Tuple
 import logging
+import re
 
 try:
     from .rime_ai_integration import rime_ai_processor
@@ -67,7 +66,7 @@ class TextNormalizer:
             self.expand_problematic_only = True
             self.preserve_natural_speech = True
 
-    def _compile_number_patterns(self) -> Dict[str, re.Pattern]:
+    def _compile_number_patterns(self) -> dict[str, re.Pattern]:
         """Compile regex patterns for number processing"""
         return {
             'cardinal': re.compile(r'\b\d{1,3}(?:,\d{3})*(?:\.\d+)?\b'),
@@ -83,7 +82,7 @@ class TextNormalizer:
             'currency': re.compile(r'\$([0-9,]+(?:\.[0-9]{2})?)')
         }
 
-    def _load_abbreviations(self) -> Dict[str, str]:
+    def _load_abbreviations(self) -> dict[str, str]:
         """Load common abbreviations and their expansions"""
         return {
             # Titles
@@ -109,14 +108,14 @@ class TextNormalizer:
             'URL': 'U R L', 'HTML': 'H T M L', 'CSS': 'C S S', 'JS': 'J S'
         }
 
-    def _load_currency_symbols(self) -> Dict[str, str]:
+    def _load_currency_symbols(self) -> dict[str, str]:
         """Load currency symbols and their names"""
         return {
             '$': 'dollars', '€': 'euros', '£': 'pounds', '¥': 'yen',
             '₹': 'rupees', '₽': 'rubles', '₩': 'won', '¢': 'cents'
         }
 
-    def _load_symbol_patterns(self) -> List[Tuple[str, str]]:
+    def _load_symbol_patterns(self) -> list[tuple[str, str]]:
         """Load symbol normalization patterns"""
         return [
             # Mathematical and logical symbols - FIXED: & symbol to "and"
@@ -141,7 +140,7 @@ class TextNormalizer:
             (r'°', ' degrees'),       # Degree symbol
         ]
 
-    def _load_contractions(self) -> Dict[str, str]:
+    def _load_contractions(self) -> dict[str, str]:
         """Load common contractions and their expansions"""
         return {
             # Common contractions - FIXED: Handle What's, John's, etc.

@@ -4,10 +4,10 @@ REAL audio test - tests what the system ACTUALLY generates for audio
 This will generate actual audio files and show what text processing is happening
 """
 
-import requests
-import json
 import time
-import os
+
+import requests
+
 
 def test_real_audio_generation():
     """Test actual audio generation with problematic words"""

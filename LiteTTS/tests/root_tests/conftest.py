@@ -3,12 +3,12 @@
 Pytest configuration and fixtures for Kokoro ONNX TTS API tests
 """
 
-import pytest
-import tempfile
 import shutil
-from pathlib import Path
 import sys
-import os
+import tempfile
+from pathlib import Path
+
+import pytest
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -56,7 +56,6 @@ def setup_test_environment():
     yield
 
     # Cleanup after test if needed
-    pass
 
 @pytest.fixture
 def mock_audio_data():

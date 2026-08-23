@@ -4,12 +4,13 @@ Unit tests for audio quality enhancer
 """
 
 import pytest
+
 from LiteTTS.nlp.audio_quality_enhancer import (
     AudioQualityEnhancer,
     AudioQualityProfile,
     EmotionType,
     ProsodyLevel,
-    ProsodyMarker
+    ProsodyMarker,
 )
 
 

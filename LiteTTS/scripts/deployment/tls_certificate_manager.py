@@ -4,17 +4,16 @@ TLS Certificate Manager
 Implement self-signed TLS certificate generation and configuration for HTTPS enforcement
 """
 
-import os
-import sys
 import json
 import logging
-import subprocess
-import time
+import os
 import socket
+import subprocess
+import sys
+import time
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, asdict
-from datetime import datetime, timedelta
+from typing import Any
 
 # Add the project root to the path
 project_root = Path(__file__).parent.parent
@@ -31,7 +30,7 @@ class TLSCertificate:
     key_path: str
     ca_cert_path: str
     common_name: str
-    subject_alt_names: List[str]
+    subject_alt_names: list[str]
     valid_from: str
     valid_until: str
     key_size: int
@@ -51,8 +50,8 @@ class TLSConfiguration:
     http_port: int
     cert_validity_days: int
     key_size: int
-    cipher_suites: List[str]
-    protocols: List[str]
+    cipher_suites: list[str]
+    protocols: list[str]
     hsts_enabled: bool
     hsts_max_age: int
 
@@ -109,7 +108,7 @@ class TLSCertificateManager:
             logger.error(f"Error checking OpenSSL: {e}")
             return False
 
-    def get_system_hostnames(self) -> List[str]:
+    def get_system_hostnames(self) -> list[str]:
         """Get system hostnames for certificate SAN"""
         hostnames = []
 
@@ -147,7 +146,7 @@ class TLSCertificateManager:
 
         return hostnames
 
-    def generate_ca_certificate(self, config: TLSConfiguration) -> Tuple[bool, str]:
+    def generate_ca_certificate(self, config: TLSConfiguration) -> tuple[bool, str]:
         """Generate Certificate Authority certificate"""
         logger.info("Generating CA certificate...")
 
@@ -190,7 +189,7 @@ class TLSCertificateManager:
             return False, f"CA generation error: {str(e)}"
 
     def generate_server_certificate(self, config: TLSConfiguration,
-                                  common_name: str = "localhost") -> Tuple[bool, TLSCertificate]:
+                                  common_name: str = "localhost") -> tuple[bool, TLSCertificate]:
         """Generate server certificate signed by CA"""
         logger.info(f"Generating server certificate for {common_name}...")
 
@@ -304,7 +303,7 @@ subjectAltName = @alt_names
             logger.error(f"Server certificate generation error: {e}")
             return False, None
 
-    def _get_certificate_info(self, cert_path: Path) -> Dict[str, str]:
+    def _get_certificate_info(self, cert_path: Path) -> dict[str, str]:
         """Get certificate information using OpenSSL"""
         info = {}
 
@@ -334,7 +333,7 @@ subjectAltName = @alt_names
 
         return info
 
-    def verify_certificate(self, certificate: TLSCertificate) -> Dict[str, Any]:
+    def verify_certificate(self, certificate: TLSCertificate) -> dict[str, Any]:
         """Verify certificate validity and configuration"""
         logger.info("Verifying certificate...")
 
@@ -659,7 +658,7 @@ echo "SSL/TLS tests completed!"
         logger.info(f"SSL test script saved: {test_script_file}")
         return test_script
 
-    def run_comprehensive_tls_setup(self, common_name: str = "localhost") -> Dict[str, Any]:
+    def run_comprehensive_tls_setup(self, common_name: str = "localhost") -> dict[str, Any]:
         """Run comprehensive TLS certificate setup"""
         logger.info("Starting comprehensive TLS certificate setup...")
 
@@ -725,7 +724,7 @@ echo "SSL/TLS tests completed!"
 
     def _generate_tls_summary(self, config: TLSConfiguration,
                              certificate: TLSCertificate,
-                             verification: Dict[str, Any]) -> Dict[str, Any]:
+                             verification: dict[str, Any]) -> dict[str, Any]:
         """Generate TLS setup summary"""
         verification_score = sum(1 for key, value in verification.items()
                                if key != "issues" and value is True)
@@ -750,7 +749,7 @@ echo "SSL/TLS tests completed!"
         return summary
 
     def _generate_tls_next_steps(self, config: TLSConfiguration,
-                                certificate: TLSCertificate) -> List[str]:
+                                certificate: TLSCertificate) -> list[str]:
         """Generate next steps for TLS deployment"""
         next_steps = [
             "Review generated SSL certificates and configuration files",

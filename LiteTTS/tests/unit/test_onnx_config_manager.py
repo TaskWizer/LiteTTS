@@ -3,12 +3,12 @@
 Unit tests for ONNX config manager module
 """
 
-import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
+
 from LiteTTS.utils.onnx_config_manager import (
     ONNXConfigManager,
+    create_optimized_session_options,
     get_onnx_config_manager,
-    create_optimized_session_options
 )
 
 

@@ -3,8 +3,9 @@
 Unit tests for API error handler
 """
 
+
 import pytest
-from unittest.mock import MagicMock
+
 from LiteTTS.api.error_handler import ErrorHandler
 
 

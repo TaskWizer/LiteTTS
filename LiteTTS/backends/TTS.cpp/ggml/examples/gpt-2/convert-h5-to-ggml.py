@@ -17,13 +17,14 @@
 # and vocabulary.
 #
 
-import sys
-import struct
 import json
-import numpy as np
 import re
+import struct
+import sys
 
+import numpy as np
 from transformers import GPT2Model
+
 
 # ref: https://github.com/openai/gpt-2/blob/master/src/encoder.py
 def bytes_to_unicode():

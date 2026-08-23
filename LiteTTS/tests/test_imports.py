@@ -4,8 +4,8 @@ Test imports for LiteTTS Docker build
 Validates that all required modules can be imported successfully
 """
 
-import sys
 import logging
+import sys
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
@@ -14,11 +14,11 @@ logger = logging.getLogger(__name__)
 def test_core_imports():
     """Test core Python imports"""
     try:
-        import os
-        import json
-        import time
         import asyncio
+        import json
+        import os
         import pathlib
+        import time
         logger.info("✅ Core Python modules imported successfully")
         return True
     except ImportError as e:
@@ -29,8 +29,8 @@ def test_web_framework_imports():
     """Test web framework imports"""
     try:
         import fastapi
-        import uvicorn
         import pydantic
+        import uvicorn
         logger.info("✅ Web framework modules imported successfully")
         return True
     except ImportError as e:
@@ -76,8 +76,8 @@ def test_litetts_imports():
 
         # Test performance modules
         try:
-            from LiteTTS.performance.memory_optimization import MemoryOptimizer
             from LiteTTS.performance.cpu_optimizer import CPUOptimizer
+            from LiteTTS.performance.memory_optimization import MemoryOptimizer
             logger.info("✅ LiteTTS performance modules imported successfully")
         except ImportError as e:
             logger.warning(f"⚠️ Some LiteTTS performance modules not available: {e}")

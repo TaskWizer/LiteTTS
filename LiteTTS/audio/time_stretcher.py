@@ -5,12 +5,13 @@ Implements beta time-stretching feature for improved TTS latency
 """
 
 import logging
+import os
 import time
-import numpy as np
-from typing import Dict, Any, Optional, Tuple, List
 from dataclasses import dataclass
 from enum import Enum
-import os
+from typing import Any
+
+import numpy as np
 
 try:
     import librosa
@@ -66,14 +67,14 @@ class StretchMetrics:
     total_time: float
     rtf_original: float
     rtf_stretched: float
-    quality_score: Optional[float] = None
+    quality_score: float | None = None
 
 class TimeStretcher:
     """Time-stretching processor for TTS optimization"""
 
     def __init__(self, config: TimeStretchConfig):
         self.config = config
-        self.metrics_history: List[StretchMetrics] = []
+        self.metrics_history: list[StretchMetrics] = []
 
         # Check available libraries
         self.use_pyrubberband = PYRUBBERBAND_AVAILABLE and config.correction_quality == StretchQuality.HIGH
@@ -106,7 +107,7 @@ class TimeStretcher:
         return 1.0 + (self.config.compress_playback_rate / 100.0)
 
     def stretch_audio_to_normal_speed(self, audio_segment: AudioSegment,
-                                    generation_speed: float) -> Tuple[AudioSegment, StretchMetrics]:
+                                    generation_speed: float) -> tuple[AudioSegment, StretchMetrics]:
         """Stretch audio back to normal speed after fast generation"""
         start_time = time.perf_counter()
 
@@ -223,7 +224,7 @@ class TimeStretcher:
 
         return stretched.astype(np.float32)
 
-    def get_metrics_summary(self) -> Dict[str, Any]:
+    def get_metrics_summary(self) -> dict[str, Any]:
         """Get summary of time-stretching metrics"""
         if not self.metrics_history:
             return {"message": "No time-stretching metrics available"}
@@ -248,8 +249,8 @@ class TimeStretcher:
             }
         }
 
-    def benchmark_rates(self, test_audio: AudioSegment, rates: List[int],
-                       save_samples: bool = True) -> Dict[int, StretchMetrics]:
+    def benchmark_rates(self, test_audio: AudioSegment, rates: list[int],
+                       save_samples: bool = True) -> dict[int, StretchMetrics]:
         """Benchmark different stretch rates for testing"""
         results = {}
 
@@ -321,7 +322,7 @@ class TimeStretcher:
             format=audio.format
         )
 
-    def generate_benchmark_report(self, results: Dict[int, StretchMetrics]) -> str:
+    def generate_benchmark_report(self, results: dict[int, StretchMetrics]) -> str:
         """Generate a comprehensive benchmark report"""
         report = []
         report.append("# Time-Stretching Benchmark Report")

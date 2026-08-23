@@ -14,13 +14,12 @@ independent implementations. A future refactoring could create a unified
 cache base class to reduce duplication.
 """
 
-import time
 import logging
 import threading
-from typing import Dict, Any, Optional, Tuple
-from dataclasses import dataclass
+import time
 from collections import OrderedDict
-import numpy as np
+from dataclasses import dataclass
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +56,7 @@ class SynthesisOptimizer:
     Provides fast paths and performance monitoring
     """
 
-    def __init__(self, config: Optional[SynthesisPerformanceConfig] = None):
+    def __init__(self, config: SynthesisPerformanceConfig | None = None):
         self.config = config or SynthesisPerformanceConfig()
         self.performance_stats = {
             'total_requests': 0,
@@ -77,8 +76,8 @@ class SynthesisOptimizer:
         logger.info("Synthesis optimizer initialized")
 
     def optimize_synthesis_request(self, text: str, voice: str, speed: float = 1.0,
-                                 emotion: Optional[str] = None,
-                                 emotion_strength: float = 1.0) -> Dict[str, Any]:
+                                 emotion: str | None = None,
+                                 emotion_strength: float = 1.0) -> dict[str, Any]:
         """
         Optimize a synthesis request for best performance
         Returns optimization strategy and cached data
@@ -138,7 +137,7 @@ class SynthesisOptimizer:
 
     def monitor_synthesis_performance(self, text: str, voice: str,
                                     generation_time: float, audio_duration: float,
-                                    optimization_strategy: Dict[str, Any]) -> Dict[str, Any]:
+                                    optimization_strategy: dict[str, Any]) -> dict[str, Any]:
         """Monitor and record synthesis performance"""
         rtf = generation_time / max(audio_duration, 0.001)  # Avoid division by zero
 
@@ -229,7 +228,7 @@ class SynthesisOptimizer:
 
             logger.debug(f"Cached fast path result for: {text}")
 
-    def get_performance_stats(self) -> Dict[str, Any]:
+    def get_performance_stats(self) -> dict[str, Any]:
         """Get current performance statistics"""
         with self.stats_lock:
             stats = self.performance_stats.copy()
@@ -249,8 +248,8 @@ class SynthesisOptimizer:
             return stats
 
     def optimize_synthesis_pipeline(self, synthesis_func, text: str, voice: str,
-                                  speed: float = 1.0, emotion: Optional[str] = None,
-                                  emotion_strength: float = 1.0) -> Tuple[Any, Dict[str, Any]]:
+                                  speed: float = 1.0, emotion: str | None = None,
+                                  emotion_strength: float = 1.0) -> tuple[Any, dict[str, Any]]:
         """
         Execute optimized synthesis with performance monitoring
         Returns (audio_segment, performance_data)
@@ -319,7 +318,7 @@ class SynthesisOptimizer:
         logger.info("Performance caches and stats reset")
 
 # Global synthesis optimizer instance
-_synthesis_optimizer: Optional[SynthesisOptimizer] = None
+_synthesis_optimizer: SynthesisOptimizer | None = None
 
 def get_synthesis_optimizer() -> SynthesisOptimizer:
     """Get or create global synthesis optimizer"""
@@ -328,7 +327,7 @@ def get_synthesis_optimizer() -> SynthesisOptimizer:
         _synthesis_optimizer = SynthesisOptimizer()
     return _synthesis_optimizer
 
-def initialize_synthesis_optimizer(config: Optional[SynthesisPerformanceConfig] = None):
+def initialize_synthesis_optimizer(config: SynthesisPerformanceConfig | None = None):
     """Initialize global synthesis optimizer with configuration"""
     global _synthesis_optimizer
     _synthesis_optimizer = SynthesisOptimizer(config)

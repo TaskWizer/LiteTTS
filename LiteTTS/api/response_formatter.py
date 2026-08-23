@@ -3,11 +3,14 @@
 Response formatting for TTS API
 """
 
-from fastapi.responses import StreamingResponse, Response
-from typing import Dict, Any, Iterator
 import logging
+from collections.abc import Iterator
+from typing import Any
+
+from fastapi.responses import Response, StreamingResponse
 
 from LiteTTS.models import AudioSegment
+
 from ..audio.processor import AudioProcessor
 from ..audio.streaming import AudioStreamer
 
@@ -60,7 +63,7 @@ class ResponseFormatter:
             raise
 
     def _create_audio_headers(self, audio_segment: AudioSegment,
-                             format: str, processing_time: float, cache_hit: bool = False) -> Dict[str, str]:
+                             format: str, processing_time: float, cache_hit: bool = False) -> dict[str, str]:
         """Create headers for audio response"""
         headers = {
             'X-Audio-Duration': str(audio_segment.duration),
@@ -115,7 +118,7 @@ class ResponseFormatter:
             raise
 
     def _create_streaming_headers(self, audio_segment: AudioSegment,
-                                 format: str, processing_time: float) -> Dict[str, str]:
+                                 format: str, processing_time: float) -> dict[str, str]:
         """Create headers for streaming audio response"""
         headers = self._create_audio_headers(audio_segment, format, processing_time)
 
@@ -132,8 +135,8 @@ class ResponseFormatter:
 
         return headers
 
-    def format_json_response(self, data: Dict[str, Any],
-                           status_code: int = 200) -> Dict[str, Any]:
+    def format_json_response(self, data: dict[str, Any],
+                           status_code: int = 200) -> dict[str, Any]:
         """Format JSON response with metadata"""
         return {
             "data": data,
@@ -143,8 +146,8 @@ class ResponseFormatter:
         }
 
     def format_error_response(self, error_code: str, message: str,
-                            details: Dict[str, Any] = None,
-                            status_code: int = 500) -> Dict[str, Any]:
+                            details: dict[str, Any] = None,
+                            status_code: int = 500) -> dict[str, Any]:
         """Format error response"""
         return {
             "error": {
@@ -157,7 +160,7 @@ class ResponseFormatter:
         }
 
     def format_health_response(self, is_healthy: bool,
-                             system_info: Dict[str, Any]) -> Dict[str, Any]:
+                             system_info: dict[str, Any]) -> dict[str, Any]:
         """Format health check response"""
         return {
             "status": "healthy" if is_healthy else "degraded",
@@ -166,8 +169,8 @@ class ResponseFormatter:
             "version": "1.0.0"
         }
 
-    def format_voice_list_response(self, voices: Dict[str, Any],
-                                 emotions: list) -> Dict[str, Any]:
+    def format_voice_list_response(self, voices: dict[str, Any],
+                                 emotions: list) -> dict[str, Any]:
         """Format voice list response"""
         return {
             "voices": voices,
@@ -177,7 +180,7 @@ class ResponseFormatter:
             "timestamp": self._get_timestamp()
         }
 
-    def format_stats_response(self, stats: Dict[str, Any]) -> Dict[str, Any]:
+    def format_stats_response(self, stats: dict[str, Any]) -> dict[str, Any]:
         """Format statistics response"""
         return {
             "statistics": stats,

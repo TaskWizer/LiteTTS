@@ -4,18 +4,17 @@ Comprehensive TTS Performance Benchmark Script
 Generates detailed performance metrics, error analysis, and visual reporting
 """
 
-import requests
-import time
-import json
 import csv
+import json
 import statistics
 import sys
-import os
+import time
+from dataclasses import asdict, dataclass
 from datetime import datetime
-from typing import Dict, List, Any, Tuple
-from dataclasses import dataclass, asdict
-import concurrent.futures
 from pathlib import Path
+
+import requests
+
 
 @dataclass
 class BenchmarkResult:
@@ -75,7 +74,7 @@ class TTSBenchmark:
 
     def __init__(self, base_url: str = "http://localhost:8354"):
         self.base_url = base_url
-        self.results: List[BenchmarkResult] = []
+        self.results: list[BenchmarkResult] = []
         self.start_time = datetime.now()
 
         # Test configurations

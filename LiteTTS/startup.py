@@ -3,21 +3,25 @@
 Startup validation and initialization for LiteTTS
 """
 
-import logging
-import sys
-import platform
-from pathlib import Path
-from typing import List, Tuple, Optional
 import asyncio
+import logging
+import platform
+import sys
+from pathlib import Path
 
 from .config import config
-from .logging_config import setup_logging, log_system_info
-from .exceptions import ConfigurationError, ModelError
+from .exceptions import ConfigurationError
+from .logging_config import log_system_info, setup_logging
 
 # Import platform-safe emoji utilities
 try:
     from .utils.platform_emojis import (
-        log_start, log_success, log_error, log_warning, log_config, log_info
+        log_config,
+        log_error,
+        log_info,
+        log_start,
+        log_success,
+        log_warning,
     )
 except ImportError:
     # Fallback functions if utility module is not available
@@ -47,8 +51,8 @@ def configure_windows_console() -> bool:
 
     try:
         # Try to enable UTF-8 mode on Windows console
-        import os
         import locale
+        import os
 
         # Set environment variables for UTF-8 support
         os.environ['PYTHONIOENCODING'] = 'utf-8'
@@ -99,8 +103,8 @@ class StartupValidator:
     """Validates system requirements and configuration at startup"""
 
     def __init__(self):
-        self.errors: List[str] = []
-        self.warnings: List[str] = []
+        self.errors: list[str] = []
+        self.warnings: list[str] = []
 
     def validate_python_version(self) -> bool:
         """Validate Python version requirements"""
@@ -236,7 +240,7 @@ class StartupValidator:
         """Validate configuration settings"""
         return config.validate()
 
-    def run_all_validations(self) -> Tuple[bool, List[str], List[str]]:
+    def run_all_validations(self) -> tuple[bool, list[str], list[str]]:
         """Run all validation checks"""
         logger.info(log_info("Running startup validations..."))
 

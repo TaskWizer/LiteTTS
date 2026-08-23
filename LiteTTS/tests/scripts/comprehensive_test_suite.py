@@ -6,14 +6,14 @@ Tests all new functionality including SSML background noise, voice showcase,
 RTF optimization, pronunciation fixes, and dashboard functionality.
 """
 
-import requests
-import time
 import json
 import os
+import time
 from pathlib import Path
-from typing import Dict, List, Any, Tuple
-import subprocess
-import sys
+from typing import Any
+
+import requests
+
 
 class ComprehensiveTestSuite:
     """Comprehensive test suite for all TTS functionality"""
@@ -33,7 +33,7 @@ class ComprehensiveTestSuite:
             'regression_tests': {}
         }
 
-    def run_all_tests(self) -> Dict[str, Any]:
+    def run_all_tests(self) -> dict[str, Any]:
         """Run all comprehensive tests"""
 
         print("🧪 Comprehensive Test Suite - Kokoro ONNX TTS API")
@@ -93,7 +93,7 @@ class ComprehensiveTestSuite:
 
         return self.test_results
 
-    def test_basic_api(self) -> Dict[str, Any]:
+    def test_basic_api(self) -> dict[str, Any]:
         """Test basic API functionality"""
 
         results = {'total': 0, 'passed': 0, 'failed': 0, 'tests': []}
@@ -150,7 +150,7 @@ class ComprehensiveTestSuite:
 
         return results
 
-    def test_ssml_background(self) -> Dict[str, Any]:
+    def test_ssml_background(self) -> dict[str, Any]:
         """Test SSML background noise functionality"""
 
         results = {'total': 0, 'passed': 0, 'failed': 0, 'tests': []}
@@ -200,7 +200,7 @@ class ComprehensiveTestSuite:
 
         return results
 
-    def test_voice_showcase(self) -> Dict[str, Any]:
+    def test_voice_showcase(self) -> dict[str, Any]:
         """Test voice showcase functionality"""
 
         results = {'total': 0, 'passed': 0, 'failed': 0, 'tests': []}
@@ -247,7 +247,7 @@ class ComprehensiveTestSuite:
 
         return results
 
-    def test_dashboard(self) -> Dict[str, Any]:
+    def test_dashboard(self) -> dict[str, Any]:
         """Test dashboard analytics functionality"""
 
         results = {'total': 0, 'passed': 0, 'failed': 0, 'tests': []}
@@ -287,7 +287,7 @@ class ComprehensiveTestSuite:
 
         return results
 
-    def test_pronunciation(self) -> Dict[str, Any]:
+    def test_pronunciation(self) -> dict[str, Any]:
         """Test pronunciation accuracy fixes"""
 
         results = {'total': 0, 'passed': 0, 'failed': 0, 'tests': []}
@@ -322,7 +322,7 @@ class ComprehensiveTestSuite:
 
         return results
 
-    def test_performance(self) -> Dict[str, Any]:
+    def test_performance(self) -> dict[str, Any]:
         """Test performance and RTF metrics"""
 
         results = {'total': 0, 'passed': 0, 'failed': 0, 'tests': [], 'metrics': {}}
@@ -403,7 +403,7 @@ class ComprehensiveTestSuite:
 
         return results
 
-    def test_error_handling(self) -> Dict[str, Any]:
+    def test_error_handling(self) -> dict[str, Any]:
         """Test error handling and edge cases"""
 
         results = {'total': 0, 'passed': 0, 'failed': 0, 'tests': []}
@@ -437,7 +437,7 @@ class ComprehensiveTestSuite:
 
         return results
 
-    def test_configuration(self) -> Dict[str, Any]:
+    def test_configuration(self) -> dict[str, Any]:
         """Test configuration and setup"""
 
         results = {'total': 0, 'passed': 0, 'failed': 0, 'tests': []}
@@ -474,7 +474,7 @@ class ComprehensiveTestSuite:
 
         return results
 
-    def test_regression(self) -> Dict[str, Any]:
+    def test_regression(self) -> dict[str, Any]:
         """Test for regressions in existing functionality"""
 
         results = {'total': 0, 'passed': 0, 'failed': 0, 'tests': []}

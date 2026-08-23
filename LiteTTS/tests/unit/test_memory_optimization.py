@@ -3,8 +3,7 @@
 Unit tests for memory optimization module
 """
 
-import pytest
-from LiteTTS.performance.memory_optimization import MemoryProfile, MemoryOptimizationConfig
+from LiteTTS.performance.memory_optimization import MemoryOptimizationConfig, MemoryProfile
 
 
 class TestMemoryProfile:

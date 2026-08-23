@@ -3,13 +3,14 @@
 Voice caching system with preloading capabilities
 """
 
-import threading
-import numpy as np
-from pathlib import Path
-from typing import Dict, List, Optional, Any
-from datetime import datetime, timedelta
-from dataclasses import dataclass
 import logging
+import threading
+from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import Any
+
+import numpy as np
 import torch
 
 try:
@@ -30,7 +31,6 @@ except ImportError:
     else:
         # Final fallback - define minimal classes
         from dataclasses import dataclass
-        from typing import Optional
         from datetime import datetime
 
         @dataclass
@@ -46,11 +46,11 @@ except ImportError:
         @dataclass
         class VoiceEmbedding:
             name: str
-            embedding_data: Optional[np.ndarray] = None
-            metadata: Optional[VoiceMetadata] = None
-            loaded_at: Optional[datetime] = None
+            embedding_data: np.ndarray | None = None
+            metadata: VoiceMetadata | None = None
+            loaded_at: datetime | None = None
             file_hash: str = ""
-from .loader import get_voice_loader, VoiceLoader
+from .loader import get_voice_loader
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +68,7 @@ class VoiceCache:
     """Manages voice embedding caching with preloading"""
 
     def __init__(self, voices_dir: str = None,
-                 max_cache_size: int = 5, preload_voices: List[str] = None,
+                 max_cache_size: int = 5, preload_voices: list[str] = None,
                  enable_mock: bool = False):
         # Use configuration if voices_dir not provided
         if voices_dir is None:
@@ -83,7 +83,7 @@ class VoiceCache:
 
         self.voices_dir = Path(voices_dir)
         self.max_cache_size = max_cache_size
-        self.cache: Dict[str, CacheEntry] = {}
+        self.cache: dict[str, CacheEntry] = {}
         self.cache_lock = threading.RLock()
         self.enable_mock = enable_mock
 
@@ -116,7 +116,7 @@ class VoiceCache:
 
         logger.info(f"Voice cache initialized with {successful_preloads}/{len(self.preload_voices)} voices preloaded")
 
-    def get_voice_embedding(self, voice_name: str) -> Optional[VoiceEmbedding]:
+    def get_voice_embedding(self, voice_name: str) -> VoiceEmbedding | None:
         """Get voice embedding from cache or load if not cached"""
         with self.cache_lock:
             # Check if voice is in cache
@@ -139,7 +139,7 @@ class VoiceCache:
                 logger.error(f"Failed to load voice {voice_name}: {e}")
                 return None
 
-    def _load_voice_to_cache(self, voice_name: str) -> Optional[VoiceEmbedding]:
+    def _load_voice_to_cache(self, voice_name: str) -> VoiceEmbedding | None:
         """Load voice embedding to cache using robust loader"""
         try:
             # Use the voice loader with fallback mechanisms
@@ -271,7 +271,7 @@ class VoiceCache:
                 logger.error(f"Failed to preload voice {voice_name}: {e}")
                 return False
 
-    def preload_voices_batch(self, voice_names: List[str]) -> Dict[str, bool]:
+    def preload_voices_batch(self, voice_names: list[str]) -> dict[str, bool]:
         """Preload multiple voices"""
         results = {}
 
@@ -288,7 +288,7 @@ class VoiceCache:
         with self.cache_lock:
             return voice_name in self.cache
 
-    def get_cached_voices(self) -> List[str]:
+    def get_cached_voices(self) -> list[str]:
         """Get list of currently cached voices"""
         with self.cache_lock:
             return list(self.cache.keys())
@@ -320,7 +320,7 @@ class VoiceCache:
                 self.cache.clear()
                 logger.info(f"Cleared entire cache ({cleared_count} voices)")
 
-    def get_cache_stats(self) -> Dict[str, any]:
+    def get_cache_stats(self) -> dict[str, any]:
         """Get cache statistics"""
         with self.cache_lock:
             total_memory = sum(entry.memory_size for entry in self.cache.values())
@@ -377,7 +377,7 @@ class VoiceCache:
 
             logger.info(f"Optimized cache preload list: {self.preload_voices}")
 
-    def validate_cache_integrity(self) -> Dict[str, bool]:
+    def validate_cache_integrity(self) -> dict[str, bool]:
         """Validate integrity of cached voice embeddings"""
         results = {}
 
@@ -450,7 +450,7 @@ class VoiceCache:
 
         logger.info("Individual file optimization complete")
 
-    def _calculate_file_hash_safe(self, voice_name: str, metadata: Dict[str, Any]) -> str:
+    def _calculate_file_hash_safe(self, voice_name: str, metadata: dict[str, Any]) -> str:
         """Calculate file hash safely, with fallback for missing files"""
         try:
             # Try to find actual file
@@ -470,7 +470,7 @@ class VoiceCache:
             import hashlib
             return hashlib.md5(voice_name.encode()).hexdigest()
 
-    def get_loader_statistics(self) -> Dict[str, Any]:
+    def get_loader_statistics(self) -> dict[str, Any]:
         """Get voice loader statistics"""
         if hasattr(self.voice_loader, 'get_load_statistics'):
             return self.voice_loader.get_load_statistics()

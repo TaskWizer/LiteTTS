@@ -5,9 +5,11 @@ Validates fixes for Hmm→hum, and other interjection pronunciation issues
 """
 
 import unittest
+
 import pytest
+
 from LiteTTS.nlp.interjection_fix_processor import InterjectionFixProcessor
-from LiteTTS.nlp.unified_text_processor import UnifiedTextProcessor, ProcessingMode
+from LiteTTS.nlp.unified_text_processor import ProcessingMode, UnifiedTextProcessor
 
 # Skip - internal NLP component tests with incorrect expectations
 pytestmark = pytest.mark.skip(reason="Internal NLP component tests with incorrect expectations")

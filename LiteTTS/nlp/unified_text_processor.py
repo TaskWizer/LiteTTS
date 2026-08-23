@@ -6,40 +6,40 @@ Integrates all enhanced text processors for comprehensive TTS text processing
 
 import logging
 import time
-from typing import Dict, List, Optional, Any, Union
 from dataclasses import dataclass, field
 from enum import Enum
-
-# Import existing processors
-from .text_normalizer import TextNormalizer
-from .clean_text_normalizer import CleanTextNormalizer
-from .homograph_resolver import HomographResolver
-from .phonetic_processor import PhoneticProcessor
-from .spell_processor import SpellProcessor
-from .prosody_analyzer import ProsodyAnalyzer
-from .emotion_detector import EmotionDetector
-from .context_adapter import ContextAdapter
-from .naturalness_enhancer import NaturalnessEnhancer
+from typing import Any, Union
 
 # Import our enhanced processors
 from .advanced_currency_processor import AdvancedCurrencyProcessor, FinancialContext
-from .enhanced_datetime_processor import EnhancedDateTimeProcessor
 from .advanced_symbol_processor import AdvancedSymbolProcessor
-from .espeak_enhanced_symbol_processor import EspeakEnhancedSymbolProcessor
-from .phonetic_contraction_processor import PhoneticContractionProcessor
-from .interjection_fix_processor import InterjectionFixProcessor
-from .pronunciation_rules_processor import PronunciationRulesProcessor
-from .ticker_symbol_processor import TickerSymbolProcessor
-from .proper_name_pronunciation_processor import ProperNamePronunciationProcessor
 
 # Import audio quality enhancers
 from .audio_quality_enhancer import audio_quality_enhancer
-from .voice_modulation_system import VoiceModulationSystem
+from .clean_text_normalizer import CleanTextNormalizer
+from .context_adapter import ContextAdapter
 from .dynamic_emotion_intonation import DynamicEmotionIntonationSystem
+from .emotion_detector import EmotionDetector
+from .enhanced_datetime_processor import EnhancedDateTimeProcessor
+from .espeak_enhanced_symbol_processor import EspeakEnhancedSymbolProcessor
+from .homograph_resolver import HomographResolver
+from .interjection_fix_processor import InterjectionFixProcessor
+from .naturalness_enhancer import NaturalnessEnhancer
+from .phonetic_contraction_processor import PhoneticContractionProcessor
+from .phonetic_processor import PhoneticProcessor
+from .pronunciation_rules_processor import PronunciationRulesProcessor
+from .proper_name_pronunciation_processor import ProperNamePronunciationProcessor
+from .prosody_analyzer import ProsodyAnalyzer
+from .spell_processor import SpellProcessor
+
+# Import existing processors
+from .text_normalizer import TextNormalizer
+from .ticker_symbol_processor import TickerSymbolProcessor
+from .voice_modulation_system import VoiceModulationSystem
 
 # Import Phase 6 enhancements (optional)
 try:
-    from .phase6_text_processor import Phase6TextProcessor, Phase6ProcessingResult
+    from .phase6_text_processor import Phase6ProcessingResult, Phase6TextProcessor
     PHASE6_AVAILABLE = True
 except ImportError:
     PHASE6_AVAILABLE = False
@@ -98,7 +98,7 @@ class ProcessingOptions:
     use_enhanced_contractions: bool = True
 
     # Context options
-    financial_context: Optional[FinancialContext] = None
+    financial_context: FinancialContext | None = None
     preserve_original_on_error: bool = True
 
     # Performance options
@@ -114,9 +114,9 @@ class ProcessingResult:
     mode_used: ProcessingMode
 
     # Processing stages completed
-    stages_completed: List[str] = field(default_factory=list)
-    changes_made: List[str] = field(default_factory=list)
-    issues_found: List[str] = field(default_factory=list)
+    stages_completed: list[str] = field(default_factory=list)
+    changes_made: list[str] = field(default_factory=list)
+    issues_found: list[str] = field(default_factory=list)
 
     # Enhancement data
     currency_enhancements: int = 0
@@ -124,16 +124,16 @@ class ProcessingResult:
     audio_enhancements: int = 0
 
     # Phase 6 enhancement data
-    phase6_result: Optional[Phase6ProcessingResult] = None
+    phase6_result: Phase6ProcessingResult | None = None
     phase6_enhancements: int = 0
 
     # Performance metrics
-    stage_timings: Dict[str, float] = field(default_factory=dict)
+    stage_timings: dict[str, float] = field(default_factory=dict)
 
 class UnifiedTextProcessor:
     """Unified text processing pipeline integrating all processors"""
 
-    def __init__(self, enable_advanced_features: bool = True, config: Optional[Dict] = None):
+    def __init__(self, enable_advanced_features: bool = True, config: dict | None = None):
         """Initialize unified text processor
 
         Args:
@@ -161,7 +161,7 @@ class UnifiedTextProcessor:
 
         logger.info("Unified Text Processor initialized")
 
-    def _load_config(self) -> Dict[str, Any]:
+    def _load_config(self) -> dict[str, Any]:
         """Load configuration from config.json"""
         try:
             import json
@@ -261,7 +261,7 @@ class UnifiedTextProcessor:
             logger.warning(f"Phase 6 processors failed to initialize: {e}")
             self.phase6_processor = None
 
-    def process_text(self, text: str, options: Optional[ProcessingOptions] = None) -> ProcessingResult:
+    def process_text(self, text: str, options: ProcessingOptions | None = None) -> ProcessingResult:
         """Main text processing method
 
         Args:
@@ -645,7 +645,7 @@ class UnifiedTextProcessor:
         result.stage_timings["premium"] = time.perf_counter() - stage_start
         return text
 
-    def analyze_text_complexity(self, text: str) -> Dict[str, Any]:
+    def analyze_text_complexity(self, text: str) -> dict[str, Any]:
         """Analyze text to determine optimal processing mode"""
         analysis = {
             'recommended_mode': ProcessingMode.STANDARD,
@@ -689,7 +689,7 @@ class UnifiedTextProcessor:
 
         return analysis
 
-    def get_processing_capabilities(self) -> Dict[str, bool]:
+    def get_processing_capabilities(self) -> dict[str, bool]:
         """Get current processing capabilities"""
         return {
             'basic_normalization': True,

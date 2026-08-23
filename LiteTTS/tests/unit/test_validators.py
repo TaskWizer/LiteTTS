@@ -3,8 +3,9 @@
 Unit tests for TTS API validators
 """
 
+
 import pytest
-from unittest.mock import MagicMock, Mock
+
 from LiteTTS.api.validators import RequestValidator
 from LiteTTS.models import TTSRequest
 

@@ -5,9 +5,8 @@ A systematic, reliable text normalization pipeline that addresses all identified
 without generating malformed markup or corrupted output.
 """
 
-import re
 import logging
-from typing import Dict, List, Tuple
+import re
 from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
@@ -17,14 +16,14 @@ class NormalizationResult:
     """Result of text normalization"""
     processed_text: str
     original_text: str
-    changes_made: List[str]
-    issues_found: List[str]
+    changes_made: list[str]
+    issues_found: list[str]
     processing_time: float
 
 class CleanTextNormalizer:
     """Clean, systematic text normalizer for TTS pronunciation fixes"""
 
-    def __init__(self, config: Dict = None):
+    def __init__(self, config: dict = None):
         self.config = config or {}
 
         # Load all normalization rules
@@ -55,7 +54,7 @@ class CleanTextNormalizer:
 
         return True
 
-    def _load_contraction_fixes(self) -> Dict[str, str]:
+    def _load_contraction_fixes(self) -> dict[str, str]:
         """Load contraction pronunciation fixes - ONLY truly problematic contractions"""
         # CRITICAL FIX: Only include contractions that are truly problematic for TTS
         # Natural contractions like "won't", "we'll", "I'm" should be preserved
@@ -81,7 +80,7 @@ class CleanTextNormalizer:
             "doesn't": "does not",
         }
 
-    def _load_symbol_mappings(self) -> Dict[str, str]:
+    def _load_symbol_mappings(self) -> dict[str, str]:
         """Load symbol-to-word mappings"""
         return {
             # Critical fixes from conversation history
@@ -107,7 +106,7 @@ class CleanTextNormalizer:
             # '¥': ' yen ',      # Handled in currency processing
         }
 
-    def _load_currency_patterns(self) -> List[Tuple[str, callable]]:
+    def _load_currency_patterns(self) -> list[tuple[str, callable]]:
         """Load currency processing patterns"""
         return [
             # Dollar amounts with cents
@@ -120,7 +119,7 @@ class CleanTextNormalizer:
             (r'€(\d+(?:\.\d{2})?)', self._format_euro_amount),
         ]
 
-    def _load_date_patterns(self) -> List[Tuple[str, callable]]:
+    def _load_date_patterns(self) -> list[tuple[str, callable]]:
         """Load date processing patterns"""
         return [
             # ISO format (the problematic one)
@@ -131,7 +130,7 @@ class CleanTextNormalizer:
             (r'\b(\d{1,2})/(\d{1,2})/(\d{2})\b', self._format_short_year_date),
         ]
 
-    def _load_abbreviation_mappings(self) -> Dict[str, str]:
+    def _load_abbreviation_mappings(self) -> dict[str, str]:
         """Load abbreviation mappings"""
         return {
             # Critical fixes from conversation history
@@ -176,7 +175,7 @@ class CleanTextNormalizer:
             'Android': 'Android',
         }
 
-    def _load_pronunciation_fixes(self) -> Dict[str, str]:
+    def _load_pronunciation_fixes(self) -> dict[str, str]:
         """Load specific pronunciation fixes
 
         NOTE: These phonetic spellings use non-IPA notation and may interfere with

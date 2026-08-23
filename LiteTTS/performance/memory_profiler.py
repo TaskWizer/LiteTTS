@@ -11,17 +11,18 @@ Specialized memory profiling tools for TTS operations including:
 """
 
 import gc
-import tracemalloc
-import psutil
-import time
-import threading
-from typing import Dict, List, Optional, Any, Callable, Tuple
-from dataclasses import dataclass, field
-from pathlib import Path
 import json
 import logging
-from collections import defaultdict
+import threading
+import time
+import tracemalloc
 import weakref
+from collections import defaultdict
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
+
+import psutil
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +37,7 @@ class MemorySnapshot:
     tracemalloc_current_mb: float = 0.0
     tracemalloc_peak_mb: float = 0.0
     gc_objects: int = 0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 @dataclass
 class MemoryLeak:
@@ -45,8 +46,8 @@ class MemoryLeak:
     leak_rate_mb_per_sec: float
     total_leaked_mb: float
     confidence: float  # 0.0 to 1.0
-    evidence: List[str] = field(default_factory=list)
-    recommendations: List[str] = field(default_factory=list)
+    evidence: list[str] = field(default_factory=list)
+    recommendations: list[str] = field(default_factory=list)
 
 class MemoryProfiler:
     """Specialized memory profiler for TTS operations"""
@@ -62,19 +63,19 @@ class MemoryProfiler:
         self.snapshot_interval = snapshot_interval
 
         # Memory tracking data
-        self.snapshots: List[MemorySnapshot] = []
-        self.component_memory: Dict[str, List[float]] = defaultdict(list)
-        self.voice_model_memory: Dict[str, float] = {}
-        self.cache_memory: Dict[str, float] = {}
+        self.snapshots: list[MemorySnapshot] = []
+        self.component_memory: dict[str, list[float]] = defaultdict(list)
+        self.voice_model_memory: dict[str, float] = {}
+        self.cache_memory: dict[str, float] = {}
 
         # Monitoring state
         self._monitoring_active = False
-        self._monitor_thread: Optional[threading.Thread] = None
-        self._baseline_memory: Optional[float] = None
+        self._monitor_thread: threading.Thread | None = None
+        self._baseline_memory: float | None = None
 
         # Leak detection
-        self._leak_detection_data: Dict[str, List[Tuple[float, float]]] = defaultdict(list)
-        self._object_refs: Dict[str, List[weakref.ref]] = defaultdict(list)
+        self._leak_detection_data: dict[str, list[tuple[float, float]]] = defaultdict(list)
+        self._object_refs: dict[str, list[weakref.ref]] = defaultdict(list)
 
         # Results directory
         self.results_dir = Path("performance_results/memory")
@@ -241,7 +242,7 @@ class MemoryProfiler:
                 if slope_mb_per_sec > 1.0 / 60:
                     logger.warning(f"Potential memory leak detected: {slope_mb_per_sec:.3f} MB/sec growth")
 
-    def detect_memory_leaks(self) -> List[MemoryLeak]:
+    def detect_memory_leaks(self) -> list[MemoryLeak]:
         """Detect memory leaks in tracked components
         
         Returns:
@@ -289,7 +290,7 @@ class MemoryProfiler:
 
         return leaks
 
-    def get_memory_summary(self) -> Dict[str, Any]:
+    def get_memory_summary(self) -> dict[str, Any]:
         """Get comprehensive memory usage summary
         
         Returns:
@@ -378,7 +379,7 @@ class MemoryProfiler:
         logger.info(f"Memory report saved: {report_path}")
         return report_path
 
-    def force_garbage_collection(self) -> Dict[str, int]:
+    def force_garbage_collection(self) -> dict[str, int]:
         """Force garbage collection and return statistics
         
         Returns:
@@ -404,7 +405,7 @@ class MemoryProfiler:
         return stats
 
 # Global memory profiler instance
-_memory_profiler: Optional[MemoryProfiler] = None
+_memory_profiler: MemoryProfiler | None = None
 
 def get_memory_profiler() -> MemoryProfiler:
     """Get the global memory profiler instance"""

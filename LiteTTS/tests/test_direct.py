@@ -3,9 +3,10 @@
 Test the TTS API directly to see what's failing
 """
 
-import requests
 import json
-import sys
+
+import requests
+
 
 def test_endpoints():
     """Test all endpoints to isolate the issue"""

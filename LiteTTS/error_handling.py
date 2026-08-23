@@ -3,14 +3,15 @@
 Comprehensive error handling and graceful degradation for Kokoro ONNX TTS API
 """
 
-import logging
-import traceback
-import time
 import inspect
-from typing import Optional, Dict, Any, Callable
-from functools import wraps
+import logging
+import time
+import traceback
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
+from functools import wraps
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -25,11 +26,11 @@ class ErrorSeverity(Enum):
 class ErrorContext:
     """Context information for error handling"""
     operation: str
-    user_input: Optional[str] = None
-    voice: Optional[str] = None
-    format: Optional[str] = None
+    user_input: str | None = None
+    voice: str | None = None
+    format: str | None = None
     timestamp: float = None
-    request_id: Optional[str] = None
+    request_id: str | None = None
 
     def __post_init__(self):
         if self.timestamp is None:
@@ -39,7 +40,7 @@ class TTSError(Exception):
     """Base TTS error with context"""
 
     def __init__(self, message: str, severity: ErrorSeverity = ErrorSeverity.MEDIUM,
-                 context: Optional[ErrorContext] = None, original_error: Optional[Exception] = None):
+                 context: ErrorContext | None = None, original_error: Exception | None = None):
         super().__init__(message)
         self.severity = severity
         self.context = context
@@ -48,23 +49,18 @@ class TTSError(Exception):
 
 class ModelLoadError(TTSError):
     """Error loading TTS model"""
-    pass
 
 class VoiceNotFoundError(TTSError):
     """Voice not available"""
-    pass
 
 class AudioGenerationError(TTSError):
     """Error generating audio"""
-    pass
 
 class ValidationError(TTSError):
     """Input validation error"""
-    pass
 
 class SystemResourceError(TTSError):
     """System resource exhaustion"""
-    pass
 
 class ErrorHandler:
     """Comprehensive error handling system"""
@@ -74,7 +70,7 @@ class ErrorHandler:
         self.last_errors = {}
         self.circuit_breakers = {}
 
-    def handle_error(self, error: Exception, context: Optional[ErrorContext] = None) -> Dict[str, Any]:
+    def handle_error(self, error: Exception, context: ErrorContext | None = None) -> dict[str, Any]:
         """Handle error with appropriate response"""
 
         # Wrap in TTSError if needed
@@ -173,7 +169,7 @@ class ErrorHandler:
 
         return False
 
-    def _circuit_breaker_response(self, error: TTSError) -> Dict[str, Any]:
+    def _circuit_breaker_response(self, error: TTSError) -> dict[str, Any]:
         """Generate circuit breaker response"""
         return {
             "error": "Service temporarily unavailable",
@@ -183,7 +179,7 @@ class ErrorHandler:
             "error_code": "CIRCUIT_BREAKER_ACTIVE"
         }
 
-    def _generate_error_response(self, error: TTSError) -> Dict[str, Any]:
+    def _generate_error_response(self, error: TTSError) -> dict[str, Any]:
         """Generate appropriate error response"""
         base_response = {
             "error": str(error),

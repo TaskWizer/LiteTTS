@@ -4,12 +4,11 @@ Comprehensive gap analysis for TTS pronunciation issues
 Tests the current system against all identified pronunciation problems
 """
 
+import logging
 import sys
-import os
 import unittest
 from pathlib import Path
-from typing import Dict, List, Tuple, Any
-import logging
+
 import pytest
 
 # Add the project root to the path
@@ -18,13 +17,13 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 # Import existing components
 try:
-    from LiteTTS.nlp.processor import NLPProcessor
-    from LiteTTS.nlp.enhanced_nlp_processor import EnhancedNLPProcessor, EnhancedProcessingOptions
-    from LiteTTS.nlp.enhanced_contraction_processor import EnhancedContractionProcessor
-    from LiteTTS.nlp.advanced_symbol_processor import AdvancedSymbolProcessor
-    from LiteTTS.nlp.extended_pronunciation_dictionary import ExtendedPronunciationDictionary
-    from LiteTTS.nlp.enhanced_datetime_processor import EnhancedDateTimeProcessor
     from LiteTTS.nlp.advanced_abbreviation_handler import AdvancedAbbreviationHandler
+    from LiteTTS.nlp.advanced_symbol_processor import AdvancedSymbolProcessor
+    from LiteTTS.nlp.enhanced_contraction_processor import EnhancedContractionProcessor
+    from LiteTTS.nlp.enhanced_datetime_processor import EnhancedDateTimeProcessor
+    from LiteTTS.nlp.enhanced_nlp_processor import EnhancedNLPProcessor, EnhancedProcessingOptions
+    from LiteTTS.nlp.extended_pronunciation_dictionary import ExtendedPronunciationDictionary
+    from LiteTTS.nlp.processor import NLPProcessor
     COMPONENTS_AVAILABLE = True
 except ImportError as e:
     print(f"Warning: Could not import components: {e}")
@@ -52,7 +51,7 @@ class PronunciationGapAnalysis(unittest.TestCase):
         self.systematic_issues = self._load_systematic_test_cases()
         self.advanced_issues = self._load_advanced_test_cases()
 
-    def _load_critical_test_cases(self) -> Dict[str, List[Tuple[str, str, str]]]:
+    def _load_critical_test_cases(self) -> dict[str, list[tuple[str, str, str]]]:
         """Load critical pronunciation issues that need immediate fixing"""
         return {
             'contractions': [
@@ -82,7 +81,7 @@ class PronunciationGapAnalysis(unittest.TestCase):
             ]
         }
 
-    def _load_systematic_test_cases(self) -> Dict[str, List[Tuple[str, str, str]]]:
+    def _load_systematic_test_cases(self) -> dict[str, list[tuple[str, str, str]]]:
         """Load systematic processing issues"""
         return {
             'currency': [
@@ -110,7 +109,7 @@ class PronunciationGapAnalysis(unittest.TestCase):
             ]
         }
 
-    def _load_advanced_test_cases(self) -> Dict[str, List[Tuple[str, str, str]]]:
+    def _load_advanced_test_cases(self) -> dict[str, list[tuple[str, str, str]]]:
         """Load advanced feature test cases"""
         return {
             'context_aware': [

@@ -1,10 +1,10 @@
-import gguf
 from pathlib import Path
-import torch
-from .dac_gguf_encoder import DACEncoder
-from dia.model import Dia
-from dia.state import EncoderInferenceState
+
+import gguf
 from dia.layers import DiaModel
+from dia.model import Dia
+
+from .dac_gguf_encoder import DACEncoder
 
 # The default repositories from which to pull the Dia torch model.
 DEFAULT_DIA_REPO_ID = "nari-labs/Dia-1.6B"

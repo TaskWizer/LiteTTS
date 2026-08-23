@@ -3,7 +3,6 @@
 Unit tests for model optimizer module
 """
 
-import pytest
 from LiteTTS.performance.model_optimizer import ModelOptimizationConfig, ModelOptimizer
 
 

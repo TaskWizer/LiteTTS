@@ -3,9 +3,11 @@
 Unit tests for dynamic voice manager
 """
 
-import pytest
+from unittest.mock import Mock, patch
+
 import numpy as np
-from unittest.mock import Mock, patch, MagicMock
+import pytest
+
 from LiteTTS.voice.dynamic_manager import DynamicVoiceManager, VoiceEmbedding
 
 
@@ -211,7 +213,6 @@ class TestDynamicVoiceManager:
 
     def test_load_voice_mappings_with_file(self, mock_manager, tmp_path):
         """Test _load_voice_mappings loads from file"""
-        import json
         mock_manager.mappings_cache_file = tmp_path / "mappings.json"
         mock_manager.mappings_cache_file.write_text('{"heart": "af_heart"}')
         mock_manager.voice_mappings = {}

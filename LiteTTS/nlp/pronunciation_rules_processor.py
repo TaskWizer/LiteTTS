@@ -4,17 +4,15 @@ Pronunciation Rules Processor for TTS
 Handles natural contraction pronunciation without expansion
 """
 
-import re
-import json
-from typing import Dict, List, Tuple, Optional
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
 class PronunciationRulesProcessor:
     """Processor for applying pronunciation rules to maintain natural speech"""
 
-    def __init__(self, config: Optional[Dict] = None):
+    def __init__(self, config: dict | None = None):
         """Initialize pronunciation rules processor
 
         Args:
@@ -24,7 +22,7 @@ class PronunciationRulesProcessor:
         self.contraction_rules = self._load_contraction_rules()
         self.enabled = self._is_enabled()
 
-    def _load_default_config(self) -> Dict:
+    def _load_default_config(self) -> dict:
         """Load default configuration from centralized config system"""
         try:
             # Try to import and use the centralized config system
@@ -34,7 +32,7 @@ class PronunciationRulesProcessor:
             logger.warning("Could not load centralized config, using defaults")
             return self._get_fallback_config()
 
-    def _get_fallback_config(self) -> Dict:
+    def _get_fallback_config(self) -> dict:
         """Get fallback configuration if centralized config is not available"""
         return {
             'text_processing': {
@@ -60,7 +58,7 @@ class PronunciationRulesProcessor:
                 .get('contraction_handling', {})
                 .get('use_pronunciation_rules', True))
 
-    def _load_contraction_rules(self) -> Dict[str, str]:
+    def _load_contraction_rules(self) -> dict[str, str]:
         """Load contraction pronunciation rules from config"""
         default_rules = {
             # Critical pronunciation fixes - USE PROPER WORD EXPANSIONS
@@ -141,7 +139,7 @@ class PronunciationRulesProcessor:
 
         return text
 
-    def analyze_contractions(self, text: str) -> Dict:
+    def analyze_contractions(self, text: str) -> dict:
         """Analyze contractions in text and suggest pronunciation fixes"""
         analysis = {
             'contractions_found': [],
@@ -180,7 +178,7 @@ class PronunciationRulesProcessor:
             del self.contraction_rules[contraction.lower()]
             logger.info(f"Removed pronunciation rule for: {contraction}")
 
-    def get_pronunciation_rules(self) -> Dict[str, str]:
+    def get_pronunciation_rules(self) -> dict[str, str]:
         """Get all current pronunciation rules"""
         return self.contraction_rules.copy()
 
@@ -201,7 +199,7 @@ class PronunciationRulesProcessor:
             else:
                 self.contraction_rules.pop(contraction.lower(), None)
 
-    def validate_config(self) -> Dict:
+    def validate_config(self) -> dict:
         """Validate the current configuration"""
         validation = {
             'config_loaded': bool(self.config),
@@ -230,7 +228,7 @@ class PronunciationRulesProcessor:
 
         return validation
 
-def create_pronunciation_rules_processor(config: Optional[Dict] = None) -> PronunciationRulesProcessor:
+def create_pronunciation_rules_processor(config: dict | None = None) -> PronunciationRulesProcessor:
     """Factory function to create a pronunciation rules processor"""
     return PronunciationRulesProcessor(config)
 

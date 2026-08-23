@@ -4,8 +4,8 @@ Unit tests for time stretcher
 """
 
 import pytest
-import numpy as np
-from LiteTTS.audio.time_stretcher import TimeStretcher, TimeStretchConfig
+
+from LiteTTS.audio.time_stretcher import TimeStretchConfig, TimeStretcher
 
 
 class TestTimeStretcher:

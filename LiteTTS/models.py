@@ -4,10 +4,12 @@ Core data models and type definitions for Kokoro ONNX TTS API
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Protocol
 from datetime import datetime
+from typing import Any, Protocol
+
 import numpy as np
 from pydantic import BaseModel, Field
+
 
 # Configuration Models
 @dataclass
@@ -39,9 +41,9 @@ class VoiceMetadata:
 class VoiceEmbedding:
     """Voice embedding data structure"""
     name: str
-    embedding_data: Optional[np.ndarray] = None
-    metadata: Optional[VoiceMetadata] = None
-    loaded_at: Optional[datetime] = None
+    embedding_data: np.ndarray | None = None
+    metadata: VoiceMetadata | None = None
+    loaded_at: datetime | None = None
     file_hash: str = ""
 
 @dataclass
@@ -51,7 +53,7 @@ class AudioSegment:
     sample_rate: int
     duration: float
     format: str = "wav"
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
         if self.duration == 0 and len(self.audio_data) > 0:
@@ -83,9 +85,9 @@ class TTSRequest(BaseModel):
     normalization_options: NormalizationOptions = Field(default_factory=NormalizationOptions)
 
     # Time-stretching optimization parameters (beta feature)
-    time_stretching_enabled: Optional[bool] = Field(default=None, description="Enable time-stretching optimization (beta)")
-    time_stretching_rate: Optional[int] = Field(default=None, ge=10, le=100, description="Time-stretching compression rate (10-100%)")
-    time_stretching_quality: Optional[str] = Field(default=None, description="Time-stretching quality: low, medium, high")
+    time_stretching_enabled: bool | None = Field(default=None, description="Enable time-stretching optimization (beta)")
+    time_stretching_rate: int | None = Field(default=None, ge=10, le=100, description="Time-stretching compression rate (10-100%)")
+    time_stretching_quality: str | None = Field(default=None, description="Time-stretching quality: low, medium, high")
 
 class TTSResponse(BaseModel):
     """TTS response metadata"""
@@ -93,7 +95,7 @@ class TTSResponse(BaseModel):
     content_type: str
     duration: float
     processing_time: float
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 # Processing Models
 @dataclass
@@ -111,9 +113,9 @@ class ProcessingMetrics:
 @dataclass
 class ProsodyInfo:
     """Prosody analysis information"""
-    pauses: List[Dict[str, Any]] = field(default_factory=list)
-    emphasis: List[Dict[str, Any]] = field(default_factory=list)
-    intonation: List[Dict[str, Any]] = field(default_factory=list)
+    pauses: list[dict[str, Any]] = field(default_factory=list)
+    emphasis: list[dict[str, Any]] = field(default_factory=list)
+    intonation: list[dict[str, Any]] = field(default_factory=list)
 
 # Protocol Interfaces
 class TTSEngineProtocol(Protocol):
@@ -127,7 +129,7 @@ class TTSEngineProtocol(Protocol):
         """Load a voice embedding"""
         ...
 
-    def get_available_voices(self) -> List[str]:
+    def get_available_voices(self) -> list[str]:
         """Get list of available voices"""
         ...
 
@@ -153,7 +155,7 @@ class NLPProcessorProtocol(Protocol):
 class CacheManagerProtocol(Protocol):
     """Interface for cache management"""
 
-    def get_cached_audio(self, cache_key: str) -> Optional[AudioSegment]:
+    def get_cached_audio(self, cache_key: str) -> AudioSegment | None:
         """Get cached audio segment"""
         ...
 
@@ -161,18 +163,18 @@ class CacheManagerProtocol(Protocol):
         """Cache audio segment"""
         ...
 
-    def get_voice_embedding(self, voice_name: str) -> Optional[VoiceEmbedding]:
+    def get_voice_embedding(self, voice_name: str) -> VoiceEmbedding | None:
         """Get cached voice embedding"""
         ...
 
-    def preload_voices(self, voice_names: List[str]):
+    def preload_voices(self, voice_names: list[str]):
         """Preload voice embeddings"""
         ...
 
 # Error Models
 class TTSError(Exception):
     """Base TTS error"""
-    def __init__(self, message: str, error_code: str = "TTS_ERROR", details: Dict[str, Any] = None):
+    def __init__(self, message: str, error_code: str = "TTS_ERROR", details: dict[str, Any] = None):
         super().__init__(message)
         self.message = message
         self.error_code = error_code
@@ -180,7 +182,7 @@ class TTSError(Exception):
 
 class VoiceNotFoundError(TTSError):
     """Voice not found error"""
-    def __init__(self, voice_name: str, available_voices: List[str] = None):
+    def __init__(self, voice_name: str, available_voices: list[str] = None):
         super().__init__(
             f"Voice '{voice_name}' not found",
             "VOICE_NOT_FOUND",
@@ -206,7 +208,7 @@ class AudioGenerationError(TTSError):
         )
 
 # Utility Functions
-def parse_voice_attributes(voice_name: str) -> Dict[str, str]:
+def parse_voice_attributes(voice_name: str) -> dict[str, str]:
     """Parse voice attributes from voice name using naming convention.
 
     Voice naming convention: [region][gender]_[name]
@@ -285,7 +287,7 @@ def generate_cache_key(text: str, voice: str, speed: float, format: str) -> str:
     key_string = f"{text}:{voice}:{speed}:{format}"
     return hashlib.md5(key_string.encode()).hexdigest()
 
-def validate_tts_request(request: TTSRequest) -> List[str]:
+def validate_tts_request(request: TTSRequest) -> list[str]:
     """Validate TTS request and return list of errors"""
     errors = []
 

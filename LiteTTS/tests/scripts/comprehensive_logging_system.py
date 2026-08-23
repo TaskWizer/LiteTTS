@@ -4,18 +4,17 @@ Comprehensive Logging System
 Set up structured logging for production debugging with appropriate log levels, rotation, and monitoring integration
 """
 
-import os
-import sys
 import json
 import logging
 import logging.handlers
+import os
+import sys
 import time
 import traceback
-from pathlib import Path
-from typing import Dict, List, Any, Optional
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from datetime import datetime
-import threading
+from pathlib import Path
+from typing import Any
 
 # Add the project root to the path
 project_root = Path(__file__).parent.parent
@@ -52,7 +51,7 @@ class LogEntry:
     line_number: int
     thread_id: int
     process_id: int
-    extra_data: Dict[str, Any]
+    extra_data: dict[str, Any]
 
 class StructuredFormatter(logging.Formatter):
     """Custom formatter for structured logging"""
@@ -264,7 +263,7 @@ class ComprehensiveLoggingManager:
             enable_api_logging=True
         )
 
-    def setup_logging(self, config: Optional[LoggingConfiguration] = None) -> Dict[str, Any]:
+    def setup_logging(self, config: LoggingConfiguration | None = None) -> dict[str, Any]:
         """Set up comprehensive logging system"""
         if config:
             self.config = config
@@ -701,7 +700,7 @@ echo "Summary report: $ANALYSIS_DIR/analysis_report.txt"
 
         return analysis_script
 
-    def test_logging_system(self) -> Dict[str, Any]:
+    def test_logging_system(self) -> dict[str, Any]:
         """Test the logging system"""
         test_results = {
             "setup_test": False,
@@ -766,7 +765,7 @@ echo "Summary report: $ANALYSIS_DIR/analysis_report.txt"
 
         return test_results
 
-    def run_comprehensive_logging_setup(self) -> Dict[str, Any]:
+    def run_comprehensive_logging_setup(self) -> dict[str, Any]:
         """Run comprehensive logging system setup"""
         logging.info("Starting comprehensive logging system setup...")
 
@@ -812,8 +811,8 @@ echo "Summary report: $ANALYSIS_DIR/analysis_report.txt"
 
         return results
 
-    def _generate_logging_summary(self, setup_result: Dict[str, Any],
-                                 test_results: Dict[str, Any]) -> Dict[str, Any]:
+    def _generate_logging_summary(self, setup_result: dict[str, Any],
+                                 test_results: dict[str, Any]) -> dict[str, Any]:
         """Generate logging setup summary"""
 
         successful_tests = sum(1 for key, value in test_results.items()
@@ -843,7 +842,7 @@ echo "Summary report: $ANALYSIS_DIR/analysis_report.txt"
 
         return summary
 
-    def _generate_logging_next_steps(self, test_results: Dict[str, Any]) -> List[str]:
+    def _generate_logging_next_steps(self, test_results: dict[str, Any]) -> list[str]:
         """Generate next steps for logging deployment"""
         next_steps = [
             "Integrate logging middleware into your FastAPI application",

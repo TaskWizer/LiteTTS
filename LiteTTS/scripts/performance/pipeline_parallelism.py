@@ -4,20 +4,17 @@ Pipeline Parallelism Implementation
 Add pipeline parallelism for TTS stages, optimize threading configuration for aggressive CPU utilization (90-95%)
 """
 
-import os
-import sys
 import json
 import logging
-import asyncio
-import time
-import threading
 import queue
-import psutil
+import sys
+import threading
+import time
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple, Callable
-from dataclasses import dataclass, asdict
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
-import multiprocessing as mp
+from typing import Any
+
+import psutil
 
 # Add the project root to the path
 project_root = Path(__file__).parent.parent
@@ -35,7 +32,7 @@ class PipelineStage:
     input_queue_size: int
     output_queue_size: int
     worker_count: int
-    cpu_affinity: List[int]
+    cpu_affinity: list[int]
     priority: int
     timeout_seconds: float
 
@@ -62,7 +59,7 @@ class PipelineConfiguration:
     batch_size: int
     queue_monitoring_enabled: bool
     adaptive_worker_scaling: bool
-    stages: List[PipelineStage]
+    stages: list[PipelineStage]
 
 class TTSPipelineStage:
     """Individual TTS pipeline stage"""
@@ -173,7 +170,7 @@ class TTSPipelineStage:
 class TextPreprocessingStage(TTSPipelineStage):
     """Text preprocessing pipeline stage"""
 
-    def _process_item(self, item: Dict[str, Any]) -> Dict[str, Any]:
+    def _process_item(self, item: dict[str, Any]) -> dict[str, Any]:
         """Process text preprocessing"""
         text = item.get("text", "")
 
@@ -189,7 +186,7 @@ class TextPreprocessingStage(TTSPipelineStage):
 class PhonemizationStage(TTSPipelineStage):
     """Phonemization pipeline stage"""
 
-    def _process_item(self, item: Dict[str, Any]) -> Dict[str, Any]:
+    def _process_item(self, item: dict[str, Any]) -> dict[str, Any]:
         """Process phonemization"""
         processed_text = item.get("processed_text", "")
 
@@ -205,7 +202,7 @@ class PhonemizationStage(TTSPipelineStage):
 class AudioGenerationStage(TTSPipelineStage):
     """Audio generation pipeline stage"""
 
-    def _process_item(self, item: Dict[str, Any]) -> Dict[str, Any]:
+    def _process_item(self, item: dict[str, Any]) -> dict[str, Any]:
         """Process audio generation"""
         phonemes = item.get("phonemes", "")
 
@@ -221,7 +218,7 @@ class AudioGenerationStage(TTSPipelineStage):
 class PostProcessingStage(TTSPipelineStage):
     """Post-processing pipeline stage"""
 
-    def _process_item(self, item: Dict[str, Any]) -> Dict[str, Any]:
+    def _process_item(self, item: dict[str, Any]) -> dict[str, Any]:
         """Process post-processing"""
         audio_data = item.get("audio_data", "")
 
@@ -395,7 +392,7 @@ class PipelineParallelismManager:
         self.monitor_thread.start()
         logger.info("CPU monitoring started")
 
-    def stop_cpu_monitoring(self) -> Dict[str, float]:
+    def stop_cpu_monitoring(self) -> dict[str, float]:
         """Stop CPU monitoring and return statistics"""
         self.monitoring_active = False
         if self.monitor_thread:
@@ -418,7 +415,7 @@ class PipelineParallelismManager:
         logger.info("CPU monitoring stopped")
         return stats
 
-    def simulate_pipeline_workload(self, num_requests: int = 100) -> Dict[str, Any]:
+    def simulate_pipeline_workload(self, num_requests: int = 100) -> dict[str, Any]:
         """Simulate pipeline workload"""
         logger.info(f"Simulating pipeline workload with {num_requests} requests...")
 
@@ -471,7 +468,7 @@ class PipelineParallelismManager:
         logger.info(f"Workload simulation completed: {workload_stats['requests_per_second']:.2f} req/s")
         return workload_stats
 
-    def run_comprehensive_pipeline_test(self, test_duration: int = 60) -> Dict[str, Any]:
+    def run_comprehensive_pipeline_test(self, test_duration: int = 60) -> dict[str, Any]:
         """Run comprehensive pipeline parallelism test"""
         logger.info("Starting comprehensive pipeline parallelism test...")
 
@@ -520,9 +517,9 @@ class PipelineParallelismManager:
         logger.info(f"Pipeline test completed. Results saved to: {results_file}")
         return results
 
-    def _analyze_pipeline_performance(self, stage_metrics: Dict[str, Any],
-                                    cpu_stats: Dict[str, float],
-                                    workload_stats: Dict[str, Any]) -> Dict[str, Any]:
+    def _analyze_pipeline_performance(self, stage_metrics: dict[str, Any],
+                                    cpu_stats: dict[str, float],
+                                    workload_stats: dict[str, Any]) -> dict[str, Any]:
         """Analyze pipeline performance"""
 
         # Calculate overall throughput
@@ -557,7 +554,7 @@ class PipelineParallelismManager:
 
         return analysis
 
-    def _calculate_pipeline_balance(self, stage_metrics: Dict[str, Any]) -> float:
+    def _calculate_pipeline_balance(self, stage_metrics: dict[str, Any]) -> float:
         """Calculate pipeline balance (how evenly distributed the load is)"""
         throughputs = [metrics["throughput_per_second"] for metrics in stage_metrics.values()]
 
@@ -576,7 +573,7 @@ class PipelineParallelismManager:
         return balance_score
 
     def _calculate_pipeline_grade(self, cpu_efficiency: float, efficiency_ratio: float,
-                                workload_stats: Dict[str, Any]) -> str:
+                                workload_stats: dict[str, Any]) -> str:
         """Calculate overall pipeline performance grade"""
         score = 0
 
@@ -614,8 +611,8 @@ class PipelineParallelismManager:
             return "D"
 
     def _generate_pipeline_recommendations(self, config: PipelineConfiguration,
-                                         stage_metrics: Dict[str, Any],
-                                         cpu_stats: Dict[str, float]) -> List[str]:
+                                         stage_metrics: dict[str, Any],
+                                         cpu_stats: dict[str, float]) -> list[str]:
         """Generate pipeline optimization recommendations"""
         recommendations = []
 

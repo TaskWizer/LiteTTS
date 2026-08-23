@@ -3,17 +3,16 @@
 Simple test script for time-stretching optimization feature
 """
 
-import os
-import sys
 import json
 import logging
+import sys
 from pathlib import Path
 
 # Add the project root to the path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from LiteTTS.audio.time_stretcher import TimeStretcher, TimeStretchConfig, StretchQuality
+from LiteTTS.audio.time_stretcher import StretchQuality, TimeStretchConfig, TimeStretcher
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

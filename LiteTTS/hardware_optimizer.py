@@ -7,13 +7,14 @@ for the best performance on the user's system.
 """
 
 import json
-import time
-import psutil
-import platform
 import logging
-from pathlib import Path
-from typing import Dict, Any, Optional
+import platform
+import time
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+import psutil
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,7 @@ class HardwareProfile:
     total_memory_gb: float
     available_memory_gb: float
     has_gpu: bool
-    gpu_memory_gb: Optional[float]
+    gpu_memory_gb: float | None
     platform_system: str
     architecture: str
 
@@ -46,9 +47,9 @@ class HardwareOptimizer:
     """Automatic hardware optimization system"""
 
     def __init__(self):
-        self.hardware_profile: Optional[HardwareProfile] = None
-        self.optimized_settings: Optional[OptimizedSettings] = None
-        self.benchmark_results: Dict[str, float] = {}
+        self.hardware_profile: HardwareProfile | None = None
+        self.optimized_settings: OptimizedSettings | None = None
+        self.benchmark_results: dict[str, float] = {}
 
     def detect_hardware(self) -> HardwareProfile:
         """Detect hardware capabilities"""
@@ -105,7 +106,7 @@ class HardwareOptimizer:
         self.hardware_profile = profile
         return profile
 
-    def run_benchmarks(self) -> Dict[str, float]:
+    def run_benchmarks(self) -> dict[str, float]:
         """Run performance benchmarks to determine optimal settings"""
         logger.info("🏃 Running performance benchmarks...")
 
@@ -238,7 +239,7 @@ class HardwareOptimizer:
         self.optimized_settings = settings
         return settings
 
-    def generate_override_config(self) -> Dict[str, Any]:
+    def generate_override_config(self) -> dict[str, Any]:
         """Generate override.json configuration"""
         if not self.optimized_settings:
             raise ValueError("Optimal settings not calculated")
@@ -277,7 +278,7 @@ class HardwareOptimizer:
 
         return config
 
-    def save_override_config(self, config: Dict[str, Any], backup_existing: bool = True) -> bool:
+    def save_override_config(self, config: dict[str, Any], backup_existing: bool = True) -> bool:
         """Save override configuration to file"""
         override_path = Path("override.json")
 

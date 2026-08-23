@@ -3,12 +3,9 @@
 Unit tests for emotion controller module
 """
 
-import pytest
 import numpy as np
-from LiteTTS.tts.emotion_controller import (
-    EmotionMapping,
-    EmotionController
-)
+
+from LiteTTS.tts.emotion_controller import EmotionController, EmotionMapping
 
 
 class TestEmotionMapping:

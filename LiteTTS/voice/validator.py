@@ -3,11 +3,10 @@
 Voice model validator for integrity checking
 """
 
-import numpy as np
-from pathlib import Path
-from typing import Any, Dict, List, Optional
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -18,9 +17,9 @@ class ValidationResult:
     voice_name: str
     file_path: str
     file_size: int
-    errors: List[str]
-    warnings: List[str]
-    metadata: Dict[str, Any]
+    errors: list[str]
+    warnings: list[str]
+    metadata: dict[str, Any]
 
 class VoiceValidator:
     """Validates voice model files for integrity and compatibility"""
@@ -214,7 +213,7 @@ class VoiceValidator:
 
         return result
 
-    def validate_all_voices(self, voices_dir: Path) -> Dict[str, ValidationResult]:
+    def validate_all_voices(self, voices_dir: Path) -> dict[str, ValidationResult]:
         """Validate all voice files in a directory"""
         results = {}
 
@@ -232,7 +231,7 @@ class VoiceValidator:
 
         return results
 
-    def get_validation_summary(self, results: Dict[str, ValidationResult]) -> Dict[str, Any]:
+    def get_validation_summary(self, results: dict[str, ValidationResult]) -> dict[str, Any]:
         """Get summary of validation results"""
         total_voices = len(results)
         valid_voices = sum(1 for r in results.values() if r.is_valid)
@@ -304,7 +303,7 @@ class VoiceValidator:
             return False
 
     def check_compatibility(self, voice_name: str, file_path: Path,
-                          target_device: str = 'cpu') -> Dict[str, Any]:
+                          target_device: str = 'cpu') -> dict[str, Any]:
         """Check compatibility with target device and system"""
         compatibility = {
             'compatible': False,

@@ -3,11 +3,10 @@
 Comprehensive server startup test and dependency checker
 """
 
+import importlib
+import os
 import sys
 import traceback
-import importlib
-import subprocess
-import os
 from pathlib import Path
 
 # Add the project root to the path so we can import modules

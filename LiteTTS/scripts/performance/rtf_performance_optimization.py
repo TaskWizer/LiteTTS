@@ -4,20 +4,20 @@ RTF Performance Optimization System
 Optimize for RTF < 0.25 for short text, < 0.2 overall, with special focus on texts under 20 characters
 """
 
-import os
-import sys
+import asyncio
 import json
 import logging
-import asyncio
-import aiohttp
-import time
+import os
 import statistics
-import wave
+import sys
 import tempfile
+import time
+import wave
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, asdict
-from concurrent.futures import ThreadPoolExecutor
+from typing import Any
+
+import aiohttp
 
 # Add the project root to the path
 project_root = Path(__file__).parent.parent
@@ -79,7 +79,7 @@ class RTFPerformanceOptimizer:
         self.baseline_results = []
         self.optimized_results = []
 
-    def _create_rtf_test_cases(self) -> List[RTFTestCase]:
+    def _create_rtf_test_cases(self) -> list[RTFTestCase]:
         """Create comprehensive RTF test cases"""
         test_cases = []
 
@@ -173,7 +173,7 @@ class RTFPerformanceOptimizer:
 
         return test_cases
 
-    async def generate_audio_with_timing(self, text: str, voice: str = "af_heart") -> Tuple[bool, float, float, str]:
+    async def generate_audio_with_timing(self, text: str, voice: str = "af_heart") -> tuple[bool, float, float, str]:
         """Generate audio and measure timing"""
         try:
             start_time = time.perf_counter()
@@ -256,7 +256,7 @@ class RTFPerformanceOptimizer:
         logger.info(f"Completed: {test_case.test_id} - RTF: {rtf:.3f}, Target: {test_case.target_rtf}, Met: {'✅' if target_met else '❌'}")
         return result
 
-    async def run_baseline_rtf_tests(self, voice_models: List[str] = None) -> List[RTFResult]:
+    async def run_baseline_rtf_tests(self, voice_models: list[str] = None) -> list[RTFResult]:
         """Run baseline RTF performance tests"""
         if voice_models is None:
             voice_models = ["af_heart"]
@@ -276,7 +276,7 @@ class RTFPerformanceOptimizer:
         logger.info(f"Baseline tests completed: {len(baseline_results)} results")
         return baseline_results
 
-    def calculate_optimization_config(self, baseline_results: List[RTFResult]) -> RTFOptimizationConfig:
+    def calculate_optimization_config(self, baseline_results: list[RTFResult]) -> RTFOptimizationConfig:
         """Calculate optimal RTF optimization configuration"""
         logger.info("Calculating optimal RTF optimization configuration...")
 
@@ -305,7 +305,7 @@ class RTFPerformanceOptimizer:
         logger.info(f"Optimization config: Aggressive: {needs_aggressive_optimization}, Short text focus: {needs_short_text_optimization}")
         return config
 
-    def apply_rtf_optimizations(self, config: RTFOptimizationConfig) -> Dict[str, Any]:
+    def apply_rtf_optimizations(self, config: RTFOptimizationConfig) -> dict[str, Any]:
         """Apply RTF optimizations"""
         logger.info("Applying RTF optimizations...")
 
@@ -345,7 +345,7 @@ class RTFPerformanceOptimizer:
         logger.info("RTF optimizations applied")
         return optimization_settings
 
-    async def run_optimized_rtf_tests(self, config: RTFOptimizationConfig, voice_models: List[str] = None) -> List[RTFResult]:
+    async def run_optimized_rtf_tests(self, config: RTFOptimizationConfig, voice_models: list[str] = None) -> list[RTFResult]:
         """Run optimized RTF performance tests"""
         if voice_models is None:
             voice_models = ["af_heart"]
@@ -384,7 +384,7 @@ class RTFPerformanceOptimizer:
         logger.info(f"Optimized tests completed: {len(optimized_results)} results")
         return optimized_results
 
-    def analyze_rtf_improvements(self, baseline_results: List[RTFResult], optimized_results: List[RTFResult]) -> Dict[str, Any]:
+    def analyze_rtf_improvements(self, baseline_results: list[RTFResult], optimized_results: list[RTFResult]) -> dict[str, Any]:
         """Analyze RTF performance improvements"""
         logger.info("Analyzing RTF performance improvements...")
 
@@ -434,7 +434,7 @@ class RTFPerformanceOptimizer:
 
         return analysis
 
-    def generate_rtf_recommendations(self, analysis: Dict[str, Any], config: RTFOptimizationConfig) -> List[str]:
+    def generate_rtf_recommendations(self, analysis: dict[str, Any], config: RTFOptimizationConfig) -> list[str]:
         """Generate RTF optimization recommendations"""
         recommendations = []
 
@@ -466,7 +466,7 @@ class RTFPerformanceOptimizer:
 
         return recommendations
 
-    async def run_comprehensive_rtf_optimization(self, voice_models: List[str] = None) -> Dict[str, Any]:
+    async def run_comprehensive_rtf_optimization(self, voice_models: list[str] = None) -> dict[str, Any]:
         """Run comprehensive RTF performance optimization"""
         if voice_models is None:
             voice_models = ["af_heart"]
@@ -508,9 +508,9 @@ class RTFPerformanceOptimizer:
         logger.info(f"RTF optimization completed. Results saved to: {results_file}")
         return results
 
-    def _generate_performance_summary(self, baseline_results: List[RTFResult],
-                                    optimized_results: List[RTFResult],
-                                    analysis: Dict[str, Any]) -> Dict[str, Any]:
+    def _generate_performance_summary(self, baseline_results: list[RTFResult],
+                                    optimized_results: list[RTFResult],
+                                    analysis: dict[str, Any]) -> dict[str, Any]:
         """Generate performance summary"""
 
         # Calculate success rates
@@ -540,7 +540,7 @@ class RTFPerformanceOptimizer:
 
         return summary
 
-    def _calculate_performance_grade(self, analysis: Dict[str, Any]) -> str:
+    def _calculate_performance_grade(self, analysis: dict[str, Any]) -> str:
         """Calculate overall performance grade"""
         overall = analysis.get("overall", {})
         ultra_short = analysis.get("ultra_short", {})

@@ -2,11 +2,12 @@
 Enhanced Performance Monitoring for RTF Optimization
 """
 
-import time
-import threading
-from typing import Dict, List, Any
-from collections import deque
 import statistics
+import threading
+import time
+from collections import deque
+from typing import Any
+
 
 class RTFPerformanceMonitor:
     """Enhanced performance monitoring for RTF optimization"""
@@ -99,12 +100,12 @@ class RTFPerformanceMonitor:
         else:
             return 'D'
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Get current performance metrics"""
         with self.lock:
             return self.metrics.copy()
 
-    def get_rtf_trend(self) -> List[float]:
+    def get_rtf_trend(self) -> list[float]:
         """Get recent RTF trend"""
         with self.lock:
             return list(self.rtf_history)

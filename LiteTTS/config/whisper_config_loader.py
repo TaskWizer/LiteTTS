@@ -4,12 +4,12 @@ Whisper Configuration Loader for LiteTTS
 Handles loading configuration from JSON files and environment variables
 """
 
-import os
 import json
 import logging
-from pathlib import Path
-from typing import Dict, Any, Union, Optional
+import os
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ class WhisperConfigLoader:
     Configuration loader for Whisper settings with environment variable support
     """
 
-    def __init__(self, config_file: Optional[str] = None):
+    def __init__(self, config_file: str | None = None):
         self.config_file = config_file or "LiteTTS/config/whisper_settings.json"
         self.config_data = {}
         self.settings = WhisperSettings()
@@ -178,8 +178,9 @@ class WhisperConfigLoader:
     def _auto_detect_hardware(self):
         """Auto-detect hardware and apply appropriate optimizations"""
         try:
-            import psutil
             import platform
+
+            import psutil
 
             # Get system information
             cpu_count = psutil.cpu_count(logical=False)
@@ -272,11 +273,11 @@ class WhisperConfigLoader:
         """Get the loaded and validated settings"""
         return self.settings
 
-    def get_raw_config(self) -> Dict[str, Any]:
+    def get_raw_config(self) -> dict[str, Any]:
         """Get the raw configuration data"""
         return self.config_data
 
-    def get_model_info(self, model_name: str) -> Dict[str, Any]:
+    def get_model_info(self, model_name: str) -> dict[str, Any]:
         """Get information about a specific model"""
         model_variants = self.config_data.get("whisper", {}).get("model_variants", {})
         return model_variants.get(model_name, {})
@@ -285,12 +286,12 @@ class WhisperConfigLoader:
         """Get the fallback chain configuration"""
         return self.config_data.get("fallback_strategy", {}).get("fallback_chain", [])
 
-    def get_hardware_profile(self, profile_name: str) -> Dict[str, Any]:
+    def get_hardware_profile(self, profile_name: str) -> dict[str, Any]:
         """Get hardware profile configuration"""
         profiles = self.config_data.get("edge_hardware", {}).get("optimization_profiles", {})
         return profiles.get(profile_name, {})
 
-    def save_config(self, output_file: Optional[str] = None):
+    def save_config(self, output_file: str | None = None):
         """Save current configuration to file"""
         output_path = output_file or self.config_file
 
@@ -304,7 +305,7 @@ class WhisperConfigLoader:
 # Global configuration instance
 _config_loader = None
 
-def get_whisper_config(config_file: Optional[str] = None) -> WhisperConfigLoader:
+def get_whisper_config(config_file: str | None = None) -> WhisperConfigLoader:
     """Get the global Whisper configuration loader"""
     global _config_loader
 

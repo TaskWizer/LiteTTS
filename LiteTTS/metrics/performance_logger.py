@@ -4,15 +4,16 @@ Performance metrics logging system for Kokoro TTS
 Tracks token usage, latency, time to first token, and other performance metrics
 """
 
-import time
-import logging
 import json
-import threading
-from typing import Dict, Optional, Any
-from dataclasses import dataclass, asdict
-from datetime import datetime, timezone
-from collections import defaultdict, deque
+import logging
 import statistics
+import threading
+import time
+from collections import defaultdict, deque
+from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
+from typing import Any
+
 import psutil
 
 logger = logging.getLogger(__name__)
@@ -25,7 +26,7 @@ class PerformanceMetrics:
 
     # Input metrics
     text_length: int
-    token_count: Optional[int] = None
+    token_count: int | None = None
     voice_name: str = ""
 
     # Timing metrics (in seconds)
@@ -47,7 +48,7 @@ class PerformanceMetrics:
     # System metrics
     cpu_usage_percent: float = 0.0
     memory_usage_mb: float = 0.0
-    gpu_memory_usage_mb: Optional[float] = None
+    gpu_memory_usage_mb: float | None = None
 
     # Quality metrics
     error_occurred: bool = False
@@ -61,11 +62,11 @@ class PerformanceMetrics:
 class PerformanceLogger:
     """Centralized performance metrics logging and analysis"""
 
-    def __init__(self, log_file: Optional[str] = None, max_history: int = 10000):
+    def __init__(self, log_file: str | None = None, max_history: int = 10000):
         self.log_file = log_file
         self.max_history = max_history
         self.metrics_history: deque = deque(maxlen=max_history)
-        self.active_requests: Dict[str, Dict[str, Any]] = {}
+        self.active_requests: dict[str, dict[str, Any]] = {}
         self.lock = threading.Lock()
 
         # Performance aggregates
@@ -76,7 +77,7 @@ class PerformanceLogger:
         self.process = psutil.Process()
 
     def start_request(self, request_id: str, text: str, voice_name: str = "",
-                     model_name: str = "") -> Dict[str, Any]:
+                     model_name: str = "") -> dict[str, Any]:
         """Start tracking a new request"""
         with self.lock:
             start_time = time.time()
@@ -134,7 +135,7 @@ class PerformanceLogger:
                 request_data['audio_size_bytes'] = size_bytes
                 logger.debug(f"Request {request_id} - Audio: {duration:.2f}s, {size_bytes} bytes")
 
-    def finish_request(self, request_id: str, error_message: str = "") -> Optional[PerformanceMetrics]:
+    def finish_request(self, request_id: str, error_message: str = "") -> PerformanceMetrics | None:
         """Complete tracking and generate final metrics"""
         with self.lock:
             if request_id not in self.active_requests:
@@ -207,7 +208,7 @@ class PerformanceLogger:
 
             return metrics
 
-    def _get_gpu_memory_usage(self) -> Optional[float]:
+    def _get_gpu_memory_usage(self) -> float | None:
         """Get GPU memory usage if available"""
         try:
             import GPUtil
@@ -235,7 +236,7 @@ class PerformanceLogger:
         except Exception as e:
             logger.error(f"Failed to write metrics to file: {e}")
 
-    def get_recent_stats(self, minutes: int = 60) -> Dict[str, Any]:
+    def get_recent_stats(self, minutes: int = 60) -> dict[str, Any]:
         """Get statistics for recent requests"""
         cutoff_time = datetime.now(timezone.utc).timestamp() - (minutes * 60)
 

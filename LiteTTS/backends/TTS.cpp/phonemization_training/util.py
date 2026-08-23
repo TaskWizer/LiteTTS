@@ -1,5 +1,5 @@
-from copy import deepcopy
 import re
+from copy import deepcopy
 
 ALPHABET = "abcdefghijklmnopqrstuvwxyz"
 BASIC_ENGLISH_PHONEMES = {

@@ -3,8 +3,9 @@
 Unit tests for optimized audio processor
 """
 
-import pytest
 import numpy as np
+import pytest
+
 from LiteTTS.audio.optimized_processor import OptimizedAudioProcessor
 
 

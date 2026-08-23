@@ -3,10 +3,9 @@
 Unit tests for intelligent preloader
 """
 
-import pytest
 from unittest.mock import Mock
-from datetime import datetime
-from LiteTTS.cache.preloader import CacheWarmingConfig, WarmingTask, IntelligentPreloader
+
+from LiteTTS.cache.preloader import CacheWarmingConfig, IntelligentPreloader, WarmingTask
 
 
 class TestCacheWarmingConfig:

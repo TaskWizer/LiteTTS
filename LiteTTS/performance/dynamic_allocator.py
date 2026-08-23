@@ -4,14 +4,14 @@ Dynamic CPU core allocation system that integrates with existing CPU optimizer
 and ONNX Runtime threading configuration for optimal TTS performance.
 """
 
-import os
-import time
 import logging
+import os
 import threading
-from typing import Dict, Optional, Any
+import time
 from dataclasses import dataclass
+from typing import Any
 
-from .cpu_monitor import CPUUtilizationMonitor, CPUAllocation, get_cpu_monitor
+from .cpu_monitor import CPUAllocation, CPUUtilizationMonitor
 from .cpu_optimizer import get_cpu_optimizer
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ class DynamicAllocationConfig:
     """Configuration for dynamic CPU allocation"""
     enabled: bool = True
     min_cores: int = 1
-    max_cores: Optional[int] = None  # None = auto-detect (total_cores - 1)
+    max_cores: int | None = None  # None = auto-detect (total_cores - 1)
     aggressive_mode: bool = False
     thermal_protection: bool = True
     onnx_integration: bool = True
@@ -30,10 +30,10 @@ class DynamicAllocationConfig:
 class DynamicCPUAllocator:
     """Dynamic CPU core allocator that integrates with existing systems"""
 
-    def __init__(self, config: Optional[DynamicAllocationConfig] = None):
+    def __init__(self, config: DynamicAllocationConfig | None = None):
         self.config = config or DynamicAllocationConfig()
         self.cpu_optimizer = get_cpu_optimizer()
-        self.cpu_monitor: Optional[CPUUtilizationMonitor] = None
+        self.cpu_monitor: CPUUtilizationMonitor | None = None
         self._current_onnx_session = None
         self._lock = threading.RLock()
 
@@ -54,7 +54,7 @@ class DynamicCPUAllocator:
         else:
             logger.info("🔒 Conservative mode - Balanced performance optimizations")
 
-    def initialize_monitoring(self, monitor_config: Optional[Dict] = None):
+    def initialize_monitoring(self, monitor_config: dict | None = None):
         """Initialize CPU monitoring with allocation callbacks"""
         from .cpu_monitor import initialize_cpu_monitoring
 
@@ -157,7 +157,7 @@ class DynamicCPUAllocator:
         except Exception as e:
             logger.error(f"Failed to update environment variables: {e}")
 
-    def get_current_onnx_config(self) -> Optional[Dict]:
+    def get_current_onnx_config(self) -> dict | None:
         """Get current ONNX configuration for new sessions"""
         with self._lock:
             return getattr(self, '_current_onnx_config', None)
@@ -181,7 +181,7 @@ class DynamicCPUAllocator:
             logger.error(f"Failed to apply allocation to ONNX session: {e}")
             return False
 
-    def get_recommended_settings(self) -> Dict[str, Any]:
+    def get_recommended_settings(self) -> dict[str, Any]:
         """Get recommended settings based on current allocation"""
         if not self.cpu_monitor:
             return {}
@@ -199,7 +199,7 @@ class DynamicCPUAllocator:
             "allocation_reason": allocation.allocation_reason
         }
 
-    def get_allocation_stats(self) -> Dict:
+    def get_allocation_stats(self) -> dict:
         """Get comprehensive allocation statistics"""
         stats = {
             "dynamic_allocation_enabled": self.config.enabled,
@@ -253,9 +253,9 @@ class DynamicCPUAllocator:
         logger.info("Dynamic CPU allocator shutdown")
 
 # Global allocator instance
-_dynamic_allocator: Optional[DynamicCPUAllocator] = None
+_dynamic_allocator: DynamicCPUAllocator | None = None
 
-def get_dynamic_allocator(config: Optional[DynamicAllocationConfig] = None) -> DynamicCPUAllocator:
+def get_dynamic_allocator(config: DynamicAllocationConfig | None = None) -> DynamicCPUAllocator:
     """Get or create global dynamic allocator instance"""
     global _dynamic_allocator
     if _dynamic_allocator is None:
@@ -263,8 +263,8 @@ def get_dynamic_allocator(config: Optional[DynamicAllocationConfig] = None) -> D
     return _dynamic_allocator
 
 def initialize_dynamic_allocation(
-    allocation_config: Optional[DynamicAllocationConfig] = None,
-    monitor_config: Optional[Dict] = None
+    allocation_config: DynamicAllocationConfig | None = None,
+    monitor_config: dict | None = None
 ) -> DynamicCPUAllocator:
     """Initialize dynamic CPU allocation system"""
     allocator = get_dynamic_allocator(allocation_config)

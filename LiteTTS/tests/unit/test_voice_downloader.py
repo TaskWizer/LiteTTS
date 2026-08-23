@@ -3,16 +3,12 @@
 Unit tests for voice downloader module
 """
 
-import pytest
 import json
 import time
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
-from LiteTTS.voice.downloader import (
-    DownloadProgress,
-    VoiceFileInfo,
-    VoiceDownloader
-)
+from unittest.mock import Mock, patch
+
+from LiteTTS.voice.downloader import DownloadProgress, VoiceDownloader, VoiceFileInfo
 
 
 class TestDownloadProgress:
@@ -283,7 +279,6 @@ class TestVoiceDownloader:
             downloader = VoiceDownloader(voices_dir=str(tmp_path))
             downloader.auto_discovery = False
             # Manually set cache file to a non-existent path
-            from pathlib import Path
             downloader.discovery_cache_file = tmp_path / "nonexistent_cache.json"
             result = downloader._is_cache_expired()
             assert result is True

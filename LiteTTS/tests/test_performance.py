@@ -4,17 +4,18 @@ Performance Test Script for LiteTTS Docker Container
 Tests RTF (Real-Time Factor) performance and compares with target metrics
 """
 
-import time
-import requests
-import json
-import statistics
-from typing import List, Dict, Any
 import argparse
+import statistics
+import time
+from typing import Any
+
+import requests
+
 
 class PerformanceTest:
     def __init__(self, base_url: str = "http://localhost:8354"):
         self.base_url = base_url
-        self.results: List[Dict[str, Any]] = []
+        self.results: list[dict[str, Any]] = []
 
     def test_health(self) -> bool:
         """Test if the API is healthy"""
@@ -25,7 +26,7 @@ class PerformanceTest:
             print(f"Health check failed: {e}")
             return False
 
-    def test_single_synthesis(self, text: str, voice: str = "af_heart") -> Dict[str, Any]:
+    def test_single_synthesis(self, text: str, voice: str = "af_heart") -> dict[str, Any]:
         """Test a single TTS synthesis and measure performance"""
         start_time = time.time()
 
@@ -92,7 +93,7 @@ class PerformanceTest:
                 "synthesis_time": synthesis_time
             }
 
-    def run_performance_test(self, test_cases: List[str], voice: str = "af_heart", iterations: int = 3) -> Dict[str, Any]:
+    def run_performance_test(self, test_cases: list[str], voice: str = "af_heart", iterations: int = 3) -> dict[str, Any]:
         """Run comprehensive performance test"""
         print(f"🧪 Running performance test with {len(test_cases)} test cases, {iterations} iterations each")
         print(f"🎭 Using voice: {voice}")
@@ -161,7 +162,7 @@ class PerformanceTest:
                 "error": "No successful tests"
             }
 
-    def _assess_performance(self, rtfs: List[float]) -> Dict[str, Any]:
+    def _assess_performance(self, rtfs: list[float]) -> dict[str, Any]:
         """Assess performance against targets"""
         mean_rtf = statistics.mean(rtfs)
         target_rtf = 0.5
@@ -176,7 +177,7 @@ class PerformanceTest:
 
         return assessment
 
-    def print_summary(self, summary: Dict[str, Any]):
+    def print_summary(self, summary: dict[str, Any]):
         """Print test summary"""
         print("\n" + "=" * 60)
         print("🎯 PERFORMANCE TEST SUMMARY")

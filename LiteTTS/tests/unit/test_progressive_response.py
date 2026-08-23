@@ -3,7 +3,6 @@
 Unit tests for progressive response handler
 """
 
-import pytest
 from unittest.mock import Mock
 
 

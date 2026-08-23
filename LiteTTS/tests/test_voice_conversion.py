@@ -3,8 +3,8 @@
 Test voice conversion from .pt to .bin format
 """
 
-import sys
 import logging
+import sys
 from pathlib import Path
 
 # Add parent directory to path for imports

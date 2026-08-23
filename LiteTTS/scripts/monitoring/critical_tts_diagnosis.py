@@ -9,15 +9,16 @@ Systematically tests TTS synthesis to identify and diagnose critical failures:
 4. Text preprocessing warnings and word count mismatches
 """
 
-import requests
-import time
-import os
 import json
+import os
+import time
 import wave
-import struct
-from typing import Dict, List, Any, Tuple
+from typing import Any
 
-def analyze_audio_file(filepath: str) -> Dict[str, Any]:
+import requests
+
+
+def analyze_audio_file(filepath: str) -> dict[str, Any]:
     """Analyze audio file properties"""
     try:
         if not os.path.exists(filepath):
@@ -47,8 +48,8 @@ def analyze_audio_file(filepath: str) -> Dict[str, Any]:
         else:
             # For MP3/other formats, try to get actual duration using mutagen
             try:
-                from mutagen.mp3 import MP3
                 from mutagen import File
+                from mutagen.mp3 import MP3
 
                 audio_file = File(filepath)
                 if audio_file is not None and hasattr(audio_file, 'info'):
@@ -78,7 +79,7 @@ def analyze_audio_file(filepath: str) -> Dict[str, Any]:
         return {"error": f"Analysis failed: {e}"}
 
 def test_tts_endpoint(text: str, voice: str = "af_heart", format: str = "mp3",
-                     expected_min_duration: float = 1.0) -> Dict[str, Any]:
+                     expected_min_duration: float = 1.0) -> dict[str, Any]:
     """Test TTS endpoint with specific input and analyze results"""
 
     print(f"\n🔍 Testing: '{text}' (voice: {voice}, format: {format})")
@@ -159,7 +160,7 @@ def test_tts_endpoint(text: str, voice: str = "af_heart", format: str = "mp3",
             "request_time": time.time() - start_time
         }
 
-def test_pronunciation_regressions() -> Dict[str, Any]:
+def test_pronunciation_regressions() -> dict[str, Any]:
     """Test specific pronunciation regression cases"""
 
     print("\n🎯 TESTING PRONUNCIATION REGRESSIONS")
@@ -197,7 +198,7 @@ def test_pronunciation_regressions() -> Dict[str, Any]:
 
     return {"pronunciation_tests": results}
 
-def test_duration_failures() -> Dict[str, Any]:
+def test_duration_failures() -> dict[str, Any]:
     """Test cases that should produce longer audio but are getting truncated"""
 
     print("\n📏 TESTING DURATION/TRUNCATION FAILURES")
@@ -244,7 +245,7 @@ def test_duration_failures() -> Dict[str, Any]:
 
     return {"duration_tests": results}
 
-def test_multiple_voices_and_formats() -> Dict[str, Any]:
+def test_multiple_voices_and_formats() -> dict[str, Any]:
     """Test across multiple voices and formats to isolate issues"""
 
     print("\n🎭 TESTING MULTIPLE VOICES AND FORMATS")
@@ -267,15 +268,15 @@ def test_multiple_voices_and_formats() -> Dict[str, Any]:
 
     return {"voice_format_tests": results}
 
-def analyze_text_preprocessing() -> Dict[str, Any]:
+def analyze_text_preprocessing() -> dict[str, Any]:
     """Test text preprocessing pipeline directly"""
 
     print("\n📝 TESTING TEXT PREPROCESSING PIPELINE")
     print("=" * 40)
 
     try:
-        import sys
         import os
+        import sys
         sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
         from LiteTTS.nlp.processor import NLPProcessor

@@ -1,8 +1,8 @@
 # TTS engine package
 
-from .engine import KokoroTTSEngine
-from .emotion_controller import EmotionController
 from .chunk_processor import ChunkProcessor
+from .emotion_controller import EmotionController
+from .engine import KokoroTTSEngine
 from .synthesizer import TTSSynthesizer
 
 __all__ = [

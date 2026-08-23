@@ -6,13 +6,14 @@ Processes SSML markup and integrates background noise with speech synthesis.
 """
 
 import logging
+from typing import Any
+
 import numpy as np
-from typing import Optional, Dict, Any
 
 from ..audio.audio_segment import AudioSegment
 from ..audio.processor import AudioProcessor
-from .parser import SSMLParser, ParsedSSML, BackgroundConfig
 from .background_generator import BackgroundGenerator
+from .parser import BackgroundConfig, SSMLParser
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,7 @@ class SSMLProcessor:
         self.background_generator = BackgroundGenerator(sample_rate)
         self.audio_processor = AudioProcessor()
 
-    def process_ssml(self, ssml_text: str) -> tuple[str, Optional[BackgroundConfig], Dict[str, Any]]:
+    def process_ssml(self, ssml_text: str) -> tuple[str, BackgroundConfig | None, dict[str, Any]]:
         """
         Process SSML text and extract components
         
@@ -195,7 +196,7 @@ class SSMLProcessor:
 
         return audio_data
 
-    def validate_ssml(self, ssml_text: str) -> Dict[str, Any]:
+    def validate_ssml(self, ssml_text: str) -> dict[str, Any]:
         """
         Validate SSML markup
         
@@ -225,7 +226,7 @@ class SSMLProcessor:
             'custom'
         ]
 
-    def create_background_example(self, bg_type: str, duration: float = 5.0) -> Optional[AudioSegment]:
+    def create_background_example(self, bg_type: str, duration: float = 5.0) -> AudioSegment | None:
         """
         Create an example of a background type for testing/preview
         

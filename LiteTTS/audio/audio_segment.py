@@ -3,10 +3,12 @@
 Enhanced AudioSegment class with format conversion and streaming support
 """
 
-import numpy as np
-from typing import Dict, Any, Optional, Iterator
-from dataclasses import dataclass, field
 import logging
+from collections.abc import Iterator
+from dataclasses import dataclass, field
+from typing import Any
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +19,7 @@ class AudioSegment:
     sample_rate: int
     duration: float = 0.0
     format: str = "wav"
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
         if self.duration == 0.0 and len(self.audio_data) > 0:
@@ -72,7 +74,7 @@ class AudioSegment:
             metadata=combined_metadata
         )
 
-    def trim(self, start_time: float = 0.0, end_time: Optional[float] = None) -> 'AudioSegment':
+    def trim(self, start_time: float = 0.0, end_time: float | None = None) -> 'AudioSegment':
         """Trim audio segment to specified time range"""
         start_sample = int(start_time * self.sample_rate)
         end_sample = int(end_time * self.sample_rate) if end_time else len(self.audio_data)
@@ -209,7 +211,7 @@ class AudioSegment:
             logger.error(f"Audio validation failed: {e}")
             return False
 
-    def get_info(self) -> Dict[str, Any]:
+    def get_info(self) -> dict[str, Any]:
         """Get audio segment information"""
         return {
             'duration': self.duration,

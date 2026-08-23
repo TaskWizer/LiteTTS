@@ -4,8 +4,8 @@ Platform-safe emoji utility for cross-platform compatibility.
 Provides fallback text for Windows systems that don't support Unicode emojis.
 """
 
-import sys
 import platform
+import sys
 
 
 def is_windows_with_encoding_issues() -> bool:

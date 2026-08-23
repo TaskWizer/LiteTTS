@@ -3,9 +3,8 @@
 Spell processor for handling spell() function calls
 """
 
-import re
-from typing import Dict, List
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +14,7 @@ class SpellProcessor:
     def __init__(self):
         self.letter_names = self._load_letter_names()
 
-    def _load_letter_names(self) -> Dict[str, str]:
+    def _load_letter_names(self) -> dict[str, str]:
         """Load letter names for spelling"""
         return {
             'a': 'ay', 'b': 'bee', 'c': 'see', 'd': 'dee', 'e': 'ee',

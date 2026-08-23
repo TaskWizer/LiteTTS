@@ -4,19 +4,20 @@ Pronunciation Accuracy Benchmarking System
 Establishes baseline metrics and implements external ASR API integration with fallback mechanisms
 """
 
-import os
-import sys
+import asyncio
+import difflib
 import json
 import logging
-import asyncio
-import aiohttp
-import time
-import tempfile
+import os
 import statistics
+import sys
+import tempfile
+import time
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, asdict, field
-import difflib
+from typing import Any
+
+import aiohttp
 
 # Add the project root to the path
 project_root = Path(__file__).parent.parent
@@ -49,12 +50,12 @@ class PronunciationBenchmark:
 class BaselineMetrics:
     """Baseline pronunciation accuracy metrics"""
     overall_accuracy: float
-    category_accuracies: Dict[str, float]
-    wer_statistics: Dict[str, float]
-    rtf_statistics: Dict[str, float]
-    voice_model_performance: Dict[str, float]
-    critical_issues: List[str]
-    improvement_areas: List[str]
+    category_accuracies: dict[str, float]
+    wer_statistics: dict[str, float]
+    rtf_statistics: dict[str, float]
+    voice_model_performance: dict[str, float]
+    critical_issues: list[str]
+    improvement_areas: list[str]
     benchmark_timestamp: float = field(default_factory=time.time)
 
 class PronunciationAccuracyBenchmarker:
@@ -71,7 +72,7 @@ class PronunciationAccuracyBenchmarker:
         # ASR fallback mechanisms (heuristic-based for now)
         self.asr_available = False
 
-    def _create_benchmark_test_cases(self) -> List[Dict[str, Any]]:
+    def _create_benchmark_test_cases(self) -> list[dict[str, Any]]:
         """Create comprehensive benchmark test cases"""
         test_cases = []
 
@@ -239,7 +240,7 @@ class PronunciationAccuracyBenchmarker:
 
         return test_cases
 
-    async def generate_audio(self, text: str, voice: str = "af_heart") -> Tuple[bool, bytes, float, str]:
+    async def generate_audio(self, text: str, voice: str = "af_heart") -> tuple[bool, bytes, float, str]:
         """Generate audio for given text"""
         try:
             start_time = time.time()
@@ -289,7 +290,7 @@ class PronunciationAccuracyBenchmarker:
             logger.warning(f"Audio duration analysis failed: {e}")
             return 0.0
 
-    def calculate_pronunciation_accuracy_heuristic(self, expected: str, input_text: str, test_case: Dict[str, Any]) -> Tuple[float, float, float]:
+    def calculate_pronunciation_accuracy_heuristic(self, expected: str, input_text: str, test_case: dict[str, Any]) -> tuple[float, float, float]:
         """Calculate pronunciation accuracy using heuristic methods"""
         # Normalize texts for comparison
         expected_words = expected.lower().split()
@@ -334,7 +335,7 @@ class PronunciationAccuracyBenchmarker:
 
         return word_accuracy, wer, phoneme_accuracy
 
-    async def benchmark_single_case(self, test_case: Dict[str, Any], voice: str = "af_heart") -> PronunciationBenchmark:
+    async def benchmark_single_case(self, test_case: dict[str, Any], voice: str = "af_heart") -> PronunciationBenchmark:
         """Benchmark a single pronunciation test case"""
         logger.info(f"Benchmarking: {test_case['test_id']} - {test_case['description']}")
 
@@ -400,7 +401,7 @@ class PronunciationAccuracyBenchmarker:
         logger.info(f"Completed: {test_case['test_id']} - Accuracy: {pronunciation_accuracy:.3f}, WER: {wer:.3f}, RTF: {rtf:.3f}")
         return benchmark
 
-    async def run_comprehensive_benchmarks(self, voice_models: List[str] = None) -> Dict[str, Any]:
+    async def run_comprehensive_benchmarks(self, voice_models: list[str] = None) -> dict[str, Any]:
         """Run comprehensive pronunciation accuracy benchmarks"""
         if voice_models is None:
             voice_models = ["af_heart", "af_sky", "am_adam", "am_michael"]
@@ -466,9 +467,9 @@ class PronunciationAccuracyBenchmarker:
         logger.info(f"Benchmarks completed. Results saved to: {results_file}")
         return report
 
-    def _establish_baseline_metrics(self, benchmarks: List[PronunciationBenchmark],
-                                  category_performance: Dict[str, Any],
-                                  voice_performance: Dict[str, Any]) -> BaselineMetrics:
+    def _establish_baseline_metrics(self, benchmarks: list[PronunciationBenchmark],
+                                  category_performance: dict[str, Any],
+                                  voice_performance: dict[str, Any]) -> BaselineMetrics:
         """Establish baseline pronunciation accuracy metrics"""
 
         # Overall accuracy
@@ -531,7 +532,7 @@ class PronunciationAccuracyBenchmarker:
             improvement_areas=improvement_areas
         )
 
-    def _generate_performance_summary(self, benchmarks: List[PronunciationBenchmark]) -> Dict[str, Any]:
+    def _generate_performance_summary(self, benchmarks: list[PronunciationBenchmark]) -> dict[str, Any]:
         """Generate performance summary"""
         total_tests = len(benchmarks)
         successful_tests = sum(1 for b in benchmarks if b.pronunciation_accuracy >= 0.8)
@@ -549,7 +550,7 @@ class PronunciationAccuracyBenchmarker:
             "overall_grade": self._calculate_overall_grade(benchmarks)
         }
 
-    def _calculate_overall_grade(self, benchmarks: List[PronunciationBenchmark]) -> str:
+    def _calculate_overall_grade(self, benchmarks: list[PronunciationBenchmark]) -> str:
         """Calculate overall performance grade"""
         if not benchmarks:
             return "NO_DATA"
@@ -572,7 +573,7 @@ class PronunciationAccuracyBenchmarker:
             return "D"
 
     def _generate_benchmark_recommendations(self, baseline: BaselineMetrics,
-                                          category_performance: Dict[str, Any]) -> List[str]:
+                                          category_performance: dict[str, Any]) -> list[str]:
         """Generate recommendations based on benchmark results"""
         recommendations = []
 

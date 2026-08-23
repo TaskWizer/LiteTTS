@@ -4,14 +4,12 @@ Comprehensive Test Runner for Kokoro ONNX TTS API
 Executes all test suites with proper reporting and configuration
 """
 
-import os
-import sys
-import subprocess
 import argparse
-import time
 import json
+import subprocess
+import sys
+import time
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
 # Add project root to path
 project_root = Path(__file__).parent
@@ -101,7 +99,7 @@ class TestRunner:
             print(f"❌ Dependency check failed: {e}")
             return False
 
-    def find_test_files(self, paths: List[str]) -> List[Path]:
+    def find_test_files(self, paths: list[str]) -> list[Path]:
         """Find all test files matching the given patterns"""
         test_files = []
 
@@ -123,7 +121,7 @@ class TestRunner:
 
         return [f for f in test_files if f.exists()]
 
-    def run_test_suite(self, suite_name: str, suite_config: Dict) -> Dict:
+    def run_test_suite(self, suite_name: str, suite_config: dict) -> dict:
         """Run a specific test suite"""
         print(f"\n🧪 Running {suite_name} tests...")
         print(f"📝 {suite_config['description']}")
@@ -220,7 +218,7 @@ class TestRunner:
             }
 
     def _parse_test_result(self, result: subprocess.CompletedProcess,
-                          json_report: str, duration: float) -> Dict:
+                          json_report: str, duration: float) -> dict:
         """Parse test result from subprocess and JSON report"""
 
         # Try to parse JSON report first
@@ -251,7 +249,7 @@ class TestRunner:
             "stderr": result.stderr
         }
 
-    def run_all_tests(self, suites: Optional[List[str]] = None) -> Dict:
+    def run_all_tests(self, suites: list[str] | None = None) -> dict:
         """Run all test suites or specified suites"""
 
         if not self.check_dependencies():
@@ -278,7 +276,7 @@ class TestRunner:
         # Generate summary
         return self._generate_summary()
 
-    def _generate_summary(self) -> Dict:
+    def _generate_summary(self) -> dict:
         """Generate test run summary"""
         total_duration = time.time() - self.start_time
 

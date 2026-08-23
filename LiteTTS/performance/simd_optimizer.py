@@ -5,12 +5,13 @@ Implements vectorized operations using SSE/AVX/AVX-512 for audio processing acce
 """
 
 import logging
-import numpy as np
-import platform
-import subprocess
 import os
-from typing import Dict, List, Optional, Tuple, Any
+import platform
 from dataclasses import dataclass
+from typing import Any
+
+import numpy as np
+
 try:
     import cpuinfo
     CPUINFO_AVAILABLE = True
@@ -44,7 +45,7 @@ class SIMDCapabilities:
 class SIMDOptimizationConfig:
     """SIMD optimization configuration"""
     enable_vectorization: bool = True
-    force_instruction_set: Optional[str] = None
+    force_instruction_set: str | None = None
     enable_auto_detection: bool = True
     enable_audio_vectorization: bool = True
     enable_phoneme_vectorization: bool = True
@@ -57,7 +58,7 @@ class SIMDOptimizer:
     SIMD instruction set optimizer for audio processing acceleration
     """
 
-    def __init__(self, config: Optional[SIMDOptimizationConfig] = None):
+    def __init__(self, config: SIMDOptimizationConfig | None = None):
         self.config = config or SIMDOptimizationConfig()
         self.capabilities = self._detect_simd_capabilities()
         self.optimal_config = self._determine_optimal_config()
@@ -124,7 +125,7 @@ class SIMDOptimizer:
 
         return capabilities
 
-    def _get_cpu_flags_fallback(self) -> List[str]:
+    def _get_cpu_flags_fallback(self) -> list[str]:
         """Fallback method to get CPU flags without cpuinfo library"""
         flags = []
 
@@ -150,7 +151,7 @@ class SIMDOptimizer:
 
         return flags
 
-    def _determine_optimal_config(self) -> Dict[str, Any]:
+    def _determine_optimal_config(self) -> dict[str, Any]:
         """Determine optimal configuration based on detected capabilities"""
         config = {
             "instruction_set": self.capabilities.optimal_instruction_set,
@@ -216,7 +217,7 @@ class SIMDOptimizer:
             logger.warning(f"SIMD mel-spectrogram computation failed: {e}")
             return features
 
-    def optimize_phoneme_processing(self, phoneme_sequences: List[np.ndarray]) -> List[np.ndarray]:
+    def optimize_phoneme_processing(self, phoneme_sequences: list[np.ndarray]) -> list[np.ndarray]:
         """Vectorize phoneme sequence processing"""
         if not self.config.enable_phoneme_vectorization:
             return phoneme_sequences
@@ -244,7 +245,7 @@ class SIMDOptimizer:
             logger.warning(f"SIMD phoneme processing failed: {e}")
             return phoneme_sequences
 
-    def _align_array(self, array: np.ndarray, alignment: Optional[int] = None) -> np.ndarray:
+    def _align_array(self, array: np.ndarray, alignment: int | None = None) -> np.ndarray:
         """Align array for optimal SIMD performance"""
         if alignment is None:
             alignment = self.optimal_config["alignment"]
@@ -330,7 +331,7 @@ class SIMDOptimizer:
 
         return normalized_sequence
 
-    def apply_environment_optimizations(self) -> Dict[str, str]:
+    def apply_environment_optimizations(self) -> dict[str, str]:
         """Apply SIMD-related environment variable optimizations"""
         env_vars = {}
 
@@ -363,7 +364,7 @@ class SIMDOptimizer:
 
         return env_vars
 
-    def get_optimization_status(self) -> Dict[str, Any]:
+    def get_optimization_status(self) -> dict[str, Any]:
         """Get current SIMD optimization status"""
         return {
             "capabilities": self.capabilities,
@@ -374,7 +375,7 @@ class SIMDOptimizer:
         }
 
 # Global SIMD optimizer instance
-_global_simd_optimizer: Optional[SIMDOptimizer] = None
+_global_simd_optimizer: SIMDOptimizer | None = None
 
 def get_simd_optimizer() -> SIMDOptimizer:
     """Get or create global SIMD optimizer instance"""

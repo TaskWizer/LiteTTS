@@ -3,10 +3,9 @@
 Prosody analysis system for natural speech patterns
 """
 
-import re
-from typing import Dict, List, Tuple
-from dataclasses import dataclass
 import logging
+import re
+from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +24,7 @@ class ProsodyAnalyzer:
         self.punctuation_patterns = self._compile_punctuation_patterns()
         self.conversational_patterns = self._compile_conversational_patterns()
 
-    def _compile_punctuation_patterns(self) -> Dict[str, Tuple[re.Pattern, float, float]]:
+    def _compile_punctuation_patterns(self) -> dict[str, tuple[re.Pattern, float, float]]:
         """Compile punctuation patterns with pause durations and intonation markers"""
         return {
             'period': (re.compile(r'\.(?!\d)'), 0.8, 0.6),  # Period (not in decimals)
@@ -40,7 +39,7 @@ class ProsodyAnalyzer:
             'quotes': (re.compile(r'["\']'), 0.2, 0.1)      # Quotes
         }
 
-    def _compile_conversational_patterns(self) -> Dict[str, Tuple[re.Pattern, str, float]]:
+    def _compile_conversational_patterns(self) -> dict[str, tuple[re.Pattern, str, float]]:
         """Compile conversational marker patterns"""
         return {
             'false_start': (
@@ -65,7 +64,7 @@ class ProsodyAnalyzer:
             )
         }
 
-    def analyze_prosody(self, text: str) -> List[ProsodyMarker]:
+    def analyze_prosody(self, text: str) -> list[ProsodyMarker]:
         """Analyze text and return prosody markers"""
         logger.debug(f"Analyzing prosody in: {text[:100]}...")
 
@@ -83,7 +82,7 @@ class ProsodyAnalyzer:
         logger.debug(f"Found {len(markers)} prosody markers")
         return markers
 
-    def _analyze_punctuation(self, text: str) -> List[ProsodyMarker]:
+    def _analyze_punctuation(self, text: str) -> list[ProsodyMarker]:
         """Analyze punctuation for prosody markers with enhanced intonation handling"""
         markers = []
 
@@ -131,7 +130,7 @@ class ProsodyAnalyzer:
 
         return markers
 
-    def _analyze_conversational_markers(self, text: str) -> List[ProsodyMarker]:
+    def _analyze_conversational_markers(self, text: str) -> list[ProsodyMarker]:
         """Analyze conversational markers"""
         markers = []
 
@@ -233,7 +232,7 @@ class ProsodyAnalyzer:
 
         return text
 
-    def get_prosody_info(self, text: str) -> Dict[str, List[Dict]]:
+    def get_prosody_info(self, text: str) -> dict[str, list[dict]]:
         """Get detailed prosody information"""
         markers = self.analyze_prosody(text)
 

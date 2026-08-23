@@ -5,18 +5,19 @@ Tests pronunciation fixes, audio quality enhancements, and performance optimizat
 """
 
 import sys
-import os
 import time
-import requests
 from pathlib import Path
+
+import requests
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 import logging
+
+from LiteTTS.nlp.audio_quality_enhancer import audio_quality_enhancer
 from LiteTTS.nlp.unified_pronunciation_fix import unified_pronunciation_fix
-from LiteTTS.nlp.audio_quality_enhancer import audio_quality_enhancer, AudioQualityProfile
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')

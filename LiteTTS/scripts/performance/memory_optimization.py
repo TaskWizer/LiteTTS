@@ -4,18 +4,18 @@ Memory Usage and Pre-allocation Optimization System
 Implement memory pre-allocation strategies, optimize caching mechanisms, target <150MB additional memory usage
 """
 
-import os
-import sys
+import gc
 import json
 import logging
-import psutil
-import time
-import gc
-import tracemalloc
-from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, asdict
+import sys
 import threading
+import time
+import tracemalloc
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import Any
+
+import psutil
 
 # Add the project root to the path
 project_root = Path(__file__).parent.parent
@@ -35,8 +35,8 @@ class MemoryProfile:
     process_memory_percent: float
     peak_memory_mb: float
     memory_growth_mb: float
-    gc_collections: Dict[str, int]
-    largest_objects: List[Dict[str, Any]]
+    gc_collections: dict[str, int]
+    largest_objects: list[dict[str, Any]]
 
 @dataclass
 class MemoryOptimizationConfig:
@@ -154,7 +154,7 @@ class MemoryOptimizer:
         self.monitor_thread.start()
         logger.info("Memory monitoring started")
 
-    def stop_memory_monitoring(self) -> Dict[str, Any]:
+    def stop_memory_monitoring(self) -> dict[str, Any]:
         """Stop memory monitoring and return statistics"""
         self.monitoring_active = False
         if self.monitor_thread:
@@ -178,7 +178,7 @@ class MemoryOptimizer:
         logger.info("Memory monitoring stopped")
         return stats
 
-    def _calculate_variance(self, values: List[float]) -> float:
+    def _calculate_variance(self, values: list[float]) -> float:
         """Calculate variance of memory values"""
         if len(values) < 2:
             return 0.0
@@ -246,7 +246,7 @@ class MemoryOptimizer:
         collected = gc.collect()
         logger.info(f"Initial GC collected {collected} objects")
 
-    def implement_caching_optimization(self, config: MemoryOptimizationConfig) -> Dict[str, Any]:
+    def implement_caching_optimization(self, config: MemoryOptimizationConfig) -> dict[str, Any]:
         """Implement optimized caching mechanisms"""
         logger.info("Implementing caching optimization...")
 
@@ -280,7 +280,7 @@ class MemoryOptimizer:
         logger.info(f"Cache configuration: {cache_config}")
         return cache_config
 
-    def monitor_memory_leaks(self, duration_seconds: int = 60) -> Dict[str, Any]:
+    def monitor_memory_leaks(self, duration_seconds: int = 60) -> dict[str, Any]:
         """Monitor for memory leaks"""
         logger.info(f"Monitoring for memory leaks for {duration_seconds} seconds...")
 
@@ -350,7 +350,7 @@ class MemoryOptimizer:
         logger.info(f"Optimal config: Pre-alloc: {pre_allocation_size}MB, Cache: {cache_size}MB")
         return config
 
-    def run_comprehensive_optimization(self, target_memory_mb: int = 150) -> Dict[str, Any]:
+    def run_comprehensive_optimization(self, target_memory_mb: int = 150) -> dict[str, Any]:
         """Run comprehensive memory optimization"""
         logger.info("Starting comprehensive memory optimization...")
 
@@ -419,7 +419,7 @@ class MemoryOptimizer:
     def _generate_memory_recommendations(self, config: MemoryOptimizationConfig,
                                        baseline: MemoryProfile,
                                        final: MemoryProfile,
-                                       target_mb: int) -> List[str]:
+                                       target_mb: int) -> list[str]:
         """Generate memory optimization recommendations"""
         recommendations = []
 

@@ -13,6 +13,7 @@ sys.path.insert(0, str(project_root))
 
 from LiteTTS.startup import initialize_system
 
+
 async def main():
     """Main startup function"""
     try:

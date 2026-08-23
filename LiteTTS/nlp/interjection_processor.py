@@ -4,9 +4,8 @@ Interjection processor for natural TTS pronunciation
 Fixes issues like "hmm" → "hum" by extending interjections for natural pronunciation
 """
 
-import re
 import logging
-from typing import Dict, List, Tuple
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +16,7 @@ class InterjectionProcessor:
         self.interjection_fixes = self._load_interjection_fixes()
         self.hesitation_sounds = self._load_hesitation_sounds()
 
-    def _load_interjection_fixes(self) -> Dict[str, str]:
+    def _load_interjection_fixes(self) -> dict[str, str]:
         """Load interjection pronunciation fixes"""
         return {
             # Critical issue from user feedback
@@ -52,7 +51,7 @@ class InterjectionProcessor:
             "OH": "OHH",        # All caps
         }
 
-    def _load_hesitation_sounds(self) -> List[str]:
+    def _load_hesitation_sounds(self) -> list[str]:
         """Load list of hesitation sounds for detection"""
         return [
             "hmm", "mm", "uh", "um", "er", "ah", "oh",
@@ -77,7 +76,7 @@ class InterjectionProcessor:
 
         return text
 
-    def analyze_interjections(self, text: str) -> Dict[str, List[str]]:
+    def analyze_interjections(self, text: str) -> dict[str, list[str]]:
         """Analyze text for interjection processing opportunities"""
         analysis = {
             'interjections_found': [],
@@ -115,6 +114,6 @@ def process_interjections(text: str) -> str:
     """Convenience function to process interjections"""
     return interjection_processor.process_interjections(text)
 
-def analyze_interjections(text: str) -> Dict[str, List[str]]:
+def analyze_interjections(text: str) -> dict[str, list[str]]:
     """Convenience function to analyze interjections"""
     return interjection_processor.analyze_interjections(text)

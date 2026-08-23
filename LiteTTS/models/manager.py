@@ -3,14 +3,15 @@
 Model management system for Kokoro ONNX TTS API with multi-model support
 """
 
-import json
-import time
 import hashlib
-import requests
-from pathlib import Path
-from typing import Dict, List, Optional, Callable
-from dataclasses import dataclass
+import json
 import logging
+import time
+from collections.abc import Callable
+from dataclasses import dataclass
+from pathlib import Path
+
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +67,7 @@ class ModelManager:
             self.cache_models = True
 
         # Cache for discovered models
-        self.discovered_models: Dict[str, ModelInfo] = {}
+        self.discovered_models: dict[str, ModelInfo] = {}
         self.discovery_cache_file = self.models_dir / "model_discovery_cache.json"
         self.cache_expiry_hours = 24
 
@@ -235,11 +236,11 @@ class ModelManager:
         }
         return descriptions.get(variant_type, "Unknown variant type")
 
-    def get_available_models(self) -> List[str]:
+    def get_available_models(self) -> list[str]:
         """Get list of all available model names"""
         return sorted(list(self.discovered_models.keys()))
 
-    def get_model_info(self, model_name: str) -> Optional[ModelInfo]:
+    def get_model_info(self, model_name: str) -> ModelInfo | None:
         """Get information about a specific model"""
         return self.discovered_models.get(model_name)
 
@@ -255,7 +256,7 @@ class ModelManager:
         model_info = self.discovered_models[model_name]
         return self._validate_file_integrity(local_path, model_info)
 
-    def get_model_path(self, model_name: Optional[str] = None) -> Path:
+    def get_model_path(self, model_name: str | None = None) -> Path:
         """Get local path for a model (default or specified)"""
         if model_name is None:
             model_name = self.default_variant
@@ -263,7 +264,7 @@ class ModelManager:
         return self.models_dir / model_name
 
     def download_model(self, model_name: str,
-                      progress_callback: Optional[Callable[[DownloadProgress], None]] = None) -> bool:
+                      progress_callback: Callable[[DownloadProgress], None] | None = None) -> bool:
         """Download a specific model"""
         if model_name not in self.discovered_models:
             logger.error(f"Unknown model: {model_name}. Available models: {list(self.discovered_models.keys())}")

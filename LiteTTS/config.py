@@ -3,12 +3,12 @@
 Configuration management for Kokoro ONNX TTS API
 """
 
-import os
 import json
+import logging
+import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Dict, Any, List
-import logging
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ class ModelConfig:
     type: str = "style_text_to_speech_2"
     version: str = "1.0.0"
     default_variant: str = "model_q4.onnx"  # Use Q4 quantized model for optimal performance/size balance
-    available_variants: List[str] = None
+    available_variants: list[str] = None
     auto_discovery: bool = True
     cache_models: bool = True
     owner: str = "TaskWizer"
@@ -47,7 +47,7 @@ class VoiceConfig:
     download_all_on_startup: bool = False  # Changed default to False for individual loading
     cache_discovery: bool = True
     discovery_cache_hours: int = 24
-    default_voices: List[str] = None
+    default_voices: list[str] = None
     max_cache_size: int = 10  # Increased for better individual voice caching
     preload_default_voices: bool = True
     voice_blending: bool = True
@@ -83,7 +83,7 @@ class AudioConfig:
     default_language: str = "en-us"
     sample_rate: int = 24000
     chunk_size: int = 8192  # For streaming audio
-    supported_formats: List[str] = None
+    supported_formats: list[str] = None
 
     # Audio conversion parameters
     mp3_bitrate: int = 128
@@ -107,7 +107,7 @@ class AudioConfig:
     max_processing_time_ms: float = 1000.0
 
     # Chunked generation configuration
-    chunked_generation: Optional[ChunkedGenerationConfig] = None
+    chunked_generation: ChunkedGenerationConfig | None = None
 
     def __post_init__(self):
         if self.supported_formats is None:
@@ -123,7 +123,7 @@ class ServerConfig:
     host: str = "0.0.0.0"
     workers: int = 1
     environment: str = "production"
-    cors_origins: List[str] = None
+    cors_origins: list[str] = None
     request_timeout: int = 30
 
     def __post_init__(self):
@@ -163,7 +163,7 @@ class PerformanceConfig:
     min_synthesis_time: float = 0.1  # Minimum 100ms
 
     # Dynamic CPU allocation configuration
-    dynamic_cpu_allocation: Optional[Dict] = None
+    dynamic_cpu_allocation: dict | None = None
 
 @dataclass
 class RepositoryConfig:
@@ -279,7 +279,7 @@ class LoggingConfig:
     """Logging configuration"""
     level: str = "INFO"
     format: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    file_path: Optional[str] = None
+    file_path: str | None = None
     max_file_size: int = 10 * 1024 * 1024  # 10MB
     backup_count: int = 5
 
@@ -297,7 +297,7 @@ class MetricsConfig:
 class SecurityConfig:
     """Security configuration"""
     api_key_required: bool = False
-    api_key: Optional[str] = None
+    api_key: str | None = None
     rate_limit_enabled: bool = True
     rate_limit_requests: int = 100
     rate_limit_window: int = 60  # seconds
@@ -442,7 +442,7 @@ class ConfigManager:
             self.endpoints = EndpointsConfig()
             self.application = ApplicationConfig()
 
-    def _deep_merge_config(self, base: Dict[str, Any], custom: Dict[str, Any]) -> Dict[str, Any]:
+    def _deep_merge_config(self, base: dict[str, Any], custom: dict[str, Any]) -> dict[str, Any]:
         """
         Deep merge custom configuration into base configuration.
         Custom values override base values, preserving nested structure.
@@ -640,7 +640,7 @@ class ConfigManager:
 
         return True
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert configuration to dictionary"""
         return {
             "model": {
@@ -737,7 +737,7 @@ class ConfigManager:
             }
         }
 
-    def save_to_json(self, filepath: Optional[str] = None) -> bool:
+    def save_to_json(self, filepath: str | None = None) -> bool:
         """Save current configuration to JSON file"""
         try:
             if filepath is None:

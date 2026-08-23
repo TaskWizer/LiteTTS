@@ -4,6 +4,7 @@ Unit tests for NLP processor
 """
 
 import pytest
+
 from LiteTTS.nlp.processor import NLPProcessor
 
 

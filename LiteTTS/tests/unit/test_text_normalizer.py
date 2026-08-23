@@ -4,6 +4,7 @@ Unit tests for text normalizer
 """
 
 import pytest
+
 from LiteTTS.nlp.text_normalizer import TextNormalizer
 
 

@@ -6,12 +6,11 @@ This module provides context-aware emotion detection and analysis for
 human-like speech synthesis with appropriate emotional expression.
 """
 
+import logging
 import re
-from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass
 from enum import Enum
-from pathlib import Path
-import logging
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -36,10 +35,10 @@ class EmotionProfile:
     """Comprehensive emotion analysis result"""
     primary_emotion: EmotionCategory
     intensity: float  # 0.0 to 1.0
-    secondary_emotions: Dict[EmotionCategory, float]
+    secondary_emotions: dict[EmotionCategory, float]
     confidence: float  # 0.0 to 1.0
-    context_factors: Dict[str, Any]
-    prosodic_parameters: Dict[str, float]
+    context_factors: dict[str, Any]
+    prosodic_parameters: dict[str, float]
 
 @dataclass
 class DialogueTurn:
@@ -47,12 +46,12 @@ class DialogueTurn:
     speaker: str
     text: str
     timestamp: float
-    emotion: Optional[EmotionProfile] = None
+    emotion: EmotionProfile | None = None
 
 @dataclass
 class DialogueState:
     """Current state of the conversation"""
-    emotional_arc: List[EmotionCategory]
+    emotional_arc: list[EmotionCategory]
     conversation_phase: str
     emotional_contagion: float
     topic_sentiment: float
@@ -60,14 +59,14 @@ class DialogueState:
 class EmotionDetector:
     """Advanced emotion detection and analysis system"""
 
-    def __init__(self, config_path: Optional[str] = None):
+    def __init__(self, config_path: str | None = None):
         """Initialize emotion detector with configuration"""
         self.emotion_lexicon = self._load_emotion_lexicon()
         self.context_patterns = self._load_context_patterns()
         self.prosody_mappings = self._load_prosody_mappings()
-        self.conversation_history: List[DialogueTurn] = []
+        self.conversation_history: list[DialogueTurn] = []
 
-    def _load_emotion_lexicon(self) -> Dict[str, Dict[str, float]]:
+    def _load_emotion_lexicon(self) -> dict[str, dict[str, float]]:
         """Load emotion word lexicon with intensity scores"""
         # Basic emotion lexicon - in production, load from external file
         return {
@@ -121,7 +120,7 @@ class EmotionDetector:
             "perhaps": {"uncertainty": 0.3},
         }
 
-    def _load_context_patterns(self) -> Dict[str, Dict[str, Any]]:
+    def _load_context_patterns(self) -> dict[str, dict[str, Any]]:
         """Load contextual emotion patterns"""
         return {
             # Punctuation patterns
@@ -161,7 +160,7 @@ class EmotionDetector:
             }
         }
 
-    def _load_prosody_mappings(self) -> Dict[EmotionCategory, Dict[str, float]]:
+    def _load_prosody_mappings(self) -> dict[EmotionCategory, dict[str, float]]:
         """Load emotion to prosody parameter mappings"""
         return {
             EmotionCategory.JOY: {
@@ -220,7 +219,7 @@ class EmotionDetector:
         }
 
     def detect_emotional_context(self, text: str,
-                                conversation_history: Optional[List[DialogueTurn]] = None) -> EmotionProfile:
+                                conversation_history: list[DialogueTurn] | None = None) -> EmotionProfile:
         """Comprehensive emotion detection from text and context"""
 
         # Multi-level emotion analysis
@@ -255,7 +254,7 @@ class EmotionDetector:
             prosodic_parameters=prosodic_params
         )
 
-    def _analyze_emotion_words(self, text: str) -> Dict[EmotionCategory, float]:
+    def _analyze_emotion_words(self, text: str) -> dict[EmotionCategory, float]:
         """Analyze emotion words in text"""
         emotions = {}
         words = re.findall(r'\b\w+\b', text.lower())
@@ -274,7 +273,7 @@ class EmotionDetector:
 
         return emotions
 
-    def _analyze_sentence_structure(self, text: str) -> Dict[EmotionCategory, float]:
+    def _analyze_sentence_structure(self, text: str) -> dict[EmotionCategory, float]:
         """Analyze syntactic patterns for emotional cues"""
         emotions = {}
 
@@ -290,7 +289,7 @@ class EmotionDetector:
         return emotions
 
     def _analyze_conversation_context(self, text: str,
-                                    history: Optional[List[DialogueTurn]]) -> Dict[EmotionCategory, float]:
+                                    history: list[DialogueTurn] | None) -> dict[EmotionCategory, float]:
         """Analyze conversation context for emotional cues"""
         emotions = {}
 
@@ -315,7 +314,7 @@ class EmotionDetector:
 
         return emotions
 
-    def _combine_emotion_signals(self, *emotion_dicts) -> Dict[EmotionCategory, float]:
+    def _combine_emotion_signals(self, *emotion_dicts) -> dict[EmotionCategory, float]:
         """Combine multiple emotion signal sources"""
         combined = {}
 
@@ -325,7 +324,7 @@ class EmotionDetector:
 
         return combined
 
-    def _determine_primary_emotion(self, emotions: Dict[EmotionCategory, float]) -> Tuple[EmotionCategory, float]:
+    def _determine_primary_emotion(self, emotions: dict[EmotionCategory, float]) -> tuple[EmotionCategory, float]:
         """Determine primary emotion and overall intensity"""
         if not emotions:
             return EmotionCategory.NEUTRAL, 0.0
@@ -339,7 +338,7 @@ class EmotionDetector:
 
         return primary_emotion, normalized_intensity
 
-    def _calculate_confidence(self, emotions: Dict[EmotionCategory, float], text: str) -> float:
+    def _calculate_confidence(self, emotions: dict[EmotionCategory, float], text: str) -> float:
         """Calculate confidence in emotion detection"""
         if not emotions:
             return 0.0
@@ -359,7 +358,7 @@ class EmotionDetector:
         return min(confidence, 1.0)
 
     def _generate_prosodic_parameters(self, emotion: EmotionCategory,
-                                    intensity: float) -> Dict[str, float]:
+                                    intensity: float) -> dict[str, float]:
         """Generate prosodic parameters for emotion expression"""
         if emotion not in self.prosody_mappings:
             return {}

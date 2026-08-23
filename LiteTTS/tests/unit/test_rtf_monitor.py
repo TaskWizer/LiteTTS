@@ -4,6 +4,7 @@ Unit tests for RTF performance monitor
 """
 
 import pytest
+
 from LiteTTS.monitoring.rtf_monitor import RTFPerformanceMonitor
 
 

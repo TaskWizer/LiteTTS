@@ -4,10 +4,10 @@ Environment Variable Bridge for LiteTTS Configuration
 Bridges environment variables to application configuration for Docker deployments
 """
 
-import os
 import logging
-from typing import Dict, Any, Optional
+import os
 from dataclasses import dataclass
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -28,10 +28,10 @@ class EnvironmentConfig:
     update_environment: bool = True
 
     # Threading settings
-    omp_num_threads: Optional[int] = None
-    mkl_num_threads: Optional[int] = None
-    openblas_num_threads: Optional[int] = None
-    veclib_maximum_threads: Optional[int] = None
+    omp_num_threads: int | None = None
+    mkl_num_threads: int | None = None
+    openblas_num_threads: int | None = None
+    veclib_maximum_threads: int | None = None
 
     # ONNX Runtime settings
     ort_disable_all_optimization: bool = False
@@ -123,7 +123,7 @@ class EnvironmentConfigLoader:
         value = os.getenv(key, str(default)).lower()
         return value in ("true", "1", "yes", "on")
 
-    def _get_int_env(self, key: str, default: Optional[int] = None) -> Optional[int]:
+    def _get_int_env(self, key: str, default: int | None = None) -> int | None:
         """Get integer environment variable"""
         value = os.getenv(key)
         if value is None:
@@ -143,7 +143,7 @@ class EnvironmentConfigLoader:
             logger.warning(f"Invalid float value for {key}: {value}, using default: {default}")
             return default
 
-    def get_dynamic_cpu_allocation_config(self) -> Dict[str, Any]:
+    def get_dynamic_cpu_allocation_config(self) -> dict[str, Any]:
         """Get dynamic CPU allocation configuration"""
         return {
             "enabled": self.config.dynamic_cpu_allocation_enabled,
@@ -154,7 +154,7 @@ class EnvironmentConfigLoader:
             "update_environment": self.config.update_environment
         }
 
-    def get_performance_config(self) -> Dict[str, Any]:
+    def get_performance_config(self) -> dict[str, Any]:
         """Get performance configuration"""
         return {
             "memory_optimization": self.config.enable_performance_optimization,
@@ -236,7 +236,7 @@ class EnvironmentConfigLoader:
         self.apply_threading_variables()
 
 # Global environment config loader
-_env_config_loader: Optional[EnvironmentConfigLoader] = None
+_env_config_loader: EnvironmentConfigLoader | None = None
 
 def get_environment_config() -> EnvironmentConfigLoader:
     """Get or create global environment config loader"""

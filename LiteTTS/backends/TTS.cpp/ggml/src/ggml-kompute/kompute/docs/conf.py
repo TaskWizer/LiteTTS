@@ -16,9 +16,6 @@
 
 
 # -- Project information -----------------------------------------------------
-import sys
-import os
-import kp
 import sphinx_material
 
 project = 'Kompute'

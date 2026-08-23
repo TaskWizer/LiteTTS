@@ -6,17 +6,16 @@ This script validates that all Windows compatibility fixes are working correctly
 Run this script on Windows 10 to verify the application will work properly.
 """
 
-import sys
-import os
-import platform
-import warnings
-import tempfile
 import json
 import logging
-from pathlib import Path
-from typing import List, Dict, Any, Tuple
-import subprocess
+import os
+import platform
+import sys
+import tempfile
 import time
+import warnings
+from pathlib import Path
+from typing import Any
 
 # Add project root to path
 sys.path.insert(0, '.')
@@ -25,9 +24,9 @@ class WindowsCompatibilityTester:
     """Comprehensive Windows compatibility testing"""
 
     def __init__(self):
-        self.test_results: List[Dict[str, Any]] = []
-        self.failed_tests: List[str] = []
-        self.warnings_captured: List[str] = []
+        self.test_results: list[dict[str, Any]] = []
+        self.failed_tests: list[str] = []
+        self.warnings_captured: list[str] = []
 
         # Setup logging to capture warnings
         self.setup_test_logging()
@@ -302,7 +301,7 @@ class WindowsCompatibilityTester:
             self.log_test_result("Import System", False, "", str(e))
             return False
 
-    def run_all_tests(self) -> Tuple[bool, Dict[str, Any]]:
+    def run_all_tests(self) -> tuple[bool, dict[str, Any]]:
         """Run all Windows compatibility tests"""
         print("=" * 60)
         print("🪟 Windows 10 Compatibility Test Suite")

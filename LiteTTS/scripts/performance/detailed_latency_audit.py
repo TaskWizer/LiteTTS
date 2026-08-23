@@ -4,17 +4,15 @@ Detailed Latency Audit for LiteTTS
 Comprehensive analysis of latency bottlenecks in the processing pipeline
 """
 
-import os
+import logging
+import statistics
 import sys
 import time
-import logging
-import psutil
-import statistics
-import threading
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, asdict
+
 import numpy as np
+import psutil
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent
@@ -45,7 +43,7 @@ class LatencyAuditResult:
     latency_target_met: bool
 
     # Component breakdown
-    components: List[LatencyBreakdown]
+    components: list[LatencyBreakdown]
     primary_bottleneck: str
     secondary_bottleneck: str
 
@@ -61,7 +59,7 @@ class LatencyAuditResult:
     throughput_requests_per_sec: float
 
     # Recommendations
-    recommendations: List[str]
+    recommendations: list[str]
     estimated_improvement_ms: float
 
 class DetailedLatencyAuditor:
@@ -75,7 +73,7 @@ class DetailedLatencyAuditor:
 
         logger.info("Detailed Latency Auditor initialized")
 
-    def _get_test_texts(self) -> List[str]:
+    def _get_test_texts(self) -> list[str]:
         """Get test texts for latency analysis"""
         return [
             "Hello world.",  # Very short
@@ -85,7 +83,7 @@ class DetailedLatencyAuditor:
             "Quick test."  # Another short for consistency
         ]
 
-    def measure_component_latency(self, component_name: str, operation_func, *args, **kwargs) -> Dict[str, float]:
+    def measure_component_latency(self, component_name: str, operation_func, *args, **kwargs) -> dict[str, float]:
         """Measure latency for a specific component"""
         latencies = []
 
@@ -349,7 +347,6 @@ class DetailedLatencyAuditor:
         """Check if model preloading is active"""
         try:
             # Check if preloader is configured
-            from LiteTTS.cache.preloader import IntelligentPreloader
             return True
         except Exception:
             return False
@@ -365,8 +362,8 @@ class DetailedLatencyAuditor:
     def _check_inference_optimizations(self) -> bool:
         """Check if inference optimizations (SIMD, batch processing) are active"""
         try:
-            from LiteTTS.performance.simd_optimizer import get_simd_optimizer
             from LiteTTS.performance.batch_optimizer import get_batch_optimizer
+            from LiteTTS.performance.simd_optimizer import get_simd_optimizer
 
             simd_optimizer = get_simd_optimizer()
             batch_optimizer = get_batch_optimizer()
@@ -391,7 +388,7 @@ class DetailedLatencyAuditor:
         except Exception:
             return False
 
-    def run_end_to_end_latency_test(self) -> Tuple[float, float, float]:
+    def run_end_to_end_latency_test(self) -> tuple[float, float, float]:
         """Run end-to-end latency test"""
         logger.info("🚀 Running end-to-end latency test...")
 
@@ -520,7 +517,7 @@ class DetailedLatencyAuditor:
 
         return result
 
-    def _generate_recommendations(self, components: List[LatencyBreakdown], primary_bottleneck: str) -> List[str]:
+    def _generate_recommendations(self, components: list[LatencyBreakdown], primary_bottleneck: str) -> list[str]:
         """Generate optimization recommendations"""
         recommendations = []
 
@@ -543,7 +540,7 @@ class DetailedLatencyAuditor:
 
         return recommendations
 
-    def _estimate_improvement_potential(self, components: List[LatencyBreakdown]) -> float:
+    def _estimate_improvement_potential(self, components: list[LatencyBreakdown]) -> float:
         """Estimate potential latency improvement"""
         total_improvement = 0.0
 

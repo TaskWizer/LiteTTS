@@ -4,12 +4,12 @@ Comprehensive Pronunciation Test Suite
 Extensive test suite covering all identified pronunciation issues with before/after validation
 """
 
-import sys
-import logging
 import json
+import logging
+import sys
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Tuple, Any
-from dataclasses import dataclass, asdict
+from typing import Any
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -47,7 +47,7 @@ class ComprehensivePronunciationTestSuite:
 
         logger.info(f"Pronunciation test suite initialized with {len(self.test_cases)} test cases")
 
-    def _load_test_cases(self) -> List[PronunciationTestCase]:
+    def _load_test_cases(self) -> list[PronunciationTestCase]:
         """Load comprehensive pronunciation test cases"""
         test_cases = []
 
@@ -272,7 +272,7 @@ class ComprehensivePronunciationTestSuite:
                 error_message=f"Exception: {str(e)}"
             )
 
-    def run_category_tests(self, category: str) -> List[PronunciationTestResult]:
+    def run_category_tests(self, category: str) -> list[PronunciationTestResult]:
         """Run all tests for a specific category"""
         category_tests = [tc for tc in self.test_cases if tc.category == category]
         results = []
@@ -290,7 +290,7 @@ class ComprehensivePronunciationTestSuite:
 
         return results
 
-    def run_all_tests(self) -> Dict[str, Any]:
+    def run_all_tests(self) -> dict[str, Any]:
         """Run all pronunciation tests"""
         logger.info("Running comprehensive pronunciation test suite")
 
@@ -408,7 +408,7 @@ class ComprehensivePronunciationTestSuite:
 
         return (total_passed / total_tests * 100) if total_tests > 0 else 0
 
-    def _get_failed_tests_summary(self) -> List[Dict[str, str]]:
+    def _get_failed_tests_summary(self) -> list[dict[str, str]]:
         """Get summary of failed tests"""
         failed_tests = []
 
@@ -431,7 +431,7 @@ class ComprehensivePronunciationTestSuite:
 
         return failed_tests
 
-    def _generate_recommendations(self) -> List[str]:
+    def _generate_recommendations(self) -> list[str]:
         """Generate recommendations based on test results"""
         recommendations = []
 

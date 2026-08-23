@@ -3,16 +3,14 @@
 Comprehensive model benchmarking script to determine optimal model variant for RTF performance
 """
 
-import os
+import json
+import logging
+import statistics
 import sys
 import time
-import json
-import statistics
-import logging
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Any, Tuple
-from dataclasses import dataclass, asdict
-import numpy as np
+from typing import Any
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -65,7 +63,7 @@ class ModelBenchmarker:
         self.test_voices = ["af_heart", "am_puck"]
         self.models_dir = Path("LiteTTS/models")
 
-    def discover_models(self) -> List[Tuple[str, str, float]]:
+    def discover_models(self) -> list[tuple[str, str, float]]:
         """Discover available ONNX models with their sizes"""
         models = []
 
@@ -218,7 +216,7 @@ class ModelBenchmarker:
         logger.info(f"  ✅ Results: RTF={result.avg_rtf:.3f} (±{result.std_rtf:.3f}), Success={result.success_rate:.1f}%")
         return result
 
-    def run_comprehensive_benchmark(self, iterations: int = 10) -> Dict[str, Any]:
+    def run_comprehensive_benchmark(self, iterations: int = 10) -> dict[str, Any]:
         """Run comprehensive benchmark on all available models"""
         logger.info("🚀 Starting comprehensive model benchmark")
 
@@ -249,7 +247,7 @@ class ModelBenchmarker:
             }
         }
 
-    def analyze_results(self, results: List[ModelBenchmarkResult]) -> Dict[str, Any]:
+    def analyze_results(self, results: list[ModelBenchmarkResult]) -> dict[str, Any]:
         """Analyze benchmark results and provide recommendations"""
 
         # Filter successful results
@@ -316,7 +314,7 @@ class ModelBenchmarker:
             }
         }
 
-    def save_results(self, results: Dict[str, Any], filename: str = None):
+    def save_results(self, results: dict[str, Any], filename: str = None):
         """Save benchmark results to file"""
         if filename is None:
             from datetime import datetime

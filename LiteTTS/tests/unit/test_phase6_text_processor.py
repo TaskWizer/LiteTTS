@@ -4,7 +4,12 @@ Unit tests for phase6 text processor
 """
 
 import pytest
-from LiteTTS.nlp.phase6_text_processor import Phase6TextProcessor, Phase6ProcessingMode, Phase6ProcessingResult
+
+from LiteTTS.nlp.phase6_text_processor import (
+    Phase6ProcessingMode,
+    Phase6ProcessingResult,
+    Phase6TextProcessor,
+)
 
 
 class TestPhase6TextProcessor:

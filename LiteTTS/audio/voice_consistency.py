@@ -6,9 +6,9 @@ Ensures voice characteristics remain consistent across audio chunks
 
 import logging
 import time
-from typing import Dict, Any, Optional, List, Tuple
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -23,10 +23,10 @@ class VoiceProfile:
     """Voice profile for consistency tracking"""
     voice_id: str
     voice_name: str
-    base_parameters: Dict[str, Any]
-    prosody_profile: Dict[str, float]
-    timing_profile: Dict[str, float]
-    energy_profile: Dict[str, float]
+    base_parameters: dict[str, Any]
+    prosody_profile: dict[str, float]
+    timing_profile: dict[str, float]
+    energy_profile: dict[str, float]
     created_at: float
     last_used: float
     usage_count: int = 0
@@ -36,10 +36,10 @@ class ChunkConsistencyInfo:
     """Consistency information for a chunk"""
     chunk_id: int
     voice_profile: VoiceProfile
-    prosody_adjustments: Dict[str, float]
-    timing_adjustments: Dict[str, float]
-    energy_adjustments: Dict[str, float]
-    overlap_compensation: Optional[Dict[str, Any]] = None
+    prosody_adjustments: dict[str, float]
+    timing_adjustments: dict[str, float]
+    energy_adjustments: dict[str, float]
+    overlap_compensation: dict[str, Any] | None = None
 
 class VoiceConsistencyManager:
     """Manages voice consistency across audio chunks"""
@@ -61,8 +61,8 @@ class VoiceConsistencyManager:
         self,
         voice_id: str,
         voice_name: str,
-        reference_audio: Optional[bytes] = None,
-        base_parameters: Optional[Dict[str, Any]] = None
+        reference_audio: bytes | None = None,
+        base_parameters: dict[str, Any] | None = None
     ) -> VoiceProfile:
         """
         Create or update a voice profile for consistency tracking
@@ -113,7 +113,7 @@ class VoiceConsistencyManager:
         session_id: str,
         voice_id: str,
         text: str,
-        generation_parameters: Dict[str, Any]
+        generation_parameters: dict[str, Any]
     ) -> str:
         """
         Start a consistency session for chunked generation
@@ -160,7 +160,7 @@ class VoiceConsistencyManager:
         chunk_text: str,
         chunk_position: int,
         total_chunks: int,
-        overlap_text: Optional[str] = None
+        overlap_text: str | None = None
     ) -> ChunkConsistencyInfo:
         """
         Prepare a chunk for consistent generation
@@ -230,9 +230,9 @@ class VoiceConsistencyManager:
 
     def apply_consistency_adjustments(
         self,
-        generation_parameters: Dict[str, Any],
+        generation_parameters: dict[str, Any],
         consistency_info: ChunkConsistencyInfo
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Apply consistency adjustments to generation parameters
         
@@ -280,7 +280,7 @@ class VoiceConsistencyManager:
         logger.debug(f"Applied consistency adjustments for chunk {consistency_info.chunk_id}")
         return adjusted_params
 
-    def end_consistency_session(self, session_id: str) -> Dict[str, Any]:
+    def end_consistency_session(self, session_id: str) -> dict[str, Any]:
         """
         End a consistency session and return statistics
         
@@ -317,9 +317,9 @@ class VoiceConsistencyManager:
 
     def _extract_prosody_profile(
         self,
-        reference_audio: Optional[bytes],
-        base_parameters: Optional[Dict[str, Any]]
-    ) -> Dict[str, float]:
+        reference_audio: bytes | None,
+        base_parameters: dict[str, Any] | None
+    ) -> dict[str, float]:
         """Extract prosody characteristics from reference audio or parameters"""
 
         # Default prosody profile
@@ -345,9 +345,9 @@ class VoiceConsistencyManager:
 
     def _extract_timing_profile(
         self,
-        reference_audio: Optional[bytes],
-        base_parameters: Optional[Dict[str, Any]]
-    ) -> Dict[str, float]:
+        reference_audio: bytes | None,
+        base_parameters: dict[str, Any] | None
+    ) -> dict[str, float]:
         """Extract timing characteristics"""
 
         timing_profile = {
@@ -365,9 +365,9 @@ class VoiceConsistencyManager:
 
     def _extract_energy_profile(
         self,
-        reference_audio: Optional[bytes],
-        base_parameters: Optional[Dict[str, Any]]
-    ) -> Dict[str, float]:
+        reference_audio: bytes | None,
+        base_parameters: dict[str, Any] | None
+    ) -> dict[str, float]:
         """Extract energy characteristics"""
 
         energy_profile = {
@@ -383,7 +383,7 @@ class VoiceConsistencyManager:
 
         return energy_profile
 
-    def _analyze_text_for_consistency(self, text: str) -> Dict[str, Any]:
+    def _analyze_text_for_consistency(self, text: str) -> dict[str, Any]:
         """Analyze text for consistency requirements"""
 
         # Count sentences, questions, exclamations
@@ -411,8 +411,8 @@ class VoiceConsistencyManager:
     def _initialize_consistency_state(
         self,
         voice_profile: VoiceProfile,
-        text_analysis: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        text_analysis: dict[str, Any]
+    ) -> dict[str, Any]:
         """Initialize consistency state for a session"""
 
         return {
@@ -433,8 +433,8 @@ class VoiceConsistencyManager:
         chunk_text: str,
         chunk_position: int,
         total_chunks: int,
-        consistency_state: Dict[str, Any]
-    ) -> Dict[str, float]:
+        consistency_state: dict[str, Any]
+    ) -> dict[str, float]:
         """Calculate prosody adjustments for consistency"""
 
         adjustments = {}
@@ -466,9 +466,9 @@ class VoiceConsistencyManager:
         self,
         chunk_text: str,
         chunk_position: int,
-        overlap_text: Optional[str],
-        consistency_state: Dict[str, Any]
-    ) -> Dict[str, float]:
+        overlap_text: str | None,
+        consistency_state: dict[str, Any]
+    ) -> dict[str, float]:
         """Calculate timing adjustments for natural flow"""
 
         adjustments = {}
@@ -499,8 +499,8 @@ class VoiceConsistencyManager:
         self,
         chunk_text: str,
         chunk_position: int,
-        consistency_state: Dict[str, Any]
-    ) -> Dict[str, float]:
+        consistency_state: dict[str, Any]
+    ) -> dict[str, float]:
         """Calculate energy adjustments for consistent volume and emphasis"""
 
         adjustments = {}
@@ -521,8 +521,8 @@ class VoiceConsistencyManager:
         self,
         overlap_text: str,
         chunk_text: str,
-        consistency_state: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        consistency_state: dict[str, Any]
+    ) -> dict[str, Any]:
         """Calculate compensation for overlap between chunks"""
 
         compensation = {}
@@ -540,11 +540,11 @@ class VoiceConsistencyManager:
 
     def _update_consistency_state(
         self,
-        consistency_state: Dict[str, Any],
+        consistency_state: dict[str, Any],
         chunk_text: str,
-        prosody_adjustments: Dict[str, float],
-        timing_adjustments: Dict[str, float],
-        energy_adjustments: Dict[str, float]
+        prosody_adjustments: dict[str, float],
+        timing_adjustments: dict[str, float],
+        energy_adjustments: dict[str, float]
     ):
         """Update consistency state after processing a chunk"""
 
@@ -569,11 +569,11 @@ class VoiceConsistencyManager:
         if len(consistency_state["chunk_history"]) > 10:
             consistency_state["chunk_history"] = consistency_state["chunk_history"][-10:]
 
-    def get_voice_profile(self, voice_id: str) -> Optional[VoiceProfile]:
+    def get_voice_profile(self, voice_id: str) -> VoiceProfile | None:
         """Get voice profile by ID"""
         return self.voice_profiles.get(voice_id)
 
-    def get_active_sessions(self) -> Dict[str, Dict[str, Any]]:
+    def get_active_sessions(self) -> dict[str, dict[str, Any]]:
         """Get information about active sessions"""
         return {
             session_id: {

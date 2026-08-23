@@ -4,9 +4,8 @@ Audio Quality Enhancement System for TTS
 Implements state-of-the-art prosodic modeling and emotional speech synthesis
 """
 
-import re
 import logging
-from typing import Dict, List, Optional, Tuple
+import re
 from dataclasses import dataclass
 from enum import Enum
 
@@ -66,7 +65,7 @@ class AudioQualityEnhancer:
         self.prosody_rules = self._load_prosody_rules()
         self.context_patterns = self._load_context_patterns()
 
-    def _load_emotion_patterns(self) -> Dict[str, EmotionType]:
+    def _load_emotion_patterns(self) -> dict[str, EmotionType]:
         """Load patterns for emotion detection"""
         return {
             # Positive emotions
@@ -89,7 +88,7 @@ class AudioQualityEnhancer:
             r'\b(I\'m sorry|my condolences|I feel for you|that must be hard)\b': EmotionType.EMPATHETIC,
         }
 
-    def _load_prosody_rules(self) -> List[Tuple[str, ProsodyLevel, float, float]]:
+    def _load_prosody_rules(self) -> list[tuple[str, ProsodyLevel, float, float]]:
         """Load prosodic emphasis rules"""
         return [
             # Pattern, Emphasis Level, Pause Before, Pause After
@@ -104,7 +103,7 @@ class AudioQualityEnhancer:
             (r'\b[A-Z][a-z]*\b', ProsodyLevel.NORMAL, 0.0, 0.0),  # Proper nouns
         ]
 
-    def _load_context_patterns(self) -> Dict[str, Dict[str, float]]:
+    def _load_context_patterns(self) -> dict[str, dict[str, float]]:
         """Load context-aware adaptation patterns"""
         return {
             'question': {
@@ -326,7 +325,7 @@ class AudioQualityEnhancer:
 
         return text
 
-    def analyze_quality_potential(self, text: str) -> Dict[str, any]:
+    def analyze_quality_potential(self, text: str) -> dict[str, any]:
         """Analyze text for quality enhancement potential"""
         analysis = {
             'emotional_content': [],

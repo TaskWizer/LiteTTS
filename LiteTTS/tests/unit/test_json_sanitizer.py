@@ -3,20 +3,20 @@
 Unit tests for JSON sanitizer module
 """
 
+
 import pytest
-import math
-import json
+
 from LiteTTS.utils.json_sanitizer import (
-    sanitize_float,
-    sanitize_value,
-    sanitize_dashboard_data,
-    sanitize_performance_data,
-    sanitize_performance_summary,
-    safe_division,
-    safe_percentage,
     JSONSafeEncoder,
     dumps_safe,
-    validate_json_serializable
+    safe_division,
+    safe_percentage,
+    sanitize_dashboard_data,
+    sanitize_float,
+    sanitize_performance_data,
+    sanitize_performance_summary,
+    sanitize_value,
+    validate_json_serializable,
 )
 
 

@@ -4,7 +4,7 @@ Unit tests for format converter
 """
 
 import pytest
-import numpy as np
+
 from LiteTTS.audio.format_converter import AudioFormatConverter
 
 

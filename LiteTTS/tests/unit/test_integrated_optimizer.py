@@ -3,9 +3,7 @@
 Unit tests for integrated optimizer module
 """
 
-import pytest
-from unittest.mock import Mock, patch
-from LiteTTS.performance.integrated_optimizer import PerformanceTargets, OptimizationResults
+from LiteTTS.performance.integrated_optimizer import OptimizationResults, PerformanceTargets
 
 
 class TestPerformanceTargets:

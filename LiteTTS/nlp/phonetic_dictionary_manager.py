@@ -10,11 +10,8 @@ import logging
 import os
 import pickle
 import time
-from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple, Union
 from dataclasses import dataclass, field
 from threading import Lock
-import hashlib
 
 logger = logging.getLogger(__name__)
 
@@ -28,16 +25,16 @@ class DictionaryEntry:
     confidence: float = 1.0
     frequency: float = 0.0
     accent_variant: str = "general"
-    part_of_speech: Optional[str] = None
-    stress_pattern: Optional[str] = None
+    part_of_speech: str | None = None
+    stress_pattern: str | None = None
 
 
 @dataclass
 class DictionaryStats:
     """Statistics for a loaded dictionary"""
     total_entries: int = 0
-    notation_counts: Dict[str, int] = field(default_factory=dict)
-    accent_variants: Set[str] = field(default_factory=set)
+    notation_counts: dict[str, int] = field(default_factory=dict)
+    accent_variants: set[str] = field(default_factory=set)
     load_time: float = 0.0
     memory_usage: int = 0
     cache_hit_rate: float = 0.0
@@ -56,12 +53,12 @@ class PhoneticDictionaryManager:
     - Thread-safe operations
     """
 
-    def __init__(self, config: Optional[Dict] = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or self._default_config()
-        self.dictionaries: Dict[str, Dict[str, DictionaryEntry]] = {}
-        self.cache: Dict[str, DictionaryEntry] = {}
-        self.cache_access_order: List[str] = []
-        self.stats: Dict[str, DictionaryStats] = {}
+        self.dictionaries: dict[str, dict[str, DictionaryEntry]] = {}
+        self.cache: dict[str, DictionaryEntry] = {}
+        self.cache_access_order: list[str] = []
+        self.stats: dict[str, DictionaryStats] = {}
         self._lock = Lock()
 
         # Performance tracking
@@ -71,7 +68,7 @@ class PhoneticDictionaryManager:
 
         logger.info("Phonetic Dictionary Manager initialized")
 
-    def _default_config(self) -> Dict:
+    def _default_config(self) -> dict:
         """Default configuration for dictionary management"""
         return {
             "cache_size": 10000,
@@ -142,7 +139,7 @@ class PhoneticDictionaryManager:
                 logger.error(f"Failed to load dictionary {notation}: {e}")
                 return False
 
-    def _load_cmu_dict(self, file_path: str) -> Dict[str, DictionaryEntry]:
+    def _load_cmu_dict(self, file_path: str) -> dict[str, DictionaryEntry]:
         """Load CMU pronunciation dictionary (Arpabet format)"""
         entries = {}
 
@@ -183,7 +180,7 @@ class PhoneticDictionaryManager:
 
         return entries
 
-    def _load_json_dict(self, file_path: str, notation: str) -> Dict[str, DictionaryEntry]:
+    def _load_json_dict(self, file_path: str, notation: str) -> dict[str, DictionaryEntry]:
         """Load JSON-format phonetic dictionary"""
         entries = {}
 
@@ -231,7 +228,7 @@ class PhoneticDictionaryManager:
 
         return min(base_freq, 1.0)
 
-    def _estimate_memory_usage(self, entries: Dict[str, DictionaryEntry]) -> int:
+    def _estimate_memory_usage(self, entries: dict[str, DictionaryEntry]) -> int:
         """Estimate memory usage of dictionary entries in bytes"""
         if not entries:
             return 0
@@ -251,7 +248,7 @@ class PhoneticDictionaryManager:
         avg_size = total_size / sample_size
         return int(avg_size * len(entries))
 
-    def lookup(self, word: str, notation: str = None, accent_variant: str = None) -> Optional[DictionaryEntry]:
+    def lookup(self, word: str, notation: str = None, accent_variant: str = None) -> DictionaryEntry | None:
         """
         Look up phonetic representation for a word
 
@@ -284,7 +281,7 @@ class PhoneticDictionaryManager:
 
         return result
 
-    def _search_dictionaries(self, word: str, notation: str = None, accent_variant: str = None) -> Optional[DictionaryEntry]:
+    def _search_dictionaries(self, word: str, notation: str = None, accent_variant: str = None) -> DictionaryEntry | None:
         """Search loaded dictionaries for a word with priority order"""
         candidates = []
 
@@ -353,7 +350,7 @@ class PhoneticDictionaryManager:
                 self.cache_access_order.remove(key)
                 self.cache_access_order.append(key)
 
-    def get_statistics(self) -> Dict:
+    def get_statistics(self) -> dict:
         """Get comprehensive statistics about dictionary usage"""
         cache_hit_rate = self.cache_hits / max(self.lookup_count, 1)
 

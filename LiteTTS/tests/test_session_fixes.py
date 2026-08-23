@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Tests for session fixes - WAV streaming, cache tracking, opus support"""
 
-import pytest
 import numpy as np
 
 
@@ -35,7 +34,6 @@ class TestOpusFormat:
         except TypeError:
             # Validator requires synthesizer - check class attribute
             from LiteTTS.api.validators import RequestValidator
-            pass
 
     def test_opus_content_type(self):
         """Opus should map to audio/ogg"""
@@ -50,11 +48,11 @@ class TestCacheHitTracking:
 
     def test_cache_hit_header_in_response(self):
         """X-Cache-Hit header should be settable"""
-        from LiteTTS.audio.format_converter import AudioFormatConverter
-        from LiteTTS.models import AudioSegment
-
         # Just verify the method signature allows cache_hit parameter
         import inspect
+
+        from LiteTTS.audio.format_converter import AudioFormatConverter
+        from LiteTTS.models import AudioSegment
         sig = inspect.signature(AudioFormatConverter.get_content_type)
         # get_content_type doesn't need cache_hit - it's in _create_audio_headers
 

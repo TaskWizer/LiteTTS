@@ -4,17 +4,18 @@ Performance-specific tests for Kokoro ONNX TTS API
 Tests RTF, latency, caching, and optimization features
 """
 
-import pytest
-import time
-import threading
-from pathlib import Path
 import sys
+import threading
+import time
+from pathlib import Path
+
+import pytest
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
+from LiteTTS.cache.preloader import CacheWarmingConfig, IntelligentPreloader
 from LiteTTS.performance.monitor import PerformanceMonitor, TTSPerformanceData
-from LiteTTS.cache.preloader import IntelligentPreloader, CacheWarmingConfig
 
 # Skip - performance tests that may fail due to timing/environment issues
 pytestmark = pytest.mark.skip(reason="Performance tests with timing/environment issues")

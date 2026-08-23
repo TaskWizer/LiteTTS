@@ -4,20 +4,21 @@ Apply RTF Performance Optimizations
 Implements CPU optimization techniques to achieve RTF < 0.25 target
 """
 
-import os
-import sys
 import json
 import logging
-import psutil
+import os
+import sys
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any
+
+import psutil
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 logger = logging.getLogger(__name__)
 
-def get_system_info() -> Dict[str, Any]:
+def get_system_info() -> dict[str, Any]:
     """Get system information for optimization"""
     cpu_count = psutil.cpu_count(logical=True)
     cpu_count_physical = psutil.cpu_count(logical=False)

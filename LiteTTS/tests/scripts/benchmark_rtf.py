@@ -4,15 +4,15 @@ RTF (Real-Time Factor) Benchmarking Script for Kokoro TTS
 Tests performance improvements from optimizations
 """
 
-import os
-import sys
-import time
+import argparse
 import json
 import logging
+import os
 import statistics
+import sys
+import time
 from pathlib import Path
-from typing import List, Dict, Any
-import argparse
+from typing import Any
 
 # Add the project root to the path
 project_root = Path(__file__).parent.parent
@@ -40,12 +40,11 @@ def setup_environment():
         logger.warning("CPU optimizer not available, using default settings")
         return None
 
-def benchmark_single_synthesis(text: str, voice: str = "af_heart", iterations: int = 5) -> Dict[str, float]:
+def benchmark_single_synthesis(text: str, voice: str = "af_heart", iterations: int = 5) -> dict[str, float]:
     """Benchmark a single text synthesis using direct kokoro_onnx"""
     try:
         # Import and initialize kokoro_onnx directly
         import kokoro_onnx
-        import numpy as np
 
         # Apply patches first
         from LiteTTS.patches import apply_all_patches
@@ -99,11 +98,12 @@ def benchmark_single_synthesis(text: str, voice: str = "af_heart", iterations: i
         logger.error(f"Full traceback: {traceback.format_exc()}")
         return {'error': str(e)}
 
-def benchmark_batch_synthesis(texts: List[str], voice: str = "af_heart") -> Dict[str, float]:
+def benchmark_batch_synthesis(texts: list[str], voice: str = "af_heart") -> dict[str, float]:
     """Benchmark batch synthesis performance using direct kokoro_onnx"""
     try:
-        import kokoro_onnx
         from concurrent.futures import ThreadPoolExecutor
+
+        import kokoro_onnx
 
         # Apply patches first
         from LiteTTS.patches import apply_all_patches
@@ -154,7 +154,7 @@ def benchmark_batch_synthesis(texts: List[str], voice: str = "af_heart") -> Dict
         logger.error(f"Full traceback: {traceback.format_exc()}")
         return {'error': str(e)}
 
-def run_comprehensive_benchmark() -> Dict[str, Any]:
+def run_comprehensive_benchmark() -> dict[str, Any]:
     """Run comprehensive RTF benchmarks"""
     logger.info("Starting comprehensive RTF benchmark...")
 

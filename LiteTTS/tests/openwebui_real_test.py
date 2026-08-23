@@ -4,11 +4,11 @@ OpenWebUI Real Integration Test
 Test exactly how OpenWebUI calls the TTS API to identify audio truncation issues
 """
 
-import requests
 import json
-import time
 import os
-from pathlib import Path
+
+import requests
+
 
 def test_openwebui_real_scenario():
     """Test the exact scenario that OpenWebUI uses"""
@@ -166,8 +166,8 @@ def test_openwebui_real_scenario():
 
     # Check if we can analyze the generated audio
     try:
-        import wave
         import struct
+        import wave
 
         # Test the standard MP3 file
         if os.path.exists("openwebui_test_standard.mp3"):

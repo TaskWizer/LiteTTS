@@ -4,7 +4,8 @@ Unit tests for advanced abbreviation handler
 """
 
 import pytest
-from LiteTTS.nlp.advanced_abbreviation_handler import AdvancedAbbreviationHandler, AbbreviationMode
+
+from LiteTTS.nlp.advanced_abbreviation_handler import AdvancedAbbreviationHandler
 
 
 class TestAdvancedAbbreviationHandler:

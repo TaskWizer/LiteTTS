@@ -4,12 +4,13 @@ Voice module with dynamic voice management
 """
 
 import logging
-from typing import List, Dict, Optional
 from pathlib import Path
+from typing import Dict, List, Optional
+
+from .discovery import VoiceDiscovery
 
 # Core imports
 from .downloader import VoiceDownloader
-from .discovery import VoiceDiscovery
 
 # Optional imports that may require additional dependencies
 try:
@@ -43,7 +44,7 @@ except ImportError:
     _has_dynamic_manager = False
 
 try:
-    from .blender import VoiceBlender, BlendConfig
+    from .blender import BlendConfig, VoiceBlender
     _has_blender = True
 except ImportError:
     _has_blender = False
@@ -74,7 +75,7 @@ def get_voice_manager(voices_dir: str = None) -> Optional['DynamicVoiceManager']
 
     return _voice_manager
 
-def get_available_voices(voices_dir: str = "LiteTTS/voices") -> List[str]:
+def get_available_voices(voices_dir: str = "LiteTTS/voices") -> list[str]:
     """Get list of all available voices (both full and short names)"""
     try:
         voice_manager = get_voice_manager(voices_dir)
@@ -86,7 +87,7 @@ def get_available_voices(voices_dir: str = "LiteTTS/voices") -> List[str]:
     # Fallback to local discovery
     return _fallback_voice_discovery(voices_dir)
 
-def _fallback_voice_discovery(voices_dir: str) -> List[str]:
+def _fallback_voice_discovery(voices_dir: str) -> list[str]:
     """Fallback voice discovery for local files only"""
     try:
         voices_path = Path(voices_dir)

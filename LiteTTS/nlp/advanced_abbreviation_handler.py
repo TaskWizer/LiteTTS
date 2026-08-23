@@ -4,10 +4,9 @@ Advanced abbreviation handler for TTS
 Fixes ASAP pronunciation and implements configurable abbreviation processing
 """
 
-import re
-from typing import Dict, List, Optional
-from enum import Enum
 import logging
+import re
+from enum import Enum
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +31,7 @@ class AdvancedAbbreviationHandler:
         self.use_context_analysis = True
         self.preserve_technical_terms = True
 
-    def _load_spell_out_abbreviations(self) -> Dict[str, str]:
+    def _load_spell_out_abbreviations(self) -> dict[str, str]:
         """Load abbreviations that should be spelled out"""
         return {
             # Common acronyms that are typically spelled out
@@ -135,7 +134,7 @@ class AdvancedAbbreviationHandler:
             'UNICEF': 'U N I C E F',
         }
 
-    def _load_expansion_abbreviations(self) -> Dict[str, str]:
+    def _load_expansion_abbreviations(self) -> dict[str, str]:
         """Load abbreviations that should be expanded"""
         return {
             # Common abbreviations that sound better when expanded
@@ -239,7 +238,7 @@ class AdvancedAbbreviationHandler:
             'co.': 'company',
         }
 
-    def _load_context_abbreviations(self) -> Dict[str, Dict[str, str]]:
+    def _load_context_abbreviations(self) -> dict[str, dict[str, str]]:
         """Load context-dependent abbreviations"""
         return {
             'US': {
@@ -264,7 +263,7 @@ class AdvancedAbbreviationHandler:
             },
         }
 
-    def _load_natural_abbreviations(self) -> Dict[str, str]:
+    def _load_natural_abbreviations(self) -> dict[str, str]:
         """Load abbreviations that are naturally pronounced as words"""
         return {
             # Abbreviations that are pronounced as words, not spelled out
@@ -281,7 +280,7 @@ class AdvancedAbbreviationHandler:
             'JSON': 'Jason',  # Pronounced as "Jason", not spelled out
         }
 
-    def process_abbreviations(self, text: str, mode: Optional[AbbreviationMode] = None) -> str:
+    def process_abbreviations(self, text: str, mode: AbbreviationMode | None = None) -> str:
         """Process abbreviations based on the specified mode"""
         if mode is None:
             mode = self.default_mode
@@ -354,7 +353,7 @@ class AdvancedAbbreviationHandler:
 
         return text
 
-    def _get_context_pronunciation(self, abbrev: str, context: str) -> Optional[str]:
+    def _get_context_pronunciation(self, abbrev: str, context: str) -> str | None:
         """Get context-dependent pronunciation"""
         if abbrev not in self.context_abbreviations:
             return None
@@ -371,7 +370,7 @@ class AdvancedAbbreviationHandler:
         # Return first option if no context match
         return list(context_options.values())[0]
 
-    def analyze_abbreviations(self, text: str) -> Dict[str, List[str]]:
+    def analyze_abbreviations(self, text: str) -> dict[str, list[str]]:
         """Analyze abbreviations in text"""
         info = {
             'spell_out_candidates': [],
@@ -451,6 +450,6 @@ class AdvancedAbbreviationHandler:
 
         return text
 
-    def get_supported_modes(self) -> List[str]:
+    def get_supported_modes(self) -> list[str]:
         """Get list of supported abbreviation processing modes"""
         return [mode.value for mode in AbbreviationMode]

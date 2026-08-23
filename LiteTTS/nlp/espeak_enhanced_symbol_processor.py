@@ -4,10 +4,10 @@ eSpeak-enhanced symbol processor for Kokoro TTS
 Integrates eSpeak's symbol handling techniques to fix pronunciation issues
 """
 
-import re
 import logging
-from typing import Dict, List, Tuple, Optional, Any
+import re
 from dataclasses import dataclass
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class SymbolProcessingResult:
     """Result of symbol processing"""
     processed_text: str
-    changes_made: List[str]
+    changes_made: list[str]
     symbols_processed: int
     processing_time: float = 0.0
 
@@ -28,13 +28,13 @@ class EspeakEnhancedSymbolProcessor:
     eSpeak's symbol handling strategies.
     """
 
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
+    def __init__(self, config: dict[str, Any] | None = None):
         self.config = config or {}
         self.symbol_mappings = self._load_espeak_symbol_mappings()
         self.punctuation_mappings = self._load_punctuation_mappings()
         self.context_patterns = self._load_context_patterns()
 
-    def _load_espeak_symbol_mappings(self) -> Dict[str, str]:
+    def _load_espeak_symbol_mappings(self) -> dict[str, str]:
         """Load eSpeak-inspired symbol mappings"""
         return {
             # Critical fixes for known issues - QUESTION MARKS AND EXCLAMATIONS SHOULD NOT BE VOCALIZED
@@ -89,7 +89,7 @@ class EspeakEnhancedSymbolProcessor:
             "'": "",
         }
 
-    def _load_punctuation_mappings(self) -> Dict[str, str]:
+    def _load_punctuation_mappings(self) -> dict[str, str]:
         """Load punctuation-specific mappings based on eSpeak modes"""
         return {
             # Sentence-ending punctuation - QUESTION MARKS AND EXCLAMATIONS SHOULD NOT BE VOCALIZED
@@ -115,7 +115,7 @@ class EspeakEnhancedSymbolProcessor:
             "'": "",
         }
 
-    def _load_context_patterns(self) -> Dict[str, Dict[str, str]]:
+    def _load_context_patterns(self) -> dict[str, dict[str, str]]:
         """Load context-aware symbol processing patterns"""
         return {
             # URL context - don't pronounce symbols
@@ -200,7 +200,7 @@ class EspeakEnhancedSymbolProcessor:
             processing_time=processing_time
         )
 
-    def _process_context_aware_symbols(self, text: str) -> Tuple[str, List[str]]:
+    def _process_context_aware_symbols(self, text: str) -> tuple[str, list[str]]:
         """Process symbols based on context (URLs, emails, etc.)"""
         changes_made = []
 
@@ -238,7 +238,7 @@ class EspeakEnhancedSymbolProcessor:
 
         return text, changes_made
 
-    def _fix_critical_symbols(self, text: str) -> Tuple[str, List[str]]:
+    def _fix_critical_symbols(self, text: str) -> tuple[str, list[str]]:
         """Fix critical symbol pronunciation issues"""
         changes_made = []
 
@@ -259,7 +259,7 @@ class EspeakEnhancedSymbolProcessor:
 
         return text, changes_made
 
-    def _process_punctuation(self, text: str) -> Tuple[str, List[str]]:
+    def _process_punctuation(self, text: str) -> tuple[str, list[str]]:
         """Process punctuation based on eSpeak punctuation modes"""
         changes_made = []
 
@@ -291,7 +291,7 @@ class EspeakEnhancedSymbolProcessor:
 
         return text, changes_made
 
-    def _clean_quote_characters(self, text: str) -> Tuple[str, List[str]]:
+    def _clean_quote_characters(self, text: str) -> tuple[str, list[str]]:
         """Clean quote characters to prevent 'in quat' pronunciation issues"""
         changes_made = []
 
@@ -314,7 +314,7 @@ class EspeakEnhancedSymbolProcessor:
 
         return text, changes_made
 
-    def test_symbol_processing(self, test_cases: Optional[List[str]] = None) -> Dict[str, Any]:
+    def test_symbol_processing(self, test_cases: list[str] | None = None) -> dict[str, Any]:
         """Test symbol processing with various cases"""
         if test_cases is None:
             test_cases = [
@@ -343,6 +343,6 @@ class EspeakEnhancedSymbolProcessor:
         return results
 
 # Factory function for easy integration
-def create_espeak_enhanced_symbol_processor(config: Optional[Dict[str, Any]] = None) -> EspeakEnhancedSymbolProcessor:
+def create_espeak_enhanced_symbol_processor(config: dict[str, Any] | None = None) -> EspeakEnhancedSymbolProcessor:
     """Create eSpeak-enhanced symbol processor"""
     return EspeakEnhancedSymbolProcessor(config)

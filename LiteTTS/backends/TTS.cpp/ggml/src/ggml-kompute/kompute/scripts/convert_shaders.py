@@ -2,11 +2,12 @@
 """
     Script to handle conversion of compute shaders to spirv and to headers
 """
-import os
-import sys
 import logging
-import click
+import os
 import subprocess
+import sys
+
+import click
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())

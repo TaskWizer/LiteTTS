@@ -3,7 +3,6 @@
 Unit tests for cold start optimizer
 """
 
-import pytest
 from LiteTTS.performance.cold_start_optimizer import ColdStartOptimizationConfig, ColdStartOptimizer
 
 

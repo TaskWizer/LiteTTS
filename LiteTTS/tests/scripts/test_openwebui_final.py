@@ -4,10 +4,10 @@ Final comprehensive test to verify OpenWebUI TTS integration is working correctl
 This simulates the exact request patterns that OpenWebUI sends
 """
 
-import requests
-import json
-import time
 import sys
+import time
+
+import requests
 
 BASE_URL = "http://localhost:8354"
 

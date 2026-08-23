@@ -3,25 +3,26 @@
 Voice cloning API endpoints for LiteTTS
 """
 
-from fastapi import APIRouter, HTTPException, UploadFile, File, Form, BackgroundTasks
-from fastapi.responses import JSONResponse
-from typing import Dict, List, Any, Optional
 import logging
-import tempfile
 import os
-from pathlib import Path
 import shutil
+import tempfile
+from pathlib import Path
+from typing import Any
+
+from fastapi import APIRouter, BackgroundTasks, File, Form, HTTPException, UploadFile
+from fastapi.responses import JSONResponse
 
 try:
-    from ..voice.cloning import VoiceCloner, AudioAnalysisResult
-    from ..voice.metadata import VoiceMetadataManager
     from ..models import VoiceMetadata
+    from ..voice.cloning import AudioAnalysisResult, VoiceCloner
+    from ..voice.metadata import VoiceMetadataManager
 except ImportError:
     # Handle direct execution or import issues
     import sys
     from pathlib import Path
     sys.path.insert(0, str(Path(__file__).parent.parent))
-    from voice.cloning import VoiceCloner, AudioAnalysisResult
+    from voice.cloning import AudioAnalysisResult, VoiceCloner
     from voice.metadata import VoiceMetadataManager
 
 try:
@@ -282,7 +283,7 @@ class VoiceCloningRouter:
 
         @self.router.post("/v1/voices/create-extended")
         async def create_extended_voice(
-            audio_files: List[UploadFile] = File(..., description="Audio files for enhanced voice cloning (up to 5 files, 120s each)"),
+            audio_files: list[UploadFile] = File(..., description="Audio files for enhanced voice cloning (up to 5 files, 120s each)"),
             voice_name: str = Form(..., description="Name for the custom voice"),
             description: str = Form("", description="Optional description for the voice"),
             enable_segmentation: bool = Form(True, description="Enable intelligent audio segmentation for long clips"),
@@ -706,7 +707,7 @@ class VoiceCloningRouter:
                     content={"error": "Cloned voice synthesis failed", "detail": str(e)}
                 )
 
-    def _validate_audio_file(self, audio_file: UploadFile) -> Optional[str]:
+    def _validate_audio_file(self, audio_file: UploadFile) -> str | None:
         """Validate uploaded audio file"""
 
         # Check file size
@@ -725,7 +726,7 @@ class VoiceCloningRouter:
 
         return None
 
-    def _validate_audio_file_extended(self, audio_file: UploadFile) -> Optional[str]:
+    def _validate_audio_file_extended(self, audio_file: UploadFile) -> str | None:
         """Validate uploaded audio file for extended voice cloning (120s support)"""
 
         # Check file size with extended limit
@@ -744,7 +745,7 @@ class VoiceCloningRouter:
 
         return None
 
-    def _validate_voice_name(self, voice_name: str) -> Optional[str]:
+    def _validate_voice_name(self, voice_name: str) -> str | None:
         """Validate voice name"""
 
         if not voice_name or not voice_name.strip():
@@ -765,7 +766,7 @@ class VoiceCloningRouter:
 
         return None
 
-    def _assess_suitability(self, analysis: AudioAnalysisResult) -> Dict[str, Any]:
+    def _assess_suitability(self, analysis: AudioAnalysisResult) -> dict[str, Any]:
         """Assess audio suitability for voice cloning"""
 
         suitability = {
@@ -797,7 +798,7 @@ class VoiceCloningRouter:
 
         return suitability
 
-    def _get_recommendations(self, analysis: AudioAnalysisResult) -> List[str]:
+    def _get_recommendations(self, analysis: AudioAnalysisResult) -> list[str]:
         """Get recommendations for improving voice cloning quality"""
 
         recommendations = []

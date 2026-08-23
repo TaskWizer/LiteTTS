@@ -3,12 +3,14 @@
 Unit tests for voice metadata manager
 """
 
-import pytest
 import json
-from pathlib import Path
-from unittest.mock import Mock, patch, mock_open
 from datetime import datetime
-from LiteTTS.voice.metadata import VoiceMetadataManager, VoiceStats, VoiceMetadata
+from pathlib import Path
+from unittest.mock import mock_open, patch
+
+import pytest
+
+from LiteTTS.voice.metadata import VoiceMetadata, VoiceMetadataManager, VoiceStats
 
 
 class TestVoiceMetadataManager:

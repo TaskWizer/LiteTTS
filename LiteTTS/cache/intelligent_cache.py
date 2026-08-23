@@ -3,10 +3,11 @@ Intelligent Caching System for RTF Optimization
 """
 
 import hashlib
-import time
 import json
-from typing import Optional, Dict, Any
 import threading
+import time
+from typing import Any
+
 
 class IntelligentCache:
     """Intelligent caching system with RTF optimization"""
@@ -42,7 +43,7 @@ class IntelligentCache:
         cache_string = json.dumps(cache_data, sort_keys=True)
         return hashlib.md5(cache_string.encode()).hexdigest()
 
-    def get(self, cache_key: str) -> Optional[bytes]:
+    def get(self, cache_key: str) -> bytes | None:
         """Get cached audio data"""
         start_time = time.time()
 
@@ -131,7 +132,7 @@ class IntelligentCache:
                 self.performance_stats['cache_hits'] / total
             )
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get cache performance statistics"""
         with self.lock:
             return self.performance_stats.copy()

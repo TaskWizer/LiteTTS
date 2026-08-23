@@ -1,6 +1,6 @@
-import pyshader as ps
 import kp
 import numpy as np
+import pyshader as ps
 
 
 def test_array_multiplication():

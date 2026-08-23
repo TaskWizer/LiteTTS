@@ -3,9 +3,7 @@
 Unit tests for voice module __init__.py
 """
 
-import pytest
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 
 
 class TestVoiceModuleImports:
@@ -170,7 +168,7 @@ class TestGetVoiceManager:
 
     def test_get_voice_manager_creates_instance(self):
         """Test get_voice_manager creates instance"""
-        from LiteTTS.voice import get_voice_manager, DynamicVoiceManager
+        from LiteTTS.voice import get_voice_manager
 
         with patch('LiteTTS.voice.DynamicVoiceManager') as mock_class:
             mock_instance = Mock()

@@ -3,9 +3,8 @@
 Unit tests for voice manager module
 """
 
-import pytest
-from pathlib import Path
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import Mock, patch
+
 from LiteTTS.voice.manager import VoiceManager
 
 

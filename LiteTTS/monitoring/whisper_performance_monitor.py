@@ -4,18 +4,19 @@ Whisper Performance Monitoring and Optimization Framework
 Provides comprehensive monitoring, alerting, and continuous optimization for Whisper alternatives in production
 """
 
-import time
 import json
 import logging
-import psutil
-import numpy as np
-from pathlib import Path
-from typing import Dict, List, Any, Optional, Callable
-from dataclasses import dataclass, field, asdict
-from datetime import datetime, timedelta
-from collections import deque
 import sqlite3
+import time
+from collections import deque
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import asdict, dataclass
+from datetime import datetime, timedelta
+from typing import Any
+
+import numpy as np
+import psutil
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +33,7 @@ class PerformanceMetrics:
     queue_size: int
     concurrent_requests: int
     error_occurred: bool = False
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
 @dataclass
 class AlertThresholds:
@@ -113,7 +114,7 @@ class PerformanceDatabase:
             ))
 
     def get_metrics(self, start_time: datetime, end_time: datetime,
-                   model_name: Optional[str] = None) -> List[PerformanceMetrics]:
+                   model_name: str | None = None) -> list[PerformanceMetrics]:
         """Retrieve performance metrics for time range"""
         query = """
             SELECT * FROM performance_metrics 
@@ -154,10 +155,10 @@ class AlertManager:
 
     def __init__(self, thresholds: AlertThresholds):
         self.thresholds = thresholds
-        self.alert_callbacks: List[Callable[[str, str, Dict[str, Any]], None]] = []
+        self.alert_callbacks: list[Callable[[str, str, dict[str, Any]], None]] = []
         self.alert_history = deque(maxlen=1000)
 
-    def add_alert_callback(self, callback: Callable[[str, str, Dict[str, Any]], None]):
+    def add_alert_callback(self, callback: Callable[[str, str, dict[str, Any]], None]):
         """Add alert callback function"""
         self.alert_callbacks.append(callback)
 
@@ -209,7 +210,7 @@ class AlertManager:
         for alert in alerts:
             self._trigger_alert(alert, metrics)
 
-    def _trigger_alert(self, alert: Dict[str, Any], metrics: PerformanceMetrics):
+    def _trigger_alert(self, alert: dict[str, Any], metrics: PerformanceMetrics):
         """Trigger alert notifications"""
         alert_data = {
             'timestamp': metrics.timestamp.isoformat(),
@@ -233,7 +234,7 @@ class OptimizationEngine:
     def __init__(self, db: PerformanceDatabase):
         self.db = db
 
-    def analyze_performance(self, hours: int = 24) -> Dict[str, Any]:
+    def analyze_performance(self, hours: int = 24) -> dict[str, Any]:
         """Analyze performance over specified time period"""
         end_time = datetime.now()
         start_time = end_time - timedelta(hours=hours)
@@ -276,7 +277,7 @@ class OptimizationEngine:
 
         return analysis
 
-    def generate_recommendations(self, analysis: Dict[str, Any]) -> List[OptimizationRecommendation]:
+    def generate_recommendations(self, analysis: dict[str, Any]) -> list[OptimizationRecommendation]:
         """Generate optimization recommendations based on analysis"""
         recommendations = []
 
@@ -330,7 +331,7 @@ class WhisperPerformanceMonitor:
     """Main performance monitoring system for Whisper alternatives"""
 
     def __init__(self, db_path: str = "whisper_performance.db",
-                 thresholds: Optional[AlertThresholds] = None):
+                 thresholds: AlertThresholds | None = None):
         self.db = PerformanceDatabase(db_path)
         self.thresholds = thresholds or AlertThresholds()
         self.alert_manager = AlertManager(self.thresholds)
@@ -348,7 +349,7 @@ class WhisperPerformanceMonitor:
 
     def record_inference(self, model_name: str, audio_duration: float,
                         processing_time: float, memory_usage_mb: float,
-                        error_occurred: bool = False, error_message: Optional[str] = None):
+                        error_occurred: bool = False, error_message: str | None = None):
         """Record inference performance metrics"""
         rtf = processing_time / audio_duration if audio_duration > 0 else float('inf')
 
@@ -389,11 +390,11 @@ class WhisperPerformanceMonitor:
         """Update current queue size"""
         self.request_queue_size = size
 
-    def add_alert_callback(self, callback: Callable[[str, str, Dict[str, Any]], None]):
+    def add_alert_callback(self, callback: Callable[[str, str, dict[str, Any]], None]):
         """Add alert notification callback"""
         self.alert_manager.add_alert_callback(callback)
 
-    def get_performance_report(self, hours: int = 24) -> Dict[str, Any]:
+    def get_performance_report(self, hours: int = 24) -> dict[str, Any]:
         """Generate comprehensive performance report"""
         analysis = self.optimization_engine.analyze_performance(hours)
         recommendations = self.optimization_engine.generate_recommendations(analysis)
@@ -441,7 +442,7 @@ class WhisperPerformanceMonitor:
         logger.info("Continuous monitoring stopped")
 
 # Example alert callback
-def log_alert(alert_type: str, severity: str, alert_data: Dict[str, Any]):
+def log_alert(alert_type: str, severity: str, alert_data: dict[str, Any]):
     """Example alert callback that logs alerts"""
     logger.warning(f"ALERT [{severity.upper()}] {alert_type}: {alert_data['alert']['message']}")
 

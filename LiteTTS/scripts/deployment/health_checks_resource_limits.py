@@ -4,18 +4,16 @@ Health Checks and Resource Limits Manager
 Implement comprehensive health checks, resource limits, monitoring endpoints, and production-ready configurations
 """
 
-import os
-import sys
 import json
 import logging
+import os
+import sys
 import time
-import psutil
-import threading
-import asyncio
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, asdict
-from datetime import datetime, timedelta
+from typing import Any
+
+import psutil
 
 # Add the project root to the path
 project_root = Path(__file__).parent.parent
@@ -31,7 +29,7 @@ class HealthCheckResult:
     check_name: str
     status: str  # healthy, warning, critical, unknown
     message: str
-    details: Dict[str, Any]
+    details: dict[str, Any]
     timestamp: float
     response_time_ms: float
 
@@ -88,7 +86,7 @@ class HealthCheckManager:
             health_check_interval_seconds=30  # Health check frequency
         )
 
-    def _create_monitoring_endpoints(self) -> List[MonitoringEndpoint]:
+    def _create_monitoring_endpoints(self) -> list[MonitoringEndpoint]:
         """Create monitoring endpoints configuration"""
         return [
             MonitoringEndpoint(
@@ -135,7 +133,7 @@ class HealthCheckManager:
             )
         ]
 
-    def _get_system_info(self) -> Dict[str, Any]:
+    def _get_system_info(self) -> dict[str, Any]:
         """Get system information"""
         try:
             return {
@@ -445,7 +443,7 @@ class HealthCheckManager:
             response_time_ms=round(response_time, 2)
         )
 
-    def run_all_health_checks(self) -> Dict[str, HealthCheckResult]:
+    def run_all_health_checks(self) -> dict[str, HealthCheckResult]:
         """Run all health checks"""
         logger.info("Running comprehensive health checks...")
 
@@ -462,7 +460,7 @@ class HealthCheckManager:
         self.health_results = checks
         return checks
 
-    def get_overall_health_status(self, checks: Dict[str, HealthCheckResult]) -> str:
+    def get_overall_health_status(self, checks: dict[str, HealthCheckResult]) -> str:
         """Get overall health status"""
         statuses = [check.status for check in checks.values()]
 
@@ -939,7 +937,7 @@ echo "$(date): Health monitoring check completed" >> "$LOG_FILE"
         logger.info(f"Monitoring script saved: {script_file}")
         return monitoring_script
 
-    def run_comprehensive_health_setup(self) -> Dict[str, Any]:
+    def run_comprehensive_health_setup(self) -> dict[str, Any]:
         """Run comprehensive health checks and resource limits setup"""
         logger.info("Starting comprehensive health checks and resource limits setup...")
 
@@ -990,8 +988,8 @@ echo "$(date): Health monitoring check completed" >> "$LOG_FILE"
         logger.info(f"Health checks setup completed. Results saved to: {results_file}")
         return setup_results
 
-    def _generate_health_summary(self, health_checks: Dict[str, HealthCheckResult],
-                                overall_status: str) -> Dict[str, Any]:
+    def _generate_health_summary(self, health_checks: dict[str, HealthCheckResult],
+                                overall_status: str) -> dict[str, Any]:
         """Generate health setup summary"""
 
         status_counts = {}
@@ -1015,7 +1013,7 @@ echo "$(date): Health monitoring check completed" >> "$LOG_FILE"
         return summary
 
     def _generate_health_next_steps(self, overall_status: str,
-                                  health_checks: Dict[str, HealthCheckResult]) -> List[str]:
+                                  health_checks: dict[str, HealthCheckResult]) -> list[str]:
         """Generate next steps for health monitoring deployment"""
         next_steps = [
             "Integrate health check endpoints into your FastAPI application",

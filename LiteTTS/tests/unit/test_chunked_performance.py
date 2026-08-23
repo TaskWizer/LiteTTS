@@ -4,6 +4,7 @@ Unit tests for chunked performance monitor
 """
 
 import pytest
+
 from LiteTTS.monitoring.chunked_performance import ChunkedPerformanceMonitor, GenerationType
 
 

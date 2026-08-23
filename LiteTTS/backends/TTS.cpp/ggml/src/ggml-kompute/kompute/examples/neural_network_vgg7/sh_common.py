@@ -1,5 +1,5 @@
-from PIL import Image
 import numpy
+from PIL import Image
 
 # just in case
 global VSZ

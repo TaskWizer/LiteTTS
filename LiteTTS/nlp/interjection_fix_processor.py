@@ -4,9 +4,8 @@ Interjection pronunciation fix processor for TTS
 Fixes "hmm" → "hum" and similar interjection pronunciation issues
 """
 
-import re
 import logging
-from typing import Dict, List, Tuple
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +17,7 @@ class InterjectionFixProcessor:
         self.phonetic_interjections = self._load_phonetic_interjections()
         self.context_patterns = self._load_context_patterns()
 
-    def _load_interjection_fixes(self) -> Dict[str, str]:
+    def _load_interjection_fixes(self) -> dict[str, str]:
         """Load interjection pronunciation fixes"""
         return {
             # Thinking/pondering sounds
@@ -116,7 +115,7 @@ class InterjectionFixProcessor:
             "Ahem": "Ahem",
         }
 
-    def _load_phonetic_interjections(self) -> Dict[str, str]:
+    def _load_phonetic_interjections(self) -> dict[str, str]:
         """Load phonetic representations for interjections"""
         return {
             # Correct phonetic approach - lengthen for natural pronunciation
@@ -148,7 +147,7 @@ class InterjectionFixProcessor:
             "Hehe": "He he",
         }
 
-    def _load_context_patterns(self) -> List[Tuple[str, str, str]]:
+    def _load_context_patterns(self) -> list[tuple[str, str, str]]:
         """Load context-based interjection patterns"""
         return [
             # Pattern, Replacement, Description
@@ -290,7 +289,7 @@ class InterjectionFixProcessor:
 
         return text
 
-    def analyze_interjection_issues(self, text: str) -> Dict[str, List[str]]:
+    def analyze_interjection_issues(self, text: str) -> dict[str, list[str]]:
         """Analyze text for interjection pronunciation issues"""
         issues = {
             'short_interjections': [],

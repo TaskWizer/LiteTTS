@@ -5,16 +5,17 @@ Automatically reloads configuration files when they change
 """
 
 import json
-import time
 import logging
-from pathlib import Path
-from typing import Dict, Optional, Callable, Any
 import threading
+import time
+from collections.abc import Callable
+from pathlib import Path
+from typing import Any
 
 # Optional dependency for file watching
 try:
-    from watchdog.observers import Observer
     from watchdog.events import FileSystemEventHandler
+    from watchdog.observers import Observer
     WATCHDOG_AVAILABLE = True
 except ImportError:
     WATCHDOG_AVAILABLE = False
@@ -151,7 +152,7 @@ class ConfigHotReloadManager:
             logger.error(f"❌ Manual config reload failed for {file_path}: {e}")
             return False
 
-    def reload_all(self) -> Dict[str, bool]:
+    def reload_all(self) -> dict[str, bool]:
         """Reload all registered configuration files"""
         if not self.enabled:
             logger.warning("🔄 Configuration hot reload is disabled")
@@ -170,7 +171,7 @@ class ConfigHotReloadManager:
 
         return results
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """Get configuration hot reload status"""
         return {
             "enabled": self.enabled,

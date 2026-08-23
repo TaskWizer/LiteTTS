@@ -4,10 +4,9 @@ Advanced symbol and punctuation processor for TTS
 Fixes asterisk→astrisk, quotation marks→'in quat', apostrophes→'x 27' issues
 """
 
-import re
 import html
-from typing import Dict, List, Tuple, Optional
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +24,7 @@ class AdvancedSymbolProcessor:
         self.handle_quotes_naturally = True
         self.fix_html_entities = True
 
-    def _load_symbol_mappings(self) -> Dict[str, str]:
+    def _load_symbol_mappings(self) -> dict[str, str]:
         """Load symbol-to-word mappings with pronunciation fixes"""
         return {
             # Mathematical and logical symbols
@@ -129,7 +128,7 @@ class AdvancedSymbolProcessor:
             '∞': ' infinity ',
         }
 
-    def _load_quote_patterns(self) -> List[Tuple[str, str]]:
+    def _load_quote_patterns(self) -> list[tuple[str, str]]:
         """Load quote handling patterns to prevent 'in quat' issues"""
         return [
             # HTML entities for quotes
@@ -150,7 +149,7 @@ class AdvancedSymbolProcessor:
             (r'\s*`\s*', ' '),  # Remove standalone backticks
         ]
 
-    def _load_markdown_symbols(self) -> Dict[str, str]:
+    def _load_markdown_symbols(self) -> dict[str, str]:
         """Load markdown symbol handling"""
         return {
             # Markdown formatting - handle based on preserve_markdown setting
@@ -168,7 +167,7 @@ class AdvancedSymbolProcessor:
             '>': '',   # Blockquotes (when at start of line)
         }
 
-    def _load_punctuation_rules(self) -> List[Tuple[str, str]]:
+    def _load_punctuation_rules(self) -> list[tuple[str, str]]:
         """Load punctuation normalization rules (ENHANCED)"""
         return [
             # Multiple punctuation normalization (ENHANCED)
@@ -434,7 +433,7 @@ class AdvancedSymbolProcessor:
 
         return text
 
-    def analyze_symbols(self, text: str) -> Dict[str, List[str]]:
+    def analyze_symbols(self, text: str) -> dict[str, list[str]]:
         """Analyze symbols in text and return information"""
         info = {
             'html_entities': [],
@@ -580,7 +579,7 @@ class AdvancedSymbolProcessor:
 
         return text
 
-    def analyze_symbol_complexity(self, text: str) -> Dict[str, any]:
+    def analyze_symbol_complexity(self, text: str) -> dict[str, any]:
         """Analyze text for symbol processing complexity (ENHANCED)"""
         analysis = {
             'symbol_count': 0,

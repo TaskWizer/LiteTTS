@@ -4,7 +4,6 @@ Test the clean text normalizer
 """
 
 import sys
-import os
 from pathlib import Path
 
 # Add the project root to the path
@@ -12,6 +11,7 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from LiteTTS.nlp.clean_text_normalizer import CleanTextNormalizer
+
 
 def test_clean_normalizer():
     """Test the clean normalizer with critical pronunciation issues"""

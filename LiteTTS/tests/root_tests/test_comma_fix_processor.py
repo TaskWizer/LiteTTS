@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Tests for CommaFixProcessor"""
 
-import pytest
 import importlib.util
+
+import pytest
 
 
 def load_module_from_path(module_name, file_path):

@@ -3,16 +3,16 @@
 Dynamic voice manager with HuggingFace integration and smart caching
 """
 
-import logging
 import json
-import re
-import numpy as np
-from pathlib import Path
-from typing import Dict, List, Optional, Set, Any
+import logging
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
 
-from .downloader import VoiceDownloader
+import numpy as np
+
 from .discovery import VoiceDiscovery
+from .downloader import VoiceDownloader
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ class VoiceEmbedding:
     """Voice embedding data structure"""
     name: str
     embedding_data: np.ndarray
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
     file_path: str
     checksum: str
 
@@ -51,8 +51,8 @@ class DynamicVoiceManager:
         self.discovery = VoiceDiscovery(str(self.voices_dir))
 
         # Voice storage
-        self.loaded_voices: Dict[str, VoiceEmbedding] = {}
-        self.voice_mappings: Dict[str, str] = {}  # short name -> full name
+        self.loaded_voices: dict[str, VoiceEmbedding] = {}
+        self.voice_mappings: dict[str, str] = {}  # short name -> full name
 
         # Cache file for voice mappings
         self.mappings_cache_file = self.voices_dir / "voice_mappings.json"
@@ -120,7 +120,7 @@ class DynamicVoiceManager:
         except Exception as e:
             logger.error(f"Failed to save voice mappings cache: {e}")
 
-    def get_available_voices(self) -> List[str]:
+    def get_available_voices(self) -> list[str]:
         """Get list of all available voice names (both full and short names)"""
         discovered_voices = self.discovery.get_available_voices()
         short_names = list(self.voice_mappings.keys())
@@ -165,7 +165,7 @@ class DynamicVoiceManager:
         logger.info(f"Downloading voice: {resolved_name}")
         return self.downloader.download_voice(resolved_name)
 
-    def get_voice_embedding(self, voice_name: str) -> Optional[VoiceEmbedding]:
+    def get_voice_embedding(self, voice_name: str) -> VoiceEmbedding | None:
         """Get voice embedding, downloading if necessary"""
         resolved_name = self.resolve_voice_name(voice_name)
 
@@ -181,7 +181,7 @@ class DynamicVoiceManager:
         # Load voice data
         return self._load_voice_data(resolved_name)
 
-    def _load_voice_data(self, voice_name: str) -> Optional[VoiceEmbedding]:
+    def _load_voice_data(self, voice_name: str) -> VoiceEmbedding | None:
         """Load voice data from file"""
         voice_file = self.voices_dir / f"{voice_name}.pt"
 
@@ -234,11 +234,11 @@ class DynamicVoiceManager:
             logger.error(f"Failed to load voice '{voice_name}': {e}")
             return None
 
-    def download_all_voices(self, progress_callback=None) -> Dict[str, bool]:
+    def download_all_voices(self, progress_callback=None) -> dict[str, bool]:
         """Download all available voices from HuggingFace"""
         return self.downloader.download_all_voices(progress_callback)
 
-    def get_download_status(self) -> Dict[str, Any]:
+    def get_download_status(self) -> dict[str, Any]:
         """Get download status for all voices"""
         return {
             'discovered_voices': len(self.downloader.discovered_voices),
@@ -257,7 +257,7 @@ class DynamicVoiceManager:
             self._save_voice_mappings()
         return success
 
-    def get_voice_mappings(self) -> Dict[str, str]:
+    def get_voice_mappings(self) -> dict[str, str]:
         """Get current voice mappings (short -> full name)"""
         return self.voice_mappings.copy()
 

@@ -3,14 +3,14 @@
 Voice discovery and caching system for individual .bin files
 """
 
-import json
 import hashlib
+import json
 import logging
-import numpy as np
-from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from datetime import datetime
+from pathlib import Path
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -23,10 +23,10 @@ class VoiceInfo:
     checksum: str
     last_modified: float
     source: str  # 'local', 'huggingface', 'custom'
-    language: Optional[str] = None
-    gender: Optional[str] = None
-    nationality: Optional[str] = None
-    discovered_at: Optional[str] = None
+    language: str | None = None
+    gender: str | None = None
+    nationality: str | None = None
+    discovered_at: str | None = None
 
 class VoiceDiscovery:
     """Discovers and manages individual voice files with caching"""
@@ -44,8 +44,8 @@ class VoiceDiscovery:
         self.voices_dir.mkdir(parents=True, exist_ok=True)
 
         self.cache_file = self.voices_dir / "voice_cache.json"
-        self.voice_cache: Dict[str, VoiceInfo] = {}
-        self.loaded_voices: Dict[str, np.ndarray] = {}
+        self.voice_cache: dict[str, VoiceInfo] = {}
+        self.loaded_voices: dict[str, np.ndarray] = {}
 
         # Voice metadata from HuggingFace repository
         self.known_voices = {
@@ -135,7 +135,7 @@ class VoiceDiscovery:
                 sha256_hash.update(chunk)
         return sha256_hash.hexdigest()
 
-    def discover_voices(self) -> Tuple[int, int]:
+    def discover_voices(self) -> tuple[int, int]:
         """Discover voice files in the voices directory"""
         discovered = 0
         updated = 0
@@ -208,11 +208,11 @@ class VoiceDiscovery:
 
         return discovered, updated
 
-    def get_available_voices(self) -> List[str]:
+    def get_available_voices(self) -> list[str]:
         """Get list of available voice names"""
         return sorted(list(self.voice_cache.keys()))
 
-    def get_voice_info(self, voice_name: str) -> Optional[VoiceInfo]:
+    def get_voice_info(self, voice_name: str) -> VoiceInfo | None:
         """Get information for a specific voice"""
         return self.voice_cache.get(voice_name)
 
@@ -220,7 +220,7 @@ class VoiceDiscovery:
         """Check if a voice is available locally"""
         return voice_name in self.voice_cache
 
-    def load_voice_data(self, voice_name: str) -> Optional[np.ndarray]:
+    def load_voice_data(self, voice_name: str) -> np.ndarray | None:
         """Load a voice file into memory"""
         if voice_name in self.loaded_voices:
             return self.loaded_voices[voice_name]
@@ -258,7 +258,7 @@ class VoiceDiscovery:
             logger.error(f"Failed to load voice '{voice_name}': {e}")
             return None
 
-    def get_voice_stats(self) -> Dict:
+    def get_voice_stats(self) -> dict:
         """Get statistics about available voices"""
         stats = {
             "total_voices": len(self.voice_cache),
@@ -288,10 +288,10 @@ class VoiceDiscovery:
 
         return stats
 
-    def filter_voices(self, language: Optional[str] = None,
-                     gender: Optional[str] = None,
-                     nationality: Optional[str] = None,
-                     source: Optional[str] = None) -> List[str]:
+    def filter_voices(self, language: str | None = None,
+                     gender: str | None = None,
+                     nationality: str | None = None,
+                     source: str | None = None) -> list[str]:
         """Filter voices by criteria"""
         filtered = []
 

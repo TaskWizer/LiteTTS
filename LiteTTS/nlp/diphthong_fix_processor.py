@@ -4,9 +4,8 @@ Diphthong pronunciation fix processor for TTS
 Fixes "joy" → "ju-ie" and similar diphthong pronunciation issues
 """
 
-import re
 import logging
-from typing import Dict, List, Tuple
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +17,7 @@ class DiphthongFixProcessor:
         self.phonetic_overrides = self._load_phonetic_overrides()
         self.context_patterns = self._load_context_patterns()
 
-    def _load_diphthong_fixes(self) -> Dict[str, str]:
+    def _load_diphthong_fixes(self) -> dict[str, str]:
         """Load diphthong pronunciation fixes"""
         return {
             # /ɔɪ/ diphthong words (oy sound)
@@ -104,7 +103,7 @@ class DiphthongFixProcessor:
             "Allow": "al-LOW",
         }
 
-    def _load_phonetic_overrides(self) -> Dict[str, str]:
+    def _load_phonetic_overrides(self) -> dict[str, str]:
         """Load phonetic spelling overrides for problematic words"""
         return {
             # Words that need phonetic spelling to fix pronunciation
@@ -138,7 +137,7 @@ class DiphthongFixProcessor:
             "Cow": "C-ow",
         }
 
-    def _load_context_patterns(self) -> List[Tuple[str, str, str]]:
+    def _load_context_patterns(self) -> list[tuple[str, str, str]]:
         """Load context-based pronunciation patterns"""
         return [
             # Pattern, Replacement, Description
@@ -239,7 +238,7 @@ class DiphthongFixProcessor:
 
         return text
 
-    def analyze_diphthong_issues(self, text: str) -> Dict[str, List[str]]:
+    def analyze_diphthong_issues(self, text: str) -> dict[str, list[str]]:
         """Analyze text for potential diphthong pronunciation issues"""
         issues = {
             'oy_diphthongs': [],

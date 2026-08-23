@@ -1,12 +1,13 @@
-import gguf
-from pathlib import Path
-import torch
-import torch.nn as nn
-import logging
 import abc
+import logging
 import os
 from os.path import dirname
+from pathlib import Path
+
+import gguf
 import numpy as np
+import torch
+import torch.nn as nn
 
 logging.basicConfig(level=logging.INFO)
 
@@ -33,14 +34,12 @@ class TTSEncoder(abc.ABC):
         Implementations of TTSEncoder are expected to define this function. This function should be responsible
         for assign all relevant model tensors to the GGUF file.
         """
-        pass
 
     def prepare_metadata(self):
         """
         Implementations of TTSEncoder are expected to define this function. This function should be responsible
         for determining and assigning general model configuration to the GGUF file.
         """
-        pass
 
     def set_tensor(self, name: str, tensor: torch.Tensor | nn.Parameter | np.ndarray,
                     dtype: any = np.float32, gguf_dtype: gguf.GGMLQuantizationType = gguf.GGMLQuantizationType.F32):

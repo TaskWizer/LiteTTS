@@ -1,10 +1,11 @@
 # Convert a SAM model checkpoint to a ggml compatible file
 #
 
-import sys
-import torch
 import struct
+import sys
+
 import numpy as np
+import torch
 
 if len(sys.argv) < 3:
     print("Usage: convert-pth-to-ggml.py file-model dir-output [ftype]\n")

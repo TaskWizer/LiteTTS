@@ -3,8 +3,9 @@
 Unit tests for API response formatter
 """
 
+
 import pytest
-from unittest.mock import MagicMock
+
 from LiteTTS.api.response_formatter import ResponseFormatter
 
 

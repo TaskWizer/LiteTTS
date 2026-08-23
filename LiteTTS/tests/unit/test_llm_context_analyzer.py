@@ -4,7 +4,8 @@ Unit tests for LLM context analyzer
 """
 
 import pytest
-from LiteTTS.nlp.llm_context_analyzer import LLMContextAnalyzer, LLMContextAnalysis
+
+from LiteTTS.nlp.llm_context_analyzer import LLMContextAnalysis, LLMContextAnalyzer
 
 
 class TestLLMContextAnalyzer:

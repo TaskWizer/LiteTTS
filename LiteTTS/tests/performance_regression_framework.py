@@ -4,25 +4,23 @@ Performance Regression Testing Framework
 Automated testing to ensure improvements don't degrade functionality and maintain processing speed
 """
 
-import time
-import logging
 import json
+import logging
 import statistics
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, asdict
-from pathlib import Path
-import psutil
-import threading
-from datetime import datetime
 import sys
-import os
+import time
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import Any
+
+import psutil
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from LiteTTS.tts.synthesizer import TTSSynthesizer
 from LiteTTS.models import TTSConfiguration, TTSRequest
-from LiteTTS.audio.audio_segment import AudioSegment
+from LiteTTS.tts.synthesizer import TTSSynthesizer
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +35,7 @@ class PerformanceMetrics:
     memory_usage_mb: float
     cpu_usage_percent: float
     success: bool
-    error_message: Optional[str] = None
+    error_message: str | None = None
     timestamp: str = ""
 
     def __post_init__(self):
@@ -56,8 +54,8 @@ class RegressionTestResult:
     memory_peak_mb: float
     cpu_peak_percent: float
     performance_degradation: float  # Percentage change from baseline
-    test_metrics: List[PerformanceMetrics]
-    baseline_comparison: Dict[str, float]
+    test_metrics: list[PerformanceMetrics]
+    baseline_comparison: dict[str, float]
     timestamp: str = ""
 
     def __post_init__(self):
@@ -84,7 +82,7 @@ class PerformanceRegressionTester:
 
         logger.info("Performance regression tester initialized")
 
-    def _load_baseline(self) -> Dict[str, Any]:
+    def _load_baseline(self) -> dict[str, Any]:
         """Load baseline performance metrics"""
         if self.baseline_file.exists():
             try:
@@ -95,7 +93,7 @@ class PerformanceRegressionTester:
 
         return {}
 
-    def _save_baseline(self, metrics: Dict[str, Any]):
+    def _save_baseline(self, metrics: dict[str, Any]):
         """Save baseline performance metrics"""
         try:
             with open(self.baseline_file, 'w') as f:
@@ -104,7 +102,7 @@ class PerformanceRegressionTester:
         except Exception as e:
             logger.error(f"Failed to save baseline: {e}")
 
-    def _load_test_texts(self) -> List[str]:
+    def _load_test_texts(self) -> list[str]:
         """Load test texts for performance testing"""
         return [
             # Short texts
@@ -283,7 +281,7 @@ class PerformanceRegressionTester:
                 error_message=str(e)
             )
 
-    def _compare_with_baseline(self, current_metrics: List[PerformanceMetrics]) -> Dict[str, float]:
+    def _compare_with_baseline(self, current_metrics: list[PerformanceMetrics]) -> dict[str, float]:
         """Compare current metrics with baseline"""
         if not self.baseline_metrics or not current_metrics:
             return {}
@@ -315,7 +313,7 @@ class PerformanceRegressionTester:
             'cpu_change_percent': cpu_change
         }
 
-    def _save_current_as_baseline(self, metrics: List[PerformanceMetrics]):
+    def _save_current_as_baseline(self, metrics: list[PerformanceMetrics]):
         """Save current metrics as new baseline"""
         if not metrics:
             return
@@ -384,7 +382,7 @@ class PerformanceRegressionTester:
         else:
             return "PASSED"
 
-    def _generate_recommendations(self, result: RegressionTestResult) -> List[str]:
+    def _generate_recommendations(self, result: RegressionTestResult) -> list[str]:
         """Generate performance improvement recommendations"""
         recommendations = []
 

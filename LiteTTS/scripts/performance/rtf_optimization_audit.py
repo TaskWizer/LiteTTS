@@ -7,15 +7,15 @@ of bottlenecks in the TTS system. Provides optimization recommendations and
 performance improvements.
 """
 
-import requests
-import time
 import json
-import statistics
-import psutil
 import os
-from typing import Dict, List, Tuple, Any
-from pathlib import Path
-import numpy as np
+import statistics
+import time
+from typing import Any
+
+import psutil
+import requests
+
 
 class RTFOptimizationAuditor:
     """Comprehensive RTF performance auditor and optimizer"""
@@ -30,7 +30,7 @@ class RTFOptimizationAuditor:
             'system_analysis': {}
         }
 
-    def run_comprehensive_audit(self) -> Dict[str, Any]:
+    def run_comprehensive_audit(self) -> dict[str, Any]:
         """Run complete RTF optimization audit"""
 
         print("🚀 RTF Optimization & Code Audit")

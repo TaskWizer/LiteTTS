@@ -4,13 +4,14 @@ Accurate performance analysis using server-side RTF metrics
 This script analyzes the actual performance data from the server logs
 """
 
-import requests
-import time
 import statistics
-import json
-from typing import List, Dict, Any
+import time
+from typing import Any
 
-def get_performance_metrics(base_url: str = "http://localhost:8354") -> Dict[str, Any]:
+import requests
+
+
+def get_performance_metrics(base_url: str = "http://localhost:8354") -> dict[str, Any]:
     """Get performance metrics from the server"""
     try:
         response = requests.get(f"{base_url}/performance/stats", timeout=10)
@@ -23,7 +24,7 @@ def get_performance_metrics(base_url: str = "http://localhost:8354") -> Dict[str
         print(f"❌ Error getting performance metrics: {e}")
         return {}
 
-def analyze_rtf_performance(base_url: str = "http://localhost:8354") -> List[float]:
+def analyze_rtf_performance(base_url: str = "http://localhost:8354") -> list[float]:
     """Analyze RTF performance with accurate measurements"""
 
     print("🔍 Accurate RTF Performance Analysis")

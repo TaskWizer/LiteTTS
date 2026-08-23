@@ -4,12 +4,13 @@ Voice blending functionality for Kokoro TTS
 Allows blending multiple voices with customizable weights
 """
 
-import numpy as np
 import logging
-from typing import Dict, List, Optional, Union, Tuple
-from dataclasses import dataclass
-import sys
 import os
+import sys
+from dataclasses import dataclass
+
+import numpy as np
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import from the models.py file, not the models package
@@ -26,9 +27,9 @@ try:
 except Exception:
     # Fallback - define minimal classes
     from dataclasses import dataclass
-    from typing import Optional
-    import numpy as np
     from datetime import datetime
+
+    import numpy as np
 
     @dataclass
     class VoiceMetadata:
@@ -43,9 +44,9 @@ except Exception:
     @dataclass
     class VoiceEmbedding:
         name: str
-        embedding_data: Optional[np.ndarray] = None
-        metadata: Optional[VoiceMetadata] = None
-        loaded_at: Optional[datetime] = None
+        embedding_data: np.ndarray | None = None
+        metadata: VoiceMetadata | None = None
+        loaded_at: datetime | None = None
         file_hash: str = ""
 
 logger = logging.getLogger(__name__)
@@ -53,7 +54,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class BlendConfig:
     """Configuration for voice blending"""
-    voices: List[Tuple[str, float]]  # List of (voice_name, weight) tuples
+    voices: list[tuple[str, float]]  # List of (voice_name, weight) tuples
     blend_method: str = "weighted_average"  # "weighted_average", "interpolation", "style_mixing"
     normalize_weights: bool = True
     preserve_energy: bool = True
@@ -66,7 +67,7 @@ class VoiceBlender:
         self.voice_manager = voice_manager
         self.supported_methods = ["weighted_average", "interpolation", "style_mixing"]
 
-    def blend_voices(self, blend_config: BlendConfig) -> Optional[VoiceEmbedding]:
+    def blend_voices(self, blend_config: BlendConfig) -> VoiceEmbedding | None:
         """
         Blend multiple voices according to the configuration
         
@@ -145,8 +146,8 @@ class VoiceBlender:
         logger.info(f"Successfully blended {len(voice_embeddings)} voices into '{blended_name}'")
         return blended_embedding
 
-    def _weighted_average_blend(self, voice_embeddings: List[VoiceEmbedding],
-                               weights: List[float]) -> Optional[np.ndarray]:
+    def _weighted_average_blend(self, voice_embeddings: list[VoiceEmbedding],
+                               weights: list[float]) -> np.ndarray | None:
         """Blend voices using weighted average"""
         try:
             # Get embedding data from all voices
@@ -179,8 +180,8 @@ class VoiceBlender:
             logger.error(f"Weighted average blending failed: {e}")
             return None
 
-    def _interpolation_blend(self, voice_embeddings: List[VoiceEmbedding],
-                           weights: List[float]) -> Optional[np.ndarray]:
+    def _interpolation_blend(self, voice_embeddings: list[VoiceEmbedding],
+                           weights: list[float]) -> np.ndarray | None:
         """Blend voices using smooth interpolation"""
         try:
             # For interpolation, we'll use spherical linear interpolation (slerp) for better results
@@ -194,8 +195,8 @@ class VoiceBlender:
             logger.error(f"Interpolation blending failed: {e}")
             return None
 
-    def _style_mixing_blend(self, voice_embeddings: List[VoiceEmbedding],
-                          weights: List[float], smoothing_factor: float) -> Optional[np.ndarray]:
+    def _style_mixing_blend(self, voice_embeddings: list[VoiceEmbedding],
+                          weights: list[float], smoothing_factor: float) -> np.ndarray | None:
         """Blend voices using style mixing (different parts of the embedding from different voices)"""
         try:
             embedding_arrays = []
@@ -239,7 +240,7 @@ class VoiceBlender:
             logger.error(f"Style mixing blending failed: {e}")
             return None
 
-    def _slerp_blend(self, voice1: VoiceEmbedding, voice2: VoiceEmbedding, t: float) -> Optional[np.ndarray]:
+    def _slerp_blend(self, voice1: VoiceEmbedding, voice2: VoiceEmbedding, t: float) -> np.ndarray | None:
         """Spherical linear interpolation between two voices"""
         try:
             data1 = voice1.embedding_data
@@ -301,8 +302,8 @@ class VoiceBlender:
             logger.warning(f"Energy preservation failed: {e}")
             return blended_data
 
-    def _create_blended_metadata(self, voice_embeddings: List[VoiceEmbedding],
-                               weights: List[float]) -> VoiceMetadata:
+    def _create_blended_metadata(self, voice_embeddings: list[VoiceEmbedding],
+                               weights: list[float]) -> VoiceMetadata:
         """Create metadata for the blended voice"""
         # Combine information from all source voices
         voice_names = [emb.name for emb in voice_embeddings]
@@ -322,7 +323,7 @@ class VoiceBlender:
             description=f"Blended voice from: {', '.join(voice_names)}"
         )
 
-    def _generate_blend_name(self, voices: List[Tuple[str, float]]) -> str:
+    def _generate_blend_name(self, voices: list[tuple[str, float]]) -> str:
         """Generate a name for the blended voice"""
         voice_parts = []
         for voice_name, weight in voices:
@@ -330,11 +331,11 @@ class VoiceBlender:
             voice_parts.append(f"{voice_name}({weight_percent}%)")
         return f"blend_{'_'.join(voice_parts)}"
 
-    def get_supported_methods(self) -> List[str]:
+    def get_supported_methods(self) -> list[str]:
         """Get list of supported blending methods"""
         return self.supported_methods.copy()
 
-    def create_preset_blend(self, preset_name: str) -> Optional[BlendConfig]:
+    def create_preset_blend(self, preset_name: str) -> BlendConfig | None:
         """Create a preset blend configuration"""
         presets = {
             "warm_friendly": BlendConfig(

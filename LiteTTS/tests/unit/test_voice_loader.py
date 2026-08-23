@@ -3,15 +3,12 @@
 Unit tests for voice loader module
 """
 
-import pytest
-import numpy as np
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
-from LiteTTS.voice.loader import (
-    VoiceLoadResult,
-    VoiceLoader,
-    _TORCH_AVAILABLE
-)
+from unittest.mock import patch
+
+import numpy as np
+
+from LiteTTS.voice.loader import VoiceLoader, VoiceLoadResult
 
 
 class TestVoiceLoadResult:

@@ -5,14 +5,14 @@ Demonstrates all the pronunciation fixes and improvements
 """
 
 import sys
-import os
 from pathlib import Path
 
 # Add the project root to the path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from LiteTTS.nlp.enhanced_nlp_processor import EnhancedNLPProcessor, EnhancedProcessingOptions
+from LiteTTS.nlp.enhanced_nlp_processor import EnhancedNLPProcessor
+
 
 def test_contraction_fixes():
     """Test contraction pronunciation fixes"""

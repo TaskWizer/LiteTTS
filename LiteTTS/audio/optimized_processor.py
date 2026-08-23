@@ -2,8 +2,10 @@
 Audio Processing Optimizations for RTF Improvement
 """
 
-import numpy as np
 import time
+
+import numpy as np
+
 
 class OptimizedAudioProcessor:
     """Optimized audio processor with RTF improvements"""

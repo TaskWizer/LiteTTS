@@ -7,11 +7,13 @@ Implements chunked audio synthesis for real-time streaming
 import asyncio
 import logging
 import time
-from typing import AsyncIterator, List, Optional, Dict, Any
+from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
 
-from .chunking import TextChunker, TextChunk, ChunkingConfig, ChunkingStrategy
+from .chunking import ChunkingConfig, ChunkingStrategy, TextChunk, TextChunker
+
 # from ..audio.streaming import AudioStreamer  # Will be implemented separately
 
 logger = logging.getLogger(__name__)
@@ -31,13 +33,13 @@ class ChunkResult:
     generation_time: float
     chunk_text: str
     is_final: bool = False
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: dict[str, Any] | None = None
 
 @dataclass
 class ProgressiveGenerationConfig:
     """Configuration for progressive audio generation"""
     mode: GenerationMode = GenerationMode.CHUNKED
-    chunking_config: Optional[ChunkingConfig] = None
+    chunking_config: ChunkingConfig | None = None
     max_concurrent_chunks: int = 3
     chunk_timeout: float = 30.0
     enable_voice_consistency: bool = True
@@ -66,7 +68,7 @@ class ProgressiveAudioGenerator:
         voice: str,
         response_format: str = "mp3",
         speed: float = 1.0,
-        generation_id: Optional[str] = None
+        generation_id: str | None = None
     ) -> AsyncIterator[ChunkResult]:
         """
         Generate audio progressively in chunks
@@ -164,7 +166,7 @@ class ProgressiveAudioGenerator:
 
     async def _generate_chunked(
         self,
-        chunks: List[TextChunk],
+        chunks: list[TextChunk],
         voice: str,
         response_format: str,
         speed: float,
@@ -221,7 +223,7 @@ class ProgressiveAudioGenerator:
 
     async def _generate_streaming(
         self,
-        chunks: List[TextChunk],
+        chunks: list[TextChunk],
         voice: str,
         response_format: str,
         speed: float,
@@ -394,7 +396,7 @@ class ProgressiveAudioGenerator:
 
         return True
 
-    def get_generation_status(self, generation_id: str) -> Optional[Dict[str, Any]]:
+    def get_generation_status(self, generation_id: str) -> dict[str, Any] | None:
         """Get status of an active generation"""
         if generation_id not in self.active_generations:
             return None
@@ -424,7 +426,7 @@ class ProgressiveAudioGenerator:
         self.chunk_cache.clear()
         logger.info("Chunk cache cleared")
 
-    def get_cache_stats(self) -> Dict[str, Any]:
+    def get_cache_stats(self) -> dict[str, Any]:
         """Get cache statistics"""
         return {
             "cache_size": len(self.chunk_cache),

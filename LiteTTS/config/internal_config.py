@@ -4,9 +4,9 @@ Internal Configuration System for Kokoro TTS
 Contains technical defaults and advanced settings not exposed to end users
 """
 
-import os
-from typing import Dict, Any, Optional
 import logging
+import os
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class InternalConfig:
         self.performance_optimization = self._get_performance_defaults()
         self.cache_optimization = self._get_cache_defaults()
 
-    def _get_pronunciation_rules(self) -> Dict[str, Any]:
+    def _get_pronunciation_rules(self) -> dict[str, Any]:
         """Internal pronunciation rules configuration"""
         return {
             "contraction_handling": {
@@ -71,7 +71,7 @@ class InternalConfig:
             }
         }
 
-    def _get_acronym_handling(self) -> Dict[str, Any]:
+    def _get_acronym_handling(self) -> dict[str, Any]:
         """Internal acronym handling configuration"""
         return {
             "enabled": True,
@@ -82,7 +82,7 @@ class InternalConfig:
             "exclusions": ["THE", "AND", "FOR", "ARE", "BUT", "NOT", "YOU", "ALL", "CAN", "HER", "WAS", "ONE", "OUR", "HAD", "BUT", "HIS", "HAS", "HIM"]
         }
 
-    def _get_text_processing_defaults(self) -> Dict[str, Any]:
+    def _get_text_processing_defaults(self) -> dict[str, Any]:
         """Internal text processing defaults"""
         return {
             "interjection_handling": {
@@ -105,7 +105,7 @@ class InternalConfig:
             }
         }
 
-    def _get_performance_defaults(self) -> Dict[str, Any]:
+    def _get_performance_defaults(self) -> dict[str, Any]:
         """Internal performance optimization defaults"""
         return {
             "processing": {
@@ -133,7 +133,7 @@ class InternalConfig:
             }
         }
 
-    def _get_cache_defaults(self) -> Dict[str, Any]:
+    def _get_cache_defaults(self) -> dict[str, Any]:
         """Internal cache optimization defaults"""
         return {
             "memory_management": {
@@ -157,7 +157,7 @@ class InternalConfig:
             }
         }
 
-    def get_config_section(self, section: str) -> Optional[Dict[str, Any]]:
+    def get_config_section(self, section: str) -> dict[str, Any] | None:
         """Get a specific configuration section"""
         return getattr(self, section, None)
 
@@ -198,7 +198,7 @@ class InternalConfig:
                 except Exception as e:
                     logger.warning(f"Failed to apply environment override {env_var}: {e}")
 
-    def get_all_config(self) -> Dict[str, Any]:
+    def get_all_config(self) -> dict[str, Any]:
         """Get all internal configuration"""
         return {
             'pronunciation_rules': self.pronunciation_rules,

@@ -3,17 +3,17 @@
 Phonetic processing and spell function handling for TTS
 """
 
-import re
-from typing import Dict, List, Tuple, Optional
 import logging
-from .phonetic_dictionary_manager import PhoneticDictionaryManager, DictionaryEntry
+import re
+
+from .phonetic_dictionary_manager import DictionaryEntry, PhoneticDictionaryManager
 
 logger = logging.getLogger(__name__)
 
 class PhoneticProcessor:
     """Handles custom pronunciation markers and phonetic processing"""
 
-    def __init__(self, config: Optional[Dict] = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or {}
         # Check beta features first, then fallback to legacy location
         beta_features = self.config.get("beta_features", {})
@@ -34,7 +34,7 @@ class PhoneticProcessor:
         if self.phonetic_config.get("auto_load_dictionaries", True):
             self._load_configured_dictionaries()
 
-    def _load_phonetic_alphabet(self) -> Dict[str, str]:
+    def _load_phonetic_alphabet(self) -> dict[str, str]:
         """Load phonetic alphabet mappings"""
         return {
             # NATO phonetic alphabet
@@ -47,7 +47,7 @@ class PhoneticProcessor:
             'y': 'yankee', 'z': 'zulu'
         }
 
-    def _load_ipa_mappings(self) -> Dict[str, str]:
+    def _load_ipa_mappings(self) -> dict[str, str]:
         """Load IPA (International Phonetic Alphabet) to readable mappings - Enhanced with RIME AI inspired phonetic alphabet"""
         return {
             # Vowels - Enhanced mapping based on RIME AI phonetic alphabet
@@ -240,11 +240,11 @@ class PhoneticProcessor:
         """Remove a pronunciation from the dictionary"""
         self.dictionary_manager.remove_entry(word, notation)
 
-    def get_pronunciation(self, word: str, notation: str = None, accent_variant: str = None) -> Optional[DictionaryEntry]:
+    def get_pronunciation(self, word: str, notation: str = None, accent_variant: str = None) -> DictionaryEntry | None:
         """Get the phonetic representation for a word"""
         return self.dictionary_manager.lookup(word, notation, accent_variant)
 
-    def get_statistics(self) -> Dict:
+    def get_statistics(self) -> dict:
         """Get comprehensive statistics about phonetic processing"""
         base_stats = self.dictionary_manager.get_statistics()
 

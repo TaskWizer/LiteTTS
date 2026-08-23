@@ -4,16 +4,15 @@ Optimized Whisper Backend for LiteTTS
 Implements faster-whisper with distil-small.en and INT8 quantization for edge hardware deployment
 """
 
-import os
-import time
 import logging
-import psutil
+import os
 import threading
-from pathlib import Path
-from typing import Dict, Any, Optional, Tuple, Union
+import time
 from dataclasses import dataclass
 from enum import Enum
-import numpy as np
+from typing import Any
+
+import psutil
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +33,7 @@ class WhisperConfig:
     beam_size: int = 5
     language: str = "en"
     condition_on_previous_text: bool = False
-    model_cache_dir: Optional[str] = None
+    model_cache_dir: str | None = None
     enable_fallback: bool = True
     rtf_threshold: float = 1.0
     memory_threshold_mb: float = 2000
@@ -48,8 +47,8 @@ class TranscriptionResult:
     memory_usage_mb: float
     model_used: str
     success: bool
-    error_message: Optional[str] = None
-    confidence: Optional[float] = None
+    error_message: str | None = None
+    confidence: float | None = None
 
 class PerformanceMonitor:
     """Monitor performance metrics during transcription"""
@@ -97,7 +96,7 @@ class OptimizedWhisperProcessor:
     Optimized Whisper processor with multiple implementation support and fallback mechanisms
     """
 
-    def __init__(self, config: Optional[WhisperConfig] = None):
+    def __init__(self, config: WhisperConfig | None = None):
         self.config = config or WhisperConfig()
         self.models = {}  # Cache for loaded models
         self.performance_monitor = PerformanceMonitor()
@@ -116,7 +115,7 @@ class OptimizedWhisperProcessor:
         logger.info(f"Model: {self.config.model_name}, Compute: {self.config.compute_type}")
         logger.info(f"CPU threads: {self.config.cpu_threads}")
 
-    def transcribe(self, audio_path: str, audio_duration: Optional[float] = None) -> TranscriptionResult:
+    def transcribe(self, audio_path: str, audio_duration: float | None = None) -> TranscriptionResult:
         """
         Transcribe audio file with performance monitoring and fallback support
         
@@ -254,9 +253,9 @@ class OptimizedWhisperProcessor:
     def _transcribe_distil_whisper(self, audio_path: str, model_name: str) -> str:
         """Transcribe using Distil-Whisper"""
         try:
-            from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor
-            import torch
             import soundfile as sf
+            import torch
+            from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor
         except ImportError:
             raise ImportError("transformers and torch not installed for Distil-Whisper")
 
@@ -351,7 +350,7 @@ class OptimizedWhisperProcessor:
                 logger.warning(f"Could not determine audio duration for {audio_path}")
                 return 1.0  # Default fallback
 
-    def get_model_info(self) -> Dict[str, Any]:
+    def get_model_info(self) -> dict[str, Any]:
         """Get information about loaded models"""
         return {
             "config": {
@@ -374,7 +373,7 @@ class OptimizedWhisperProcessor:
 def create_whisper_processor(
     model_name: str = "distil-small.en",
     compute_type: str = "int8",
-    cpu_threads: Optional[int] = None,
+    cpu_threads: int | None = None,
     enable_fallback: bool = True
 ) -> OptimizedWhisperProcessor:
     """

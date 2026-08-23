@@ -4,7 +4,12 @@ Unit tests for emotion detector
 """
 
 import pytest
-from LiteTTS.nlp.emotion_detector import EmotionDetector, EmotionCategory, EmotionProfile, DialogueState
+
+from LiteTTS.nlp.emotion_detector import (
+    DialogueState,
+    EmotionDetector,
+    EmotionProfile,
+)
 
 
 class TestEmotionDetector:

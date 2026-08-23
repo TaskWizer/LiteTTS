@@ -14,17 +14,18 @@ Usage:
     python LiteTTS/scripts/comprehensive_pronunciation_test_suite.py --verbose   # Detailed output
 """
 
-import sys
-import os
 import argparse
+import os
+import sys
 import time
+
 import requests
-from typing import List, Dict, Any, Tuple
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from LiteTTS.text.phonemizer_preprocessor import phonemizer_preprocessor
 from LiteTTS.nlp.processor import NLPProcessor
+from LiteTTS.text.phonemizer_preprocessor import phonemizer_preprocessor
+
 
 class PronunciationTestSuite:
     """Comprehensive test suite for pronunciation issues"""
@@ -424,7 +425,7 @@ class PronunciationTestSuite:
 
         return all_passed
 
-    def run_all_tests(self, include_api: bool = False) -> Dict[str, bool]:
+    def run_all_tests(self, include_api: bool = False) -> dict[str, bool]:
         """Run all pronunciation tests"""
 
         self.log("🔧 Comprehensive Pronunciation Test Suite", "INFO")
@@ -456,7 +457,7 @@ class PronunciationTestSuite:
 
         return results
 
-    def generate_summary_report(self, results: Dict[str, bool]) -> str:
+    def generate_summary_report(self, results: dict[str, bool]) -> str:
         """Generate a comprehensive summary report"""
 
         report = []

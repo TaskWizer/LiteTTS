@@ -3,7 +3,6 @@
 Unit tests for fault tolerance module
 """
 
-import pytest
 from LiteTTS.performance.fault_tolerance import CircuitBreaker, RetryManager
 
 

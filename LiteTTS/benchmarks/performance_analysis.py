@@ -4,10 +4,12 @@ Focused performance analysis script to measure actual RTF performance
 Excludes failed tests and retry attempts for accurate measurements
 """
 
-import requests
-import time
 import statistics
 import sys
+import time
+
+import requests
+
 
 def test_clean_performance():
     """Test performance with clean, simple inputs that should work on first attempt"""

@@ -4,13 +4,13 @@ Enhanced multi-level cache manager for TTS system
 """
 
 import hashlib
+import logging
 import pickle
 import threading
-from pathlib import Path
-from typing import Dict, List, Optional, Any
-from datetime import datetime, timedelta
 from dataclasses import dataclass, field
-import logging
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any
 
 from ..models import AudioSegment, VoiceEmbedding
 
@@ -25,8 +25,8 @@ class CacheEntry:
     last_accessed: datetime
     access_count: int = 0
     size_bytes: int = 0
-    ttl_seconds: Optional[int] = None
-    tags: List[str] = field(default_factory=list)
+    ttl_seconds: int | None = None
+    tags: list[str] = field(default_factory=list)
 
     def is_expired(self) -> bool:
         """Check if cache entry is expired"""
@@ -59,11 +59,11 @@ class EnhancedCacheManager:
             self.max_disk_size = max_disk_size or (1024 * 1024 * 1024)     # 1GB
 
         # Memory cache
-        self.memory_cache: Dict[str, CacheEntry] = {}
+        self.memory_cache: dict[str, CacheEntry] = {}
         self.memory_size = 0
 
         # Disk cache tracking
-        self.disk_cache_index: Dict[str, Dict[str, Any]] = {}
+        self.disk_cache_index: dict[str, dict[str, Any]] = {}
         self.disk_size = 0
 
         # Thread safety
@@ -85,7 +85,7 @@ class EnhancedCacheManager:
 
         logger.info(f"Enhanced cache manager initialized: {self.cache_dir}")
 
-    def get(self, key: str) -> Optional[Any]:
+    def get(self, key: str) -> Any | None:
         """Get item from cache (memory first, then disk)"""
         with self.cache_lock:
             # Check memory cache first
@@ -129,8 +129,8 @@ class EnhancedCacheManager:
             logger.debug(f"Cache miss: {key}")
             return None
 
-    def put(self, key: str, data: Any, ttl_seconds: Optional[int] = None,
-            tags: List[str] = None, persist_to_disk: bool = True) -> bool:
+    def put(self, key: str, data: Any, ttl_seconds: int | None = None,
+            tags: list[str] = None, persist_to_disk: bool = True) -> bool:
         """Put item in cache"""
         with self.cache_lock:
             if tags is None:
@@ -152,8 +152,8 @@ class EnhancedCacheManager:
 
             return success
 
-    def _add_to_memory(self, key: str, data: Any, ttl_seconds: Optional[int] = None,
-                      tags: List[str] = None, data_size: int = None) -> bool:
+    def _add_to_memory(self, key: str, data: Any, ttl_seconds: int | None = None,
+                      tags: list[str] = None, data_size: int = None) -> bool:
         """Add item to memory cache"""
         if tags is None:
             tags = []
@@ -212,8 +212,8 @@ class EnhancedCacheManager:
         self.stats['evictions'] += 1
         logger.debug(f"Evicted from memory cache: {lru_key}")
 
-    def _save_to_disk(self, key: str, data: Any, ttl_seconds: Optional[int] = None,
-                     tags: List[str] = None, data_size: int = None):
+    def _save_to_disk(self, key: str, data: Any, ttl_seconds: int | None = None,
+                     tags: list[str] = None, data_size: int = None):
         """Save item to disk cache"""
         try:
             # Check disk space
@@ -248,7 +248,7 @@ class EnhancedCacheManager:
         except Exception as e:
             logger.error(f"Failed to save to disk cache {key}: {e}")
 
-    def _load_from_disk(self, key: str) -> Optional[Any]:
+    def _load_from_disk(self, key: str) -> Any | None:
         """Load item from disk cache"""
         try:
             if key not in self.disk_cache_index:
@@ -368,7 +368,7 @@ class EnhancedCacheManager:
 
             return deleted
 
-    def clear(self, tags: List[str] = None):
+    def clear(self, tags: list[str] = None):
         """Clear cache (optionally by tags)"""
         with self.cache_lock:
             if tags is None:
@@ -401,7 +401,7 @@ class EnhancedCacheManager:
 
                 logger.info(f"Cleared cache entries with tags: {tags}")
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get cache statistics"""
         with self.cache_lock:
             total_requests = self.stats['memory_hits'] + self.stats['disk_hits'] + self.stats['misses']

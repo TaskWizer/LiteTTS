@@ -5,14 +5,13 @@ Cross-platform deployment utility for OpenWebUI with TLS and multiple API provid
 Replaces openwebui-deploy.sh with better error handling and cross-platform support
 """
 
-import os
-import sys
-import subprocess
-import logging
 import argparse
+import logging
+import os
 import secrets
+import subprocess
+import sys
 from pathlib import Path
-from typing import Dict, Optional
 
 # Setup logging
 logging.basicConfig(
@@ -53,7 +52,7 @@ class OpenWebUIDeployer:
             logger.error(f"❌ Failed to create directories: {e}")
             return False
 
-    def set_api_keys(self, api_keys: Dict[str, str]):
+    def set_api_keys(self, api_keys: dict[str, str]):
         """Set API keys"""
         self.api_keys.update(api_keys)
         logger.info("✅ API keys configured")

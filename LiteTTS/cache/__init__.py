@@ -1,10 +1,11 @@
 # Cache management package
 
 # Import legacy cache manager for backward compatibility (always available)
-from .legacy import cache_manager
-
 # Conditional imports for enhanced components
 import importlib.util
+
+from .legacy import cache_manager
+
 
 def _is_available(module_name: str) -> bool:
     """Check if a module is available without importing it."""

@@ -1,13 +1,13 @@
 import os
-import re
 import platform
+import re
+import subprocess
 import sys
 import sysconfig
-import subprocess
 
-from setuptools import setup, Extension
-from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
+from setuptools import Extension, setup
+from setuptools.command.build_ext import build_ext
 
 curr_dir = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(curr_dir, 'README.md'), encoding='utf-8') as f:

@@ -4,20 +4,20 @@ Docker Production Readiness Audit
 Review port conflicts, build warnings, deprecation fixes, Python version alignment, security best practices
 """
 
-import os
-import sys
 import json
 import logging
-import subprocess
 import re
+import subprocess
+import sys
+
 try:
     import yaml
     YAML_AVAILABLE = True
 except ImportError:
     YAML_AVAILABLE = False
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, asdict
+from typing import Any
 
 # Add the project root to the path
 project_root = Path(__file__).parent.parent
@@ -47,9 +47,9 @@ class DockerAuditResult:
     high_issues: int
     medium_issues: int
     low_issues: int
-    issues_by_category: Dict[str, int]
-    detailed_issues: List[DockerAuditIssue]
-    recommendations: List[str]
+    issues_by_category: dict[str, int]
+    detailed_issues: list[DockerAuditIssue]
+    recommendations: list[str]
     production_readiness_score: float
 
 class DockerProductionAuditor:
@@ -70,7 +70,7 @@ class DockerProductionAuditor:
         # Issues found during audit
         self.issues = []
 
-    def audit_dockerfile(self, dockerfile_path: Path) -> List[DockerAuditIssue]:
+    def audit_dockerfile(self, dockerfile_path: Path) -> list[DockerAuditIssue]:
         """Audit Dockerfile for production readiness"""
         logger.info(f"Auditing Dockerfile: {dockerfile_path}")
 
@@ -127,7 +127,7 @@ class DockerProductionAuditor:
 
         return issues
 
-    def _check_python_version(self, lines: List[str], file_path: str) -> List[DockerAuditIssue]:
+    def _check_python_version(self, lines: list[str], file_path: str) -> list[DockerAuditIssue]:
         """Check Python version alignment"""
         issues = []
 
@@ -175,7 +175,7 @@ class DockerProductionAuditor:
 
         return issues
 
-    def _check_base_image_security(self, lines: List[str], file_path: str) -> List[DockerAuditIssue]:
+    def _check_base_image_security(self, lines: list[str], file_path: str) -> list[DockerAuditIssue]:
         """Check base image security practices"""
         issues = []
 
@@ -207,7 +207,7 @@ class DockerProductionAuditor:
 
         return issues
 
-    def _check_user_privileges(self, lines: List[str], file_path: str) -> List[DockerAuditIssue]:
+    def _check_user_privileges(self, lines: list[str], file_path: str) -> list[DockerAuditIssue]:
         """Check user privilege configuration"""
         issues = []
 
@@ -240,7 +240,7 @@ class DockerProductionAuditor:
 
         return issues
 
-    def _check_port_configuration(self, lines: List[str], file_path: str) -> List[DockerAuditIssue]:
+    def _check_port_configuration(self, lines: list[str], file_path: str) -> list[DockerAuditIssue]:
         """Check port configuration"""
         issues = []
 
@@ -279,7 +279,7 @@ class DockerProductionAuditor:
 
         return issues
 
-    def _check_build_optimization(self, lines: List[str], file_path: str) -> List[DockerAuditIssue]:
+    def _check_build_optimization(self, lines: list[str], file_path: str) -> list[DockerAuditIssue]:
         """Check build optimization practices"""
         issues = []
 
@@ -316,7 +316,7 @@ class DockerProductionAuditor:
 
         return issues
 
-    def _check_security_practices(self, lines: List[str], file_path: str) -> List[DockerAuditIssue]:
+    def _check_security_practices(self, lines: list[str], file_path: str) -> list[DockerAuditIssue]:
         """Check security best practices"""
         issues = []
 
@@ -361,7 +361,7 @@ class DockerProductionAuditor:
 
         return issues
 
-    def audit_docker_compose(self, compose_path: Path) -> List[DockerAuditIssue]:
+    def audit_docker_compose(self, compose_path: Path) -> list[DockerAuditIssue]:
         """Audit docker-compose file for production readiness"""
         logger.info(f"Auditing docker-compose: {compose_path}")
 
@@ -416,7 +416,7 @@ class DockerProductionAuditor:
 
         return issues
 
-    def _check_compose_service(self, service_name: str, service_config: Dict[str, Any], file_path: str) -> List[DockerAuditIssue]:
+    def _check_compose_service(self, service_name: str, service_config: dict[str, Any], file_path: str) -> list[DockerAuditIssue]:
         """Check individual service configuration"""
         issues = []
 
@@ -455,7 +455,7 @@ class DockerProductionAuditor:
 
         return issues
 
-    def check_dockerignore(self, dockerignore_path: Path) -> List[DockerAuditIssue]:
+    def check_dockerignore(self, dockerignore_path: Path) -> list[DockerAuditIssue]:
         """Check .dockerignore file"""
         logger.info("Checking .dockerignore file...")
 
@@ -584,7 +584,7 @@ class DockerProductionAuditor:
         logger.info(f"Docker audit completed. Results saved to: {results_file}")
         return result
 
-    def _run_security_checks(self) -> List[DockerAuditIssue]:
+    def _run_security_checks(self) -> list[DockerAuditIssue]:
         """Run additional security checks"""
         issues = []
 
@@ -611,7 +611,7 @@ class DockerProductionAuditor:
 
         return issues
 
-    def _calculate_production_readiness_score(self, severity_counts: Dict[str, int], total_issues: int) -> float:
+    def _calculate_production_readiness_score(self, severity_counts: dict[str, int], total_issues: int) -> float:
         """Calculate production readiness score (0-100)"""
         if total_issues == 0:
             return 100.0
@@ -629,8 +629,8 @@ class DockerProductionAuditor:
 
         return round(readiness_score, 1)
 
-    def _generate_production_recommendations(self, issues: List[DockerAuditIssue],
-                                           severity_counts: Dict[str, int]) -> List[str]:
+    def _generate_production_recommendations(self, issues: list[DockerAuditIssue],
+                                           severity_counts: dict[str, int]) -> list[str]:
         """Generate production readiness recommendations"""
         recommendations = []
 
@@ -664,6 +664,7 @@ class DockerProductionAuditor:
         return recommendations
 
 import time
+
 
 def main():
     """Main function to run Docker production audit"""

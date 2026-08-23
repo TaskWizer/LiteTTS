@@ -1,8 +1,8 @@
+import logging
 import os
 
 import kp
 import numpy as np
-import logging
 import pyshader as ps
 
 from .utils import compile_source

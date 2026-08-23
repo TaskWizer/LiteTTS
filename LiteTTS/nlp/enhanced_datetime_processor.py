@@ -4,11 +4,8 @@ Enhanced date and time processor for natural TTS pronunciation
 Fixes dash-separated dates and improves natural date/time reading
 """
 
-import re
-from typing import Dict, List, Tuple, Optional
-from datetime import datetime, date
-import calendar
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +25,7 @@ class EnhancedDateTimeProcessor:
         self.use_natural_time_format = False  # CHANGED: Use literal format for TTS
         self.handle_relative_dates = True
 
-    def _load_date_patterns(self) -> List[Tuple[str, str]]:
+    def _load_date_patterns(self) -> list[tuple[str, str]]:
         """Load date pattern matching rules"""
         return [
             # Written dates with ordinals (PRIORITY: Handle first)
@@ -70,7 +67,7 @@ class EnhancedDateTimeProcessor:
             (r'\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+(\d{1,2}),?\s+(\d{4})\b', 'abbrev_date'),
         ]
 
-    def _load_time_patterns(self) -> List[Tuple[str, str]]:
+    def _load_time_patterns(self) -> list[tuple[str, str]]:
         """Load time pattern matching rules"""
         return [
             # Enhanced time ranges (PRIORITY: Handle first)
@@ -98,7 +95,7 @@ class EnhancedDateTimeProcessor:
             (r'\b(\d{1,2})\s*o\'?clock\b', 'oclock_time'),
         ]
 
-    def _load_month_names(self) -> Dict[str, str]:
+    def _load_month_names(self) -> dict[str, str]:
         """Load month number to name mappings"""
         return {
             '1': 'January', '01': 'January',
@@ -115,7 +112,7 @@ class EnhancedDateTimeProcessor:
             '12': 'December'
         }
 
-    def _load_ordinal_suffixes(self) -> Dict[str, str]:
+    def _load_ordinal_suffixes(self) -> dict[str, str]:
         """Load ordinal number suffixes"""
         return {
             '1': 'first', '21': 'twenty-first', '31': 'thirty-first',
@@ -140,7 +137,7 @@ class EnhancedDateTimeProcessor:
             '20': 'twentieth'
         }
 
-    def _load_weekday_names(self) -> Dict[int, str]:
+    def _load_weekday_names(self) -> dict[int, str]:
         """Load weekday names"""
         return {
             0: 'Monday', 1: 'Tuesday', 2: 'Wednesday', 3: 'Thursday',
@@ -201,7 +198,7 @@ class EnhancedDateTimeProcessor:
 
         return text
 
-    def _convert_date_to_natural(self, match, date_type: str) -> Optional[str]:
+    def _convert_date_to_natural(self, match, date_type: str) -> str | None:
         """Convert a date match to natural language"""
         try:
             if date_type == 'written_date_ordinal':
@@ -287,7 +284,7 @@ class EnhancedDateTimeProcessor:
 
         return None
 
-    def _convert_time_to_natural(self, match, time_type: str) -> Optional[str]:
+    def _convert_time_to_natural(self, match, time_type: str) -> str | None:
         """Convert a time match to natural language"""
         try:
             if time_type == 'time_range_24':
@@ -377,7 +374,7 @@ class EnhancedDateTimeProcessor:
 
         return None
 
-    def _format_natural_date(self, year: Optional[str], month: str, day: str) -> str:
+    def _format_natural_date(self, year: str | None, month: str, day: str) -> str:
         """Format a date in natural language"""
         month_name = self.month_names.get(month, month)
 
@@ -430,8 +427,8 @@ class EnhancedDateTimeProcessor:
             # Default to reading as a regular number
             return self._number_to_words(year)
 
-    def _format_natural_time(self, hour: int, minute: int, seconds: Optional[int] = None,
-                           ampm: Optional[str] = None, is_24_hour: bool = False) -> str:
+    def _format_natural_time(self, hour: int, minute: int, seconds: int | None = None,
+                           ampm: str | None = None, is_24_hour: bool = False) -> str:
         """Format time in natural language"""
         if is_24_hour and not ampm:
             # For 24-hour format, read literally without AM/PM conversion for TTS
@@ -570,7 +567,7 @@ class EnhancedDateTimeProcessor:
         except ValueError:
             return number_str
 
-    def analyze_datetime_patterns(self, text: str) -> Dict[str, List[str]]:
+    def analyze_datetime_patterns(self, text: str) -> dict[str, list[str]]:
         """Analyze text for date and time patterns"""
         info = {
             'iso_dates': [],

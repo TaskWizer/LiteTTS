@@ -5,13 +5,13 @@ Tests actual API response times to identify real bottlenecks
 """
 
 import asyncio
-import aiohttp
-import time
 import json
 import logging
 import statistics
-from typing import Dict, List, Any, Optional
+import time
 from dataclasses import dataclass
+
+import aiohttp
 import numpy as np
 
 # Set up logging
@@ -29,8 +29,8 @@ class RealWorldLatencyResult:
     max_latency_ms: float
     success_rate: float
     throughput_rps: float
-    cold_start_latency_ms: Optional[float] = None
-    warm_latency_ms: Optional[float] = None
+    cold_start_latency_ms: float | None = None
+    warm_latency_ms: float | None = None
 
 class RealWorldLatencyTester:
     """
@@ -302,7 +302,7 @@ class RealWorldLatencyTester:
         except Exception:
             return False
 
-    async def run_comprehensive_test(self) -> Dict[str, RealWorldLatencyResult]:
+    async def run_comprehensive_test(self) -> dict[str, RealWorldLatencyResult]:
         """Run comprehensive real-world latency test"""
         logger.info("🚀 Starting comprehensive real-world latency test...")
 
@@ -331,7 +331,7 @@ class RealWorldLatencyTester:
 
         return results
 
-def generate_report(results: Dict[str, RealWorldLatencyResult]) -> str:
+def generate_report(results: dict[str, RealWorldLatencyResult]) -> str:
     """Generate comprehensive latency report"""
     report = []
     report.append("# Real-World Latency Test Report")

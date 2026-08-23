@@ -4,10 +4,10 @@ Advanced Currency & Financial Processing System
 Implements robust currency amount processing with natural language output
 """
 
-import re
-from typing import Dict, List, Tuple, Optional, Union
-from dataclasses import dataclass
 import logging
+import re
+from dataclasses import dataclass
+from typing import Union
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ class AdvancedCurrencyProcessor:
         self.enable_approximate_processing = True
         self.enable_international_currencies = True
 
-    def _load_currency_symbols(self) -> Dict[str, Dict[str, str]]:
+    def _load_currency_symbols(self) -> dict[str, dict[str, str]]:
         """Load comprehensive currency symbol mappings"""
         return {
             '$': {
@@ -106,7 +106,7 @@ class AdvancedCurrencyProcessor:
             }
         }
 
-    def _load_financial_suffixes(self) -> Dict[str, Dict[str, Union[int, str]]]:
+    def _load_financial_suffixes(self) -> dict[str, dict[str, Union[int, str]]]:
         """Load financial suffix mappings (M, B, K, etc.)"""
         return {
             'K': {'multiplier': 1_000, 'name': 'thousand'},
@@ -119,13 +119,13 @@ class AdvancedCurrencyProcessor:
             't': {'multiplier': 1_000_000_000_000, 'name': 'trillion'}
         }
 
-    def _compile_currency_patterns(self) -> List[Tuple[str, str]]:
+    def _compile_currency_patterns(self) -> list[tuple[str, str]]:
         """Compile regex patterns for currency detection"""
         # Note: This method is for reference only
         # Actual pattern matching is done in individual processing methods
         return []
 
-    def _load_number_words(self) -> Dict[int, str]:
+    def _load_number_words(self) -> dict[int, str]:
         """Load number-to-words mappings"""
         return {
             0: "zero", 1: "one", 2: "two", 3: "three", 4: "four", 5: "five",
@@ -136,7 +136,7 @@ class AdvancedCurrencyProcessor:
             80: "eighty", 90: "ninety"
         }
 
-    def _load_ordinal_words(self) -> Dict[int, str]:
+    def _load_ordinal_words(self) -> dict[int, str]:
         """Load ordinal number mappings"""
         return {
             1: "first", 2: "second", 3: "third", 4: "fourth", 5: "fifth",
@@ -147,7 +147,7 @@ class AdvancedCurrencyProcessor:
             80: "eightieth", 90: "ninetieth"
         }
 
-    def process_currency_text(self, text: str, context: Optional[FinancialContext] = None) -> str:
+    def process_currency_text(self, text: str, context: FinancialContext | None = None) -> str:
         """Main method to process currency and financial text"""
         if context is None:
             context = FinancialContext()
@@ -346,7 +346,7 @@ class AdvancedCurrencyProcessor:
 
         return text
 
-    def _currency_amount_to_words(self, amount: float, currency_info: Dict[str, str]) -> str:
+    def _currency_amount_to_words(self, amount: float, currency_info: dict[str, str]) -> str:
         """Convert currency amount to natural language"""
         if amount == 0:
             return f"zero {currency_info['plural']}"
@@ -466,7 +466,7 @@ class AdvancedCurrencyProcessor:
         else:
             return f"zero point {decimal_words}"
 
-    def analyze_currency_content(self, text: str) -> Dict[str, any]:
+    def analyze_currency_content(self, text: str) -> dict[str, any]:
         """Analyze text for currency processing opportunities"""
         analysis = {
             'currency_amounts': [],
@@ -506,7 +506,7 @@ class AdvancedCurrencyProcessor:
 
         return analysis
 
-    def get_supported_currencies(self) -> List[str]:
+    def get_supported_currencies(self) -> list[str]:
         """Get list of supported currency codes"""
         return [info['code'] for info in self.currency_symbols.values()]
 

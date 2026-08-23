@@ -3,9 +3,10 @@
 Unit tests for audio streaming
 """
 
-import pytest
+
 import numpy as np
-import asyncio
+import pytest
+
 from LiteTTS.audio.streaming import AudioStreamer, RealTimeStreamer, StreamChunk
 
 

@@ -4,19 +4,19 @@ Master Benchmark Runner for Kokoro ONNX TTS API
 Runs all benchmark scripts and provides comprehensive performance analysis
 """
 
-import os
-import sys
-import time
 import json
-import psutil
-import threading
-import numpy as np
-import subprocess
-from pathlib import Path
-from typing import Dict, List, Any, Tuple, Optional
-from dataclasses import dataclass, asdict
-from datetime import datetime
 import logging
+import subprocess
+import sys
+import threading
+import time
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+import psutil
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -90,7 +90,7 @@ class BenchmarkResult:
     # Quality metrics
     audio_quality_score: float  # Based on signal analysis
     success: bool
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
     # Metadata
     timestamp: str = ""
@@ -113,7 +113,7 @@ class SystemMonitor:
         self.monitor_thread = threading.Thread(target=self._monitor_worker, daemon=True)
         self.monitor_thread.start()
 
-    def stop_monitoring(self) -> Tuple[float, float, float, float]:
+    def stop_monitoring(self) -> tuple[float, float, float, float]:
         """Stop monitoring and return peak/avg memory and CPU"""
         self.monitoring = False
         if self.monitor_thread:
@@ -220,9 +220,9 @@ class ModelBenchmarker:
             "In a hole in the ground there lived a hobbit. Not a nasty, dirty, wet hole filled with the ends of worms and an oozy smell, nor yet a dry, bare, sandy hole with nothing in it to sit down on or to eat."
         ]
         self.test_voices = ["af_heart", "am_puck"]
-        self.results: List[BenchmarkResult] = []
+        self.results: list[BenchmarkResult] = []
 
-    def discover_models(self) -> List[Tuple[str, str]]:
+    def discover_models(self) -> list[tuple[str, str]]:
         """Discover all available ONNX models"""
         models_dir = Path("LiteTTS/models")
         models = []
@@ -234,7 +234,7 @@ class ModelBenchmarker:
 
         return sorted(models)
 
-    def benchmark_model(self, model_name: str, model_path: str) -> List[BenchmarkResult]:
+    def benchmark_model(self, model_name: str, model_path: str) -> list[BenchmarkResult]:
         """Benchmark a single model with all test cases"""
         results = []
 
@@ -333,7 +333,7 @@ class ModelBenchmarker:
 
         return result
 
-    def run_full_benchmark(self) -> Dict[str, Any]:
+    def run_full_benchmark(self) -> dict[str, Any]:
         """Run comprehensive benchmark on all models"""
         self.logger.info("🚀 Starting comprehensive model benchmark")
 
@@ -370,7 +370,7 @@ class ModelBenchmarker:
             }
         }
 
-    def _generate_summary(self, results: List[BenchmarkResult], duration: float) -> Dict[str, Any]:
+    def _generate_summary(self, results: list[BenchmarkResult], duration: float) -> dict[str, Any]:
         """Generate benchmark summary statistics"""
         successful_results = [r for r in results if r.success]
 
@@ -423,7 +423,7 @@ class BenchmarkReporter:
     """Generate reports from benchmark results"""
 
     @staticmethod
-    def generate_markdown_report(benchmark_data: Dict[str, Any]) -> str:
+    def generate_markdown_report(benchmark_data: dict[str, Any]) -> str:
         """Generate a comprehensive markdown report"""
         summary = benchmark_data["summary"]
         metadata = benchmark_data["metadata"]
@@ -517,7 +517,7 @@ Based on the benchmark results:
         return report
 
     @staticmethod
-    def save_results(benchmark_data: Dict[str, Any], output_dir: str = "docs/benchmark"):
+    def save_results(benchmark_data: dict[str, Any], output_dir: str = "docs/benchmark"):
         """Save benchmark results in multiple formats"""
         output_path = Path(output_dir)
         output_path.mkdir(parents=True, exist_ok=True)

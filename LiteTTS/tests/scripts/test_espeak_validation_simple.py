@@ -9,9 +9,10 @@ the text processing pipeline directly and ensuring audio generation works.
 import asyncio
 import sys
 import time
-import requests
 from pathlib import Path
+
 import pytest
+import requests
 
 # Add the project root to the path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -25,7 +26,11 @@ def test_text_processing_pipeline():
     print("=" * 60)
 
     try:
-        from LiteTTS.nlp.unified_text_processor import UnifiedTextProcessor, ProcessingOptions, ProcessingMode
+        from LiteTTS.nlp.unified_text_processor import (
+            ProcessingMode,
+            ProcessingOptions,
+            UnifiedTextProcessor,
+        )
 
         # Create processor with eSpeak integration enabled
         processor = UnifiedTextProcessor(enable_advanced_features=True)

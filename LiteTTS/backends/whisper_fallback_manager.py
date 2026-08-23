@@ -5,20 +5,30 @@ Implements comprehensive fallback mechanisms with multi-tier support and intelli
 """
 
 import logging
-import time
-from typing import Dict, Any, Optional, List, Tuple
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
 
 try:
-    from .whisper_optimized import OptimizedWhisperProcessor, WhisperConfig, WhisperImplementation, TranscriptionResult
     from ..config.whisper_config_loader import get_whisper_config
+    from .whisper_optimized import (
+        OptimizedWhisperProcessor,
+        TranscriptionResult,
+        WhisperConfig,
+        WhisperImplementation,
+    )
 except ImportError:
     # Handle direct execution
     import sys
     from pathlib import Path
     sys.path.insert(0, str(Path(__file__).parent.parent))
-    from backends.whisper_optimized import OptimizedWhisperProcessor, WhisperConfig, WhisperImplementation, TranscriptionResult
+    from backends.whisper_optimized import (
+        OptimizedWhisperProcessor,
+        TranscriptionResult,
+        WhisperConfig,
+        WhisperImplementation,
+    )
+
     from LiteTTS.config.whisper_config_loader import get_whisper_config
 
 logger = logging.getLogger(__name__)
@@ -35,18 +45,18 @@ class FallbackTrigger(Enum):
 class FallbackAttempt:
     """Record of a fallback attempt"""
     trigger: FallbackTrigger
-    original_config: Dict[str, Any]
-    fallback_config: Dict[str, Any]
+    original_config: dict[str, Any]
+    fallback_config: dict[str, Any]
     success: bool
     processing_time: float
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
 class WhisperFallbackManager:
     """
     Manages fallback strategies for Whisper implementations with intelligent decision making
     """
 
-    def __init__(self, config_file: Optional[str] = None):
+    def __init__(self, config_file: str | None = None):
         self.config_loader = get_whisper_config(config_file)
         self.settings = self.config_loader.get_settings()
         self.fallback_chain = self.config_loader.get_fallback_chain()
@@ -62,7 +72,7 @@ class WhisperFallbackManager:
 
         logger.info("WhisperFallbackManager initialized")
 
-    def transcribe_with_fallback(self, audio_path: str, audio_duration: Optional[float] = None) -> TranscriptionResult:
+    def transcribe_with_fallback(self, audio_path: str, audio_duration: float | None = None) -> TranscriptionResult:
         """
         Transcribe audio with comprehensive fallback support
         
@@ -142,7 +152,7 @@ class WhisperFallbackManager:
                 error_message="All transcription attempts failed"
             )
 
-    def _try_primary_processor(self, audio_path: str, audio_duration: Optional[float]) -> TranscriptionResult:
+    def _try_primary_processor(self, audio_path: str, audio_duration: float | None) -> TranscriptionResult:
         """Try the primary Whisper processor"""
         if self.primary_processor is None:
             primary_config = WhisperConfig(
@@ -157,8 +167,8 @@ class WhisperFallbackManager:
 
         return self.primary_processor.transcribe(audio_path, audio_duration)
 
-    def _try_fallback_processor(self, audio_path: str, audio_duration: Optional[float],
-                               fallback_config: Dict[str, Any], trigger: FallbackTrigger) -> TranscriptionResult:
+    def _try_fallback_processor(self, audio_path: str, audio_duration: float | None,
+                               fallback_config: dict[str, Any], trigger: FallbackTrigger) -> TranscriptionResult:
         """Try a specific fallback processor configuration"""
 
         # Create processor key for caching
@@ -228,7 +238,7 @@ class WhisperFallbackManager:
 
         return FallbackTrigger.ERROR_OCCURRED
 
-    def _get_primary_config(self) -> Dict[str, Any]:
+    def _get_primary_config(self) -> dict[str, Any]:
         """Get primary processor configuration"""
         return {
             "implementation": "faster-whisper",
@@ -236,9 +246,9 @@ class WhisperFallbackManager:
             "compute_type": self.settings.quantization
         }
 
-    def _record_fallback_attempt(self, trigger: FallbackTrigger, original_config: Dict[str, Any],
-                                fallback_config: Dict[str, Any], success: bool,
-                                processing_time: float, error_message: Optional[str] = None):
+    def _record_fallback_attempt(self, trigger: FallbackTrigger, original_config: dict[str, Any],
+                                fallback_config: dict[str, Any], success: bool,
+                                processing_time: float, error_message: str | None = None):
         """Record fallback attempt for analysis"""
         attempt = FallbackAttempt(
             trigger=trigger,
@@ -264,7 +274,7 @@ class WhisperFallbackManager:
         if len(self.fallback_attempts) > 1000:
             self.fallback_attempts = self.fallback_attempts[-500:]
 
-    def get_fallback_statistics(self) -> Dict[str, Any]:
+    def get_fallback_statistics(self) -> dict[str, Any]:
         """Get fallback usage statistics"""
         if not self.fallback_attempts:
             return {"total_attempts": 0, "success_rate": 0.0, "common_triggers": []}
@@ -356,7 +366,7 @@ class WhisperFallbackManager:
 # Global fallback manager instance
 _fallback_manager = None
 
-def get_fallback_manager(config_file: Optional[str] = None) -> WhisperFallbackManager:
+def get_fallback_manager(config_file: str | None = None) -> WhisperFallbackManager:
     """Get the global fallback manager instance"""
     global _fallback_manager
 
@@ -366,7 +376,7 @@ def get_fallback_manager(config_file: Optional[str] = None) -> WhisperFallbackMa
     return _fallback_manager
 
 # Convenience function for easy transcription with fallback
-def transcribe_with_fallback(audio_path: str, audio_duration: Optional[float] = None) -> TranscriptionResult:
+def transcribe_with_fallback(audio_path: str, audio_duration: float | None = None) -> TranscriptionResult:
     """
     Transcribe audio with automatic fallback support
     

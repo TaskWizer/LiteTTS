@@ -4,13 +4,17 @@ Comprehensive audit of contraction preprocessing behavior
 Analyzes how contractions are handled in the text preprocessing pipeline
 """
 
-import sys
 import os
+import sys
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from LiteTTS.text.phonemizer_preprocessor import phonemizer_preprocessor
-import requests
 import time
+
+import requests
+
+from LiteTTS.text.phonemizer_preprocessor import phonemizer_preprocessor
+
 
 def test_contraction_preprocessing():
     """Test contraction preprocessing behavior"""

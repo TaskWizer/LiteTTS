@@ -4,16 +4,15 @@ CI/CD Integration and Documentation Coverage Framework
 Implement CI/CD pipelines, documentation coverage tracking, and backward compatibility testing
 """
 
-import os
-import sys
 import json
 import logging
-import subprocess
-import time
+import os
 import re
+import sys
+import time
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, asdict
+from typing import Any
 
 # Add the project root to the path
 project_root = Path(__file__).parent.parent
@@ -33,7 +32,7 @@ class DocumentationCoverage:
     total_classes: int
     documented_classes: int
     coverage_percentage: float
-    missing_docstrings: List[str]
+    missing_docstrings: list[str]
 
 @dataclass
 class CICDConfiguration:
@@ -47,8 +46,8 @@ class CICDConfiguration:
     enable_performance_testing: bool
     min_test_coverage: float
     min_documentation_coverage: float
-    python_versions: List[str]
-    deployment_environments: List[str]
+    python_versions: list[str]
+    deployment_environments: list[str]
 
 class CICDDocumentationManager:
     """CI/CD and documentation coverage manager"""
@@ -794,7 +793,7 @@ if __name__ == "__main__":
         logger.info(f"Performance benchmarks saved: {benchmark_file}")
         return benchmark_content
 
-    def run_comprehensive_cicd_setup(self) -> Dict[str, Any]:
+    def run_comprehensive_cicd_setup(self) -> dict[str, Any]:
         """Run comprehensive CI/CD and documentation setup"""
         logger.info("Starting comprehensive CI/CD and documentation setup...")
 
@@ -834,7 +833,7 @@ if __name__ == "__main__":
         logger.info(f"CI/CD and documentation setup completed. Results saved to: {results_file}")
         return results
 
-    def _generate_cicd_summary(self, doc_coverage: DocumentationCoverage) -> Dict[str, Any]:
+    def _generate_cicd_summary(self, doc_coverage: DocumentationCoverage) -> dict[str, Any]:
         """Generate CI/CD setup summary"""
 
         doc_target_met = doc_coverage.coverage_percentage >= self.config.min_documentation_coverage
@@ -872,7 +871,7 @@ if __name__ == "__main__":
 
         return summary
 
-    def _generate_cicd_next_steps(self, doc_coverage: DocumentationCoverage) -> List[str]:
+    def _generate_cicd_next_steps(self, doc_coverage: DocumentationCoverage) -> list[str]:
         """Generate next steps for CI/CD deployment"""
         next_steps = [
             "Configure repository secrets for CI/CD pipelines",

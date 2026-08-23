@@ -4,16 +4,16 @@ System-level optimizations for Kokoro TTS
 Implements SIMD verification, request batching, and memory optimization
 """
 
-import os
 import logging
+import os
 import platform
-import subprocess
-import threading
 import queue
+import threading
 import time
-from typing import Dict, Any, List, Optional, Callable
-from dataclasses import dataclass
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ class BatchRequest:
     voice: str
     speed: float
     format: str
-    callback: Optional[Callable] = None
+    callback: Callable | None = None
     priority: int = 0  # Higher number = higher priority
 
 class RequestBatcher:
@@ -91,7 +91,7 @@ class RequestBatcher:
             else:
                 time.sleep(0.001)  # Short sleep if no requests
 
-    def _collect_batch(self) -> List[BatchRequest]:
+    def _collect_batch(self) -> list[BatchRequest]:
         """Collect requests into a batch"""
         batch = []
         start_time = time.time()
@@ -108,7 +108,7 @@ class RequestBatcher:
 
         return batch
 
-    def _process_batch(self, batch: List[BatchRequest]):
+    def _process_batch(self, batch: list[BatchRequest]):
         """Process a batch of requests"""
         if not batch:
             return
@@ -143,7 +143,7 @@ class RequestBatcher:
             if request.callback:
                 request.callback(request.id, None, e)
 
-    def _process_batch_parallel(self, batch: List[BatchRequest]):
+    def _process_batch_parallel(self, batch: list[BatchRequest]):
         """Process batch requests in parallel"""
         with ThreadPoolExecutor(max_workers=min(self.max_workers, len(batch))) as executor:
             future_to_request = {}
@@ -171,7 +171,7 @@ class RequestBatcher:
         time.sleep(0.1)  # Simulate processing time
         return f"audio_data_for_{text[:20]}"
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get batching statistics"""
         return self.stats.copy()
 
@@ -217,7 +217,7 @@ class SystemOptimizer:
 
         return capabilities
 
-    def verify_simd_support(self) -> Dict[str, Any]:
+    def verify_simd_support(self) -> dict[str, Any]:
         """Verify and report SIMD support"""
         simd_info = {
             "sse_family": {
@@ -254,7 +254,7 @@ class SystemOptimizer:
         else:
             return "minimal"
 
-    def optimize_memory_allocation(self) -> Dict[str, Any]:
+    def optimize_memory_allocation(self) -> dict[str, Any]:
         """Optimize memory allocation patterns"""
         if self.memory_optimizations_applied:
             return {"status": "already_applied"}
@@ -308,7 +308,7 @@ class SystemOptimizer:
             logger.error(f"Failed to setup request batching: {e}")
             return False
 
-    def get_optimization_recommendations(self) -> Dict[str, Any]:
+    def get_optimization_recommendations(self) -> dict[str, Any]:
         """Get system optimization recommendations"""
         recommendations = {
             "simd": self.verify_simd_support(),
@@ -326,7 +326,7 @@ class SystemOptimizer:
 
         return recommendations
 
-    def apply_memory_optimizations(self) -> Dict[str, Any]:
+    def apply_memory_optimizations(self) -> dict[str, Any]:
         """
         Apply memory optimizations for TTS processing.
 
@@ -383,7 +383,7 @@ class SystemOptimizer:
                 "optimizations_applied": False
             }
 
-    def apply_io_optimizations(self) -> Dict[str, Any]:
+    def apply_io_optimizations(self) -> dict[str, Any]:
         """
         Apply I/O optimizations for TTS processing.
 
@@ -525,7 +525,7 @@ class SystemOptimizer:
                 "io_optimizations_applied": False
             }
 
-    def apply_network_optimizations(self) -> Dict[str, Any]:
+    def apply_network_optimizations(self) -> dict[str, Any]:
         """
         Apply network-related optimizations for TTS processing.
 
@@ -610,7 +610,7 @@ class SystemOptimizer:
                 "network_optimizations_applied": False
             }
 
-    def apply_all_optimizations(self) -> Dict[str, Any]:
+    def apply_all_optimizations(self) -> dict[str, Any]:
         """Apply all system-level optimizations"""
         results = {}
 

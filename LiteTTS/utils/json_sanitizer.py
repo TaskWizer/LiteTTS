@@ -6,9 +6,9 @@ Provides robust JSON serialization that handles infinite and NaN float values
 to prevent JSON serialization errors in dashboard and API responses.
 """
 
-import math
 import json
-from typing import Any, Dict
+import math
+from typing import Any
 
 
 def sanitize_float(value: float, default: float = 0.0) -> float:
@@ -54,7 +54,7 @@ def sanitize_value(value: Any) -> Any:
         return str(value)
 
 
-def sanitize_dashboard_data(data: Dict[str, Any]) -> Dict[str, Any]:
+def sanitize_dashboard_data(data: dict[str, Any]) -> dict[str, Any]:
     """
     Sanitize dashboard data specifically, with special handling for performance metrics.
     
@@ -76,7 +76,7 @@ def sanitize_dashboard_data(data: Dict[str, Any]) -> Dict[str, Any]:
     return sanitized
 
 
-def sanitize_performance_data(data: Dict[str, Any]) -> Dict[str, Any]:
+def sanitize_performance_data(data: dict[str, Any]) -> dict[str, Any]:
     """
     Sanitize performance data with specific defaults for metrics.
     
@@ -97,7 +97,7 @@ def sanitize_performance_data(data: Dict[str, Any]) -> Dict[str, Any]:
     return sanitized
 
 
-def sanitize_performance_summary(summary: Dict[str, Any]) -> Dict[str, Any]:
+def sanitize_performance_summary(summary: dict[str, Any]) -> dict[str, Any]:
     """
     Sanitize performance summary with appropriate defaults for each metric.
     

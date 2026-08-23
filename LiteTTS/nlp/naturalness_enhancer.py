@@ -7,12 +7,12 @@ coarticulation effects, natural disfluencies, breathing patterns, and
 micro-prosodic variations for human-like speech synthesis.
 """
 
-import re
+import logging
 import random
-from typing import Dict, List, Optional, Tuple, Any
+import re
 from dataclasses import dataclass
 from enum import Enum
-import logging
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -59,9 +59,9 @@ class MicroProsodyAdjustment:
 @dataclass
 class NaturalnessProfile:
     """Complete naturalness enhancement profile"""
-    disfluencies: List[DisfluencyMarker]
-    breathing_patterns: List[BreathMarker]
-    micro_prosody: List[MicroProsodyAdjustment]
+    disfluencies: list[DisfluencyMarker]
+    breathing_patterns: list[BreathMarker]
+    micro_prosody: list[MicroProsodyAdjustment]
     coarticulation_strength: float
     voice_quality_variation: float
     overall_naturalness_level: float
@@ -83,7 +83,7 @@ class NaturalnessEnhancer:
         # Randomization for natural variation
         random.seed()  # Use system time for true randomness
 
-    def _load_disfluency_patterns(self) -> Dict[str, Dict[str, Any]]:
+    def _load_disfluency_patterns(self) -> dict[str, dict[str, Any]]:
         """Load natural disfluency patterns and insertion rules"""
         return {
             "sentence_start": {
@@ -120,7 +120,7 @@ class NaturalnessEnhancer:
             }
         }
 
-    def _load_breathing_rules(self) -> Dict[str, Dict[str, Any]]:
+    def _load_breathing_rules(self) -> dict[str, dict[str, Any]]:
         """Load natural breathing pattern rules"""
         return {
             "long_utterance": {
@@ -151,7 +151,7 @@ class NaturalnessEnhancer:
             }
         }
 
-    def _load_coarticulation_rules(self) -> Dict[str, Dict[str, float]]:
+    def _load_coarticulation_rules(self) -> dict[str, dict[str, float]]:
         """Load coarticulation effect rules"""
         return {
             # Anticipatory coarticulation (influence of following sounds)
@@ -174,7 +174,7 @@ class NaturalnessEnhancer:
             }
         }
 
-    def enhance_naturalness(self, text: str, context: Optional[Dict[str, Any]] = None) -> NaturalnessProfile:
+    def enhance_naturalness(self, text: str, context: dict[str, Any] | None = None) -> NaturalnessProfile:
         """Apply comprehensive naturalness enhancements to text
         
         Args:
@@ -212,7 +212,7 @@ class NaturalnessEnhancer:
             overall_naturalness_level=self.naturalness_level
         )
 
-    def _analyze_enhancement_points(self, text: str) -> Dict[str, List[int]]:
+    def _analyze_enhancement_points(self, text: str) -> dict[str, list[int]]:
         """Analyze text to identify naturalness enhancement points"""
         points = {
             "sentence_starts": [],
@@ -253,8 +253,8 @@ class NaturalnessEnhancer:
 
         return points
 
-    def _generate_disfluencies(self, text: str, enhancement_points: Dict[str, List[int]],
-                             context: Optional[Dict[str, Any]]) -> List[DisfluencyMarker]:
+    def _generate_disfluencies(self, text: str, enhancement_points: dict[str, list[int]],
+                             context: dict[str, Any] | None) -> list[DisfluencyMarker]:
         """Generate natural disfluencies based on text analysis"""
         disfluencies = []
 
@@ -306,7 +306,7 @@ class NaturalnessEnhancer:
         return sorted(disfluencies, key=lambda x: x.position)
 
     def _create_disfluency(self, position: int, pattern_type: str,
-                          context: Optional[Dict[str, Any]]) -> Optional[DisfluencyMarker]:
+                          context: dict[str, Any] | None) -> DisfluencyMarker | None:
         """Create a specific disfluency marker"""
         if pattern_type not in self.disfluency_patterns:
             return None
@@ -347,7 +347,7 @@ class NaturalnessEnhancer:
         )
 
     def _generate_breathing_patterns(self, text: str,
-                                   context: Optional[Dict[str, Any]]) -> List[BreathMarker]:
+                                   context: dict[str, Any] | None) -> list[BreathMarker]:
         """Generate natural breathing patterns"""
         breathing_patterns = []
 
@@ -391,7 +391,7 @@ class NaturalnessEnhancer:
         return sorted(breathing_patterns, key=lambda x: x.position)
 
     def _generate_micro_prosody(self, text: str,
-                              context: Optional[Dict[str, Any]]) -> List[MicroProsodyAdjustment]:
+                              context: dict[str, Any] | None) -> list[MicroProsodyAdjustment]:
         """Generate micro-prosodic timing and pitch adjustments"""
         adjustments = []
 
@@ -418,7 +418,7 @@ class NaturalnessEnhancer:
 
         return adjustments
 
-    def _calculate_coarticulation_strength(self, context: Optional[Dict[str, Any]]) -> float:
+    def _calculate_coarticulation_strength(self, context: dict[str, Any] | None) -> float:
         """Calculate appropriate coarticulation strength"""
         base_strength = self.naturalness_level * 0.8
 
@@ -435,7 +435,7 @@ class NaturalnessEnhancer:
 
         return min(base_strength, 1.0)
 
-    def _calculate_voice_variation(self, context: Optional[Dict[str, Any]]) -> float:
+    def _calculate_voice_variation(self, context: dict[str, Any] | None) -> float:
         """Calculate voice quality variation amount"""
         base_variation = self.naturalness_level * 0.6
 

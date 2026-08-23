@@ -4,23 +4,23 @@ Time-Stretching Optimization Benchmark Script
 Tests different time-stretching rates and measures performance metrics
 """
 
-import os
-import sys
-import time
 import json
 import logging
+import sys
+import time
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Any
+
 import numpy as np
 
 # Add the project root to the path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from LiteTTS.audio.time_stretcher import TimeStretcher, TimeStretchConfig, StretchQuality
 from LiteTTS.audio.segment import AudioSegment
-from LiteTTS.tts.synthesizer import TTSSynthesizer
+from LiteTTS.audio.time_stretcher import StretchQuality, TimeStretchConfig, TimeStretcher
 from LiteTTS.models import TTSConfiguration, TTSRequest
+from LiteTTS.tts.synthesizer import TTSSynthesizer
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -43,7 +43,7 @@ class TimeStretchingBenchmark:
 
         logger.info(f"Benchmark initialized. Output directory: {self.output_dir}")
 
-    def run_full_benchmark(self) -> Dict[str, Any]:
+    def run_full_benchmark(self) -> dict[str, Any]:
         """Run complete benchmark across all rates and quality levels"""
         logger.info("Starting comprehensive time-stretching benchmark")
 
@@ -119,7 +119,7 @@ class TimeStretchingBenchmark:
         return audio
 
     def _benchmark_rate(self, synthesizer: TTSSynthesizer, baseline_audio: AudioSegment,
-                       rate: int, quality: str) -> Dict[str, Any]:
+                       rate: int, quality: str) -> dict[str, Any]:
         """Benchmark a specific rate and quality combination"""
 
         # Configure time-stretching
@@ -202,7 +202,7 @@ class TimeStretchingBenchmark:
             logger.warning(f"Quality assessment failed: {e}")
             return 0.5  # Neutral score
 
-    def _save_audio_samples(self, result: Dict[str, Any], rate: int, quality: str):
+    def _save_audio_samples(self, result: dict[str, Any], rate: int, quality: str):
         """Save audio samples for manual review"""
         try:
             # Save fast (raw) audio
@@ -227,7 +227,7 @@ class TimeStretchingBenchmark:
         except Exception as e:
             logger.warning(f"Failed to save audio to {path}: {e}")
 
-    def _generate_summary(self) -> Dict[str, Any]:
+    def _generate_summary(self) -> dict[str, Any]:
         """Generate benchmark summary"""
         summary = {
             "test_configuration": {
@@ -241,7 +241,7 @@ class TimeStretchingBenchmark:
 
         return summary
 
-    def _generate_recommendations(self) -> Dict[str, Any]:
+    def _generate_recommendations(self) -> dict[str, Any]:
         """Generate recommendations based on benchmark results"""
         recommendations = {
             "optimal_rate": None,
@@ -290,7 +290,7 @@ class TimeStretchingBenchmark:
 
         return recommendations
 
-    def _save_results(self, summary: Dict[str, Any]):
+    def _save_results(self, summary: dict[str, Any]):
         """Save benchmark results to file"""
         try:
             # Remove audio objects for JSON serialization

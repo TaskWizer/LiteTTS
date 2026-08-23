@@ -3,12 +3,13 @@
 Voice loading system with fallback mechanisms for torch dependencies
 """
 
-import numpy as np
 import logging
-from pathlib import Path
-from typing import Dict, Any, Optional, Union
-from datetime import datetime
 from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import Any
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -25,10 +26,10 @@ except ImportError:
 class VoiceLoadResult:
     """Result of voice loading operation"""
     success: bool
-    embedding_data: Optional[np.ndarray]
-    metadata: Optional[Dict[str, Any]]
+    embedding_data: np.ndarray | None
+    metadata: dict[str, Any] | None
     loader_used: str
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
 class VoiceLoader:
     """
@@ -277,7 +278,7 @@ class VoiceLoader:
                 error_message=f"Mock data generation error: {str(e)}"
             )
 
-    def get_load_statistics(self) -> Dict[str, Any]:
+    def get_load_statistics(self) -> dict[str, Any]:
         """Get loading statistics"""
         total_loads = sum(self.load_stats.values())
 
@@ -308,7 +309,7 @@ class VoiceLoader:
         logger.info("Voice loader statistics reset")
 
 # Global voice loader instance
-_voice_loader: Optional[VoiceLoader] = None
+_voice_loader: VoiceLoader | None = None
 
 def get_voice_loader(voices_dir: str = None, enable_mock: bool = False) -> VoiceLoader:
     """Get or create the global voice loader instance"""

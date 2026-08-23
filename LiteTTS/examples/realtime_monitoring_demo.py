@@ -4,17 +4,16 @@ Real-time Monitoring Demo for LiteTTS
 Demonstrates performance monitoring, filesystem watching, and alerting
 """
 
-import sys
-import os
-import time
-import json
-import threading
 import logging
+import os
+import sys
 import tempfile
-from pathlib import Path
-from typing import Dict, Any, Optional
+import threading
+import time
 from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 # Add LiteTTS to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -30,7 +29,7 @@ class PerformanceAlert:
     alert_type: str
     message: str
     severity: str
-    metrics: Dict[str, Any]
+    metrics: dict[str, Any]
 
 class RealTimeMonitor:
     """Real-time performance monitoring system"""
@@ -88,7 +87,7 @@ class RealTimeMonitor:
                 logger.error(f"Monitoring error: {e}")
                 time.sleep(10)
 
-    def _collect_system_metrics(self) -> Dict[str, Any]:
+    def _collect_system_metrics(self) -> dict[str, Any]:
         """Collect current system metrics"""
         try:
             import psutil
@@ -117,7 +116,7 @@ class RealTimeMonitor:
             logger.error(f"Failed to collect metrics: {e}")
             return {}
 
-    def _check_alerts(self, metrics: Dict[str, Any]):
+    def _check_alerts(self, metrics: dict[str, Any]):
         """Check metrics against alert thresholds"""
         if not metrics:
             return
@@ -174,7 +173,7 @@ class RealTimeMonitor:
         if len(self.alerts) > 100:
             self.alerts = self.alerts[-50:]
 
-    def get_current_status(self) -> Dict[str, Any]:
+    def get_current_status(self) -> dict[str, Any]:
         """Get current monitoring status"""
         if not self.metrics_history:
             return {"status": "no_data"}
@@ -202,8 +201,8 @@ class FileSystemWatcher:
     def start_watching(self):
         """Start file system monitoring"""
         try:
-            from watchdog.observers import Observer
             from watchdog.events import FileSystemEventHandler
+            from watchdog.observers import Observer
 
             class VoiceFileHandler(FileSystemEventHandler):
                 def __init__(self, watcher):
@@ -398,8 +397,9 @@ def demo_integrated_monitoring():
         logger.info("Testing Whisper processing with real-time monitoring...")
 
         # Generate test audio
-        import numpy as np
         import tempfile
+
+        import numpy as np
         try:
             import soundfile as sf
 

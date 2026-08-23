@@ -4,11 +4,9 @@ Extended pronunciation dictionary for TTS accuracy
 Includes word-specific pronunciation fixes and context-aware pronunciations
 """
 
-import re
-from typing import Dict, List, Tuple, Optional, Union
-import logging
 import json
-from pathlib import Path
+import logging
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +23,7 @@ class ExtendedPronunciationDictionary:
         self.use_context_awareness = True
         self.use_phonetic_spelling = True
 
-    def _load_word_pronunciations(self) -> Dict[str, str]:
+    def _load_word_pronunciations(self) -> dict[str, str]:
         """Load word-specific pronunciation fixes"""
         return {
             # Specific pronunciation issues identified
@@ -112,7 +110,7 @@ class ExtendedPronunciationDictionary:
             'strength': 'STRENGTH',  # Not "STRENG-th"
         }
 
-    def _load_context_pronunciations(self) -> Dict[str, Dict[str, str]]:
+    def _load_context_pronunciations(self) -> dict[str, dict[str, str]]:
         """Load context-dependent pronunciations for homographs"""
         return {
             'read': {
@@ -171,7 +169,7 @@ class ExtendedPronunciationDictionary:
             },
         }
 
-    def _load_homograph_rules(self) -> List[Tuple[str, str, str]]:
+    def _load_homograph_rules(self) -> list[tuple[str, str, str]]:
         """Load rules for detecting homograph context"""
         return [
             # (word, context_pattern, pronunciation_key)
@@ -185,7 +183,7 @@ class ExtendedPronunciationDictionary:
             ('wind', r'\b(wind)\s+(up|down|the)\b', 'coil'),
         ]
 
-    def _load_phonetic_overrides(self) -> Dict[str, str]:
+    def _load_phonetic_overrides(self) -> dict[str, str]:
         """Load phonetic spelling overrides for difficult words"""
         return {
             # Use phonetic spelling for words that are consistently mispronounced
@@ -216,7 +214,7 @@ class ExtendedPronunciationDictionary:
         # Return original word if no pronunciation found
         return word
 
-    def _get_context_pronunciation(self, word: str, context: str) -> Optional[str]:
+    def _get_context_pronunciation(self, word: str, context: str) -> str | None:
         """Get context-dependent pronunciation using rules"""
         if word not in self.context_pronunciations:
             return None
@@ -272,7 +270,7 @@ class ExtendedPronunciationDictionary:
         logger.info(f"Added pronunciation: {word} -> {pronunciation}" +
                    (f" (context: {context})" if context else ""))
 
-    def analyze_pronunciations(self, text: str) -> Dict[str, List[str]]:
+    def analyze_pronunciations(self, text: str) -> dict[str, list[str]]:
         """Analyze text for words with known pronunciation issues"""
         info = {
             'known_pronunciations': [],

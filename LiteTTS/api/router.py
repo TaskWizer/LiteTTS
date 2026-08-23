@@ -3,17 +3,18 @@
 FastAPI router for TTS API endpoints
 """
 
-from fastapi import APIRouter, HTTPException, BackgroundTasks
-from typing import List, Optional
 import logging
 import time
 
-from LiteTTS.models import TTSRequest, TTSConfiguration
-from ..tts.synthesizer import TTSSynthesizer
+from fastapi import APIRouter, BackgroundTasks, HTTPException
+
+from LiteTTS.models import TTSConfiguration, TTSRequest
+
 from ..cache.audio_cache import AudioCache, TextCache
-from .validators import RequestValidator
+from ..tts.synthesizer import TTSSynthesizer
 from .error_handler import ErrorHandler
 from .response_formatter import ResponseFormatter
+from .validators import RequestValidator
 
 logger = logging.getLogger(__name__)
 
@@ -108,8 +109,8 @@ class TTSAPIRouter:
 
         async def _handle_streaming_synthesis(self, request, start_time, background_tasks):
             """Handle streaming synthesis for low-latency audio playback"""
+
             from fastapi.responses import StreamingResponse
-            import io
 
             # Check if synthesizer supports streaming
             if not hasattr(self.synthesizer, 'synthesize_streaming'):
@@ -322,7 +323,7 @@ class TTSAPIRouter:
                 return self.error_handler.handle_generic_error(e)
 
         @self.router.post("/preload")
-        async def preload_voices(voice_names: List[str]):
+        async def preload_voices(voice_names: list[str]):
             """Preload voices into cache"""
             try:
                 results = self.synthesizer.preload_voices(voice_names)
@@ -341,9 +342,9 @@ class TTSAPIRouter:
 
         @self.router.post("/cache/clear")
         async def clear_cache(
-            voice: Optional[str] = None,
-            format: Optional[str] = None,
-            emotion: Optional[str] = None
+            voice: str | None = None,
+            format: str | None = None,
+            emotion: str | None = None
         ):
             """Clear cache with optional filters"""
             try:

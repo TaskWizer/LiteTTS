@@ -4,7 +4,8 @@ Unit tests for text chunking module
 """
 
 import pytest
-from LiteTTS.audio.chunking import TextChunker, TextChunk, ChunkingConfig, ChunkingStrategy
+
+from LiteTTS.audio.chunking import ChunkingConfig, ChunkingStrategy, TextChunk, TextChunker
 
 
 class TestTextChunker:

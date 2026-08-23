@@ -4,12 +4,12 @@ RIME AI Research Integration Module
 Implements advanced phonetic processing based on RIME AI research findings
 """
 
+import json
 import logging
 import re
-import json
-from typing import Dict, List, Tuple, Optional, Any
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -18,15 +18,15 @@ class PhoneticAnalysis:
     """Result of phonetic analysis"""
     original_text: str
     processed_text: str
-    phonetic_mappings: Dict[str, str]
-    stress_patterns: List[Tuple[int, str]]
+    phonetic_mappings: dict[str, str]
+    stress_patterns: list[tuple[int, str]]
     confidence_score: float
-    processing_notes: List[str]
+    processing_notes: list[str]
 
 class RIMEAIIntegration:
     """Advanced phonetic processing based on RIME AI research"""
 
-    def __init__(self, config_path: Optional[str] = None):
+    def __init__(self, config_path: str | None = None):
         self.config = self._load_config(config_path)
 
         # RIME AI phonetic alphabet with enhanced mappings
@@ -43,7 +43,7 @@ class RIMEAIIntegration:
 
         logger.info("RIME AI integration initialized with enhanced phonetic processing")
 
-    def _load_config(self, config_path: Optional[str]) -> Dict[str, Any]:
+    def _load_config(self, config_path: str | None) -> dict[str, Any]:
         """Load RIME AI configuration"""
         default_config = {
             "enable_stress_detection": True,
@@ -65,7 +65,7 @@ class RIMEAIIntegration:
 
         return default_config
 
-    def _initialize_rime_alphabet(self) -> Dict[str, str]:
+    def _initialize_rime_alphabet(self) -> dict[str, str]:
         """Initialize RIME AI-style phonetic alphabet"""
         return {
             # Enhanced vowel mappings with RIME AI notation
@@ -89,7 +89,7 @@ class RIMEAIIntegration:
             'ɾ': 'r', 'ʔ': '', 'ʰ': 'h', 'ʷ': 'w', 'ʲ': 'y'
         }
 
-    def _initialize_stress_patterns(self) -> Dict[str, List[str]]:
+    def _initialize_stress_patterns(self) -> dict[str, list[str]]:
         """Initialize stress pattern recognition rules"""
         return {
             "primary_stress": ["1", "ˈ", "'"],
@@ -99,7 +99,7 @@ class RIMEAIIntegration:
             "short_vowel": ["̆", "˘"]
         }
 
-    def _initialize_phoneme_similarities(self) -> Dict[str, List[str]]:
+    def _initialize_phoneme_similarities(self) -> dict[str, list[str]]:
         """Initialize phoneme similarity mappings for error correction"""
         return {
             # Vowel similarities
@@ -144,7 +144,7 @@ class RIMEAIIntegration:
             'h': ['x', 'ʰ', 'ʔ']
         }
 
-    def _initialize_context_rules(self) -> Dict[str, Dict[str, str]]:
+    def _initialize_context_rules(self) -> dict[str, dict[str, str]]:
         """Initialize context-aware pronunciation rules"""
         return {
             "word_initial": {
@@ -225,7 +225,7 @@ class RIMEAIIntegration:
             processing_notes=processing_notes
         )
 
-    def _process_rime_notation(self, text: str) -> Tuple[str, Dict[str, str]]:
+    def _process_rime_notation(self, text: str) -> tuple[str, dict[str, str]]:
         """Process RIME AI-style phonetic notation"""
         mappings = {}
 
@@ -278,7 +278,7 @@ class RIMEAIIntegration:
 
         return ''.join(result)
 
-    def _apply_context_rules(self, text: str) -> Tuple[str, Dict[str, str]]:
+    def _apply_context_rules(self, text: str) -> tuple[str, dict[str, str]]:
         """Apply context-aware pronunciation rules"""
         mappings = {}
         words = text.split()
@@ -320,7 +320,7 @@ class RIMEAIIntegration:
 
         return ' '.join(processed_words), mappings
 
-    def _detect_stress_patterns(self, text: str) -> List[Tuple[int, str]]:
+    def _detect_stress_patterns(self, text: str) -> list[tuple[int, str]]:
         """Detect stress patterns in text"""
         stress_patterns = []
 
@@ -343,7 +343,7 @@ class RIMEAIIntegration:
 
         return stress_patterns
 
-    def _apply_phoneme_similarities(self, text: str) -> Tuple[str, Dict[str, str]]:
+    def _apply_phoneme_similarities(self, text: str) -> tuple[str, dict[str, str]]:
         """Apply phoneme similarity corrections"""
         # This is a placeholder for more advanced phoneme similarity processing
         # In a full implementation, this would use machine learning models
@@ -369,8 +369,8 @@ class RIMEAIIntegration:
         return processed_text, corrections
 
     def _calculate_confidence_score(self, original: str, processed: str,
-                                  mappings: Dict[str, str],
-                                  stress_patterns: List[Tuple[int, str]]) -> float:
+                                  mappings: dict[str, str],
+                                  stress_patterns: list[tuple[int, str]]) -> float:
         """Calculate confidence score for phonetic processing"""
         base_score = 0.8
 

@@ -5,12 +5,12 @@ Integrates all pronunciation fixes: comma handling, diphthongs, contractions, an
 """
 
 import logging
-from typing import Dict, List, Any
 from dataclasses import dataclass
+from typing import Any
 
 from .comma_fix_processor import comma_fix_processor
-from .diphthong_fix_processor import diphthong_fix_processor
 from .contraction_pronunciation_fix import contraction_pronunciation_fix
+from .diphthong_fix_processor import diphthong_fix_processor
 from .interjection_fix_processor import interjection_fix_processor
 
 logger = logging.getLogger(__name__)
@@ -20,8 +20,8 @@ class PronunciationFixResult:
     """Result of pronunciation fix processing"""
     processed_text: str
     original_text: str
-    fixes_applied: List[str]
-    issues_found: Dict[str, Any]
+    fixes_applied: list[str]
+    issues_found: dict[str, Any]
     processing_time: float
 
 class UnifiedPronunciationFix:
@@ -167,7 +167,7 @@ class UnifiedPronunciationFix:
 
         return result
 
-    def analyze_all_issues(self, text: str) -> Dict[str, Any]:
+    def analyze_all_issues(self, text: str) -> dict[str, Any]:
         """Analyze text for all types of pronunciation issues"""
         all_issues = {}
 
@@ -216,7 +216,7 @@ class UnifiedPronunciationFix:
         logger.info(f"  Contraction fixes: {enable_contraction} (mode: {contraction_mode})")
         logger.info(f"  Interjection fixes: {enable_interjection}")
 
-    def get_fix_statistics(self, text: str) -> Dict[str, Any]:
+    def get_fix_statistics(self, text: str) -> dict[str, Any]:
         """Get statistics about potential fixes for text"""
         issues = self.analyze_all_issues(text)
 

@@ -4,9 +4,8 @@ Ticker Symbol Processor for TTS
 Handles systematic letter-by-letter pronunciation of stock ticker symbols and financial abbreviations
 """
 
-import re
 import logging
-from typing import Dict, List, Set, Optional
+import re
 from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
@@ -16,8 +15,8 @@ class TickerProcessingResult:
     """Result of ticker symbol processing"""
     processed_text: str
     original_text: str
-    tickers_found: List[str]
-    changes_made: List[str]
+    tickers_found: list[str]
+    changes_made: list[str]
     processing_time: float
 
 class TickerSymbolProcessor:
@@ -38,7 +37,7 @@ class TickerSymbolProcessor:
         self.process_contextual_tickers = True
         self.use_exclusion_list = True
 
-    def _load_known_tickers(self) -> Set[str]:
+    def _load_known_tickers(self) -> set[str]:
         """Load known ticker symbols for explicit processing"""
         return {
             # Major US stocks
@@ -76,7 +75,7 @@ class TickerSymbolProcessor:
             'NIKKEI', 'HSI', 'KOSPI', 'ASX', 'TSX', 'IBEX', 'AEX', 'OMX',
         }
 
-    def _load_financial_contexts(self) -> List[str]:
+    def _load_financial_contexts(self) -> list[str]:
         """Load financial context keywords that indicate ticker symbols"""
         return [
             # Stock-related terms
@@ -104,7 +103,7 @@ class TickerSymbolProcessor:
             'bullish', 'bearish', 'oversold', 'overbought',
         ]
 
-    def _load_exclusions(self) -> Set[str]:
+    def _load_exclusions(self) -> set[str]:
         """Load words that look like tickers but should not be processed"""
         return {
             # Common English words
@@ -197,7 +196,7 @@ class TickerSymbolProcessor:
                 processing_time=processing_time
             )
 
-    def _process_known_tickers(self, text: str) -> tuple[str, List[str]]:
+    def _process_known_tickers(self, text: str) -> tuple[str, list[str]]:
         """Process explicitly known ticker symbols"""
         found_tickers = []
 
@@ -213,7 +212,7 @@ class TickerSymbolProcessor:
 
         return text, found_tickers
 
-    def _process_contextual_tickers(self, text: str) -> tuple[str, List[str]]:
+    def _process_contextual_tickers(self, text: str) -> tuple[str, list[str]]:
         """Process potential ticker symbols based on financial context"""
         found_tickers = []
 
@@ -248,7 +247,7 @@ class TickerSymbolProcessor:
 
         return text, found_tickers
 
-    def analyze_potential_tickers(self, text: str) -> Dict[str, List[str]]:
+    def analyze_potential_tickers(self, text: str) -> dict[str, list[str]]:
         """Analyze text for potential ticker symbols without processing"""
         analysis = {
             'known_tickers': [],

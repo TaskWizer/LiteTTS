@@ -4,8 +4,9 @@ URL & Web Address Processing Evaluation
 Test current capabilities and identify gaps
 """
 
-import sys
 import os
+import sys
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 def test_current_url_processing():

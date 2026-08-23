@@ -4,9 +4,9 @@ Patches for kokoro_onnx library to fix tensor rank issues
 and replace the broken TTS.cpp phonemizer with misaki
 """
 
-import numpy as np
 import logging
-import re
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 

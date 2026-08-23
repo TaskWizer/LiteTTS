@@ -4,6 +4,7 @@ Unit tests for homograph resolver
 """
 
 import pytest
+
 from LiteTTS.nlp.homograph_resolver import HomographResolver
 
 

@@ -4,8 +4,9 @@ Emotional & Prosodic Enhancement Systems Evaluation
 Test current capabilities and identify gaps
 """
 
-import sys
 import os
+import sys
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 def test_current_emotional_prosodic_processing():

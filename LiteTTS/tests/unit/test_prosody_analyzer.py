@@ -4,6 +4,7 @@ Unit tests for prosody analyzer
 """
 
 import pytest
+
 from LiteTTS.nlp.prosody_analyzer import ProsodyAnalyzer
 
 

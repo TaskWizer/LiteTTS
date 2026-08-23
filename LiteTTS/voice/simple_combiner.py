@@ -8,12 +8,12 @@ Combined voice files are no longer necessary for optimal performance.
 Use individual voice loading strategy for better memory usage and startup time.
 """
 
-import logging
-import numpy as np
-from pathlib import Path
-from typing import Dict, List, Optional
 import json
+import logging
 import warnings
+from pathlib import Path
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ class SimplifiedVoiceCombiner:
 
         logger.warning("SimplifiedVoiceCombiner is deprecated. Consider using individual voice loading strategy.")
 
-    def _load_individual_voice(self, voice_name: str) -> Optional[np.ndarray]:
+    def _load_individual_voice(self, voice_name: str) -> np.ndarray | None:
         """Load an individual voice file"""
         voice_file = self.voices_dir / f"{voice_name}.bin"
 
@@ -98,7 +98,7 @@ class SimplifiedVoiceCombiner:
             logger.error(f"Failed to load voice {voice_name}: {e}")
             return None
 
-    def _get_available_voices(self) -> List[str]:
+    def _get_available_voices(self) -> list[str]:
         """Get list of available voice files"""
         voice_files = list(self.voices_dir.glob("*.bin"))
         voice_names = [f.stem for f in voice_files]
@@ -209,7 +209,7 @@ class SimplifiedVoiceCombiner:
 
         return str(self.combined_file)
 
-    def get_voice_list(self) -> List[str]:
+    def get_voice_list(self) -> list[str]:
         """Get list of voices in the combined file"""
         if self.voice_index_file.exists():
             try:

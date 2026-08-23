@@ -4,19 +4,19 @@ Practical Testing Script for Whisper Alternatives
 Tests actual implementations with real audio samples and measures performance
 """
 
+import json
+import logging
 import os
 import sys
-import time
-import json
-import numpy as np
 import tempfile
-import logging
-from pathlib import Path
-from typing import Dict, List, Any, Tuple, Optional
-import psutil
 import threading
+import time
 from dataclasses import dataclass
-import asyncio
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+import psutil
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -34,9 +34,9 @@ class TestResult:
     peak_memory_mb: float
     transcription: str
     success: bool
-    error_message: Optional[str] = None
-    model_size_mb: Optional[float] = None
-    load_time: Optional[float] = None
+    error_message: str | None = None
+    model_size_mb: float | None = None
+    load_time: float | None = None
 
 class PerformanceMonitor:
     """Monitor system performance during tests"""
@@ -121,9 +121,9 @@ class WhisperImplementationTester:
 
         try:
             # Import required libraries
-            from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor
-            import torch
             import soundfile as sf
+            import torch
+            from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor
 
             monitor = PerformanceMonitor()
 
@@ -348,7 +348,7 @@ class WhisperImplementationTester:
                 error_message=str(e)
             )
 
-    def run_all_tests(self, audio_duration: float = 10.0) -> List[TestResult]:
+    def run_all_tests(self, audio_duration: float = 10.0) -> list[TestResult]:
         """Run all available Whisper implementation tests"""
         logger.info("Starting comprehensive Whisper implementation tests")
 
@@ -400,7 +400,7 @@ class WhisperImplementationTester:
         self.results = results
         return results
 
-    def generate_report(self) -> Dict[str, Any]:
+    def generate_report(self) -> dict[str, Any]:
         """Generate performance report"""
         if not self.results:
             return {"error": "No test results available"}
@@ -452,7 +452,7 @@ class WhisperImplementationTester:
 
         return report
 
-    def _generate_recommendations(self, results: List[TestResult]) -> List[str]:
+    def _generate_recommendations(self, results: list[TestResult]) -> list[str]:
         """Generate recommendations based on test results"""
         recommendations = []
 

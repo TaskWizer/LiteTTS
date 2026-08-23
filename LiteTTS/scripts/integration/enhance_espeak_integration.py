@@ -4,16 +4,15 @@ Enhanced eSpeak Integration Script
 Optimizes eSpeak integration for better phonetic processing and symbol pronunciation fixes
 """
 
-import os
-import sys
 import json
 import logging
-import subprocess
 import shutil
+import subprocess
+import sys
 import time
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, asdict
+from typing import Any
 
 # Add the project root to the path
 project_root = Path(__file__).parent.parent
@@ -38,8 +37,8 @@ class EspeakTestResult:
 class EspeakOptimizationResult:
     """Result of eSpeak optimization"""
     optimization_name: str
-    before_performance: Dict[str, Any]
-    after_performance: Dict[str, Any]
+    before_performance: dict[str, Any]
+    after_performance: dict[str, Any]
     improvement_percentage: float
     success: bool
     notes: str = ""
@@ -129,7 +128,7 @@ class EspeakIntegrationEnhancer:
             }
         ]
 
-    def check_espeak_installation(self) -> Tuple[bool, str, Dict[str, Any]]:
+    def check_espeak_installation(self) -> tuple[bool, str, dict[str, Any]]:
         """Check if eSpeak is installed and get version info"""
         logger.info("Checking eSpeak installation...")
 
@@ -185,7 +184,7 @@ class EspeakIntegrationEnhancer:
 
         return False
 
-    def test_espeak_phonemization(self, test_cases: List[Dict[str, str]]) -> List[EspeakTestResult]:
+    def test_espeak_phonemization(self, test_cases: list[dict[str, str]]) -> list[EspeakTestResult]:
         """Test eSpeak phonemization with various inputs"""
         logger.info("Testing eSpeak phonemization...")
 
@@ -247,7 +246,7 @@ class EspeakIntegrationEnhancer:
 
         return results
 
-    def optimize_espeak_configuration(self) -> Dict[str, Any]:
+    def optimize_espeak_configuration(self) -> dict[str, Any]:
         """Optimize eSpeak configuration for better performance"""
         logger.info("Optimizing eSpeak configuration...")
 
@@ -318,7 +317,7 @@ class EspeakIntegrationEnhancer:
             "config_file": str(optimized_config_path)
         }
 
-    def create_enhanced_symbol_mappings(self) -> Dict[str, str]:
+    def create_enhanced_symbol_mappings(self) -> dict[str, str]:
         """Create enhanced symbol mappings for better pronunciation"""
         logger.info("Creating enhanced symbol mappings...")
 
@@ -383,7 +382,7 @@ class EspeakIntegrationEnhancer:
         logger.info(f"Enhanced symbol mappings saved to: {mappings_file}")
         return enhanced_mappings
 
-    def benchmark_espeak_performance(self) -> Dict[str, Any]:
+    def benchmark_espeak_performance(self) -> dict[str, Any]:
         """Benchmark eSpeak performance with various configurations"""
         logger.info("Benchmarking eSpeak performance...")
 
@@ -445,7 +444,7 @@ class EspeakIntegrationEnhancer:
 
         return benchmark_results
 
-    def run_comprehensive_enhancement(self) -> Dict[str, Any]:
+    def run_comprehensive_enhancement(self) -> dict[str, Any]:
         """Run comprehensive eSpeak integration enhancement"""
         logger.info("Starting comprehensive eSpeak integration enhancement...")
 
@@ -536,7 +535,7 @@ class EspeakIntegrationEnhancer:
         logger.info(f"Enhancement completed. Results saved to: {results_file}")
         return enhancement_results
 
-    def _generate_enhancement_recommendations(self, results: Dict[str, Any]) -> List[str]:
+    def _generate_enhancement_recommendations(self, results: dict[str, Any]) -> list[str]:
         """Generate recommendations based on enhancement results"""
         recommendations = []
 

@@ -3,11 +3,12 @@
 Request validation for TTS API
 """
 
-from typing import List, Dict, Any
-import re
 import logging
+import re
+from typing import Any
 
 from LiteTTS.models import TTSRequest, validate_tts_request
+
 from ..tts.synthesizer import TTSSynthesizer
 
 logger = logging.getLogger(__name__)
@@ -51,7 +52,7 @@ class RequestValidator:
 
         logger.info("Request validator initialized")
 
-    def validate_request(self, request: TTSRequest) -> List[str]:
+    def validate_request(self, request: TTSRequest) -> list[str]:
         """Validate a TTS request and return list of errors"""
         errors = []
 
@@ -95,7 +96,7 @@ class RequestValidator:
 
         return errors
 
-    def _validate_text(self, text: str) -> List[str]:
+    def _validate_text(self, text: str) -> list[str]:
         """Validate input text"""
         errors = []
 
@@ -126,7 +127,7 @@ class RequestValidator:
 
         return errors
 
-    def _validate_voice(self, voice: str) -> List[str]:
+    def _validate_voice(self, voice: str) -> list[str]:
         """Validate voice parameter"""
         errors = []
 
@@ -140,7 +141,7 @@ class RequestValidator:
 
         return errors
 
-    def _validate_speed(self, speed: float) -> List[str]:
+    def _validate_speed(self, speed: float) -> list[str]:
         """Validate speed parameter"""
         errors = []
 
@@ -156,7 +157,7 @@ class RequestValidator:
 
         return errors
 
-    def _validate_format(self, format: str) -> List[str]:
+    def _validate_format(self, format: str) -> list[str]:
         """Validate response format"""
         errors = []
 
@@ -169,7 +170,7 @@ class RequestValidator:
 
         return errors
 
-    def _validate_volume(self, volume: float) -> List[str]:
+    def _validate_volume(self, volume: float) -> list[str]:
         """Validate volume multiplier"""
         errors = []
 
@@ -185,7 +186,7 @@ class RequestValidator:
 
         return errors
 
-    def _validate_emotion(self, emotion: str) -> List[str]:
+    def _validate_emotion(self, emotion: str) -> list[str]:
         """Validate emotion parameter"""
         errors = []
 
@@ -198,7 +199,7 @@ class RequestValidator:
 
         return errors
 
-    def _validate_emotion_strength(self, strength: float) -> List[str]:
+    def _validate_emotion_strength(self, strength: float) -> list[str]:
         """Validate emotion strength parameter"""
         errors = []
 
@@ -214,7 +215,7 @@ class RequestValidator:
 
         return errors
 
-    def _validate_language_code(self, lang_code: str) -> List[str]:
+    def _validate_language_code(self, lang_code: str) -> list[str]:
         """Validate language code"""
         errors = []
 
@@ -266,7 +267,7 @@ class RequestValidator:
 
         return True
 
-    def validate_batch_request(self, texts: List[str], voice: str) -> Dict[str, List[str]]:
+    def validate_batch_request(self, texts: list[str], voice: str) -> dict[str, list[str]]:
         """Validate a batch synthesis request"""
         validation_results = {}
 
@@ -291,7 +292,7 @@ class RequestValidator:
 
         return validation_results
 
-    def get_validation_rules(self) -> Dict[str, Any]:
+    def get_validation_rules(self) -> dict[str, Any]:
         """Get current validation rules"""
         return {
             'text': {

@@ -4,6 +4,7 @@ Unit tests for dynamic emotion intonation system
 """
 
 import pytest
+
 from LiteTTS.nlp.dynamic_emotion_intonation import DynamicEmotionIntonationSystem
 
 

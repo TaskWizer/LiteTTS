@@ -6,12 +6,12 @@ Handles parsing and processing of Speech Synthesis Markup Language (SSML) tags,
 with special support for background noise enhancement.
 """
 
+import logging
 import re
 import xml.etree.ElementTree as ET
-from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass
 from enum import Enum
-import logging
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -35,15 +35,15 @@ class BackgroundConfig:
     fade_in: float = 0.5  # seconds
     fade_out: float = 0.5  # seconds
     loop: bool = True
-    custom_file: Optional[str] = None
+    custom_file: str | None = None
 
 @dataclass
 class SSMLElement:
     """Represents a parsed SSML element"""
     tag: str
     text: str
-    attributes: Dict[str, str]
-    children: List['SSMLElement']
+    attributes: dict[str, str]
+    children: list['SSMLElement']
     start_pos: int = 0
     end_pos: int = 0
 
@@ -51,11 +51,11 @@ class SSMLElement:
 class ParsedSSML:
     """Result of SSML parsing"""
     plain_text: str
-    background_config: Optional[BackgroundConfig]
-    prosody_changes: List[Dict[str, Any]]
-    emphasis_spans: List[Tuple[int, int, str]]  # start, end, level
-    break_positions: List[Tuple[int, float]]  # position, duration
-    errors: List[str]
+    background_config: BackgroundConfig | None
+    prosody_changes: list[dict[str, Any]]
+    emphasis_spans: list[tuple[int, int, str]]  # start, end, level
+    break_positions: list[tuple[int, float]]  # position, duration
+    errors: list[str]
 
 class SSMLParser:
     """
@@ -213,7 +213,7 @@ class SSMLParser:
 
         return ''.join(text_parts).strip()
 
-    def _extract_background_config(self, root: ET.Element) -> Optional[BackgroundConfig]:
+    def _extract_background_config(self, root: ET.Element) -> BackgroundConfig | None:
         """Extract background configuration from SSML"""
         background_elem = root.find('.//background')
         if background_elem is None:
@@ -252,7 +252,7 @@ class SSMLParser:
             custom_file=custom_file
         )
 
-    def _extract_prosody_changes(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_prosody_changes(self, root: ET.Element) -> list[dict[str, Any]]:
         """Extract prosody changes from SSML"""
         prosody_changes = []
 
@@ -273,7 +273,7 @@ class SSMLParser:
 
         return prosody_changes
 
-    def _extract_emphasis_spans(self, root: ET.Element, plain_text: str) -> List[Tuple[int, int, str]]:
+    def _extract_emphasis_spans(self, root: ET.Element, plain_text: str) -> list[tuple[int, int, str]]:
         """Extract emphasis spans from SSML"""
         emphasis_spans = []
 
@@ -289,7 +289,7 @@ class SSMLParser:
 
         return emphasis_spans
 
-    def _extract_break_positions(self, root: ET.Element, plain_text: str) -> List[Tuple[int, float]]:
+    def _extract_break_positions(self, root: ET.Element, plain_text: str) -> list[tuple[int, float]]:
         """Extract break positions from SSML"""
         break_positions = []
 
@@ -312,7 +312,7 @@ class SSMLParser:
 
         return break_positions
 
-    def validate_ssml(self, ssml_text: str) -> List[str]:
+    def validate_ssml(self, ssml_text: str) -> list[str]:
         """Validate SSML markup and return list of errors"""
         errors = []
 

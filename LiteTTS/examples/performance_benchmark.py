@@ -4,17 +4,18 @@ Performance Benchmark for LiteTTS Whisper Integration
 Measures and displays RTF, memory usage, and performance metrics
 """
 
-import sys
-import os
-import time
 import json
-import psutil
 import logging
+import os
+import sys
 import tempfile
-import numpy as np
+import time
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Any
-from dataclasses import dataclass, asdict
+from typing import Any
+
+import numpy as np
+import psutil
 
 # Add LiteTTS to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -43,7 +44,7 @@ class PerformanceBenchmark:
         self.results = []
         self.system_info = self._get_system_info()
 
-    def _get_system_info(self) -> Dict[str, Any]:
+    def _get_system_info(self) -> dict[str, Any]:
         """Get system information"""
         return {
             "cpu_count": psutil.cpu_count(logical=False),
@@ -108,7 +109,7 @@ class PerformanceBenchmark:
             raise
 
     def benchmark_whisper_processor(self, model_name: str = "distil-small.en",
-                                  compute_type: str = "int8") -> List[BenchmarkResult]:
+                                  compute_type: str = "int8") -> list[BenchmarkResult]:
         """Benchmark Whisper processor with different audio lengths"""
         logger.info(f"🔬 Benchmarking Whisper processor: {model_name} ({compute_type})")
 
@@ -193,7 +194,7 @@ class PerformanceBenchmark:
 
         return results
 
-    def benchmark_voice_cloning(self) -> List[BenchmarkResult]:
+    def benchmark_voice_cloning(self) -> list[BenchmarkResult]:
         """Benchmark voice cloning with different audio lengths"""
         logger.info("🎭 Benchmarking voice cloning performance")
 
@@ -276,7 +277,7 @@ class PerformanceBenchmark:
 
         return results
 
-    def run_comprehensive_benchmark(self) -> Dict[str, Any]:
+    def run_comprehensive_benchmark(self) -> dict[str, Any]:
         """Run comprehensive benchmark suite"""
         logger.info("🚀 Starting Comprehensive Performance Benchmark")
         logger.info("=" * 60)
@@ -314,7 +315,7 @@ class PerformanceBenchmark:
         # Generate report
         return self.generate_report()
 
-    def generate_report(self) -> Dict[str, Any]:
+    def generate_report(self) -> dict[str, Any]:
         """Generate comprehensive benchmark report"""
         if not self.results:
             return {"error": "No benchmark results available"}

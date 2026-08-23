@@ -4,12 +4,10 @@ Comprehensive validation script for Kokoro TTS pronunciation fixes
 Tests the fixes implemented for configuration compliance and pronunciation accuracy
 """
 
-import requests
-import json
-import time
-import os
-from typing import Dict, List, Tuple
 import logging
+import time
+
+import requests
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -22,7 +20,7 @@ class PronunciationValidator:
         self.api_base_url = api_base_url
         self.test_results = {}
 
-    def test_configuration_compliance(self) -> Dict[str, bool]:
+    def test_configuration_compliance(self) -> dict[str, bool]:
         """Test that configuration settings are being respected"""
         logger.info("🔍 Testing Configuration Compliance...")
 
@@ -68,7 +66,7 @@ class PronunciationValidator:
 
         return results
 
-    def test_natural_pronunciation(self) -> Dict[str, bool]:
+    def test_natural_pronunciation(self) -> dict[str, bool]:
         """Test that words are pronounced naturally without IPA symbols or stress markers"""
         logger.info("🗣️ Testing Natural Pronunciation...")
 
@@ -115,7 +113,7 @@ class PronunciationValidator:
 
         return results
 
-    def test_openwebui_compatibility(self) -> Dict[str, bool]:
+    def test_openwebui_compatibility(self) -> dict[str, bool]:
         """Test OpenWebUI-style requests"""
         logger.info("🌐 Testing OpenWebUI Compatibility...")
 
@@ -160,7 +158,7 @@ class PronunciationValidator:
 
         return results
 
-    def test_performance_metrics(self) -> Dict[str, float]:
+    def test_performance_metrics(self) -> dict[str, float]:
         """Test performance metrics"""
         logger.info("⚡ Testing Performance Metrics...")
 

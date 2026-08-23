@@ -4,7 +4,8 @@ Unit tests for espeak phonemizer backend
 """
 
 import pytest
-from LiteTTS.nlp.espeak_phonemizer_backend import EspeakPhonemizerBackend, EspeakConfig
+
+from LiteTTS.nlp.espeak_phonemizer_backend import EspeakConfig, EspeakPhonemizerBackend
 
 
 class TestEspeakPhonemizerBackend:

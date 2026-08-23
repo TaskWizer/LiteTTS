@@ -4,17 +4,16 @@ Uvicorn Worker Manager
 Provides stable worker process management with proper resource monitoring and graceful shutdown
 """
 
+import logging
 import os
 import signal
-import logging
 import threading
 import time
-import psutil
-from typing import Dict, Any, Optional, List
 from dataclasses import dataclass
-import multiprocessing
-import sys
 from threading import Lock
+from typing import Any
+
+import psutil
 
 logger = logging.getLogger(__name__)
 
@@ -53,16 +52,16 @@ class WorkerManager:
     Manages Uvicorn worker processes with stability monitoring
     """
 
-    def __init__(self, config: Optional[WorkerConfig] = None):
+    def __init__(self, config: WorkerConfig | None = None):
         self.config = config or WorkerConfig()
-        self.workers: Dict[int, Dict[str, Any]] = {}
-        self.monitoring_thread: Optional[threading.Thread] = None
+        self.workers: dict[int, dict[str, Any]] = {}
+        self.monitoring_thread: threading.Thread | None = None
         self.shutdown_event = threading.Event()
         self.lock = threading.RLock()
 
         # Shutdown state protection
         self._shutdown_in_progress = False
-        self._shutdown_start_time: Optional[float] = None
+        self._shutdown_start_time: float | None = None
         self._shutdown_lock = Lock()
         self._force_shutdown_requested = False
 
@@ -146,7 +145,7 @@ class WorkerManager:
             logger.warning(f"Failed to calculate optimal worker count: {e}")
             return 1
 
-    def get_uvicorn_config(self) -> Dict[str, Any]:
+    def get_uvicorn_config(self) -> dict[str, Any]:
         """Get optimized Uvicorn configuration for stable workers"""
         return {
             # Worker configuration
@@ -375,7 +374,7 @@ class WorkerManager:
             logger.error(f"Error during worker shutdown: {e}")
             # Don't re-raise, let the timeout mechanism handle it
 
-    def get_worker_stats(self) -> Dict[str, Any]:
+    def get_worker_stats(self) -> dict[str, Any]:
         """Get worker statistics"""
         with self.lock:
             stats = self.stats.copy()
@@ -392,7 +391,7 @@ class WorkerManager:
         return stats
 
 # Global worker manager instance
-_worker_manager: Optional[WorkerManager] = None
+_worker_manager: WorkerManager | None = None
 
 def get_worker_manager() -> WorkerManager:
     """Get or create global worker manager"""
@@ -401,7 +400,7 @@ def get_worker_manager() -> WorkerManager:
         _worker_manager = WorkerManager()
     return _worker_manager
 
-def initialize_worker_manager(config: Optional[WorkerConfig] = None) -> WorkerManager:
+def initialize_worker_manager(config: WorkerConfig | None = None) -> WorkerManager:
     """Initialize global worker manager with configuration"""
     global _worker_manager
     _worker_manager = WorkerManager(config)

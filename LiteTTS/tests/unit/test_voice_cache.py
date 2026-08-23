@@ -3,18 +3,12 @@
 Unit tests for voice cache module
 """
 
-import pytest
-import numpy as np
-from pathlib import Path
-from unittest.mock import Mock, MagicMock, patch
 from datetime import datetime
+from unittest.mock import Mock, patch
 
-from LiteTTS.voice.cache import (
-    CacheEntry,
-    VoiceCache,
-    VoiceEmbedding,
-    VoiceMetadata
-)
+import numpy as np
+
+from LiteTTS.voice.cache import CacheEntry, VoiceCache, VoiceEmbedding, VoiceMetadata
 
 
 class TestCacheEntry:

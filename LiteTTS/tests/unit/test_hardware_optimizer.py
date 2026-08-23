@@ -3,13 +3,15 @@
 Unit tests for hardware optimizer module
 """
 
+from unittest.mock import Mock, patch
+
 import pytest
-from unittest.mock import patch, Mock
+
 from LiteTTS.hardware_optimizer import (
+    HardwareOptimizer,
     HardwareProfile,
     OptimizedSettings,
-    HardwareOptimizer,
-    run_hardware_optimization
+    run_hardware_optimization,
 )
 
 

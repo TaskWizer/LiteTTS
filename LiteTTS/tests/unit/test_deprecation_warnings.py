@@ -4,7 +4,12 @@ Unit tests for deprecation warnings manager
 """
 
 import pytest
-from LiteTTS.utils.deprecation_warnings import DeprecationWarningManager, suppress_known_warnings, initialize_warning_suppression
+
+from LiteTTS.utils.deprecation_warnings import (
+    DeprecationWarningManager,
+    initialize_warning_suppression,
+    suppress_known_warnings,
+)
 
 
 class TestDeprecationWarningManager:

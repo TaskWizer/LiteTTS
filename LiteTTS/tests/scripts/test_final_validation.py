@@ -4,11 +4,12 @@ Final validation test for eSpeak integration
 Tests the complete TTS pipeline to ensure question mark fix is working end-to-end
 """
 
-import requests
-import json
-import time
 import sys
+import time
 from pathlib import Path
+
+import requests
+
 
 def test_api_with_question_marks():
     """Test the TTS API with question mark texts"""
@@ -123,7 +124,11 @@ def test_text_processing_pipeline():
     sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
     try:
-        from LiteTTS.nlp.unified_text_processor import UnifiedTextProcessor, ProcessingOptions, ProcessingMode
+        from LiteTTS.nlp.unified_text_processor import (
+            ProcessingMode,
+            ProcessingOptions,
+            UnifiedTextProcessor,
+        )
 
         # Create processor with eSpeak integration enabled
         config = {

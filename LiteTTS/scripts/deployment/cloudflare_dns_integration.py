@@ -4,16 +4,17 @@ Cloudflare DNS Integration Manager
 Configure DNS settings and prepare infrastructure for Cloudflare integration with HTTPS enforcement
 """
 
-import os
-import sys
 import json
 import logging
-import time
+import os
 import socket
-import requests
+import sys
+import time
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, asdict
+from typing import Any
+
+import requests
 
 # Add the project root to the path
 project_root = Path(__file__).parent.parent
@@ -31,7 +32,7 @@ class DNSRecord:
     content: str
     ttl: int
     proxied: bool
-    priority: Optional[int] = None
+    priority: int | None = None
     comment: str = ""
 
 @dataclass
@@ -39,7 +40,7 @@ class CloudflareZone:
     """Cloudflare zone configuration"""
     zone_name: str
     zone_id: str
-    nameservers: List[str]
+    nameservers: list[str]
     status: str
     plan: str
 
@@ -58,7 +59,7 @@ class CloudflareConfiguration:
     security_level: str  # off, essentially_off, low, medium, high, under_attack
     cache_level: str  # aggressive, basic, simplified
     development_mode: bool
-    dns_records: List[DNSRecord]
+    dns_records: list[DNSRecord]
 
 class CloudflareDNSManager:
     """Cloudflare DNS integration manager"""
@@ -133,7 +134,7 @@ class CloudflareDNSManager:
         except Exception:
             return "127.0.0.1"
 
-    def validate_api_token(self, api_token: str) -> Tuple[bool, str]:
+    def validate_api_token(self, api_token: str) -> tuple[bool, str]:
         """Validate Cloudflare API token"""
         logger.info("Validating Cloudflare API token...")
 
@@ -165,7 +166,7 @@ class CloudflareDNSManager:
         except Exception as e:
             return False, f"Token validation error: {str(e)}"
 
-    def get_zones(self, api_token: str) -> Tuple[bool, List[CloudflareZone]]:
+    def get_zones(self, api_token: str) -> tuple[bool, list[CloudflareZone]]:
         """Get Cloudflare zones"""
         logger.info("Retrieving Cloudflare zones...")
 
@@ -206,7 +207,7 @@ class CloudflareDNSManager:
             logger.error(f"Error retrieving zones: {e}")
             return False, []
 
-    def create_dns_records(self, config: CloudflareConfiguration, zone_id: str) -> Dict[str, Any]:
+    def create_dns_records(self, config: CloudflareConfiguration, zone_id: str) -> dict[str, Any]:
         """Create DNS records in Cloudflare"""
         logger.info("Creating DNS records...")
 
@@ -280,7 +281,7 @@ class CloudflareDNSManager:
 
         return results
 
-    def configure_ssl_settings(self, config: CloudflareConfiguration, zone_id: str) -> Dict[str, Any]:
+    def configure_ssl_settings(self, config: CloudflareConfiguration, zone_id: str) -> dict[str, Any]:
         """Configure SSL settings in Cloudflare"""
         logger.info("Configuring SSL settings...")
 
@@ -351,7 +352,7 @@ class CloudflareDNSManager:
 
         return results
 
-    def configure_security_settings(self, config: CloudflareConfiguration, zone_id: str) -> Dict[str, Any]:
+    def configure_security_settings(self, config: CloudflareConfiguration, zone_id: str) -> dict[str, Any]:
         """Configure security settings in Cloudflare"""
         logger.info("Configuring security settings...")
 
@@ -552,7 +553,7 @@ echo "DNS verification completed!"
         logger.info(f"DNS verification script saved: {script_file}")
         return verification_script
 
-    def run_comprehensive_cloudflare_setup(self, config_file: Optional[str] = None) -> Dict[str, Any]:
+    def run_comprehensive_cloudflare_setup(self, config_file: str | None = None) -> dict[str, Any]:
         """Run comprehensive Cloudflare DNS setup"""
         logger.info("Starting comprehensive Cloudflare DNS setup...")
 
@@ -659,9 +660,9 @@ echo "DNS verification completed!"
         logger.info(f"Cloudflare setup completed. Results saved to: {results_file}")
         return setup_results
 
-    def _generate_cloudflare_summary(self, dns_results: Dict[str, Any],
-                                   ssl_results: Dict[str, Any],
-                                   security_results: Dict[str, Any]) -> Dict[str, Any]:
+    def _generate_cloudflare_summary(self, dns_results: dict[str, Any],
+                                   ssl_results: dict[str, Any],
+                                   security_results: dict[str, Any]) -> dict[str, Any]:
         """Generate Cloudflare setup summary"""
 
         total_dns_records = dns_results["total_records"]
@@ -704,7 +705,7 @@ echo "DNS verification completed!"
         return summary
 
     def _generate_cloudflare_next_steps(self, config: CloudflareConfiguration,
-                                      zone: CloudflareZone) -> List[str]:
+                                      zone: CloudflareZone) -> list[str]:
         """Generate next steps for Cloudflare deployment"""
         next_steps = [
             "Run the DNS verification script to test configuration",

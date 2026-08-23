@@ -4,14 +4,14 @@ Performance Monitoring for Chunked Audio Generation
 Tracks and compares performance metrics between chunked and non-chunked generation
 """
 
-import time
+import json
 import logging
 import statistics
-from typing import Dict, Any, List, Optional
+import time
+from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from enum import Enum
-import json
-from collections import defaultdict, deque
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -40,16 +40,16 @@ class PerformanceMetrics:
     rtf: float  # Real-time factor
 
     # Optional timing metrics
-    first_chunk_time: Optional[float] = None
+    first_chunk_time: float | None = None
 
     # Chunking metrics (for chunked generation)
-    chunk_count: Optional[int] = None
-    avg_chunk_time: Optional[float] = None
-    chunk_times: Optional[List[float]] = None
+    chunk_count: int | None = None
+    avg_chunk_time: float | None = None
+    chunk_times: list[float] | None = None
 
     # Resource metrics
-    memory_usage: Optional[float] = None
-    cpu_usage: Optional[float] = None
+    memory_usage: float | None = None
+    cpu_usage: float | None = None
 
     # User experience metrics
     time_to_first_audio: float = 0.0
@@ -60,18 +60,18 @@ class PerformanceMetrics:
 @dataclass
 class ComparisonReport:
     """Comparison report between generation types"""
-    standard_metrics: List[PerformanceMetrics]
-    chunked_metrics: List[PerformanceMetrics]
-    streaming_metrics: List[PerformanceMetrics]
+    standard_metrics: list[PerformanceMetrics]
+    chunked_metrics: list[PerformanceMetrics]
+    streaming_metrics: list[PerformanceMetrics]
 
     # Aggregated comparisons
-    avg_rtf_comparison: Dict[str, float]
-    avg_latency_comparison: Dict[str, float]
-    avg_memory_comparison: Dict[str, float]
+    avg_rtf_comparison: dict[str, float]
+    avg_latency_comparison: dict[str, float]
+    avg_memory_comparison: dict[str, float]
 
     # User experience comparison
-    time_to_first_audio_comparison: Dict[str, float]
-    perceived_responsiveness: Dict[str, float]
+    time_to_first_audio_comparison: dict[str, float]
+    perceived_responsiveness: dict[str, float]
 
     generation_time: float = field(default_factory=time.time)
 
@@ -106,7 +106,7 @@ class ChunkedPerformanceMonitor:
         generation_type: GenerationType,
         text: str,
         voice_id: str,
-        chunk_count: Optional[int] = None
+        chunk_count: int | None = None
     ) -> str:
         """
         Start tracking a generation
@@ -267,7 +267,7 @@ class ChunkedPerformanceMonitor:
 
     def get_performance_comparison(
         self,
-        time_window_hours: Optional[float] = None
+        time_window_hours: float | None = None
     ) -> ComparisonReport:
         """
         Generate performance comparison report
@@ -332,15 +332,15 @@ class ChunkedPerformanceMonitor:
             perceived_responsiveness=perceived_responsiveness
         )
 
-    def get_real_time_stats(self) -> Dict[str, Any]:
+    def get_real_time_stats(self) -> dict[str, Any]:
         """Get real-time performance statistics"""
         return self.current_stats.copy()
 
-    def get_metrics_by_voice(self, voice_id: str) -> List[PerformanceMetrics]:
+    def get_metrics_by_voice(self, voice_id: str) -> list[PerformanceMetrics]:
         """Get metrics for a specific voice"""
         return self.metrics_by_voice.get(voice_id, [])
 
-    def get_metrics_by_text_length(self, category: str) -> List[PerformanceMetrics]:
+    def get_metrics_by_text_length(self, category: str) -> list[PerformanceMetrics]:
         """Get metrics by text length category"""
         return self.metrics_by_text_length.get(category, [])
 
@@ -402,10 +402,10 @@ class ChunkedPerformanceMonitor:
 
     def _calculate_avg_comparison(
         self,
-        metric_lists: List[List[PerformanceMetrics]],
-        labels: List[str],
+        metric_lists: list[list[PerformanceMetrics]],
+        labels: list[str],
         value_func
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """Calculate average comparison between metric lists"""
         comparison = {}
 

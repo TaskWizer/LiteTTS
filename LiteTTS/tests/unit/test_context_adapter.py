@@ -4,6 +4,7 @@ Unit tests for context adapter
 """
 
 import pytest
+
 from LiteTTS.nlp.context_adapter import ContextAdapter, SpeechContext
 
 

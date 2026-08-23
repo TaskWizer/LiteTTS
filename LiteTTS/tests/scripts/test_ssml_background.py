@@ -5,10 +5,11 @@ Test SSML Background Functionality
 Tests the SSML background noise enhancement feature end-to-end.
 """
 
-import requests
 import time
-import os
+
+import requests
 from mutagen.mp3 import MP3
+
 
 def test_ssml_background():
     """Test SSML background functionality"""

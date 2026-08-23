@@ -4,15 +4,14 @@ Comprehensive System Audit for Kokoro TTS API
 Validates all components, endpoints, and integrations
 """
 
-import requests
 import json
-import time
-import sys
-import os
-import subprocess
-from pathlib import Path
-from typing import Dict, List, Any, Tuple
 import logging
+import os
+import sys
+import time
+from typing import Any
+
+import requests
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -38,7 +37,7 @@ class SystemAuditor:
         self.total_checks = 0
         self.passed_checks = 0
 
-    def audit_server_status(self) -> Dict[str, Any]:
+    def audit_server_status(self) -> dict[str, Any]:
         """Audit basic server status and health"""
         logger.info("🔍 Auditing server status...")
 
@@ -95,7 +94,7 @@ class SystemAuditor:
 
         return checks
 
-    def audit_api_endpoints(self) -> Dict[str, Any]:
+    def audit_api_endpoints(self) -> dict[str, Any]:
         """Audit all API endpoints"""
         logger.info("🔍 Auditing API endpoints...")
 
@@ -189,7 +188,7 @@ class SystemAuditor:
 
         return results
 
-    def audit_openwebui_integration(self) -> Dict[str, Any]:
+    def audit_openwebui_integration(self) -> dict[str, Any]:
         """Audit OpenWebUI integration specifically"""
         logger.info("🔍 Auditing OpenWebUI integration...")
 
@@ -277,7 +276,7 @@ class SystemAuditor:
 
         return results
 
-    def audit_performance(self) -> Dict[str, Any]:
+    def audit_performance(self) -> dict[str, Any]:
         """Audit system performance"""
         logger.info("🔍 Auditing performance...")
 
@@ -332,7 +331,7 @@ class SystemAuditor:
 
         return results
 
-    def audit_configuration(self) -> Dict[str, Any]:
+    def audit_configuration(self) -> dict[str, Any]:
         """Audit system configuration"""
         logger.info("🔍 Auditing configuration...")
 
@@ -441,7 +440,7 @@ Overall Score: {score:.1f}% ({self.passed_checks}/{self.total_checks} checks pas
 
         return report
 
-    def run_full_audit(self) -> Dict[str, Any]:
+    def run_full_audit(self) -> dict[str, Any]:
         """Run complete system audit"""
         logger.info("🚀 Starting comprehensive system audit...")
 

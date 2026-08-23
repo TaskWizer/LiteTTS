@@ -1,11 +1,12 @@
-import gguf
-from pathlib import Path
-from transformers import AutoTokenizer
-from parler_tts import ParlerTTSForConditionalGeneration
 import json
-from .tts_encoder import TTSEncoder
-from .parler_tts_gguf_encoder import DEFAULT_PARLER_REPO_MINI_ID
+from pathlib import Path
 
+import gguf
+from parler_tts import ParlerTTSForConditionalGeneration
+from transformers import AutoTokenizer
+
+from .parler_tts_gguf_encoder import DEFAULT_PARLER_REPO_MINI_ID
+from .tts_encoder import TTSEncoder
 
 # T5_ARCHITECTURE denotes the model architecture to use in order to interpret the GGUF file written by the T5Encoder below
 T5_ARCHITECTURE = "t5encoder"

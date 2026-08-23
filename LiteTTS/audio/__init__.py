@@ -2,9 +2,14 @@
 
 from .audio_segment import AudioSegment
 from .format_converter import AudioFormatConverter
-from .streaming import AudioStreamer
 from .processor import AudioProcessor
-from .watermarking import AudioWatermarker, get_audio_watermarker, WatermarkResult, WatermarkDetectionResult
+from .streaming import AudioStreamer
+from .watermarking import (
+    AudioWatermarker,
+    WatermarkDetectionResult,
+    WatermarkResult,
+    get_audio_watermarker,
+)
 
 __all__ = [
     'AudioSegment',

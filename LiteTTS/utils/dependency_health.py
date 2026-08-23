@@ -7,13 +7,12 @@ for dependencies in the LiteTTS system.
 """
 
 import importlib
-import subprocess
 import logging
-import time
-import threading
-from typing import Dict, List, Any, Callable, Optional
+import subprocess
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -33,11 +32,11 @@ class DependencyInfo:
     """Information about a dependency"""
     name: str
     required: bool
-    min_version: Optional[str] = None
-    import_name: Optional[str] = None
+    min_version: str | None = None
+    import_name: str | None = None
     description: str = ""
-    recovery_command: Optional[str] = None
-    health_check: Optional[Callable] = None
+    recovery_command: str | None = None
+    health_check: Callable | None = None
 
 
 @dataclass
@@ -45,8 +44,8 @@ class HealthCheckResult:
     """Result of a dependency health check"""
     dependency: str
     status: DependencyStatus
-    version: Optional[str] = None
-    error_message: Optional[str] = None
+    version: str | None = None
+    error_message: str | None = None
     recovery_attempted: bool = False
     recovery_successful: bool = False
 
@@ -218,7 +217,7 @@ class DependencyHealth:
                 error_message=str(e)
             )
 
-    def validate_startup_dependencies(self) -> Dict[str, HealthCheckResult]:
+    def validate_startup_dependencies(self) -> dict[str, HealthCheckResult]:
         """
         Validate all dependencies at startup.
         
@@ -332,7 +331,7 @@ class DependencyHealth:
                 recovery_successful=False
             )
 
-    def validate_and_recover(self, auto_recover: bool = True) -> Dict[str, HealthCheckResult]:
+    def validate_and_recover(self, auto_recover: bool = True) -> dict[str, HealthCheckResult]:
         """
         Validate dependencies and attempt recovery for failed ones.
         
@@ -362,7 +361,7 @@ class DependencyHealth:
 
         return results
 
-    def get_health_summary(self) -> Dict[str, Any]:
+    def get_health_summary(self) -> dict[str, Any]:
         """
         Get a summary of dependency health status.
         

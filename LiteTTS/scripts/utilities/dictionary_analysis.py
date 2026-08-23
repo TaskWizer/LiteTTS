@@ -4,15 +4,14 @@ Comprehensive Dictionary Analysis Script
 Evaluates effectiveness of CMU, IPA, and Unisyn dictionaries and identifies optimization opportunities
 """
 
-import os
-import sys
 import json
 import logging
-import time
-from pathlib import Path
-from typing import Dict, List, Any, Set, Tuple
-from dataclasses import dataclass, asdict
 import re
+import sys
+import time
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import Any
 
 # Add the project root to the path
 project_root = Path(__file__).parent.parent
@@ -32,9 +31,9 @@ class DictionaryStats:
     file_size_mb: float
     coverage_score: float
     quality_score: float
-    problematic_entries: List[str]
-    missing_critical_words: List[str]
-    optimization_opportunities: List[str]
+    problematic_entries: list[str]
+    missing_critical_words: list[str]
+    optimization_opportunities: list[str]
 
 @dataclass
 class CoverageAnalysis:
@@ -42,7 +41,7 @@ class CoverageAnalysis:
     category: str
     total_words: int
     covered_words: int
-    missing_words: List[str]
+    missing_words: list[str]
     coverage_percentage: float
 
 class DictionaryAnalyzer:
@@ -220,7 +219,7 @@ class DictionaryAnalyzer:
             optimization_opportunities=optimization_opportunities
         )
 
-    def _calculate_coverage_score(self, entries: Dict[str, str], dict_type: str) -> float:
+    def _calculate_coverage_score(self, entries: dict[str, str], dict_type: str) -> float:
         """Calculate coverage score based on critical word categories"""
         total_critical_words = sum(len(words) for words in self.critical_word_categories.values())
         covered_words = 0
@@ -232,7 +231,7 @@ class DictionaryAnalyzer:
 
         return (covered_words / total_critical_words) * 100 if total_critical_words > 0 else 0.0
 
-    def _calculate_quality_score(self, entries: Dict[str, str], dict_type: str) -> float:
+    def _calculate_quality_score(self, entries: dict[str, str], dict_type: str) -> float:
         """Calculate quality score based on phonetic accuracy and completeness"""
         quality_score = 0.0
         total_checks = 0
@@ -261,7 +260,7 @@ class DictionaryAnalyzer:
 
         return (quality_score / total_checks) * 100 if total_checks > 0 else 0.0
 
-    def _find_missing_critical_words(self, entries: Dict[str, str]) -> List[str]:
+    def _find_missing_critical_words(self, entries: dict[str, str]) -> list[str]:
         """Find critical words missing from the dictionary"""
         missing_words = []
 
@@ -272,7 +271,7 @@ class DictionaryAnalyzer:
 
         return missing_words
 
-    def _identify_optimization_opportunities(self, entries: Dict[str, str], dict_type: str) -> List[str]:
+    def _identify_optimization_opportunities(self, entries: dict[str, str], dict_type: str) -> list[str]:
         """Identify optimization opportunities for the dictionary"""
         opportunities = []
 
@@ -305,7 +304,7 @@ class DictionaryAnalyzer:
 
         return opportunities
 
-    def analyze_coverage_by_category(self, all_dictionaries: Dict[str, Dict[str, str]]) -> List[CoverageAnalysis]:
+    def analyze_coverage_by_category(self, all_dictionaries: dict[str, dict[str, str]]) -> list[CoverageAnalysis]:
         """Analyze coverage by word category across all dictionaries"""
         coverage_analyses = []
 
@@ -335,7 +334,7 @@ class DictionaryAnalyzer:
 
         return coverage_analyses
 
-    def run_comprehensive_analysis(self) -> Dict[str, Any]:
+    def run_comprehensive_analysis(self) -> dict[str, Any]:
         """Run comprehensive dictionary analysis"""
         logger.info("Starting comprehensive dictionary analysis...")
 
@@ -413,7 +412,7 @@ class DictionaryAnalyzer:
         return summary
 
     def _generate_recommendations(self, cmu_stats: DictionaryStats, ipa_stats: DictionaryStats,
-                                custom_stats: DictionaryStats, coverage_analyses: List[CoverageAnalysis]) -> List[str]:
+                                custom_stats: DictionaryStats, coverage_analyses: list[CoverageAnalysis]) -> list[str]:
         """Generate optimization recommendations"""
         recommendations = []
 

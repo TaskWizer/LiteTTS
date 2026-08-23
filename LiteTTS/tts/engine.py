@@ -3,24 +3,28 @@
 Kokoro TTS engine wrapper with ONNX runtime integration
 """
 
-import onnxruntime as ort
-import numpy as np
-from pathlib import Path
-from typing import Dict, List, Optional, Any, Union, Tuple
 import logging
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
+from typing import Any
 
-from ..models import VoiceEmbedding, AudioSegment, TTSConfiguration
-from ..voice.manager import VoiceManager
-from ..voice.blender import VoiceBlender, BlendConfig
-from ..audio.processor import AudioProcessor
-from ..audio.progressive_generator import ProgressiveAudioGenerator, ProgressiveGenerationConfig, GenerationMode
+import numpy as np
+import onnxruntime as ort
+
 from ..audio.chunking import ChunkingConfig, ChunkingStrategy
-from ..audio.voice_consistency import VoiceConsistencyManager, ConsistencyLevel
+from ..audio.processor import AudioProcessor
+from ..audio.progressive_generator import (
+    GenerationMode,
+    ProgressiveAudioGenerator,
+    ProgressiveGenerationConfig,
+)
+from ..audio.voice_consistency import ConsistencyLevel, VoiceConsistencyManager
+from ..models import AudioSegment, TTSConfiguration, VoiceEmbedding
 from ..monitoring.chunked_performance import ChunkedPerformanceMonitor, GenerationType
-from ..metrics import performance_logger
+from ..voice.blender import BlendConfig, VoiceBlender
+from ..voice.manager import VoiceManager
 
 logger = logging.getLogger(__name__)
 
@@ -202,7 +206,7 @@ class KokoroTTSEngine:
             self.tokenizer = self._create_simple_tokenizer()
             logger.warning("Using simple character-based tokenizer")
 
-    def _create_simple_tokenizer(self) -> Dict[str, Any]:
+    def _create_simple_tokenizer(self) -> dict[str, Any]:
         """Create a simple character-based tokenizer"""
         # Get character set from config if available
         from ..config import config
@@ -243,7 +247,7 @@ class KokoroTTSEngine:
         logger.info(f"Available voices: {self.available_voices}")
 
     def synthesize(self, text: str, voice: str, speed: float = 1.0,
-                  emotion: Optional[str] = None, emotion_strength: float = 1.0) -> AudioSegment:
+                  emotion: str | None = None, emotion_strength: float = 1.0) -> AudioSegment:
         """Synthesize text to audio with PERFORMANCE OPTIMIZATION"""
         if not self.model_loaded:
             raise RuntimeError("TTS engine not properly initialized")
@@ -284,7 +288,7 @@ class KokoroTTSEngine:
             return self._synthesize_core(text, voice, speed, emotion, emotion_strength)
 
     def _synthesize_core(self, text: str, voice: str, speed: float = 1.0,
-                        emotion: Optional[str] = None, emotion_strength: float = 1.0) -> AudioSegment:
+                        emotion: str | None = None, emotion_strength: float = 1.0) -> AudioSegment:
         """Core synthesis method without optimization wrapper"""
         try:
             # Get voice embedding with caching
@@ -441,7 +445,7 @@ class KokoroTTSEngine:
                 raise ValueError(f"Voice data too small: {voice_data.shape}, need at least 256 elements")
 
     def _prepare_model_inputs(self, tokens: np.ndarray, voice_embedding: VoiceEmbedding,
-                            speed: float, emotion: Optional[str], emotion_strength: float) -> Dict[str, np.ndarray]:
+                            speed: float, emotion: str | None, emotion_strength: float) -> dict[str, np.ndarray]:
         """Prepare inputs for the ONNX model"""
         # Get voice embedding data
         voice_data = voice_embedding.embedding_data
@@ -461,7 +465,7 @@ class KokoroTTSEngine:
 
         return inputs
 
-    def _run_inference(self, model_inputs: Dict[str, np.ndarray]) -> np.ndarray:
+    def _run_inference(self, model_inputs: dict[str, np.ndarray]) -> np.ndarray:
         """Run ONNX model inference with comprehensive validation"""
         try:
             # Get input names and shapes from the model
@@ -670,7 +674,7 @@ class KokoroTTSEngine:
         response_format: str = "mp3",
         speed: float = 1.0,
         streaming: bool = True,
-        generation_id: Optional[str] = None
+        generation_id: str | None = None
     ):
         """
         Synthesize audio using progressive/chunked generation
@@ -729,7 +733,7 @@ class KokoroTTSEngine:
                 estimated_duration
             )
 
-    def get_chunked_generation_stats(self) -> Dict[str, Any]:
+    def get_chunked_generation_stats(self) -> dict[str, Any]:
         """Get statistics about chunked generation performance"""
         if not self.performance_monitor:
             return {"error": "Performance monitoring not available"}
@@ -740,7 +744,7 @@ class KokoroTTSEngine:
             "total_metrics": len(self.performance_monitor.metrics_history)
         }
 
-    def get_performance_comparison(self, hours: Optional[float] = None) -> Dict[str, Any]:
+    def get_performance_comparison(self, hours: float | None = None) -> dict[str, Any]:
         """Get performance comparison between generation types"""
         if not self.performance_monitor:
             return {"error": "Performance monitoring not available"}
@@ -778,7 +782,7 @@ class KokoroTTSEngine:
         """Load a voice embedding"""
         return self.voice_manager.get_voice_embedding(voice_name)
 
-    def get_available_voices(self) -> List[str]:
+    def get_available_voices(self) -> list[str]:
         """Get list of available voices"""
         return self.available_voices.copy()
 
@@ -786,7 +790,7 @@ class KokoroTTSEngine:
         """Check if a voice is available"""
         return voice_name in self.available_voices
 
-    def get_engine_info(self) -> Dict[str, Any]:
+    def get_engine_info(self) -> dict[str, Any]:
         """Get engine information"""
         return {
             'model_loaded': self.model_loaded,
@@ -803,11 +807,11 @@ class KokoroTTSEngine:
         """Preload a voice into cache"""
         return self.voice_manager.preload_voice(voice_name)
 
-    def preload_voices(self, voice_names: List[str]) -> Dict[str, bool]:
+    def preload_voices(self, voice_names: list[str]) -> dict[str, bool]:
         """Preload multiple voices into cache"""
         return self.voice_manager.preload_voices(voice_names)
 
-    def get_voice_info(self, voice_name: str) -> Dict[str, Any]:
+    def get_voice_info(self, voice_name: str) -> dict[str, Any]:
         """Get detailed information about a voice"""
         return self.voice_manager.get_voice_info(voice_name)
 
@@ -848,7 +852,7 @@ class KokoroTTSEngine:
         return max(estimated_time, min_time)
 
     def synthesize_with_blended_voice(self, text: str, blend_config: BlendConfig,
-                                    speed: float = 1.0, emotion: Optional[str] = None,
+                                    speed: float = 1.0, emotion: str | None = None,
                                     emotion_strength: float = 1.0) -> AudioSegment:
         """Synthesize text using a blended voice"""
         if not self.model_loaded:
@@ -881,8 +885,8 @@ class KokoroTTSEngine:
             logger.error(f"Blended voice synthesis failed: {e}")
             raise
 
-    def create_voice_blend(self, voices_and_weights: List[Tuple[str, float]],
-                          blend_method: str = "weighted_average") -> Optional[VoiceEmbedding]:
+    def create_voice_blend(self, voices_and_weights: list[tuple[str, float]],
+                          blend_method: str = "weighted_average") -> VoiceEmbedding | None:
         """Create a blended voice from multiple voices"""
         try:
             blend_config = BlendConfig(
@@ -898,12 +902,12 @@ class KokoroTTSEngine:
             logger.error(f"Voice blend creation failed: {e}")
             return None
 
-    def get_blend_presets(self) -> List[str]:
+    def get_blend_presets(self) -> list[str]:
         """Get available voice blend presets"""
         return ["warm_friendly", "professional_calm", "energetic_mix"]
 
     def synthesize_with_preset_blend(self, text: str, preset_name: str,
-                                   speed: float = 1.0, emotion: Optional[str] = None,
+                                   speed: float = 1.0, emotion: str | None = None,
                                    emotion_strength: float = 1.0) -> AudioSegment:
         """Synthesize text using a preset voice blend"""
         blend_config = self.voice_blender.create_preset_blend(preset_name)
@@ -912,7 +916,7 @@ class KokoroTTSEngine:
 
         return self.synthesize_with_blended_voice(text, blend_config, speed, emotion, emotion_strength)
 
-    def synthesize_batch(self, requests: List[Dict[str, Any]], max_workers: int = None) -> List[AudioSegment]:
+    def synthesize_batch(self, requests: list[dict[str, Any]], max_workers: int = None) -> list[AudioSegment]:
         """
         Synthesize multiple TTS requests in parallel for improved throughput
 
@@ -960,7 +964,7 @@ class KokoroTTSEngine:
 
         return results
 
-    def _synthesize_single_request(self, request: Dict[str, Any]) -> AudioSegment:
+    def _synthesize_single_request(self, request: dict[str, Any]) -> AudioSegment:
         """Helper method to synthesize a single request for batch processing"""
         text = request.get('text', '')
         voice = request.get('voice', self.config.default_voice)
@@ -970,8 +974,8 @@ class KokoroTTSEngine:
 
         return self.synthesize(text, voice, speed, emotion, emotion_strength)
 
-    def synthesize_streaming_batch(self, requests: List[Dict[str, Any]],
-                                 chunk_callback=None, max_workers: int = None) -> List[AudioSegment]:
+    def synthesize_streaming_batch(self, requests: list[dict[str, Any]],
+                                 chunk_callback=None, max_workers: int = None) -> list[AudioSegment]:
         """
         Synthesize batch with streaming callback for real-time processing
 

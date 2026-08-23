@@ -4,15 +4,15 @@ External Storage Configuration System
 Set up external storage volumes for models, voices, cache, and logs to enable easier backups and persistence
 """
 
-import os
-import sys
 import json
 import logging
+import os
 import shutil
+import sys
 import time
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, asdict
+from typing import Any
 
 # Add the project root to the path
 project_root = Path(__file__).parent.parent
@@ -31,7 +31,7 @@ class StorageVolume:
     volume_type: str  # models, voices, cache, logs, config
     size_estimate_gb: float
     backup_priority: str  # critical, high, medium, low
-    mount_options: List[str]
+    mount_options: list[str]
     permissions: str
     description: str
 
@@ -40,10 +40,10 @@ class StorageConfiguration:
     """Complete storage configuration"""
     base_storage_path: str
     enable_external_storage: bool
-    volumes: List[StorageVolume]
-    backup_configuration: Dict[str, Any]
-    monitoring_configuration: Dict[str, Any]
-    migration_strategy: Dict[str, Any]
+    volumes: list[StorageVolume]
+    backup_configuration: dict[str, Any]
+    monitoring_configuration: dict[str, Any]
+    migration_strategy: dict[str, Any]
 
 class ExternalStorageConfigurator:
     """External storage configuration system"""
@@ -66,7 +66,7 @@ class ExternalStorageConfigurator:
             "dictionaries": "docs/dictionaries"
         }
 
-    def create_optimal_storage_configuration(self, base_path: Optional[str] = None) -> StorageConfiguration:
+    def create_optimal_storage_configuration(self, base_path: str | None = None) -> StorageConfiguration:
         """Create optimal external storage configuration"""
         logger.info("Creating optimal external storage configuration...")
 
@@ -212,7 +212,7 @@ class ExternalStorageConfigurator:
         logger.info(f"Created storage configuration with {len(volumes)} volumes, total estimated size: {sum(v.size_estimate_gb for v in volumes):.1f}GB")
         return config
 
-    def create_storage_directories(self, config: StorageConfiguration) -> Dict[str, bool]:
+    def create_storage_directories(self, config: StorageConfiguration) -> dict[str, bool]:
         """Create external storage directories"""
         logger.info("Creating external storage directories...")
 
@@ -249,7 +249,7 @@ class ExternalStorageConfigurator:
 
         return results
 
-    def migrate_existing_data(self, config: StorageConfiguration) -> Dict[str, Any]:
+    def migrate_existing_data(self, config: StorageConfiguration) -> dict[str, Any]:
         """Migrate existing data to external storage"""
         logger.info("Migrating existing data to external storage...")
 
@@ -433,7 +433,7 @@ networks:
         logger.info(f"Docker Compose configuration saved to: {compose_file}")
         return compose_config
 
-    def generate_backup_scripts(self, config: StorageConfiguration) -> Dict[str, str]:
+    def generate_backup_scripts(self, config: StorageConfiguration) -> dict[str, str]:
         """Generate backup scripts for different priorities"""
         logger.info("Generating backup scripts...")
 
@@ -464,7 +464,7 @@ networks:
 
         return scripts
 
-    def _create_backup_script(self, volumes: List[StorageVolume], config: StorageConfiguration, priority: str) -> str:
+    def _create_backup_script(self, volumes: list[StorageVolume], config: StorageConfiguration, priority: str) -> str:
         """Create backup script for specific priority volumes"""
         backup_location = config.backup_configuration["backup_location"]
         compression = config.backup_configuration["compression"]
@@ -581,7 +581,7 @@ echo "$(date): Storage monitoring check completed" >> "$LOG_FILE"
         logger.info(f"Storage monitoring script saved: {script_file}")
         return monitoring_script
 
-    def run_comprehensive_storage_setup(self, base_path: Optional[str] = None) -> Dict[str, Any]:
+    def run_comprehensive_storage_setup(self, base_path: str | None = None) -> dict[str, Any]:
         """Run comprehensive external storage setup"""
         logger.info("Starting comprehensive external storage setup...")
 
@@ -626,8 +626,8 @@ echo "$(date): Storage monitoring check completed" >> "$LOG_FILE"
         return setup_results
 
     def _generate_setup_summary(self, config: StorageConfiguration,
-                               directory_results: Dict[str, bool],
-                               migration_results: Dict[str, Any]) -> Dict[str, Any]:
+                               directory_results: dict[str, bool],
+                               migration_results: dict[str, Any]) -> dict[str, Any]:
         """Generate setup summary"""
         successful_dirs = sum(1 for success in directory_results.values() if success)
         successful_migrations = len(migration_results["successful_migrations"])
@@ -646,7 +646,7 @@ echo "$(date): Storage monitoring check completed" >> "$LOG_FILE"
 
         return summary
 
-    def _generate_next_steps(self, config: StorageConfiguration) -> List[str]:
+    def _generate_next_steps(self, config: StorageConfiguration) -> list[str]:
         """Generate next steps for deployment"""
         next_steps = [
             "Review generated docker-compose-external-storage.yml configuration",

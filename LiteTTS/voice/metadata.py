@@ -4,11 +4,11 @@ Voice metadata management and categorization
 """
 
 import json
-from pathlib import Path
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, asdict
-from datetime import datetime
 import logging
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 try:
     from ..models import VoiceMetadata
@@ -44,7 +44,7 @@ class VoiceStats:
     total_requests: int = 0
     total_duration: float = 0.0
     average_request_length: float = 0.0
-    last_used: Optional[datetime] = None
+    last_used: datetime | None = None
     error_count: int = 0
     success_rate: float = 1.0
 
@@ -212,15 +212,15 @@ class VoiceMetadataManager:
             if voice_name not in self.voice_stats:
                 self.voice_stats[voice_name] = VoiceStats()
 
-    def get_voice_metadata(self, voice_name: str) -> Optional[VoiceMetadata]:
+    def get_voice_metadata(self, voice_name: str) -> VoiceMetadata | None:
         """Get metadata for a specific voice"""
         return self.voice_metadata.get(voice_name)
 
-    def get_all_voices(self) -> Dict[str, VoiceMetadata]:
+    def get_all_voices(self) -> dict[str, VoiceMetadata]:
         """Get metadata for all voices"""
         return self.voice_metadata.copy()
 
-    def filter_voices(self, **criteria) -> List[VoiceMetadata]:
+    def filter_voices(self, **criteria) -> list[VoiceMetadata]:
         """Filter voices by criteria"""
         filtered = []
 
@@ -252,18 +252,18 @@ class VoiceMetadataManager:
 
         return filtered
 
-    def get_voices_by_gender(self, gender: str) -> List[VoiceMetadata]:
+    def get_voices_by_gender(self, gender: str) -> list[VoiceMetadata]:
         """Get voices filtered by gender"""
         return self.filter_voices(gender=gender)
 
-    def get_voices_by_quality(self, min_rating: float = 4.0) -> List[VoiceMetadata]:
+    def get_voices_by_quality(self, min_rating: float = 4.0) -> list[VoiceMetadata]:
         """Get voices with quality rating above threshold"""
         return [
             metadata for metadata in self.voice_metadata.values()
             if metadata.quality_rating >= min_rating
         ]
 
-    def get_recommended_voices(self, count: int = 3) -> List[VoiceMetadata]:
+    def get_recommended_voices(self, count: int = 3) -> list[VoiceMetadata]:
         """Get recommended voices based on quality and usage"""
         voices_with_scores = []
 
@@ -311,11 +311,11 @@ class VoiceMetadataManager:
         # Save updated stats
         self.save_metadata()
 
-    def get_voice_stats(self, voice_name: str) -> Optional[VoiceStats]:
+    def get_voice_stats(self, voice_name: str) -> VoiceStats | None:
         """Get usage statistics for a voice"""
         return self.voice_stats.get(voice_name)
 
-    def get_usage_summary(self) -> Dict[str, Any]:
+    def get_usage_summary(self) -> dict[str, Any]:
         """Get overall usage summary"""
         total_requests = sum(stats.total_requests for stats in self.voice_stats.values())
         total_duration = sum(stats.total_duration for stats in self.voice_stats.values())
@@ -368,7 +368,7 @@ class VoiceMetadataManager:
         else:
             logger.warning(f"Voice not found for metadata update: {voice_name}")
 
-    def get_voice_categories(self) -> Dict[str, List[str]]:
+    def get_voice_categories(self) -> dict[str, list[str]]:
         """Get voices organized by categories"""
         categories = {
             'female': [],

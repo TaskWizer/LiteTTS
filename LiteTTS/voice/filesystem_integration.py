@@ -5,20 +5,20 @@ Implements automatic voice directory synchronization, real-time monitoring,
 and enhanced voice library management with search/filter capabilities.
 """
 
-import os
-import time
-import json
 import hashlib
+import json
+import logging
+import sqlite3
 import threading
-from pathlib import Path
-from typing import Dict, List, Any, Optional, Callable
+from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import datetime
-import logging
-from watchdog.observers import Observer
+from pathlib import Path
+from typing import Any
+
 from watchdog.events import FileSystemEventHandler
-import sqlite3
-from concurrent.futures import ThreadPoolExecutor
+from watchdog.observers import Observer
 
 logger = logging.getLogger(__name__)
 
@@ -32,22 +32,22 @@ class VoiceFileInfo:
     modified_at: datetime
     file_hash: str
     is_custom: bool
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    tags: List[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
+    tags: list[str] = field(default_factory=list)
     quality_rating: float = 0.0
     usage_count: int = 0
-    last_used: Optional[datetime] = None
+    last_used: datetime | None = None
 
 @dataclass
 class VoiceSearchFilter:
     """Search and filter criteria for voices"""
-    name_pattern: Optional[str] = None
-    tags: List[str] = field(default_factory=list)
+    name_pattern: str | None = None
+    tags: list[str] = field(default_factory=list)
     min_quality: float = 0.0
     max_quality: float = 5.0
-    is_custom: Optional[bool] = None
-    created_after: Optional[datetime] = None
-    created_before: Optional[datetime] = None
+    is_custom: bool | None = None
+    created_after: datetime | None = None
+    created_before: datetime | None = None
     min_size_mb: float = 0.0
     max_size_mb: float = float('inf')
     sort_by: str = "name"  # "name", "created_at", "quality", "usage_count"
@@ -193,7 +193,7 @@ class VoiceDatabase:
         with sqlite3.connect(self.db_path) as conn:
             conn.execute("DELETE FROM voices WHERE name = ?", (voice_name,))
 
-    def get_voice(self, voice_name: str) -> Optional[VoiceFileInfo]:
+    def get_voice(self, voice_name: str) -> VoiceFileInfo | None:
         """Get voice information by name"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute("SELECT * FROM voices WHERE name = ?", (voice_name,))
@@ -203,7 +203,7 @@ class VoiceDatabase:
                 return self._row_to_voice_info(row)
             return None
 
-    def search_voices(self, filter_criteria: VoiceSearchFilter) -> List[VoiceFileInfo]:
+    def search_voices(self, filter_criteria: VoiceSearchFilter) -> list[VoiceFileInfo]:
         """Search voices with filter criteria"""
         query = "SELECT * FROM voices WHERE 1=1"
         params = []
@@ -292,7 +292,7 @@ class VoiceFileSystemManager:
         self.executor = ThreadPoolExecutor(max_workers=2)
 
         # Callbacks for voice changes
-        self.change_callbacks: List[Callable[[str, str, VoiceFileInfo], None]] = []
+        self.change_callbacks: list[Callable[[str, str, VoiceFileInfo], None]] = []
 
         # Standard voice names (not custom)
         self.standard_voices = {
@@ -391,7 +391,7 @@ class VoiceFileSystemManager:
                 hash_sha256.update(chunk)
         return hash_sha256.hexdigest()
 
-    def _load_voice_metadata(self, voice_name: str) -> Dict[str, Any]:
+    def _load_voice_metadata(self, voice_name: str) -> dict[str, Any]:
         """Load voice metadata from JSON file if available"""
         metadata_file = self.voices_dir / f"{voice_name}_metadata.json"
 
@@ -442,11 +442,11 @@ class VoiceFileSystemManager:
             except Exception as e:
                 logger.error(f"Error in voice change callback: {e}")
 
-    def search_voices(self, filter_criteria: VoiceSearchFilter) -> List[VoiceFileInfo]:
+    def search_voices(self, filter_criteria: VoiceSearchFilter) -> list[VoiceFileInfo]:
         """Search voices with filter criteria"""
         return self.db.search_voices(filter_criteria)
 
-    def get_voice_info(self, voice_name: str) -> Optional[VoiceFileInfo]:
+    def get_voice_info(self, voice_name: str) -> VoiceFileInfo | None:
         """Get information about a specific voice"""
         return self.db.get_voice(voice_name)
 
@@ -458,7 +458,7 @@ class VoiceFileSystemManager:
             voice_info.last_used = datetime.now()
             self.db.upsert_voice(voice_info)
 
-    def get_voice_statistics(self) -> Dict[str, Any]:
+    def get_voice_statistics(self) -> dict[str, Any]:
         """Get voice library statistics"""
         all_voices = self.search_voices(VoiceSearchFilter())
 

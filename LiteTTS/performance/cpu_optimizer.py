@@ -4,12 +4,11 @@ CPU optimization utilities for Kokoro TTS
 Provides CPU affinity, thread management, and performance tuning
 """
 
-import os
 import logging
+import os
 import platform
-import threading
-from typing import List, Optional, Dict, Any
 from dataclasses import dataclass
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +146,7 @@ class CPUOptimizer:
                 supports_avx512=False
             )
 
-    def set_cpu_affinity(self, core_list: Optional[List[int]] = None) -> bool:
+    def set_cpu_affinity(self, core_list: list[int] | None = None) -> bool:
         """
         Set CPU affinity for the current process
         
@@ -181,7 +180,7 @@ class CPUOptimizer:
             logger.error(f"Failed to set CPU affinity: {e}")
             return False
 
-    def _get_optimal_cores(self, aggressive: bool = False) -> List[int]:
+    def _get_optimal_cores(self, aggressive: bool = False) -> list[int]:
         """Get optimal CPU cores for TTS processing"""
         total_cores = self.cpu_info.total_cores
 
@@ -233,7 +232,7 @@ class CPUOptimizer:
             logger.error(f"Failed to restore CPU affinity: {e}")
             return False
 
-    def optimize_environment_variables(self, aggressive: bool = False) -> Dict[str, str]:
+    def optimize_environment_variables(self, aggressive: bool = False) -> dict[str, str]:
         """Get optimized environment variables for current CPU"""
         env_vars = {}
 
@@ -310,7 +309,7 @@ class CPUOptimizer:
 
         return success
 
-    def get_recommended_settings(self, aggressive: bool = False) -> Dict[str, Any]:
+    def get_recommended_settings(self, aggressive: bool = False) -> dict[str, Any]:
         """Get recommended settings for current CPU"""
         total_cores = self.cpu_info.total_cores
 
@@ -388,7 +387,7 @@ class CPUOptimizer:
                     "concurrent_requests": 2
                 }
 
-    def get_thermal_status(self) -> Dict[str, Any]:
+    def get_thermal_status(self) -> dict[str, Any]:
         """Get CPU thermal status and temperature information"""
         thermal_info = {
             "temperature": 0.0,
@@ -479,7 +478,7 @@ class CPUOptimizer:
         """
         return self.cpu_info
 
-    def get_aggressive_performance_config(self) -> Dict[str, Any]:
+    def get_aggressive_performance_config(self) -> dict[str, Any]:
         """
         Get aggressive performance configuration for maximum CPU utilization.
 

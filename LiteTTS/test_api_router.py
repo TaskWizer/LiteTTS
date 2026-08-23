@@ -3,8 +3,8 @@
 Test script for the enhanced voice cloning API router
 """
 
-import sys
 import logging
+import sys
 from pathlib import Path
 
 # Add LiteTTS to path

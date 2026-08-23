@@ -4,11 +4,9 @@ Directory Structure Reorganization Script
 Reorganizes the repository structure for production deployment
 """
 
-import os
-import shutil
 import logging
+import shutil
 from pathlib import Path
-from typing import List, Dict, Set
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

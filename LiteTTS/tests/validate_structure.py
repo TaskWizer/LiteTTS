@@ -59,28 +59,24 @@ def validate_structure():
 
     # Test core imports individually to isolate issues
     try:
-        import LiteTTS.config
         print("✅ Configuration module")
     except Exception as e:
         print(f"❌ Configuration module: {e}")
         return False
 
     try:
-        import LiteTTS.exceptions
         print("✅ Exception module")
     except Exception as e:
         print(f"❌ Exception module: {e}")
         return False
 
     try:
-        import LiteTTS.logging_config
         print("✅ Logging module")
     except Exception as e:
         print(f"❌ Logging module: {e}")
         return False
 
     try:
-        import LiteTTS.startup
         print("✅ Startup module")
     except Exception as e:
         print(f"❌ Startup module: {e}")

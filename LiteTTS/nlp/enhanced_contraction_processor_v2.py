@@ -3,9 +3,8 @@ Enhanced Contraction Processor V2
 Research-based contraction handling with context awareness and phonetic guidance
 """
 
-import re
 import logging
-from typing import Dict, List, Tuple, Optional, NamedTuple
+import re
 from dataclasses import dataclass
 from enum import Enum
 
@@ -26,13 +25,13 @@ class ContractionRule:
     """Enhanced contraction rule with context awareness and phonetic guidance"""
     contraction: str
     primary_expansion: str
-    alternative_expansion: Optional[str] = None
-    context_patterns: Optional[List[Tuple[str, str]]] = None  # (pattern, expansion)
-    phonetic_hint: Optional[str] = None
-    stress_pattern: Optional[str] = None
+    alternative_expansion: str | None = None
+    context_patterns: list[tuple[str, str]] | None = None  # (pattern, expansion)
+    phonetic_hint: str | None = None
+    stress_pattern: str | None = None
     priority: ContractionPriority = ContractionPriority.MEDIUM
-    syllable_boundary: Optional[str] = None
-    notes: Optional[str] = None
+    syllable_boundary: str | None = None
+    notes: str | None = None
 
 
 class EnhancedContractionProcessorV2:
@@ -46,7 +45,7 @@ class EnhancedContractionProcessorV2:
     - Comprehensive logging and debugging support
     """
 
-    def __init__(self, config: Optional[Dict] = None):
+    def __init__(self, config: dict | None = None):
         """Initialize the enhanced contraction processor"""
         self.config = config or {}
         self.debug_mode = self.config.get('debug', False)
@@ -385,7 +384,7 @@ class EnhancedContractionProcessorV2:
         else:
             return replacement.lower()
 
-    def analyze_contractions(self, text: str) -> Dict[str, any]:
+    def analyze_contractions(self, text: str) -> dict[str, any]:
         """
         Analyze text for contraction processing opportunities and issues
 
@@ -447,7 +446,7 @@ class EnhancedContractionProcessorV2:
 
         return analysis
 
-    def get_phonetic_guidance(self, contraction: str) -> Optional[Dict[str, str]]:
+    def get_phonetic_guidance(self, contraction: str) -> dict[str, str] | None:
         """
         Get phonetic guidance for a specific contraction
 
@@ -471,7 +470,7 @@ class EnhancedContractionProcessorV2:
             }
         return None
 
-    def validate_processing(self, original_text: str, processed_text: str) -> Dict[str, any]:
+    def validate_processing(self, original_text: str, processed_text: str) -> dict[str, any]:
         """
         Validate contraction processing results
 
@@ -536,7 +535,7 @@ class EnhancedContractionProcessorV2:
 
         return validation
 
-    def get_statistics(self) -> Dict[str, any]:
+    def get_statistics(self) -> dict[str, any]:
         """Get processor statistics and configuration info"""
         priority_counts = {}
         for priority in ContractionPriority:

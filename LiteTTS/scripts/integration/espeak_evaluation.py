@@ -4,15 +4,15 @@ eSpeak Library Integration Evaluation
 Research and evaluate potential eSpeak library integration for enhanced pronunciation
 """
 
-import os
-import sys
-import time
 import logging
 import subprocess
-import psutil
-from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
+import sys
+import time
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+import psutil
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent
@@ -66,7 +66,7 @@ class ESpeakEvaluator:
 
         logger.info("eSpeak Evaluator initialized")
 
-    def _get_test_texts(self) -> List[str]:
+    def _get_test_texts(self) -> list[str]:
         """Get test texts for pronunciation evaluation"""
         return [
             "Hello world, this is a test.",
@@ -81,7 +81,7 @@ class ESpeakEvaluator:
             "Technical terms: API, HTTP, JSON, XML."
         ]
 
-    def check_espeak_availability(self) -> Tuple[bool, str]:
+    def check_espeak_availability(self) -> tuple[bool, str]:
         """Check if eSpeak is available on the system"""
         try:
             result = subprocess.run(['espeak', '--version'],
@@ -118,7 +118,7 @@ class ESpeakEvaluator:
         except Exception:
             return 8.5  # Default estimate
 
-    def measure_baseline_performance(self) -> Dict[str, float]:
+    def measure_baseline_performance(self) -> dict[str, float]:
         """Measure baseline performance without eSpeak"""
         logger.info("Measuring baseline performance...")
 
@@ -162,7 +162,7 @@ class ESpeakEvaluator:
 
         return self.baseline_metrics
 
-    def measure_espeak_performance(self) -> Dict[str, float]:
+    def measure_espeak_performance(self) -> dict[str, float]:
         """Measure performance with eSpeak integration"""
         logger.info("Measuring eSpeak integration performance...")
 
@@ -226,7 +226,7 @@ class ESpeakEvaluator:
         except Exception:
             return 0.0
 
-    def evaluate_pronunciation_quality(self) -> Dict[str, float]:
+    def evaluate_pronunciation_quality(self) -> dict[str, float]:
         """Evaluate pronunciation quality improvements"""
         logger.info("Evaluating pronunciation quality...")
 
@@ -257,7 +257,7 @@ class ESpeakEvaluator:
             'phoneme_accuracy': espeak_avg
         }
 
-    def assess_compatibility(self, rtf_impact: float, memory_impact: float) -> Dict[str, Any]:
+    def assess_compatibility(self, rtf_impact: float, memory_impact: float) -> dict[str, Any]:
         """Assess compatibility with current performance targets"""
 
         # Current targets: RTF < 0.25, Memory < 150MB

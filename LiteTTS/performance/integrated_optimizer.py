@@ -4,22 +4,20 @@ Integrated Performance Optimizer for LiteTTS
 Combines memory optimization, CPU optimization, and performance monitoring
 """
 
-import asyncio
 import gc
 import logging
 import os
-import psutil
 import threading
 import time
 from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
-import numpy as np
+from typing import Any
 
-from .memory_optimization import MemoryOptimizer, MemoryOptimizationConfig
+import psutil
+
 from .cpu_optimizer import CPUOptimizer
-from .system_optimizer import SystemOptimizer
+from .memory_optimization import MemoryOptimizer
 from .monitor import PerformanceMonitor
+from .system_optimizer import SystemOptimizer
 
 logger = logging.getLogger(__name__)
 
@@ -47,14 +45,14 @@ class OptimizationResults:
     optimized_rtf: float = 0.0
     rtf_improvement_percent: float = 0.0
     optimization_time: float = 0.0
-    errors: List[str] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
 
 class IntegratedPerformanceOptimizer:
     """
     Integrated performance optimizer that combines all optimization strategies
     """
 
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
+    def __init__(self, config: dict[str, Any] | None = None):
         self.config = config or {}
 
         # Initialize optimizers
@@ -247,7 +245,7 @@ class IntegratedPerformanceOptimizer:
         except Exception as e:
             logger.error(f"ONNX memory configuration failed: {e}")
 
-    def _apply_performance_config(self, config: Dict[str, Any]):
+    def _apply_performance_config(self, config: dict[str, Any]):
         """Apply performance configuration"""
         try:
             # Set ONNX Runtime thread configuration
@@ -270,7 +268,7 @@ class IntegratedPerformanceOptimizer:
         except Exception as e:
             logger.error(f"Performance configuration failed: {e}")
 
-    def _apply_cache_config(self, config: Dict[str, Any]):
+    def _apply_cache_config(self, config: dict[str, Any]):
         """Apply cache configuration"""
         try:
             # Set cache environment variables
@@ -308,7 +306,7 @@ class IntegratedPerformanceOptimizer:
             self.monitoring_active = True
             logger.info("Performance monitoring started")
 
-    def get_optimization_status(self) -> Dict[str, Any]:
+    def get_optimization_status(self) -> dict[str, Any]:
         """Get current optimization status"""
         return {
             "optimization_applied": self.optimization_applied,
@@ -322,7 +320,7 @@ class IntegratedPerformanceOptimizer:
             "performance_stats": self.performance_monitor.get_stats() if self.monitoring_active else {}
         }
 
-    def validate_performance_targets(self) -> Dict[str, bool]:
+    def validate_performance_targets(self) -> dict[str, bool]:
         """Validate that performance targets are being met"""
         current_memory = self._get_current_memory_usage()
 
@@ -340,7 +338,7 @@ class IntegratedPerformanceOptimizer:
             "current_cache_hit_rate": cache_hit_rate
         }
 
-    def optimize_for_request(self, text: str = None, voice: str = None, **kwargs) -> Dict[str, Any]:
+    def optimize_for_request(self, text: str = None, voice: str = None, **kwargs) -> dict[str, Any]:
         """
         Apply request-level optimizations for TTS processing.
 
@@ -446,7 +444,7 @@ class IntegratedPerformanceOptimizer:
             }
 
 # Global optimizer instance
-_global_optimizer: Optional[IntegratedPerformanceOptimizer] = None
+_global_optimizer: IntegratedPerformanceOptimizer | None = None
 
 def get_global_optimizer() -> IntegratedPerformanceOptimizer:
     """Get or create global optimizer instance"""
@@ -455,7 +453,7 @@ def get_global_optimizer() -> IntegratedPerformanceOptimizer:
         _global_optimizer = IntegratedPerformanceOptimizer()
     return _global_optimizer
 
-def optimize_performance(config: Optional[Dict[str, Any]] = None) -> OptimizationResults:
+def optimize_performance(config: dict[str, Any] | None = None) -> OptimizationResults:
     """Convenience function to run performance optimization"""
     optimizer = IntegratedPerformanceOptimizer(config)
     return optimizer.run_comprehensive_optimization()

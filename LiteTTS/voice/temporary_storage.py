@@ -6,14 +6,13 @@ This module manages temporary voice storage to prevent automatic addition
 of test/preview voices to the permanent voice library without explicit user consent.
 """
 
-import logging
 import json
+import logging
 import shutil
-from pathlib import Path
-from typing import Dict, List, Optional
-from datetime import datetime, timedelta
 import threading
 import time
+from datetime import datetime, timedelta
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +35,7 @@ class TemporaryVoiceManager:
 
         # Session tracking
         self.session_file = self.temp_dir / "sessions.json"
-        self.sessions: Dict[str, Dict] = {}
+        self.sessions: dict[str, dict] = {}
         self.lock = threading.Lock()
 
         # Configuration
@@ -86,8 +85,8 @@ class TemporaryVoiceManager:
         logger.info("Started temporary voice cleanup thread")
 
     def create_temporary_voice(self, voice_name: str, voice_data: bytes,
-                             session_id: Optional[str] = None,
-                             ttl_hours: Optional[int] = None) -> str:
+                             session_id: str | None = None,
+                             ttl_hours: int | None = None) -> str:
         """
         Create a temporary voice file
         
@@ -132,7 +131,7 @@ class TemporaryVoiceManager:
             logger.info(f"Created temporary voice: {voice_name} (session: {session_id}, expires: {expires_at})")
             return str(temp_voice_file)
 
-    def save_voice_permanently(self, voice_name: str, session_id: Optional[str] = None) -> bool:
+    def save_voice_permanently(self, voice_name: str, session_id: str | None = None) -> bool:
         """
         Move a temporary voice to permanent storage
         
@@ -191,7 +190,7 @@ class TemporaryVoiceManager:
                 logger.error(f"Failed to save voice permanently: {voice_name}: {e}")
                 return False
 
-    def delete_temporary_voice(self, voice_name: str, session_id: Optional[str] = None) -> bool:
+    def delete_temporary_voice(self, voice_name: str, session_id: str | None = None) -> bool:
         """
         Delete a temporary voice
         
@@ -294,7 +293,7 @@ class TemporaryVoiceManager:
 
             return cleaned_count
 
-    def list_temporary_voices(self, session_id: Optional[str] = None) -> Dict[str, Dict]:
+    def list_temporary_voices(self, session_id: str | None = None) -> dict[str, dict]:
         """
         List temporary voices
         
@@ -319,7 +318,7 @@ class TemporaryVoiceManager:
 
             return result
 
-    def get_session_info(self, session_id: str) -> Optional[Dict]:
+    def get_session_info(self, session_id: str) -> dict | None:
         """Get information about a specific session"""
         with self.lock:
             return self.sessions.get(session_id)

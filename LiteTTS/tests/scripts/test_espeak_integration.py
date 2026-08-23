@@ -9,7 +9,12 @@ from pathlib import Path
 # Add the project root to the path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from LiteTTS.nlp.unified_text_processor import UnifiedTextProcessor, ProcessingOptions, ProcessingMode
+from LiteTTS.nlp.unified_text_processor import (
+    ProcessingMode,
+    ProcessingOptions,
+    UnifiedTextProcessor,
+)
+
 
 def test_question_mark_fix():
     """Test the question mark fix in the unified processor"""

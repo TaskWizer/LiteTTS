@@ -6,9 +6,9 @@ Addresses RTF optimization, error reduction, and cache improvements
 
 import sys
 import time
-import requests
-import json
 from pathlib import Path
+
+import requests
 
 # Add the parent directory to the path so we can import LiteTTS
 sys.path.insert(0, str(Path(__file__).parent.parent))

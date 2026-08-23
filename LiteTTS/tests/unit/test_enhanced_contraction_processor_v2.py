@@ -4,6 +4,7 @@ Unit tests for enhanced contraction processor v2
 """
 
 import pytest
+
 from LiteTTS.nlp.enhanced_contraction_processor_v2 import EnhancedContractionProcessorV2
 
 

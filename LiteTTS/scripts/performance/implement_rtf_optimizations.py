@@ -6,12 +6,10 @@ Implements specific optimizations to improve Real-Time Factor (RTF) performance
 based on the audit results and best practices.
 """
 
-import os
-import json
-import shutil
 import time
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Any
+
 
 class RTFOptimizer:
     """Implements RTF optimizations for the TTS system"""
@@ -20,7 +18,7 @@ class RTFOptimizer:
         self.project_root = Path(project_root)
         self.optimizations_applied = []
 
-    def apply_all_optimizations(self) -> Dict[str, Any]:
+    def apply_all_optimizations(self) -> dict[str, Any]:
         """Apply all RTF optimizations"""
 
         print("🚀 Implementing RTF Optimizations")

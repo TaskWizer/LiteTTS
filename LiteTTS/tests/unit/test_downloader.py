@@ -3,9 +3,9 @@
 Unit tests for downloader module
 """
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock
 from pathlib import Path
+from unittest.mock import MagicMock, Mock, patch
+
 from LiteTTS.downloader import download_file, ensure_model_files, get_available_voices
 
 

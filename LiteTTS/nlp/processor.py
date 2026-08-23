@@ -3,32 +3,31 @@
 Main NLP processor that combines all text processing components
 """
 
-from typing import Dict, Any
 import logging
-
-from .text_normalizer import TextNormalizer
-from .homograph_resolver import HomographResolver
-from .phonetic_processor import PhoneticProcessor
-from .spell_processor import SpellProcessor
-from .prosody_analyzer import ProsodyAnalyzer
-from .advanced_abbreviation_handler import AdvancedAbbreviationHandler
-from .emotion_detector import EmotionDetector, EmotionProfile
-from .context_adapter import ContextAdapter, SpeechContext
-from .naturalness_enhancer import NaturalnessEnhancer, NaturalnessProfile
-from ..text.phonemizer_preprocessor import phonemizer_preprocessor
-from .unified_pronunciation_fix import unified_pronunciation_fix
-from .audio_quality_enhancer import audio_quality_enhancer, AudioQualityProfile
-from .interjection_processor import InterjectionProcessor
-from typing import Dict, Any, Optional, List
 from dataclasses import dataclass, field
+from typing import Any
+
+from ..text.phonemizer_preprocessor import phonemizer_preprocessor
+from .advanced_abbreviation_handler import AdvancedAbbreviationHandler
+from .audio_quality_enhancer import audio_quality_enhancer
+from .context_adapter import ContextAdapter, SpeechContext
+from .emotion_detector import EmotionDetector, EmotionProfile
+from .homograph_resolver import HomographResolver
+from .naturalness_enhancer import NaturalnessEnhancer, NaturalnessProfile
+from .phonetic_processor import PhoneticProcessor
+from .prosody_analyzer import ProsodyAnalyzer
+from .spell_processor import SpellProcessor
+from .text_normalizer import TextNormalizer
+from .unified_pronunciation_fix import unified_pronunciation_fix
+
 
 # Local model definitions for NLP processing
 @dataclass
 class ProsodyInfo:
     """Prosody analysis information"""
-    pauses: List[Dict[str, Any]] = field(default_factory=list)
-    emphasis: List[Dict[str, Any]] = field(default_factory=list)
-    intonation: List[Dict[str, Any]] = field(default_factory=list)
+    pauses: list[dict[str, Any]] = field(default_factory=list)
+    emphasis: list[dict[str, Any]] = field(default_factory=list)
+    intonation: list[dict[str, Any]] = field(default_factory=list)
 
 @dataclass
 class NormalizationOptions:
@@ -43,7 +42,7 @@ logger = logging.getLogger(__name__)
 class NLPProcessor:
     """Main NLP processor that orchestrates all text processing"""
 
-    def __init__(self, enable_advanced_features: bool = True, config: Optional[Dict] = None):
+    def __init__(self, enable_advanced_features: bool = True, config: dict | None = None):
         """Initialize NLP processor with all components
 
         Args:
@@ -158,12 +157,12 @@ class NLPProcessor:
         """Spell out a word letter by letter"""
         return self.spell_processor.spell_word_direct(word)
 
-    def add_homograph(self, word: str, pronunciations: Dict[str, str]):
+    def add_homograph(self, word: str, pronunciations: dict[str, str]):
         """Add a custom homograph"""
         self.homograph_resolver.add_homograph(word, pronunciations)
 
-    def process_text_enhanced(self, text: str, context_metadata: Optional[Dict[str, Any]] = None,
-                            options: NormalizationOptions = None) -> Dict[str, Any]:
+    def process_text_enhanced(self, text: str, context_metadata: dict[str, Any] | None = None,
+                            options: NormalizationOptions = None) -> dict[str, Any]:
         """Enhanced text processing with human-likeness features
 
         Args:
@@ -220,7 +219,7 @@ class NLPProcessor:
             "naturalness_profile": naturalness_profile
         }
 
-    def detect_emotion(self, text: str, conversation_history: Optional[List] = None) -> Optional[EmotionProfile]:
+    def detect_emotion(self, text: str, conversation_history: list | None = None) -> EmotionProfile | None:
         """Detect emotional context in text
 
         Args:
@@ -235,7 +234,7 @@ class NLPProcessor:
 
         return self.emotion_detector.detect_emotional_context(text, conversation_history)
 
-    def adapt_for_context(self, text: str, metadata: Optional[Dict[str, Any]] = None) -> Optional[SpeechContext]:
+    def adapt_for_context(self, text: str, metadata: dict[str, Any] | None = None) -> SpeechContext | None:
         """Analyze and adapt for speech context
 
         Args:
@@ -250,7 +249,7 @@ class NLPProcessor:
 
         return self.context_adapter.analyze_context(text, metadata)
 
-    def enhance_naturalness(self, text: str, context: Optional[Dict[str, Any]] = None) -> Optional[NaturalnessProfile]:
+    def enhance_naturalness(self, text: str, context: dict[str, Any] | None = None) -> NaturalnessProfile | None:
         """Apply naturalness enhancements to text
 
         Args:
@@ -265,7 +264,7 @@ class NLPProcessor:
 
         return self.naturalness_enhancer.enhance_naturalness(text, context)
 
-    def get_processing_stats(self) -> Dict[str, Any]:
+    def get_processing_stats(self) -> dict[str, Any]:
         """Get processing statistics"""
         stats = {
             'homographs_loaded': len(self.homograph_resolver.list_homographs()),

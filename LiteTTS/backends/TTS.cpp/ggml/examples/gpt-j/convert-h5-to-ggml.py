@@ -17,13 +17,13 @@
 # and vocabulary.
 #
 
-import sys
-import struct
 import json
-import torch
-import numpy as np
+import struct
+import sys
 
+import numpy as np
 from transformers import GPTJForCausalLM
+
 
 # ref: https://github.com/openai/gpt-2/blob/master/src/encoder.py
 def bytes_to_unicode():

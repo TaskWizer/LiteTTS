@@ -5,8 +5,8 @@ Centralized management of ONNX session options to prevent duplicate configuratio
 """
 
 import logging
-from typing import Dict, Any, Optional, Set
 import threading
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +15,7 @@ class ONNXConfigManager:
 
     def __init__(self):
         self._lock = threading.Lock()
-        self._applied_configs: Dict[str, Set[str]] = {}
+        self._applied_configs: dict[str, set[str]] = {}
 
     def create_session_options(self, session_id: str = "default") -> Any:
         """Create ONNX session options with safe configuration"""
@@ -49,7 +49,7 @@ class ONNXConfigManager:
             logger.debug(f"Created ONNX session options for session '{session_id}'")
             return session_options
 
-    def _safe_add_config_entry(self, session_options: Any, applied: Set[str], key: str, value: str):
+    def _safe_add_config_entry(self, session_options: Any, applied: set[str], key: str, value: str):
         """Safely add configuration entry without duplicates"""
         if key not in applied:
             try:
@@ -61,7 +61,7 @@ class ONNXConfigManager:
                 applied.add(key)  # Mark as attempted to avoid retries
 
     def apply_cpu_optimizations(self, session_options: Any, session_id: str = "default",
-                               cpu_info: Optional[Dict] = None):
+                               cpu_info: dict | None = None):
         """Apply CPU-specific optimizations"""
         with self._lock:
             if session_id not in self._applied_configs:
@@ -77,7 +77,7 @@ class ONNXConfigManager:
                     self._safe_add_config_entry(session_options, applied, "session.use_avx2", "1")
 
     def apply_memory_optimizations(self, session_options: Any, session_id: str = "default",
-                                  memory_limit_mb: Optional[int] = None):
+                                  memory_limit_mb: int | None = None):
         """Apply memory-specific optimizations"""
         with self._lock:
             if session_id not in self._applied_configs:
@@ -93,8 +93,8 @@ class ONNXConfigManager:
             self._safe_add_config_entry(session_options, applied, "session.arena_extend_strategy", "kSameAsRequested")
 
     def apply_performance_optimizations(self, session_options: Any, session_id: str = "default",
-                                      inter_op_threads: Optional[int] = None,
-                                      intra_op_threads: Optional[int] = None):
+                                      inter_op_threads: int | None = None,
+                                      intra_op_threads: int | None = None):
         """Apply performance-specific optimizations"""
         if inter_op_threads:
             session_options.inter_op_num_threads = inter_op_threads
@@ -127,10 +127,10 @@ def get_onnx_config_manager() -> ONNXConfigManager:
     return _onnx_config_manager
 
 def create_optimized_session_options(session_id: str = "default",
-                                   cpu_info: Optional[Dict] = None,
-                                   memory_limit_mb: Optional[int] = None,
-                                   inter_op_threads: Optional[int] = None,
-                                   intra_op_threads: Optional[int] = None) -> Any:
+                                   cpu_info: dict | None = None,
+                                   memory_limit_mb: int | None = None,
+                                   inter_op_threads: int | None = None,
+                                   intra_op_threads: int | None = None) -> Any:
     """Create fully optimized ONNX session options"""
     manager = get_onnx_config_manager()
     session_options = manager.create_session_options(session_id)

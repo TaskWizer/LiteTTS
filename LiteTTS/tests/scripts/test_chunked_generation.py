@@ -4,14 +4,12 @@ Comprehensive Test Suite for Chunked Audio Generation
 Tests chunked generation with various text lengths and validates streaming performance
 """
 
-import requests
 import json
-import time
-import sys
-import os
-import asyncio
-from pathlib import Path
 import logging
+import sys
+import time
+
+import requests
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

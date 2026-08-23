@@ -4,11 +4,11 @@ Text Chunking System for Progressive Audio Generation
 Implements intelligent text segmentation for real-time TTS streaming
 """
 
-import re
 import logging
-from typing import List, Optional, Dict, Any
+import re
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -28,8 +28,8 @@ class TextChunk:
     end_position: int
     is_sentence_boundary: bool
     is_paragraph_boundary: bool
-    prosody_context: Optional[str] = None
-    overlap_text: Optional[str] = None
+    prosody_context: str | None = None
+    overlap_text: str | None = None
 
 @dataclass
 class ChunkingConfig:
@@ -60,7 +60,7 @@ class TextChunker:
 
         logger.info(f"TextChunker initialized with strategy: {config.strategy.value}")
 
-    def chunk_text(self, text: str) -> List[TextChunk]:
+    def chunk_text(self, text: str) -> list[TextChunk]:
         """
         Main method to chunk text based on configuration
         
@@ -116,7 +116,7 @@ class TextChunker:
 
         return text
 
-    def _chunk_by_sentences(self, text: str) -> List[TextChunk]:
+    def _chunk_by_sentences(self, text: str) -> list[TextChunk]:
         """Chunk text by sentence boundaries"""
         chunks = []
         sentences = self.sentence_endings.split(text)
@@ -166,7 +166,7 @@ class TextChunker:
 
         return chunks
 
-    def _chunk_by_phrases(self, text: str) -> List[TextChunk]:
+    def _chunk_by_phrases(self, text: str) -> list[TextChunk]:
         """Chunk text by phrase boundaries (commas, semicolons, etc.)"""
         chunks = []
         phrases = self.phrase_boundaries.split(text)
@@ -215,7 +215,7 @@ class TextChunker:
 
         return chunks
 
-    def _chunk_by_fixed_size(self, text: str) -> List[TextChunk]:
+    def _chunk_by_fixed_size(self, text: str) -> list[TextChunk]:
         """Chunk text by fixed character size"""
         chunks = []
         chunk_id = 0
@@ -242,7 +242,7 @@ class TextChunker:
 
         return chunks
 
-    def _chunk_adaptively(self, text: str) -> List[TextChunk]:
+    def _chunk_adaptively(self, text: str) -> list[TextChunk]:
         """Adaptive chunking that combines multiple strategies"""
         # Start with sentence-based chunking
         sentence_chunks = self._chunk_by_sentences(text)
@@ -270,7 +270,7 @@ class TextChunker:
 
         return refined_chunks
 
-    def _add_overlap(self, chunks: List[TextChunk], original_text: str) -> List[TextChunk]:
+    def _add_overlap(self, chunks: list[TextChunk], original_text: str) -> list[TextChunk]:
         """Add overlap between chunks for prosody continuity"""
         if len(chunks) <= 1:
             return chunks
@@ -288,7 +288,7 @@ class TextChunker:
 
         return chunks
 
-    def _add_prosody_context(self, chunks: List[TextChunk], original_text: str) -> List[TextChunk]:
+    def _add_prosody_context(self, chunks: list[TextChunk], original_text: str) -> list[TextChunk]:
         """Add prosody context information to chunks"""
         for chunk in chunks:
             # Determine prosody context based on surrounding text
@@ -334,7 +334,7 @@ class TextChunker:
 
         return estimated_count
 
-    def get_chunk_info(self, chunks: List[TextChunk]) -> Dict[str, Any]:
+    def get_chunk_info(self, chunks: list[TextChunk]) -> dict[str, Any]:
         """Get information about the chunking results"""
         if not chunks:
             return {}

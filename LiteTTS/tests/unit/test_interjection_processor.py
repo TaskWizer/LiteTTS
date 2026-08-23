@@ -4,7 +4,12 @@ Unit tests for interjection processor
 """
 
 import pytest
-from LiteTTS.nlp.interjection_processor import InterjectionProcessor, process_interjections, analyze_interjections
+
+from LiteTTS.nlp.interjection_processor import (
+    InterjectionProcessor,
+    analyze_interjections,
+    process_interjections,
+)
 
 
 class TestInterjectionProcessor:

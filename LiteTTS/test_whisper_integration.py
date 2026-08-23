@@ -4,9 +4,9 @@ Test script for Whisper integration in LiteTTS
 Tests the OptimizedWhisperProcessor and configuration system
 """
 
-import sys
-import os
 import logging
+import os
+import sys
 from pathlib import Path
 
 # Add LiteTTS to path

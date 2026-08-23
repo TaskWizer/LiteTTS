@@ -4,14 +4,15 @@ Edge Case Tests for Kokoro ONNX TTS API
 Tests boundary conditions, unusual inputs, and corner cases
 """
 
-import pytest
-import json
-import time
-from pathlib import Path
-from fastapi.testclient import TestClient
 
 # Import the app for testing
 import sys
+import time
+from pathlib import Path
+
+import pytest
+from fastapi.testclient import TestClient
+
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from app import app

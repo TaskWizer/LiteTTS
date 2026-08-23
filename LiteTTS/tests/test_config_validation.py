@@ -6,6 +6,7 @@ Test script to validate configuration loading and values
 import json
 from pathlib import Path
 
+
 def test_config_validation():
     """Test configuration validation"""
     print("🔧 Testing Configuration Validation")

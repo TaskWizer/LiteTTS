@@ -3,7 +3,6 @@
 Unit tests for config hot reload module
 """
 
-import pytest
 from unittest.mock import Mock
 
 

@@ -6,12 +6,11 @@ Generates a comprehensive markdown page showcasing all available voices
 with audio samples and organized categorization.
 """
 
-import requests
-import json
 import os
 import time
-from typing import Dict, List, Any
-from pathlib import Path
+from typing import Any
+
+import requests
 
 # Voice categorization based on naming patterns
 VOICE_CATEGORIES = {
@@ -110,7 +109,7 @@ SAMPLE_TEXTS = {
     "multilingual": "Hello world! This is a demonstration of high-quality text-to-speech synthesis."
 }
 
-def get_available_voices() -> List[str]:
+def get_available_voices() -> list[str]:
     """Get list of available voices from API"""
     try:
         response = requests.get("http://localhost:8354/v1/voices", timeout=10)
@@ -124,7 +123,7 @@ def get_available_voices() -> List[str]:
         print(f"❌ Error getting voices: {e}")
         return []
 
-def categorize_voices(voices: List[str]) -> Dict[str, Any]:
+def categorize_voices(voices: list[str]) -> dict[str, Any]:
     """Categorize voices by their prefixes"""
     categorized = {}
 
@@ -260,7 +259,7 @@ def generate_voice_showcase(output_dir: str = "docs/voices") -> bool:
 
     return True
 
-def generate_markdown(categorized_voices: Dict[str, Any], output_dir: str) -> str:
+def generate_markdown(categorized_voices: dict[str, Any], output_dir: str) -> str:
     """Generate markdown content for voice showcase"""
 
     total_voices = sum(len(cat["voices"]) for cat in categorized_voices.values())

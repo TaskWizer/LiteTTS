@@ -3,8 +3,12 @@
 Unit tests for batch optimizer module
 """
 
-import pytest
-from LiteTTS.performance.batch_optimizer import BatchRequest, BatchConfig, BatchMetrics, DynamicBatchOptimizer
+from LiteTTS.performance.batch_optimizer import (
+    BatchConfig,
+    BatchMetrics,
+    BatchRequest,
+    DynamicBatchOptimizer,
+)
 
 
 class TestBatchRequest:

@@ -4,13 +4,11 @@ Final System Validation for Kokoro TTS API
 Comprehensive end-to-end testing including performance validation
 """
 
-import requests
-import json
-import time
-import sys
-import os
-from pathlib import Path
 import logging
+import sys
+import time
+
+import requests
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -264,8 +262,8 @@ def test_concurrent_requests():
     """Test concurrent request handling"""
     logger.info("🧪 Testing concurrent request handling...")
 
-    import threading
     import queue
+    import threading
 
     results_queue = queue.Queue()
 

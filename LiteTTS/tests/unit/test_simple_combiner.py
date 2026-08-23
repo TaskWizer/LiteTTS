@@ -3,11 +3,12 @@
 Unit tests for simple combiner module
 """
 
-import pytest
 import warnings
-import numpy as np
 from pathlib import Path
-from unittest.mock import patch, Mock
+from unittest.mock import Mock
+
+import numpy as np
+
 from LiteTTS.voice.simple_combiner import SimplifiedVoiceCombiner
 
 

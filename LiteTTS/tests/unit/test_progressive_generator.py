@@ -3,15 +3,16 @@
 Unit tests for progressive audio generator
 """
 
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock
+
 from LiteTTS.audio.progressive_generator import (
-    ProgressiveAudioGenerator,
-    ProgressiveGenerationConfig,
+    ChunkingConfig,
+    ChunkingStrategy,
     ChunkResult,
     GenerationMode,
-    ChunkingConfig,
-    ChunkingStrategy
+    ProgressiveAudioGenerator,
+    ProgressiveGenerationConfig,
 )
 
 

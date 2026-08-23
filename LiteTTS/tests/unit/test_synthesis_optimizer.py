@@ -3,11 +3,7 @@
 Unit tests for synthesis optimizer module
 """
 
-import pytest
-from LiteTTS.performance.synthesis_optimizer import (
-    SynthesisPerformanceConfig,
-    SynthesisOptimizer
-)
+from LiteTTS.performance.synthesis_optimizer import SynthesisOptimizer, SynthesisPerformanceConfig
 
 
 class TestSynthesisPerformanceConfig:

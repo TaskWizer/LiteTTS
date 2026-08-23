@@ -4,7 +4,8 @@ Unit tests for ticker symbol processor
 """
 
 import pytest
-from LiteTTS.nlp.ticker_symbol_processor import TickerSymbolProcessor, TickerProcessingResult
+
+from LiteTTS.nlp.ticker_symbol_processor import TickerProcessingResult, TickerSymbolProcessor
 
 
 class TestTickerSymbolProcessor:

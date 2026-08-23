@@ -3,8 +3,9 @@
 Unit tests for debug router
 """
 
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
 
 
 class TestDebugRouter:

@@ -3,19 +3,20 @@
 Main TTS synthesizer that orchestrates all TTS components
 """
 
-from typing import Dict, List, Optional, Any, Callable
 import logging
 import time
+from collections.abc import Callable
+from typing import Any
 
-from .engine import KokoroTTSEngine
-from .emotion_controller import EmotionController
-from .chunk_processor import ChunkProcessor
+from ..audio.processor import AudioProcessor
+from ..audio.time_stretcher import StretchQuality, TimeStretchConfig, TimeStretcher
 from ..models import AudioSegment, TTSConfiguration, TTSRequest
 from ..nlp.processor import NLPProcessor
-from ..nlp.unified_text_processor import UnifiedTextProcessor, ProcessingOptions, ProcessingMode
-from ..audio.processor import AudioProcessor
-from ..audio.time_stretcher import TimeStretcher, TimeStretchConfig, StretchQuality
+from ..nlp.unified_text_processor import ProcessingMode, ProcessingOptions, UnifiedTextProcessor
 from ..ssml.processor import SSMLProcessor
+from .chunk_processor import ChunkProcessor
+from .emotion_controller import EmotionController
+from .engine import KokoroTTSEngine
 
 logger = logging.getLogger(__name__)
 
@@ -122,11 +123,11 @@ class TTSSynthesizer:
         """Initialize progressive audio generator for streaming synthesis"""
         try:
             from ..audio.progressive_generator import (
+                ChunkingConfig,
+                ChunkingStrategy,
+                GenerationMode,
                 ProgressiveAudioGenerator,
                 ProgressiveGenerationConfig,
-                GenerationMode,
-                ChunkingConfig,
-                ChunkingStrategy
             )
 
             # Configure chunking
@@ -202,7 +203,7 @@ class TTSSynthesizer:
             return TimeStretcher(TimeStretchConfig(enabled=False))
 
     def synthesize(self, request: TTSRequest,
-                  progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None) -> AudioSegment:
+                  progress_callback: Callable[[dict[str, Any]], None] | None = None) -> AudioSegment:
         """Main synthesis method"""
         logger.info(f"Starting synthesis: '{request.input[:50]}...' with voice '{request.voice}'")
 
@@ -283,7 +284,7 @@ class TTSSynthesizer:
                 active_time_stretcher = self.time_stretcher
                 if request.time_stretching_rate is not None or request.time_stretching_quality is not None:
                     # Create temporary config with API overrides
-                    from ..audio.time_stretcher import TimeStretchConfig, StretchQuality
+                    from ..audio.time_stretcher import StretchQuality, TimeStretchConfig
                     temp_config = TimeStretchConfig(
                         enabled=True,
                         compress_playback_rate=request.time_stretching_rate or self.time_stretcher.config.compress_playback_rate,
@@ -457,29 +458,29 @@ class TTSSynthesizer:
             logger.error(f"Streaming synthesis failed: {e}")
             raise
 
-    def get_available_voices(self) -> List[str]:
+    def get_available_voices(self) -> list[str]:
         """Get list of available voices"""
         return self.engine.get_available_voices()
 
-    def get_time_stretching_metrics(self) -> Dict[str, Any]:
+    def get_time_stretching_metrics(self) -> dict[str, Any]:
         """Get time-stretching performance metrics"""
         return self.time_stretcher.get_metrics_summary()
 
-    def benchmark_time_stretching_rates(self, test_text: str, rates: List[int]) -> Dict[int, Any]:
+    def benchmark_time_stretching_rates(self, test_text: str, rates: list[int]) -> dict[int, Any]:
         """Benchmark different time-stretching rates"""
         # Generate test audio
         test_audio = self.synthesize_simple(test_text)
         return self.time_stretcher.benchmark_rates(test_audio, rates)
 
-    def get_supported_emotions(self) -> List[str]:
+    def get_supported_emotions(self) -> list[str]:
         """Get list of supported emotions"""
         return self.emotion_controller.get_supported_emotions()
 
-    def get_voice_info(self, voice_name: str) -> Dict[str, Any]:
+    def get_voice_info(self, voice_name: str) -> dict[str, Any]:
         """Get detailed information about a voice"""
         return self.engine.get_voice_info(voice_name)
 
-    def get_emotion_info(self, emotion: str) -> Optional[Dict[str, Any]]:
+    def get_emotion_info(self, emotion: str) -> dict[str, Any] | None:
         """Get information about an emotion"""
         return self.emotion_controller.get_emotion_info(emotion)
 
@@ -497,7 +498,7 @@ class TTSSynthesizer:
 
         return base_estimate + chunk_estimate
 
-    def validate_request(self, request: TTSRequest) -> List[str]:
+    def validate_request(self, request: TTSRequest) -> list[str]:
         """Validate synthesis request"""
         errors = []
 
@@ -526,11 +527,11 @@ class TTSSynthesizer:
         """Preload a voice for faster synthesis"""
         return self.engine.preload_voice(voice_name)
 
-    def preload_voices(self, voice_names: List[str]) -> Dict[str, bool]:
+    def preload_voices(self, voice_names: list[str]) -> dict[str, bool]:
         """Preload multiple voices"""
         return self.engine.preload_voices(voice_names)
 
-    def get_system_status(self) -> Dict[str, Any]:
+    def get_system_status(self) -> dict[str, Any]:
         """Get comprehensive system status"""
         engine_info = self.engine.get_engine_info()
         voice_system_status = self.engine.voice_manager.get_system_status()
@@ -593,7 +594,7 @@ class TTSSynthesizer:
 
     def create_synthesis_profile(self, name: str, voice: str, speed: float = 1.0,
                                emotion: str = None, emotion_strength: float = 1.0,
-                               volume_multiplier: float = 1.0) -> Dict[str, Any]:
+                               volume_multiplier: float = 1.0) -> dict[str, Any]:
         """Create a reusable synthesis profile"""
         profile = {
             'name': name,
@@ -624,7 +625,7 @@ class TTSSynthesizer:
 
         return profile
 
-    def synthesize_with_profile(self, text: str, profile: Dict[str, Any]) -> AudioSegment:
+    def synthesize_with_profile(self, text: str, profile: dict[str, Any]) -> AudioSegment:
         """Synthesize using a predefined profile"""
         request = TTSRequest(
             input=text,
@@ -639,8 +640,8 @@ class TTSSynthesizer:
 
         return self.synthesize(request)
 
-    def batch_synthesize(self, texts: List[str], voice: str,
-                        progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None) -> List[AudioSegment]:
+    def batch_synthesize(self, texts: list[str], voice: str,
+                        progress_callback: Callable[[dict[str, Any]], None] | None = None) -> list[AudioSegment]:
         """Synthesize multiple texts in batch"""
         results = []
         total_texts = len(texts)
@@ -682,7 +683,7 @@ class TTSSynthesizer:
 
         logger.info("TTS synthesizer cleanup completed")
 
-    def get_synthesis_stats(self) -> Dict[str, Any]:
+    def get_synthesis_stats(self) -> dict[str, Any]:
         """Get synthesis statistics"""
         voice_stats = self.engine.voice_manager.metadata_manager.get_usage_summary()
         cache_stats = self.engine.voice_manager.cache.get_cache_stats()

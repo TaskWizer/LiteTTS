@@ -10,10 +10,10 @@ import json
 import logging
 import time
 import uuid
-from typing import Dict, List, Set, Any, Optional, Callable
+from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import datetime
 from enum import Enum
+from typing import Any
 
 try:
     from fastapi import WebSocket, WebSocketDisconnect
@@ -47,17 +47,17 @@ class ClientInfo:
     connected_at: float
     last_heartbeat: float
     client_type: str = "dashboard"
-    user_agent: Optional[str] = None
-    ip_address: Optional[str] = None
+    user_agent: str | None = None
+    ip_address: str | None = None
 
 
 @dataclass
 class WebSocketMessage:
     """Structured WebSocket message"""
     type: MessageType
-    data: Dict[str, Any]
+    data: dict[str, Any]
     timestamp: float
-    client_id: Optional[str] = None
+    client_id: str | None = None
 
     def to_json(self) -> str:
         """Convert message to JSON string"""
@@ -88,16 +88,16 @@ class WebSocketManager:
         if not FASTAPI_AVAILABLE:
             raise ImportError("FastAPI not available. Install with: pip install fastapi")
 
-        self.clients: Dict[str, ClientInfo] = {}
-        self.message_handlers: Dict[MessageType, List[Callable]] = {}
+        self.clients: dict[str, ClientInfo] = {}
+        self.message_handlers: dict[MessageType, list[Callable]] = {}
         self.heartbeat_interval = heartbeat_interval
         self.cleanup_interval = cleanup_interval
 
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
         # Background tasks
-        self._heartbeat_task: Optional[asyncio.Task] = None
-        self._cleanup_task: Optional[asyncio.Task] = None
+        self._heartbeat_task: asyncio.Task | None = None
+        self._cleanup_task: asyncio.Task | None = None
         self._running = False
 
         # Statistics
@@ -264,7 +264,7 @@ class WebSocketManager:
             self.stats["errors"] += 1
             return False
 
-    async def broadcast(self, message: WebSocketMessage, client_type: Optional[str] = None) -> int:
+    async def broadcast(self, message: WebSocketMessage, client_type: str | None = None) -> int:
         """
         Broadcast message to all connected clients.
         
@@ -398,7 +398,7 @@ class WebSocketManager:
         for client_id in client_ids:
             await self.disconnect(client_id, "Server shutdown")
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get WebSocket manager statistics."""
         current_time = time.time()
         uptime = current_time - self.stats["start_time"]
@@ -418,7 +418,7 @@ class WebSocketManager:
             }
         }
 
-    def get_client_count(self, client_type: Optional[str] = None) -> int:
+    def get_client_count(self, client_type: str | None = None) -> int:
         """Get count of connected clients, optionally filtered by type."""
         if client_type:
             return len([c for c in self.clients.values() if c.client_type == client_type])

@@ -4,22 +4,21 @@ Comprehensive Whisper Alternatives Performance Analysis Runner
 Executes the full performance analysis suite for edge hardware deployment
 """
 
-import os
-import sys
-import asyncio
-import logging
 import argparse
+import asyncio
 import json
-from pathlib import Path
+import logging
+import sys
 from datetime import datetime
-from typing import Dict, Any
+from pathlib import Path
+from typing import Any
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from LiteTTS.benchmarks.whisper_alternatives_analysis import WhisperAlternativesAnalyzer
-from LiteTTS.voice.enhanced_cloning import EnhancedVoiceCloner, EnhancedVoiceCloneConfig
-from LiteTTS.voice.filesystem_integration import VoiceFileSystemManager, VoiceSearchFilter
+from LiteTTS.voice.enhanced_cloning import EnhancedVoiceCloneConfig, EnhancedVoiceCloner
+from LiteTTS.voice.filesystem_integration import VoiceFileSystemManager
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +37,7 @@ class ComprehensiveAnalysisRunner:
         # Analysis results
         self.results = {}
 
-    async def run_full_analysis(self) -> Dict[str, Any]:
+    async def run_full_analysis(self) -> dict[str, Any]:
         """Run the complete analysis suite"""
         logger.info("Starting comprehensive Whisper alternatives analysis")
 
@@ -89,7 +88,7 @@ class ComprehensiveAnalysisRunner:
             logger.error(f"Analysis failed: {e}")
             raise
 
-    async def _run_whisper_analysis(self) -> Dict[str, Any]:
+    async def _run_whisper_analysis(self) -> dict[str, Any]:
         """Run Whisper alternatives performance analysis"""
         try:
             results = await self.whisper_analyzer.run_comprehensive_analysis()
@@ -120,7 +119,7 @@ class ComprehensiveAnalysisRunner:
                 'recommendations': ['Install required dependencies', 'Check hardware compatibility']
             }
 
-    async def _test_enhanced_cloning(self) -> Dict[str, Any]:
+    async def _test_enhanced_cloning(self) -> dict[str, Any]:
         """Test enhanced voice cloning capabilities"""
         try:
             # Test configuration
@@ -161,7 +160,7 @@ class ComprehensiveAnalysisRunner:
                 'fallback_options': ['Use original 30s limit', 'Manual audio segmentation']
             }
 
-    async def _test_filesystem_integration(self) -> Dict[str, Any]:
+    async def _test_filesystem_integration(self) -> dict[str, Any]:
         """Test file system integration capabilities"""
         try:
             # Start monitoring
@@ -198,7 +197,7 @@ class ComprehensiveAnalysisRunner:
                 'impact': 'Manual voice management required'
             }
 
-    async def _assess_integration(self) -> Dict[str, Any]:
+    async def _assess_integration(self) -> dict[str, Any]:
         """Assess integration with existing LiteTTS system"""
         try:
             # Check current system compatibility
@@ -230,7 +229,7 @@ class ComprehensiveAnalysisRunner:
                 'recommendation': 'Manual integration assessment required'
             }
 
-    def _generate_final_report(self) -> Dict[str, Any]:
+    def _generate_final_report(self) -> dict[str, Any]:
         """Generate comprehensive final report"""
         return {
             'executive_summary': self._create_executive_summary(),
@@ -243,7 +242,7 @@ class ComprehensiveAnalysisRunner:
             'detailed_results': self.results
         }
 
-    def _create_executive_summary(self) -> Dict[str, Any]:
+    def _create_executive_summary(self) -> dict[str, Any]:
         """Create executive summary with key findings and recommendations"""
         whisper_results = self.results.get('whisper_analysis', {})
 
@@ -276,7 +275,7 @@ class ComprehensiveAnalysisRunner:
             ]
         }
 
-    def _create_performance_matrix(self) -> Dict[str, Any]:
+    def _create_performance_matrix(self) -> dict[str, Any]:
         """Create detailed performance comparison matrix"""
         whisper_results = self.results.get('whisper_analysis', {})
 
@@ -301,7 +300,7 @@ class ComprehensiveAnalysisRunner:
 
         return matrix
 
-    def _create_implementation_roadmap(self) -> Dict[str, Any]:
+    def _create_implementation_roadmap(self) -> dict[str, Any]:
         """Create 8-week implementation roadmap"""
         return {
             'total_duration_weeks': 8,
@@ -409,7 +408,7 @@ class ComprehensiveAnalysisRunner:
             ]
         }
 
-    def _save_final_report(self, report: Dict[str, Any]):
+    def _save_final_report(self, report: dict[str, Any]):
         """Save the final comprehensive report"""
         # Save main report
         report_file = self.output_dir / "comprehensive_analysis_report.json"

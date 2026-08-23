@@ -4,18 +4,17 @@ CPU Affinity and Multi-core Optimization System
 Configure CPU affinity pinning across P-cores and E-cores, optimize ONNX Runtime for multi-core inference
 """
 
-import os
-import sys
 import json
 import logging
-import psutil
-import time
-import threading
-import subprocess
-from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, asdict
+import os
 import platform
+import sys
+import time
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import Any
+
+import psutil
 
 # Add the project root to the path
 project_root = Path(__file__).parent.parent
@@ -31,20 +30,20 @@ class CPUTopology:
     total_cores: int
     physical_cores: int
     logical_cores: int
-    p_cores: List[int]
-    e_cores: List[int]
-    numa_nodes: List[int]
-    cache_levels: Dict[str, Any]
-    frequency_info: Dict[str, float]
+    p_cores: list[int]
+    e_cores: list[int]
+    numa_nodes: list[int]
+    cache_levels: dict[str, Any]
+    frequency_info: dict[str, float]
     architecture: str
 
 @dataclass
 class AffinityConfiguration:
     """CPU affinity configuration"""
-    onnx_cores: List[int]
-    system_cores: List[int]
-    io_cores: List[int]
-    monitoring_cores: List[int]
+    onnx_cores: list[int]
+    system_cores: list[int]
+    io_cores: list[int]
+    monitoring_cores: list[int]
     thread_pool_size: int
     inter_op_threads: int
     intra_op_threads: int
@@ -125,7 +124,7 @@ class CPUAffinityOptimizer:
         logger.info(f"Detected topology: {total_cores} total cores, {len(p_cores)} P-cores, {len(e_cores)} E-cores")
         return topology
 
-    def _detect_core_types_linux(self) -> Tuple[List[int], List[int]]:
+    def _detect_core_types_linux(self) -> tuple[list[int], list[int]]:
         """Detect P-cores and E-cores on Linux systems"""
         p_cores = []
         e_cores = []
@@ -161,7 +160,7 @@ class CPUAffinityOptimizer:
 
         return p_cores, e_cores
 
-    def _detect_cache_info(self) -> Dict[str, Any]:
+    def _detect_cache_info(self) -> dict[str, Any]:
         """Detect CPU cache information"""
         cache_info = {
             "l1_data": "unknown",
@@ -186,7 +185,7 @@ class CPUAffinityOptimizer:
 
         return cache_info
 
-    def _get_frequency_info(self) -> Dict[str, float]:
+    def _get_frequency_info(self) -> dict[str, float]:
         """Get CPU frequency information"""
         freq_info = {
             "current": 0.0,
@@ -299,7 +298,7 @@ class CPUAffinityOptimizer:
             logger.error(f"Failed to apply CPU affinity: {e}")
             return False
 
-    def optimize_onnx_runtime_config(self, config: AffinityConfiguration) -> Dict[str, Any]:
+    def optimize_onnx_runtime_config(self, config: AffinityConfiguration) -> dict[str, Any]:
         """Generate optimized ONNX Runtime configuration"""
         logger.info("Generating optimized ONNX Runtime configuration...")
 
@@ -333,7 +332,7 @@ class CPUAffinityOptimizer:
 
         return onnx_config
 
-    def benchmark_affinity_performance(self, config: AffinityConfiguration) -> Dict[str, Any]:
+    def benchmark_affinity_performance(self, config: AffinityConfiguration) -> dict[str, Any]:
         """Benchmark performance with affinity configuration"""
         logger.info("Benchmarking affinity performance...")
 
@@ -419,7 +418,7 @@ class CPUAffinityOptimizer:
         logger.info(f"Configuration saved to: {config_file}")
         return str(config_file)
 
-    def run_comprehensive_optimization(self) -> Dict[str, Any]:
+    def run_comprehensive_optimization(self) -> dict[str, Any]:
         """Run comprehensive CPU affinity and multi-core optimization"""
         logger.info("Starting comprehensive CPU optimization...")
 
@@ -466,8 +465,8 @@ class CPUAffinityOptimizer:
         return results
 
     def _generate_optimization_recommendations(self, config: AffinityConfiguration,
-                                             baseline: Dict[str, Any],
-                                             optimized: Dict[str, Any]) -> List[str]:
+                                             baseline: dict[str, Any],
+                                             optimized: dict[str, Any]) -> list[str]:
         """Generate optimization recommendations"""
         recommendations = []
 

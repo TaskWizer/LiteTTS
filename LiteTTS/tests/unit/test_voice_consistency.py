@@ -4,7 +4,8 @@ Unit tests for voice consistency manager
 """
 
 import pytest
-from LiteTTS.audio.voice_consistency import VoiceConsistencyManager, ConsistencyLevel
+
+from LiteTTS.audio.voice_consistency import ConsistencyLevel, VoiceConsistencyManager
 
 
 class TestVoiceConsistencyManager:

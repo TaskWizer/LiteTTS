@@ -4,14 +4,12 @@ Intelligent pre-caching system for TTS optimization
 Implements cache warming during idle time for near-instant response
 """
 
-import time
+import logging
 import threading
-from typing import Dict, List, Optional, Set, Any
+import time
 from dataclasses import dataclass, field
 from datetime import datetime
-import logging
-from pathlib import Path
-import json
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -19,25 +17,25 @@ logger = logging.getLogger(__name__)
 class CacheWarmingConfig:
     """Configuration for cache warming system - OPTIMIZED FOR FAST STARTUP"""
     # Primary voice for fastest startup (single voice only)
-    primary_voices: List[str] = field(default_factory=lambda: ["af_heart"])
+    primary_voices: list[str] = field(default_factory=lambda: ["af_heart"])
 
     # CRITICAL: Only essential words for instant response (reduced from 13 to 6)
-    instant_words: List[str] = field(default_factory=lambda: [
+    instant_words: list[str] = field(default_factory=lambda: [
         "Hi", "Hello", "Yes", "No", "Okay", "Thanks"
     ])
 
     # CRITICAL: Only most common phrases (reduced from 14 to 4)
-    common_phrases: List[str] = field(default_factory=lambda: [
+    common_phrases: list[str] = field(default_factory=lambda: [
         "Thank you", "How are you?", "Have a good day", "See you later"
     ])
 
     # DEFERRED: Load these during idle time, not startup (moved to background)
-    conversation_starters: List[str] = field(default_factory=lambda: [
+    conversation_starters: list[str] = field(default_factory=lambda: [
         "How can I help you?", "What can I do for you?", "I'm here to help"
     ])
 
     # DEFERRED: Load these during idle time, not startup (moved to background)
-    system_responses: List[str] = field(default_factory=lambda: [
+    system_responses: list[str] = field(default_factory=lambda: [
         "I understand", "Got it", "That makes sense"
     ])
 
@@ -78,8 +76,8 @@ class IntelligentPreloader:
         # State tracking
         self.is_warming = False
         self.last_request_time = datetime.now()
-        self.warming_queue: List[WarmingTask] = []
-        self.warmed_cache: Set[str] = set()
+        self.warming_queue: list[WarmingTask] = []
+        self.warmed_cache: set[str] = set()
         self.warming_stats = {
             'total_warmed': 0,
             'cache_hits_from_warming': 0,
@@ -88,13 +86,13 @@ class IntelligentPreloader:
         }
 
         # Threading
-        self.warming_thread: Optional[threading.Thread] = None
+        self.warming_thread: threading.Thread | None = None
         self.stop_warming = threading.Event()
         self.warming_lock = threading.RLock()
 
         # Performance tracking
-        self.phrase_usage_stats: Dict[str, int] = {}
-        self.voice_usage_stats: Dict[str, int] = {}
+        self.phrase_usage_stats: dict[str, int] = {}
+        self.voice_usage_stats: dict[str, int] = {}
 
         logger.info("Intelligent preloader initialized")
 
@@ -264,7 +262,7 @@ class IntelligentPreloader:
         with self.warming_lock:
             return len(self.warming_queue) > 0
 
-    def _get_next_warming_batch(self) -> List[WarmingTask]:
+    def _get_next_warming_batch(self) -> list[WarmingTask]:
         """Get the next batch of warming tasks"""
         with self.warming_lock:
             if not self.warming_queue:
@@ -277,7 +275,7 @@ class IntelligentPreloader:
 
             return batch
 
-    def _warm_batch(self, tasks: List[WarmingTask]):
+    def _warm_batch(self, tasks: list[WarmingTask]):
         """Warm a batch of cache entries with PARALLEL PROCESSING"""
         if not tasks:
             return
@@ -305,10 +303,9 @@ class IntelligentPreloader:
         finally:
             self.is_warming = False
 
-    def _warm_batch_parallel(self, tasks: List[WarmingTask], timeout: float = None) -> int:
+    def _warm_batch_parallel(self, tasks: list[WarmingTask], timeout: float = None) -> int:
         """Warm batch using parallel processing for faster startup"""
         import concurrent.futures
-        import threading
 
         successful_warmings = 0
         start_time = time.time()
@@ -353,7 +350,7 @@ class IntelligentPreloader:
 
         return successful_warmings
 
-    def _warm_batch_sequential(self, tasks: List[WarmingTask], timeout: float = None) -> int:
+    def _warm_batch_sequential(self, tasks: list[WarmingTask], timeout: float = None) -> int:
         """Warm batch sequentially (fallback method)"""
         successful_warmings = 0
         start_time = time.time()
@@ -451,7 +448,7 @@ class IntelligentPreloader:
         key_data = f"{text}|{voice}|{speed}|{format}"
         return hashlib.md5(key_data.encode()).hexdigest()
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get preloader statistics"""
         with self.warming_lock:
             return {

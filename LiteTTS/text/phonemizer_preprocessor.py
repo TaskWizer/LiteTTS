@@ -4,12 +4,11 @@ Advanced text preprocessor specifically designed to prevent phonemizer issues
 This module addresses the "words count mismatch" warnings that cause empty audio generation
 """
 
-import re
-import unicodedata
 import html
 import json
 import logging
-from typing import List, Dict, Tuple
+import re
+import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -28,9 +27,9 @@ class PreprocessingResult:
     """Result of text preprocessing"""
     processed_text: str
     original_text: str
-    changes_made: List[str]
+    changes_made: list[str]
     confidence_score: float  # 0.0 to 1.0, higher means more likely to work with phonemizer
-    warnings: List[str]
+    warnings: list[str]
 
 class PhonemizationPreprocessor:
     """
@@ -44,7 +43,7 @@ class PhonemizationPreprocessor:
     5. Unicode normalization issues
     """
 
-    def __init__(self, config: Dict = None):
+    def __init__(self, config: dict = None):
         self.config = config or {}
         self.contractions_map = self._build_contractions_map()
         self.problematic_contractions = self._build_problematic_contractions()
@@ -125,7 +124,7 @@ class PhonemizationPreprocessor:
 
         logger.debug("Regex patterns compiled for performance optimization")
 
-    def _build_contractions_map(self) -> Dict[str, str]:
+    def _build_contractions_map(self) -> dict[str, str]:
         """Build comprehensive contractions mapping from external config file"""
         try:
             # Try to load from external config file first
@@ -177,7 +176,7 @@ class PhonemizationPreprocessor:
             "'m": " am", "'s": " is", "n't": " not"
         }
 
-    def _build_problematic_contractions(self) -> Dict[str, str]:
+    def _build_problematic_contractions(self) -> dict[str, str]:
         """
         Build a mapping of contractions that are known to cause phonemizer issues
 
@@ -198,7 +197,7 @@ class PhonemizationPreprocessor:
             # natural speech quality. Only add specific full contractions that cause issues.
         }
 
-    def _build_number_words_map(self) -> Dict[str, str]:
+    def _build_number_words_map(self) -> dict[str, str]:
         """Build number to words mapping from external config file"""
         try:
             # Try to load from external config file first
@@ -229,7 +228,7 @@ class PhonemizationPreprocessor:
             '80': 'eighty', '90': 'ninety', '100': 'one hundred', '1000': 'one thousand'
         }
 
-    def _build_symbol_words_map(self) -> Dict[str, str]:
+    def _build_symbol_words_map(self) -> dict[str, str]:
         """Build symbol to words mapping from external config file"""
         try:
             # Try to load from external config file first
@@ -267,7 +266,7 @@ class PhonemizationPreprocessor:
             '’': '',  # ' Right single quotation mark
         }
 
-    def _build_problematic_patterns(self) -> List[Tuple[str, str, str]]:
+    def _build_problematic_patterns(self) -> list[tuple[str, str, str]]:
         """
         Build list of problematic patterns that cause phonemizer issues
 
@@ -428,7 +427,7 @@ class PhonemizationPreprocessor:
 
         return False
 
-    def _expand_contractions(self, text: str) -> Tuple[str, List[str]]:
+    def _expand_contractions(self, text: str) -> tuple[str, list[str]]:
         """
         Process contractions using enhanced contraction processor or fallback to legacy method
 
@@ -511,7 +510,7 @@ class PhonemizationPreprocessor:
 
         return text, changes
 
-    def _expand_contractions_conservative(self, text: str) -> Tuple[str, List[str]]:
+    def _expand_contractions_conservative(self, text: str) -> tuple[str, list[str]]:
         """
         Conservative contraction expansion that preserves word count
         Only expands contractions that are known to cause phonemizer failures
@@ -536,7 +535,7 @@ class PhonemizationPreprocessor:
 
         return text, changes
 
-    def _convert_numbers_conservative(self, text: str) -> Tuple[str, List[str]]:
+    def _convert_numbers_conservative(self, text: str) -> tuple[str, list[str]]:
         """
         Ultra-conservative number conversion that prioritizes word count preservation
         Only converts numbers in very specific cases where phonemizer consistently fails
@@ -630,7 +629,7 @@ class PhonemizationPreprocessor:
 
         return text, changes
 
-    def _convert_symbols_conservative(self, text: str) -> Tuple[str, List[str]]:
+    def _convert_symbols_conservative(self, text: str) -> tuple[str, list[str]]:
         """
         Conservative symbol conversion that preserves word count
         Only converts symbols that are known to cause phonemizer failures
@@ -669,7 +668,7 @@ class PhonemizationPreprocessor:
 
         return text, changes
 
-    def _fix_problematic_patterns_conservative(self, text: str) -> Tuple[str, List[str]]:
+    def _fix_problematic_patterns_conservative(self, text: str) -> tuple[str, list[str]]:
         """
         Conservative pattern fixing that preserves word count
         Only fixes patterns that are known to cause phonemizer failures
@@ -722,7 +721,7 @@ class PhonemizationPreprocessor:
 
         return text, changes
 
-    def _fix_tech_compounds(self, text: str) -> Tuple[str, List[str]]:
+    def _fix_tech_compounds(self, text: str) -> tuple[str, list[str]]:
         """
         Fix compound tech terms that would otherwise be mangled by symbol replacement.
         This MUST run before _convert_symbols_conservative which converts # to "hash".
@@ -796,7 +795,7 @@ class PhonemizationPreprocessor:
 
         return text, changes
 
-    def _fix_fractions_and_symbols(self, text: str) -> Tuple[str, List[str]]:
+    def _fix_fractions_and_symbols(self, text: str) -> tuple[str, list[str]]:
         """
         Fix fractions and special symbols that get mangled by unicode normalization.
         Must run BEFORE Step 2 (Unicode normalization).
@@ -1190,7 +1189,7 @@ class PhonemizationPreprocessor:
 
         return text, changes
 
-    def _filter_emojis(self, text: str) -> Tuple[str, List[str]]:
+    def _filter_emojis(self, text: str) -> tuple[str, list[str]]:
         """
         Filter emojis from text to prevent verbalization
         Uses Unicode ranges to detect and remove emoji characters
@@ -1229,7 +1228,7 @@ class PhonemizationPreprocessor:
 
         return text, changes
 
-    def _handle_quote_characters(self, text: str) -> Tuple[str, List[str]]:
+    def _handle_quote_characters(self, text: str) -> tuple[str, list[str]]:
         """
         Handle quote characters to prevent "in quat" pronunciation
 
@@ -1320,7 +1319,7 @@ class PhonemizationPreprocessor:
 
         return text, changes
 
-    def _decode_html_entities(self, text: str) -> Tuple[str, List[str]]:
+    def _decode_html_entities(self, text: str) -> tuple[str, list[str]]:
         """
         Decode HTML entities to their actual characters
 
@@ -1368,7 +1367,7 @@ class PhonemizationPreprocessor:
 
         return text, changes
 
-    def _convert_numbers_to_words(self, text: str, aggressive: bool = False) -> Tuple[str, List[str]]:
+    def _convert_numbers_to_words(self, text: str, aggressive: bool = False) -> tuple[str, list[str]]:
         """Convert numbers to words with proper comma-separated number handling"""
         changes = []
 
@@ -1491,7 +1490,7 @@ class PhonemizationPreprocessor:
         # ranges are explicitly handled above. Kept for defensive programming.
         return str(number)  # pragma: no cover
 
-    def _convert_symbols_to_words(self, text: str) -> Tuple[str, List[str]]:
+    def _convert_symbols_to_words(self, text: str) -> tuple[str, list[str]]:
         """
         Convert symbols to words, but be smart about HTML entities
 
@@ -1527,7 +1526,7 @@ class PhonemizationPreprocessor:
 
         return text, changes
 
-    def _fix_problematic_patterns(self, text: str) -> Tuple[str, List[str]]:
+    def _fix_problematic_patterns(self, text: str) -> tuple[str, list[str]]:
         """Fix patterns known to cause phonemizer issues"""
         changes = []
 
@@ -1582,7 +1581,7 @@ class PhonemizationPreprocessor:
 
         return max(0.0, min(1.0, score))
 
-    def _detect_potential_issues(self, text: str) -> List[str]:
+    def _detect_potential_issues(self, text: str) -> list[str]:
         """Detect potential issues that might still cause problems with enhanced edge case detection"""
         warnings = []
 

@@ -4,13 +4,13 @@ Validate RTF Performance Improvements
 Tests the optimized system to ensure RTF < 0.25 target is achieved
 """
 
-import time
-import requests
-import statistics
 import logging
-from typing import List, Dict, Any
+import statistics
+import time
 from dataclasses import dataclass
-from pathlib import Path
+from typing import Any
+
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -111,7 +111,7 @@ class RTFPerformanceValidator:
                 error_message=str(e)
             )
 
-    def run_performance_tests(self) -> Dict[str, Any]:
+    def run_performance_tests(self) -> dict[str, Any]:
         """Run comprehensive RTF performance tests"""
         print("🎯 Running RTF Performance Validation")
         print("=" * 50)
@@ -145,7 +145,7 @@ class RTFPerformanceValidator:
 
         return self.analyze_results(all_results)
 
-    def analyze_results(self, results: List[RTFTestResult]) -> Dict[str, Any]:
+    def analyze_results(self, results: list[RTFTestResult]) -> dict[str, Any]:
         """Analyze test results and generate report"""
         successful_results = [r for r in results if r.success]
         failed_results = [r for r in results if not r.success]
@@ -214,7 +214,7 @@ class RTFPerformanceValidator:
 
         return analysis
 
-    def print_report(self, analysis: Dict[str, Any]):
+    def print_report(self, analysis: dict[str, Any]):
         """Print detailed performance report"""
         print("📊 Performance Analysis Report")
         print("=" * 50)

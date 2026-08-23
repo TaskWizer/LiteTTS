@@ -3,8 +3,9 @@
 Unit tests for audio segment
 """
 
-import pytest
 import numpy as np
+import pytest
+
 from LiteTTS.audio.audio_segment import AudioSegment
 
 

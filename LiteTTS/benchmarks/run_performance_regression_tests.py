@@ -4,8 +4,8 @@ Performance Regression Test Runner
 Simple script to run performance regression tests and generate reports
 """
 
-import sys
 import logging
+import sys
 from pathlib import Path
 
 # Add project root to path

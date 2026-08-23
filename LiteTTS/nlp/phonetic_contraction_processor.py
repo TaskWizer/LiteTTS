@@ -5,10 +5,9 @@ Handles contraction pronunciation issues with proper phonetic mapping
 Fixes issues like wasn't→wAHz-uhnt, I'll→ill, you'll→yaw-wl, etc.
 """
 
-import re
-from typing import Dict, List, Tuple, Optional
-from dataclasses import dataclass
 import logging
+import re
+from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +23,7 @@ class ContractionFix:
 class PhoneticContractionProcessor:
     """Advanced contraction processor with phonetic awareness"""
 
-    def __init__(self, config: Dict = None):
+    def __init__(self, config: dict = None):
         self.config = config or {}
         self.contraction_fixes = self._load_contraction_fixes()
         self.phonetic_mappings = self._load_phonetic_mappings()
@@ -45,7 +44,7 @@ class PhoneticContractionProcessor:
 
         return True
 
-    def _load_contraction_fixes(self) -> Dict[str, ContractionFix]:
+    def _load_contraction_fixes(self) -> dict[str, ContractionFix]:
         """Load comprehensive contraction fixes with phonetic mappings"""
         return {
             # Critical pronunciation fixes from user feedback
@@ -309,7 +308,7 @@ class PhoneticContractionProcessor:
             ),
         }
 
-    def _load_phonetic_mappings(self) -> Dict[str, str]:
+    def _load_phonetic_mappings(self) -> dict[str, str]:
         """Load IPA to readable phonetic mappings"""
         return {
             # Vowels
@@ -327,7 +326,7 @@ class PhoneticContractionProcessor:
             'tʃ': 'ch', 'dʒ': 'j'
         }
 
-    def _load_context_patterns(self) -> Dict[str, List[str]]:
+    def _load_context_patterns(self) -> dict[str, list[str]]:
         """Load context patterns for context-sensitive contractions"""
         return {
             # Patterns that suggest 'd = "had" vs "would"
@@ -493,7 +492,7 @@ class PhoneticContractionProcessor:
 
         return fix.expanded
 
-    def analyze_contractions(self, text: str) -> Dict[str, any]:
+    def analyze_contractions(self, text: str) -> dict[str, any]:
         """Analyze text for contraction processing opportunities"""
         analysis = {
             'contractions_found': [],
@@ -519,7 +518,7 @@ class PhoneticContractionProcessor:
 
         return analysis
 
-    def get_phonetic_representation(self, contraction: str) -> Optional[str]:
+    def get_phonetic_representation(self, contraction: str) -> str | None:
         """Get phonetic representation of a contraction"""
         contraction_lower = contraction.lower()
 

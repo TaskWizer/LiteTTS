@@ -3,17 +3,17 @@
 Hot reload system for models and voices without server restart
 """
 
-import asyncio
-import time
 import logging
-from pathlib import Path
-from typing import Dict, Optional, Callable, Any
 import threading
+import time
+from collections.abc import Callable
+from pathlib import Path
+from typing import Any
 
 # Optional dependency for file watching
 try:
-    from watchdog.observers import Observer
     from watchdog.events import FileSystemEventHandler
+    from watchdog.observers import Observer
     WATCHDOG_AVAILABLE = True
 except ImportError:
     WATCHDOG_AVAILABLE = False
@@ -151,7 +151,7 @@ class HotReloadManager:
             logger.error(f"❌ Manual reload failed for {file_path}: {e}")
             return False
 
-    def reload_all(self) -> Dict[str, bool]:
+    def reload_all(self) -> dict[str, bool]:
         """Reload all registered files"""
         if not self.enabled:
             logger.warning("🔄 Hot reload is disabled")
@@ -180,7 +180,7 @@ class HotReloadManager:
         self.reload_callbacks.clear()
         logger.info("🔄 Hot reload manager stopped")
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """Get hot reload status"""
         return {
             "enabled": self.enabled,
@@ -242,7 +242,7 @@ class PerformanceMonitor:
         with self.lock:
             self.metrics["voice_loads"] += 1
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Get current performance metrics"""
         with self.lock:
             uptime = time.time() - self.start_time

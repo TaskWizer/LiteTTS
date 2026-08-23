@@ -3,9 +3,9 @@
 Unit tests for performance profiler module
 """
 
-import pytest
 import time
-from LiteTTS.performance.profiler import PerformanceMetrics, ProfilingSession, PerformanceProfiler
+
+from LiteTTS.performance.profiler import PerformanceMetrics, PerformanceProfiler, ProfilingSession
 
 
 class TestPerformanceMetrics:

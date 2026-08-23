@@ -3,12 +3,15 @@
 Test suite for Advanced Currency Processor
 """
 
-import sys
 import os
+import sys
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import unittest
+
 from LiteTTS.nlp.advanced_currency_processor import AdvancedCurrencyProcessor, FinancialContext
+
 
 class TestAdvancedCurrencyProcessor(unittest.TestCase):
     """Test cases for Advanced Currency Processor"""

@@ -3,14 +3,15 @@
 Comprehensive health monitoring system for Kokoro ONNX TTS API
 """
 
-import time
-import psutil
+import json
 import logging
 import threading
-from typing import Dict, Any, List, Optional
-from dataclasses import dataclass, asdict
+import time
+from dataclasses import asdict, dataclass
 from datetime import datetime
-import json
+from typing import Any
+
+import psutil
 
 logger = logging.getLogger(__name__)
 
@@ -21,16 +22,16 @@ class HealthStatus:
     status: str  # "healthy", "degraded", "unhealthy"
     message: str
     last_check: datetime
-    response_time_ms: Optional[float] = None
-    details: Optional[Dict[str, Any]] = None
+    response_time_ms: float | None = None
+    details: dict[str, Any] | None = None
 
 @dataclass
 class SystemHealth:
     """Overall system health status"""
     overall_status: str
     timestamp: datetime
-    components: List[HealthStatus]
-    system_metrics: Dict[str, Any]
+    components: list[HealthStatus]
+    system_metrics: dict[str, Any]
     uptime_seconds: float
 
 class HealthMonitor:
@@ -40,7 +41,7 @@ class HealthMonitor:
         self.check_interval = check_interval
         self.start_time = time.time()
         self.last_health_check = None
-        self.health_history: List[SystemHealth] = []
+        self.health_history: list[SystemHealth] = []
         self.max_history = 100
 
         # Component health checkers
@@ -153,7 +154,7 @@ class HealthMonitor:
 
         return system_health
 
-    def _get_system_metrics(self) -> Dict[str, Any]:
+    def _get_system_metrics(self) -> dict[str, Any]:
         """Get current system metrics"""
         try:
             # CPU and memory
@@ -204,8 +205,8 @@ class HealthMonitor:
             logger.error(f"Failed to get system metrics: {e}")
             return {'error': str(e)}
 
-    def _determine_overall_status(self, components: List[HealthStatus],
-                                 system_metrics: Dict[str, Any]) -> str:
+    def _determine_overall_status(self, components: list[HealthStatus],
+                                 system_metrics: dict[str, Any]) -> str:
         """Determine overall system health status"""
         # Check component health
         unhealthy_components = [c for c in components if c.status == 'unhealthy']
@@ -245,7 +246,7 @@ class HealthMonitor:
         else:
             return 'healthy'
 
-    def get_health_status(self) -> Dict[str, Any]:
+    def get_health_status(self) -> dict[str, Any]:
         """Get current health status"""
         if not self.last_health_check:
             # Perform immediate health check
@@ -259,7 +260,7 @@ class HealthMonitor:
             'system_metrics': self.last_health_check.system_metrics
         }
 
-    def get_health_summary(self) -> Dict[str, Any]:
+    def get_health_summary(self) -> dict[str, Any]:
         """Get simplified health summary"""
         if not self.last_health_check:
             self.last_health_check = self.perform_health_check()

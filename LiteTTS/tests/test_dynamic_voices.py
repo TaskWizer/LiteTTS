@@ -3,14 +3,14 @@
 Test script for dynamic voice management system
 """
 
-import sys
 import logging
+import sys
 from pathlib import Path
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from LiteTTS.voice import get_available_voices, resolve_voice_name, get_voice_manager
+from LiteTTS.voice import get_available_voices, get_voice_manager, resolve_voice_name
 from LiteTTS.voice.dynamic_manager import DynamicVoiceManager
 
 # Setup logging

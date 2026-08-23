@@ -3,13 +3,11 @@
 Unit tests for voice blender module
 """
 
-import pytest
+from unittest.mock import Mock
+
 import numpy as np
-from unittest.mock import Mock, MagicMock, patch
-from LiteTTS.voice.blender import (
-    BlendConfig,
-    VoiceBlender
-)
+
+from LiteTTS.voice.blender import BlendConfig, VoiceBlender
 
 
 class TestBlendConfig:

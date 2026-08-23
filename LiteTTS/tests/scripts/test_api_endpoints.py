@@ -4,12 +4,11 @@ Comprehensive API Endpoint Validation
 Tests all routing endpoints, request/response schemas, and error handling
 """
 
-import requests
 import json
-import time
-import sys
 import logging
-from typing import Dict, Any, List
+import sys
+
+import requests
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

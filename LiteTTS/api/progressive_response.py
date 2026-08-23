@@ -7,7 +7,9 @@ Handles streaming responses for real-time TTS
 import json
 import logging
 import time
-from typing import AsyncIterator, Dict, Any, Optional
+from collections.abc import AsyncIterator
+from typing import Any
+
 from fastapi.responses import StreamingResponse
 
 from ..audio.progressive_generator import ProgressiveAudioGenerator
@@ -28,7 +30,7 @@ class ProgressiveResponseHandler:
         response_format: str = "mp3",
         speed: float = 1.0,
         streaming: bool = True,
-        generation_id: Optional[str] = None
+        generation_id: str | None = None
     ) -> StreamingResponse:
         """
         Create a progressive streaming response
@@ -219,7 +221,7 @@ class ProgressiveResponseHandler:
         voice: str,
         response_format: str = "mp3",
         speed: float = 1.0,
-        generation_id: Optional[str] = None
+        generation_id: str | None = None
     ) -> StreamingResponse:
         """
         Create Server-Sent Events response for real-time progress updates
@@ -319,7 +321,7 @@ class ProgressiveResponseHandler:
             yield "event: error\n"
             yield f"data: {json.dumps(error_data)}\n\n"
 
-    def get_stream_status(self, generation_id: str) -> Optional[Dict[str, Any]]:
+    def get_stream_status(self, generation_id: str) -> dict[str, Any] | None:
         """Get status of an active stream"""
         if generation_id not in self.active_streams:
             return None
@@ -354,7 +356,7 @@ class ProgressiveResponseHandler:
             return self.progressive_generator.cancel_generation(generation_id)
         return False
 
-    def get_active_streams(self) -> Dict[str, Dict[str, Any]]:
+    def get_active_streams(self) -> dict[str, dict[str, Any]]:
         """Get information about all active streams"""
         return {
             stream_id: self.get_stream_status(stream_id)

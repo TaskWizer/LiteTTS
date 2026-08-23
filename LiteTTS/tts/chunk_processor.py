@@ -3,13 +3,13 @@
 Chunk processor for handling long text inputs
 """
 
-import re
-from typing import List, Dict, Any, Optional
-from dataclasses import dataclass
 import logging
+import re
+from dataclasses import dataclass
+from typing import Any
 
-from ..models import AudioSegment
 from ..audio.processor import AudioProcessor
+from ..models import AudioSegment
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ class ChunkProcessor:
             re.compile(r'\s+so\s+'),
         ]
 
-    def chunk_text(self, text: str) -> List[TextChunk]:
+    def chunk_text(self, text: str) -> list[TextChunk]:
         """Split text into processable chunks"""
         if len(text) <= self.max_chunk_length:
             return [TextChunk(
@@ -101,7 +101,7 @@ class ChunkProcessor:
         logger.debug(f"Created {total_chunks} chunks")
         return all_chunks
 
-    def _split_by_paragraphs(self, text: str) -> List[str]:
+    def _split_by_paragraphs(self, text: str) -> list[str]:
         """Split text by paragraph boundaries"""
         # Split by double newlines
         paragraphs = re.split(r'\n\s*\n', text)
@@ -111,7 +111,7 @@ class ChunkProcessor:
 
         return paragraphs
 
-    def _chunk_paragraph(self, paragraph: str) -> List[str]:
+    def _chunk_paragraph(self, paragraph: str) -> list[str]:
         """Chunk a single paragraph"""
         if len(paragraph) <= self.max_chunk_length:
             return [paragraph]
@@ -186,7 +186,7 @@ class ChunkProcessor:
 
         return 0.2  # Short pause for other chunks
 
-    def process_chunks_to_audio(self, chunks: List[TextChunk],
+    def process_chunks_to_audio(self, chunks: list[TextChunk],
                                synthesize_func, voice: str, speed: float = 1.0,
                                **synthesis_kwargs) -> AudioSegment:
         """Process text chunks and combine into single audio"""
@@ -224,7 +224,7 @@ class ChunkProcessor:
         logger.debug(f"Combined audio duration: {combined_audio.duration:.2f}s")
         return combined_audio
 
-    def estimate_processing_time(self, chunks: List[TextChunk],
+    def estimate_processing_time(self, chunks: list[TextChunk],
                                 base_time_per_char: float = 0.01) -> float:
         """Estimate total processing time for chunks"""
         total_chars = sum(len(chunk.text) for chunk in chunks)
@@ -238,7 +238,7 @@ class ChunkProcessor:
 
         return processing_time + chunk_overhead + total_pauses
 
-    def get_chunk_statistics(self, chunks: List[TextChunk]) -> Dict[str, Any]:
+    def get_chunk_statistics(self, chunks: list[TextChunk]) -> dict[str, Any]:
         """Get statistics about the chunks"""
         if not chunks:
             return {}
@@ -260,7 +260,7 @@ class ChunkProcessor:
             'estimated_audio_duration': self._estimate_audio_duration(chunks)
         }
 
-    def _estimate_audio_duration(self, chunks: List[TextChunk]) -> float:
+    def _estimate_audio_duration(self, chunks: list[TextChunk]) -> float:
         """Estimate total audio duration"""
         # Rough estimate: 150 words per minute, average 5 characters per word
         total_chars = sum(len(chunk.text) for chunk in chunks)
@@ -273,7 +273,7 @@ class ChunkProcessor:
 
         return audio_duration + total_pauses
 
-    def optimize_chunks(self, chunks: List[TextChunk]) -> List[TextChunk]:
+    def optimize_chunks(self, chunks: list[TextChunk]) -> list[TextChunk]:
         """Optimize chunks for better synthesis"""
         if not chunks:
             return chunks
@@ -312,7 +312,7 @@ class ChunkProcessor:
 
         return text.strip()
 
-    def validate_chunks(self, chunks: List[TextChunk]) -> List[str]:
+    def validate_chunks(self, chunks: list[TextChunk]) -> list[str]:
         """Validate chunks and return list of issues"""
         issues = []
 
@@ -339,8 +339,8 @@ class ChunkProcessor:
 
         return issues
 
-    def merge_small_chunks(self, chunks: List[TextChunk],
-                          min_chunk_length: int = 50) -> List[TextChunk]:
+    def merge_small_chunks(self, chunks: list[TextChunk],
+                          min_chunk_length: int = 50) -> list[TextChunk]:
         """Merge chunks that are too small"""
         if not chunks:
             return chunks

@@ -1,9 +1,12 @@
 """
   Common helpers for working with ggml + numpy
 """
-from ggml import ffi, lib
-from typing import Union, Optional
+from typing import Union
+
 import numpy as np
+
+from ggml import ffi, lib
+
 
 def init(mem_size: int, mem_buffer: ffi.CData = ffi.NULL, no_alloc: bool = False) -> ffi.CData:
     """
@@ -114,7 +117,7 @@ __type_to_dtype_dict = {
   lib.GGML_TYPE_F32: np.float32,
 }
 
-def __type_to_dtype(type: int) -> Optional[np.dtype]: return __type_to_dtype_dict.get(type)
+def __type_to_dtype(type: int) -> np.dtype | None: return __type_to_dtype_dict.get(type)
 def __dtype_to_type(dtype: np.dtype):
     if dtype == np.float32: return lib.GGML_TYPE_F32
     elif dtype == np.float16: return lib.GGML_TYPE_F16

@@ -8,13 +8,13 @@ clients, including RTF, memory usage, processing metrics, and system status.
 import asyncio
 import logging
 import time
-import psutil
-from typing import Dict, Any, Optional, List
-from dataclasses import dataclass
-from datetime import datetime
 from collections import deque
+from dataclasses import dataclass
+from typing import Any
 
-from .websocket_manager import WebSocketManager, WebSocketMessage, MessageType
+import psutil
+
+from .websocket_manager import MessageType, WebSocketManager, WebSocketMessage
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ class PerformanceMetrics:
     queue_size: int
     uptime_seconds: float
     voices_loaded: int
-    system_load: List[float]  # 1, 5, 15 minute load averages
+    system_load: list[float]  # 1, 5, 15 minute load averages
 
 
 @dataclass
@@ -46,12 +46,12 @@ class SystemStatus:
     total_memory_gb: float
     available_memory_gb: float
     disk_usage_percent: float
-    temperature_celsius: Optional[float]
+    temperature_celsius: float | None
     gpu_available: bool
-    gpu_memory_mb: Optional[float]
+    gpu_memory_mb: float | None
     active_connections: int
     error_rate: float
-    last_error: Optional[str]
+    last_error: str | None
 
 
 class PerformanceStreamer:
@@ -82,8 +82,8 @@ class PerformanceStreamer:
 
         # Metrics storage
         self.metrics_history: deque = deque(maxlen=history_size)
-        self.current_metrics: Optional[PerformanceMetrics] = None
-        self.current_status: Optional[SystemStatus] = None
+        self.current_metrics: PerformanceMetrics | None = None
+        self.current_status: SystemStatus | None = None
 
         # Application metrics (to be updated by TTS system)
         self.app_metrics = {
@@ -103,7 +103,7 @@ class PerformanceStreamer:
         self.last_cpu_times = None
 
         # Background tasks
-        self._streaming_task: Optional[asyncio.Task] = None
+        self._streaming_task: asyncio.Task | None = None
         self._running = False
 
         # Thread-safe lock for metrics updates
@@ -338,15 +338,15 @@ class PerformanceStreamer:
                 self.logger.error(f"Streaming loop error: {e}")
                 await asyncio.sleep(5)  # Wait before retrying
 
-    def get_current_metrics(self) -> Optional[PerformanceMetrics]:
+    def get_current_metrics(self) -> PerformanceMetrics | None:
         """Get current performance metrics."""
         return self.current_metrics
 
-    def get_current_status(self) -> Optional[SystemStatus]:
+    def get_current_status(self) -> SystemStatus | None:
         """Get current system status."""
         return self.current_status
 
-    def get_metrics_history(self, limit: Optional[int] = None) -> List[PerformanceMetrics]:
+    def get_metrics_history(self, limit: int | None = None) -> list[PerformanceMetrics]:
         """
         Get historical performance metrics.
         
@@ -361,7 +361,7 @@ class PerformanceStreamer:
             history = history[-limit:]
         return history
 
-    def get_dashboard_data(self) -> Dict[str, Any]:
+    def get_dashboard_data(self) -> dict[str, Any]:
         """
         Get comprehensive dashboard data.
         

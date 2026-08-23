@@ -5,24 +5,19 @@ Evaluates Distil-Whisper, Faster-Whisper, OpenAI Whisper variants, and other opt
 for edge hardware deployment with RTF < 1.0 targets.
 """
 
-import os
-import sys
-import time
-import json
-import psutil
-import threading
-import numpy as np
-import subprocess
-import tempfile
-import logging
-from pathlib import Path
-from typing import Dict, List, Any, Tuple, Optional, Union
-from dataclasses import dataclass, asdict, field
-from datetime import datetime
 import asyncio
-import aiohttp
-import soundfile as sf
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+import json
+import logging
+import sys
+import threading
+import time
+from dataclasses import asdict, dataclass, field
+from datetime import datetime
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+import psutil
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -36,10 +31,10 @@ class WhisperModelConfig:
     model_id: str
     model_size_mb: float
     implementation: str  # 'distil-whisper', 'faster-whisper', 'openai-whisper', 'whisper-cpp', 'onnx', 'openvino'
-    quantization: Optional[str] = None  # 'int8', 'int4', 'fp16', 'fp32'
+    quantization: str | None = None  # 'int8', 'int4', 'fp16', 'fp32'
     language: str = "en"
     device: str = "cpu"
-    additional_params: Dict[str, Any] = field(default_factory=dict)
+    additional_params: dict[str, Any] = field(default_factory=dict)
 
 @dataclass
 class EdgeHardwareSpec:
@@ -50,7 +45,7 @@ class EdgeHardwareSpec:
     cpu_freq_ghz: float
     ram_gb: int
     architecture: str  # 'arm64', 'x86_64'
-    simd_support: List[str]  # ['neon', 'avx2', 'sse4.1']
+    simd_support: list[str]  # ['neon', 'avx2', 'sse4.1']
     os_info: str
 
 @dataclass
@@ -67,10 +62,10 @@ class PerformanceResult:
     avg_cpu_percent: float
     transcription: str
     confidence_score: float
-    wer: Optional[float] = None  # Word Error Rate vs reference
+    wer: float | None = None  # Word Error Rate vs reference
     model_load_time_s: float = 0.0
     cold_start_time_s: float = 0.0
-    error_message: Optional[str] = None
+    error_message: str | None = None
     success: bool = True
 
 @dataclass
@@ -82,7 +77,7 @@ class AudioTestSample:
     reference_transcription: str
     audio_quality: str  # 'studio', 'phone', 'noisy'
     content_type: str  # 'technical', 'audiobook', 'podcast', 'conversation'
-    speaker_info: Dict[str, Any] = field(default_factory=dict)
+    speaker_info: dict[str, Any] = field(default_factory=dict)
 
 class SystemMonitor:
     """System resource monitoring during benchmarks"""
@@ -99,7 +94,7 @@ class SystemMonitor:
         self.monitor_thread = threading.Thread(target=self._monitor_loop)
         self.monitor_thread.start()
 
-    def stop_monitoring(self) -> Tuple[float, float, float, float]:
+    def stop_monitoring(self) -> tuple[float, float, float, float]:
         """Stop monitoring and return peak/avg memory and CPU"""
         self.monitoring = False
         if self.monitor_thread:
@@ -153,7 +148,7 @@ class WhisperAlternativesAnalyzer:
 
         logger.info(f"WhisperAlternativesAnalyzer initialized with output dir: {self.output_dir}")
 
-    def _get_model_configurations(self) -> List[WhisperModelConfig]:
+    def _get_model_configurations(self) -> list[WhisperModelConfig]:
         """Get all model configurations to test"""
         configs = []
 
@@ -266,7 +261,7 @@ class WhisperAlternativesAnalyzer:
             os_info=f"{platform.system()} {platform.release()}"
         )
 
-    def generate_test_audio_samples(self) -> List[AudioTestSample]:
+    def generate_test_audio_samples(self) -> list[AudioTestSample]:
         """Generate standardized test audio samples"""
         samples = []
 
@@ -302,7 +297,7 @@ class WhisperAlternativesAnalyzer:
 
         return samples
 
-    async def run_comprehensive_analysis(self) -> Dict[str, Any]:
+    async def run_comprehensive_analysis(self) -> dict[str, Any]:
         """Run comprehensive performance analysis"""
         logger.info("Starting comprehensive Whisper alternatives analysis")
 
@@ -327,7 +322,7 @@ class WhisperAlternativesAnalyzer:
 
         return report
 
-    async def _analyze_model(self, model_config: WhisperModelConfig) -> List[PerformanceResult]:
+    async def _analyze_model(self, model_config: WhisperModelConfig) -> list[PerformanceResult]:
         """Analyze a specific model configuration"""
         results = []
 
@@ -429,8 +424,8 @@ class WhisperAlternativesAnalyzer:
     async def _load_distil_whisper(self, model_config: WhisperModelConfig):
         """Load Distil-Whisper model"""
         try:
-            from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor
             import torch
+            from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor
 
             model = AutoModelForSpeechSeq2Seq.from_pretrained(
                 model_config.model_id,
@@ -476,7 +471,7 @@ class WhisperAlternativesAnalyzer:
         raise NotImplementedError("Whisper.cpp integration not yet implemented")
 
     async def _transcribe_audio(self, model, audio_data: np.ndarray,
-                              model_config: WhisperModelConfig) -> Tuple[str, float]:
+                              model_config: WhisperModelConfig) -> tuple[str, float]:
         """Transcribe audio using the loaded model"""
         if model["type"] == "distil-whisper":
             return await self._transcribe_distil_whisper(model, audio_data)
@@ -487,7 +482,7 @@ class WhisperAlternativesAnalyzer:
         else:
             raise ValueError(f"Unsupported model type: {model['type']}")
 
-    async def _transcribe_distil_whisper(self, model, audio_data: np.ndarray) -> Tuple[str, float]:
+    async def _transcribe_distil_whisper(self, model, audio_data: np.ndarray) -> tuple[str, float]:
         """Transcribe using Distil-Whisper"""
         try:
             import torch
@@ -508,7 +503,7 @@ class WhisperAlternativesAnalyzer:
             logger.error(f"Distil-Whisper transcription failed: {e}")
             return "", 0.0
 
-    async def _transcribe_faster_whisper(self, model, audio_data: np.ndarray) -> Tuple[str, float]:
+    async def _transcribe_faster_whisper(self, model, audio_data: np.ndarray) -> tuple[str, float]:
         """Transcribe using Faster-Whisper"""
         try:
             whisper_model = model["model"]
@@ -525,7 +520,7 @@ class WhisperAlternativesAnalyzer:
             logger.error(f"Faster-Whisper transcription failed: {e}")
             return "", 0.0
 
-    async def _transcribe_openai_whisper(self, model, audio_data: np.ndarray) -> Tuple[str, float]:
+    async def _transcribe_openai_whisper(self, model, audio_data: np.ndarray) -> tuple[str, float]:
         """Transcribe using OpenAI Whisper"""
         try:
             whisper_model = model["model"]
@@ -573,7 +568,7 @@ class WhisperAlternativesAnalyzer:
 
         return d[len(ref_words)][len(hyp_words)] / len(ref_words) if ref_words else 0.0
 
-    def _generate_analysis_report(self) -> Dict[str, Any]:
+    def _generate_analysis_report(self) -> dict[str, Any]:
         """Generate comprehensive analysis report"""
         if not self.results:
             return {"error": "No results available"}

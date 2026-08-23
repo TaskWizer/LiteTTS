@@ -9,15 +9,13 @@ with objective metrics, external ASR integration, and regression detection.
 import asyncio
 import json
 import logging
+import statistics
+import tempfile
 import time
 import wave
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Any, Union
-import tempfile
-import hashlib
-import statistics
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -70,8 +68,8 @@ class AudioTestCase:
     max_rtf: float = 0.25
 
     # Test-specific expectations
-    expected_symbols: List[str] = field(default_factory=list)
-    expected_pronunciations: Dict[str, str] = field(default_factory=dict)
+    expected_symbols: list[str] = field(default_factory=list)
+    expected_pronunciations: dict[str, str] = field(default_factory=dict)
 
 
 class AudioQualityTester:
@@ -79,7 +77,7 @@ class AudioQualityTester:
     Comprehensive automated audio quality testing framework
     """
 
-    def __init__(self, config: Optional[Dict] = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or {}
         self.audio_config = self.config.get("audio_quality_testing", {})
 
@@ -110,8 +108,8 @@ class AudioQualityTester:
         self._init_external_services()
 
         # Test results storage
-        self.test_results: List[Tuple[AudioTestCase, AudioQualityMetrics]] = []
-        self.baseline_metrics: Optional[Dict[str, AudioQualityMetrics]] = None
+        self.test_results: list[tuple[AudioTestCase, AudioQualityMetrics]] = []
+        self.baseline_metrics: dict[str, AudioQualityMetrics] | None = None
 
     def _init_cache_directory(self):
         """Initialize cache directory for audio files and results"""
@@ -165,7 +163,7 @@ class AudioQualityTester:
             self.asr_services = {}
             logger.info("External ASR services disabled")
 
-    async def generate_audio(self, test_case: AudioTestCase) -> Tuple[bytes, float]:
+    async def generate_audio(self, test_case: AudioTestCase) -> tuple[bytes, float]:
         """
         Generate audio using the Kokoro TTS API
         
@@ -198,7 +196,7 @@ class AudioQualityTester:
                     error_text = await response.text()
                     raise Exception(f"TTS API error {response.status}: {error_text}")
 
-    def analyze_audio_properties(self, audio_data: bytes) -> Dict[str, float]:
+    def analyze_audio_properties(self, audio_data: bytes) -> dict[str, float]:
         """
         Analyze basic audio properties (duration, spectral quality, etc.)
         """
@@ -253,7 +251,7 @@ class AudioQualityTester:
                 "frames": len(audio_data) // 2
             }
 
-    async def transcribe_audio(self, audio_data: bytes, service: str = "auto") -> Tuple[str, float]:
+    async def transcribe_audio(self, audio_data: bytes, service: str = "auto") -> tuple[str, float]:
         """
         Transcribe audio using external ASR services
         
@@ -481,7 +479,7 @@ class AudioQualityTester:
                 test_category=test_case.test_category
             )
 
-    async def run_test_suite(self, test_cases: List[AudioTestCase]) -> Dict[str, Any]:
+    async def run_test_suite(self, test_cases: list[AudioTestCase]) -> dict[str, Any]:
         """
         Run a complete test suite with multiple test cases
         """
@@ -520,8 +518,8 @@ class AudioQualityTester:
         logger.info(f"Test suite completed in {total_time:.2f}s - {len(test_results)} passed, {len(failed_tests)} failed")
         return summary
 
-    def _calculate_test_summary(self, test_results: List[Tuple[AudioTestCase, AudioQualityMetrics]],
-                               failed_tests: List[str], total_time: float) -> Dict[str, Any]:
+    def _calculate_test_summary(self, test_results: list[tuple[AudioTestCase, AudioQualityMetrics]],
+                               failed_tests: list[str], total_time: float) -> dict[str, Any]:
         """
         Calculate summary statistics for test results
         """
@@ -582,7 +580,7 @@ class AudioQualityTester:
             metrics.prosody_score >= thresholds.get("min_prosody_score", 0.7)
         )
 
-    def _assess_overall_quality(self, avg_metrics: Dict[str, float]) -> str:
+    def _assess_overall_quality(self, avg_metrics: dict[str, float]) -> str:
         """
         Assess overall quality based on average metrics
         """
@@ -629,7 +627,7 @@ class AudioQualityTester:
         else:
             return "POOR"
 
-    def generate_report(self, summary: Dict[str, Any], output_path: Optional[Path] = None) -> str:
+    def generate_report(self, summary: dict[str, Any], output_path: Path | None = None) -> str:
         """
         Generate a comprehensive test report
         """
@@ -677,7 +675,7 @@ class AudioQualityTester:
 
         return report_content
 
-    def save_baseline_metrics(self, summary: Dict[str, Any], baseline_path: Optional[Path] = None):
+    def save_baseline_metrics(self, summary: dict[str, Any], baseline_path: Path | None = None):
         """
         Save current metrics as baseline for regression testing
         """
@@ -697,7 +695,7 @@ class AudioQualityTester:
 
         logger.info(f"Baseline metrics saved to: {baseline_path}")
 
-    def load_baseline_metrics(self, baseline_path: Optional[Path] = None) -> Optional[Dict[str, Any]]:
+    def load_baseline_metrics(self, baseline_path: Path | None = None) -> dict[str, Any] | None:
         """
         Load baseline metrics for regression comparison
         """

@@ -9,10 +9,10 @@ Validates that the dashboard is working correctly with:
 4. Real-time metrics tracking
 """
 
-import requests
 import time
-import json
-from typing import Dict, Any
+
+import requests
+
 
 def test_dashboard_web_interface() -> bool:
     """Test that the dashboard web interface is accessible"""
@@ -244,7 +244,7 @@ def test_real_time_metrics() -> bool:
         print(f"❌ Real-time metrics test failed: {e}")
         return False
 
-def test_dashboard_comprehensive() -> Dict[str, bool]:
+def test_dashboard_comprehensive() -> dict[str, bool]:
     """Run comprehensive dashboard tests"""
 
     print("🔧 API Analytics & Concurrency Dashboard Test Suite")

@@ -4,16 +4,15 @@ Enhanced contraction processor for natural TTS pronunciation
 Addresses specific contraction pronunciation issues like I'll→ill, you'll→yaw-wl, I'd→I-D
 """
 
-import re
-from typing import Dict, List, Optional, Tuple
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
 class EnhancedContractionProcessor:
     """Advanced contraction processing for natural TTS pronunciation"""
 
-    def __init__(self, config: Dict = None):
+    def __init__(self, config: dict = None):
         self.config = config or {}
         self.natural_contractions = self._load_natural_contractions()
         self.problematic_contractions = self._load_problematic_contractions()
@@ -41,7 +40,7 @@ class EnhancedContractionProcessor:
 
         return True
 
-    def _load_natural_contractions(self) -> Dict[str, str]:
+    def _load_natural_contractions(self) -> dict[str, str]:
         """Load contractions that should be kept in natural form"""
         return {
             # These contractions sound natural when pronounced as-is
@@ -73,7 +72,7 @@ class EnhancedContractionProcessor:
             "they'll": "they'll",
         }
 
-    def _load_problematic_contractions(self) -> Dict[str, str]:
+    def _load_problematic_contractions(self) -> dict[str, str]:
         """Load contractions that cause TTS pronunciation issues
 
         CRITICAL FIX: Drastically reduced the list to only truly problematic contractions.
@@ -96,7 +95,7 @@ class EnhancedContractionProcessor:
             # The phonemizer should handle these correctly with the apostrophe present
         }
 
-    def _load_phonetic_contractions(self) -> Dict[str, str]:
+    def _load_phonetic_contractions(self) -> dict[str, str]:
         """Load phonetic representations for natural-sounding contractions"""
         return {
             # Phonetic spellings that sound more natural
@@ -115,7 +114,7 @@ class EnhancedContractionProcessor:
             "I'd": "I-would",  # Hyphenated to preserve natural flow
         }
 
-    def process_contractions(self, text: str, mode: Optional[str] = None) -> str:
+    def process_contractions(self, text: str, mode: str | None = None) -> str:
         """Process contractions based on the specified mode"""
         if mode is None:
             mode = self.mode
@@ -211,7 +210,7 @@ class EnhancedContractionProcessor:
         # Keep natural contractions as-is (they're already normalized)
         return text
 
-    def get_contraction_info(self, text: str) -> Dict[str, List[str]]:
+    def get_contraction_info(self, text: str) -> dict[str, list[str]]:
         """Analyze contractions in text and return information"""
         info = {
             'natural_contractions': [],
@@ -242,6 +241,6 @@ class EnhancedContractionProcessor:
         else:
             logger.warning(f"Invalid mode: {mode}. Available modes: {list(self.contraction_modes.keys())}")
 
-    def get_supported_modes(self) -> List[str]:
+    def get_supported_modes(self) -> list[str]:
         """Get list of supported contraction processing modes"""
         return list(self.contraction_modes.keys())

@@ -4,7 +4,6 @@ Test ticker symbol processing to ensure letter-by-letter pronunciation
 """
 
 import sys
-import os
 from pathlib import Path
 
 # Add the project root to the path
@@ -13,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from LiteTTS.nlp.clean_text_normalizer import CleanTextNormalizer
 from LiteTTS.nlp.ticker_symbol_processor import TickerSymbolProcessor
+
 
 def test_ticker_symbol_processing():
     """Test systematic ticker symbol processing"""

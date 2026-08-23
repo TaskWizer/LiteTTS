@@ -3,10 +3,11 @@
 Unit tests for audio processor
 """
 
-import pytest
 import numpy as np
-from LiteTTS.audio.processor import AudioProcessor
+import pytest
+
 from LiteTTS.audio.audio_segment import AudioSegment
+from LiteTTS.audio.processor import AudioProcessor
 
 
 class TestAudioProcessor:

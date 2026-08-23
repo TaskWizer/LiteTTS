@@ -4,14 +4,12 @@ Caching system for Kokoro ONNX TTS API
 """
 
 import hashlib
-import time
-import threading
-from typing import Optional, Any, Dict
-from dataclasses import dataclass
-from collections import OrderedDict
 import logging
-
-from ..exceptions import CacheError
+import threading
+import time
+from collections import OrderedDict
+from dataclasses import dataclass
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +20,7 @@ class CacheEntry:
     created_at: float
     last_accessed: float
     access_count: int = 0
-    ttl: Optional[float] = None
+    ttl: float | None = None
 
     def is_expired(self) -> bool:
         """Check if cache entry is expired"""
@@ -38,7 +36,7 @@ class CacheEntry:
 class LRUCache:
     """Thread-safe LRU cache implementation"""
 
-    def __init__(self, max_size: int = 100, default_ttl: Optional[float] = None):
+    def __init__(self, max_size: int = 100, default_ttl: float | None = None):
         self.max_size = max_size
         self.default_ttl = default_ttl
         self._cache: OrderedDict[str, CacheEntry] = OrderedDict()
@@ -51,7 +49,7 @@ class LRUCache:
         key_data = str(args) + str(sorted(kwargs.items()))
         return hashlib.md5(key_data.encode()).hexdigest()
 
-    def get(self, key: str) -> Optional[Any]:
+    def get(self, key: str) -> Any | None:
         """Get value from cache"""
         with self._lock:
             if key not in self._cache:
@@ -73,7 +71,7 @@ class LRUCache:
 
             return entry.value
 
-    def put(self, key: str, value: Any, ttl: Optional[float] = None) -> None:
+    def put(self, key: str, value: Any, ttl: float | None = None) -> None:
         """Put value in cache"""
         with self._lock:
             now = time.time()
@@ -101,7 +99,7 @@ class LRUCache:
             self._hits = 0
             self._misses = 0
 
-    def stats(self) -> Dict[str, Any]:
+    def stats(self) -> dict[str, Any]:
         """Get cache statistics"""
         with self._lock:
             total_requests = self._hits + self._misses
@@ -123,14 +121,14 @@ class AudioCache(LRUCache):
         super().__init__(max_size, default_ttl)
 
     def get_audio(self, text: str, voice: str, speed: float = 1.0,
-                  response_format: str = "mp3") -> Optional[bytes]:
+                  response_format: str = "mp3") -> bytes | None:
         """Get cached audio data"""
         key = self._generate_key(text, voice, speed, response_format)
         return self.get(key)
 
     def put_audio(self, text: str, voice: str, audio_data: bytes,
                   speed: float = 1.0, response_format: str = "mp3",
-                  ttl: Optional[float] = None) -> None:
+                  ttl: float | None = None) -> None:
         """Cache audio data"""
         key = self._generate_key(text, voice, speed, response_format)
         self.put(key, audio_data, ttl)
@@ -144,7 +142,7 @@ class VoiceCache(LRUCache):
     def __init__(self, max_size: int = 10):
         super().__init__(max_size, default_ttl=None)  # Voice embeddings don't expire
 
-    def get_voice(self, voice_name: str) -> Optional[Any]:
+    def get_voice(self, voice_name: str) -> Any | None:
         """Get cached voice embedding"""
         return self.get(voice_name)
 
@@ -182,7 +180,7 @@ class CacheManager:
         self.voice_cache.clear()
         logger.info("🧹 All caches cleared")
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get comprehensive cache statistics"""
         return {
             "enabled": self._enabled,

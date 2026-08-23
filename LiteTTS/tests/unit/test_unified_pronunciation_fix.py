@@ -4,7 +4,8 @@ Unit tests for unified pronunciation fix
 """
 
 import pytest
-from LiteTTS.nlp.unified_pronunciation_fix import UnifiedPronunciationFix, PronunciationFixResult
+
+from LiteTTS.nlp.unified_pronunciation_fix import PronunciationFixResult, UnifiedPronunciationFix
 
 
 class TestUnifiedPronunciationFix:

@@ -3,8 +3,6 @@
 Unit tests for config manager
 """
 
-import pytest
-from unittest.mock import Mock, patch
 
 
 class TestConfigManager:

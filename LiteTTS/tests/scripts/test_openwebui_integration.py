@@ -4,10 +4,9 @@ Test script to simulate OpenWebUI TTS requests and verify integration fixes
 Tests various request patterns that OpenWebUI might send
 """
 
-import requests
-import json
 import sys
-from pathlib import Path
+
+import requests
 
 # Test configuration
 BASE_URL = "http://localhost:8354"

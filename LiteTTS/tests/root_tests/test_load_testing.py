@@ -4,16 +4,18 @@ Load Testing for Kokoro ONNX TTS API
 Tests system behavior under various load conditions and stress scenarios
 """
 
-import pytest
-import time
-import threading
 import statistics
-from pathlib import Path
-from fastapi.testclient import TestClient
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Import the app for testing
 import sys
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
+
+import pytest
+from fastapi.testclient import TestClient
+
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from app import app

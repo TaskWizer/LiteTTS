@@ -4,12 +4,12 @@ Specialized audio cache for TTS generated audio
 """
 
 import hashlib
-from typing import Dict, List, Optional, Any
 import logging
+from typing import Any
 
-from .manager import EnhancedCacheManager
 from ..models import AudioSegment
 from .cache_utils import CacheKeyGenerator, cache_metrics
+from .manager import EnhancedCacheManager
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +43,7 @@ class AudioCache:
 
     def get_cached_audio(self, text: str, voice: str, speed: float = 1.0,
                         format: str = "wav", emotion: str = None,
-                        emotion_strength: float = 1.0) -> Optional[AudioSegment]:
+                        emotion_strength: float = 1.0) -> AudioSegment | None:
         """Get cached audio segment"""
         cache_key = self._generate_audio_cache_key(
             text, voice, speed, format, emotion, emotion_strength
@@ -97,7 +97,7 @@ class AudioCache:
             emotion_strength=emotion_strength
         )
 
-    def preload_common_phrases(self, phrases: List[str], voice: str) -> Dict[str, bool]:
+    def preload_common_phrases(self, phrases: list[str], voice: str) -> dict[str, bool]:
         """Preload common phrases into cache"""
         results = {}
 
@@ -110,7 +110,7 @@ class AudioCache:
         logger.info(f"Marked {len(phrases)} phrases for preloading")
         return results
 
-    def get_cache_stats(self) -> Dict[str, Any]:
+    def get_cache_stats(self) -> dict[str, Any]:
         """Get audio cache statistics"""
         base_stats = self.cache_manager.get_stats()
 
@@ -179,7 +179,7 @@ class TextCache:
         logger.info("Text cache initialized")
 
     def get_processed_text(self, original_text: str,
-                          normalization_options: Dict[str, Any]) -> Optional[str]:
+                          normalization_options: dict[str, Any]) -> str | None:
         """Get cached processed text"""
         cache_key = self._generate_text_cache_key(original_text, normalization_options)
 
@@ -192,7 +192,7 @@ class TextCache:
         return None
 
     def cache_processed_text(self, original_text: str, processed_text: str,
-                           normalization_options: Dict[str, Any], ttl: int = None) -> bool:
+                           normalization_options: dict[str, Any], ttl: int = None) -> bool:
         """Cache processed text"""
         cache_key = self._generate_text_cache_key(original_text, normalization_options)
 
@@ -211,14 +211,14 @@ class TextCache:
         return success
 
     def _generate_text_cache_key(self, text: str,
-                                normalization_options: Dict[str, Any]) -> str:
+                                normalization_options: dict[str, Any]) -> str:
         """Generate cache key for processed text"""
         # Create a stable key from text and options
         options_str = str(sorted(normalization_options.items()))
         key_string = f"{text}:{options_str}"
         return hashlib.sha256(key_string.encode()).hexdigest()
 
-    def get_cache_stats(self) -> Dict[str, Any]:
+    def get_cache_stats(self) -> dict[str, Any]:
         """Get text cache statistics"""
         base_stats = self.cache_manager.get_stats()
 
@@ -270,7 +270,7 @@ class CacheWarmer:
 
         logger.info("Cache warmer initialized")
 
-    def warm_common_phrases(self, voices: List[str]) -> Dict[str, Dict[str, bool]]:
+    def warm_common_phrases(self, voices: list[str]) -> dict[str, dict[str, bool]]:
         """Warm cache with common phrases for given voices"""
         results = {}
 
@@ -283,7 +283,7 @@ class CacheWarmer:
         logger.info(f"Warmed cache for {len(voices)} voices with {len(self.common_phrases)} phrases")
         return results
 
-    def warm_user_patterns(self, user_texts: List[str], voice: str) -> Dict[str, bool]:
+    def warm_user_patterns(self, user_texts: list[str], voice: str) -> dict[str, bool]:
         """Warm cache based on user usage patterns"""
         # This would analyze user patterns and preload likely requests
         # For now, just mark the texts for caching
@@ -296,7 +296,7 @@ class CacheWarmer:
         logger.info(f"Warmed cache with {len(user_texts)} user pattern texts")
         return results
 
-    def get_warming_stats(self) -> Dict[str, Any]:
+    def get_warming_stats(self) -> dict[str, Any]:
         """Get cache warming statistics"""
         return {
             'common_phrases_count': len(self.common_phrases),

@@ -3,9 +3,10 @@
 Simple model and voice downloader for Kokoro ONNX TTS API
 """
 
-import requests
-from pathlib import Path
 import logging
+from pathlib import Path
+
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -53,8 +54,8 @@ def download_file(url: str, filepath: Path, description: str = "") -> bool:
 def ensure_model_files() -> bool:
     """Ensure model and essential voices are downloaded using dynamic discovery"""
     from .config import config
-    from .voice.downloader import VoiceDownloader
     from .models.manager import ModelManager
+    from .voice.downloader import VoiceDownloader
 
     success = True
 

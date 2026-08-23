@@ -4,9 +4,8 @@ Contraction pronunciation fix processor for TTS
 Fixes "I'm" → "im" instead of "I-m" and similar contraction issues
 """
 
-import re
 import logging
-from typing import Dict, List, Tuple
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +17,7 @@ class ContractionPronunciationFix:
         self.phonetic_contractions = self._load_phonetic_contractions()
         self.problematic_patterns = self._load_problematic_patterns()
 
-    def _load_contraction_fixes(self) -> Dict[str, str]:
+    def _load_contraction_fixes(self) -> dict[str, str]:
         """Load contraction pronunciation fixes"""
         return {
             # First person contractions
@@ -76,7 +75,7 @@ class ContractionPronunciationFix:
             "hadn't": "hadn't",  # Keep natural
         }
 
-    def _load_phonetic_contractions(self) -> Dict[str, str]:
+    def _load_phonetic_contractions(self) -> dict[str, str]:
         """Load phonetic representations for contractions"""
         return {
             # Phonetic spellings to ensure proper pronunciation
@@ -104,7 +103,7 @@ class ContractionPronunciationFix:
             "it'll": "it will",
         }
 
-    def _load_problematic_patterns(self) -> List[Tuple[str, str, str]]:
+    def _load_problematic_patterns(self) -> list[tuple[str, str, str]]:
         """Load patterns for problematic contractions"""
         return [
             # Pattern, Replacement, Description
@@ -229,7 +228,7 @@ class ContractionPronunciationFix:
 
         return text
 
-    def analyze_contraction_issues(self, text: str) -> Dict[str, List[str]]:
+    def analyze_contraction_issues(self, text: str) -> dict[str, list[str]]:
         """Analyze text for contraction pronunciation issues"""
         issues = {
             'problematic_contractions': [],

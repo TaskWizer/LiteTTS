@@ -3,9 +3,10 @@
 Custom exceptions for Kokoro ONNX TTS API with enhanced error handling
 """
 
-from typing import Optional, Dict, Any
 import traceback
 from datetime import datetime
+from typing import Any
+
 
 class KokoroError(Exception):
     """Base exception for Kokoro ONNX TTS API with enhanced error context"""
@@ -13,10 +14,10 @@ class KokoroError(Exception):
     def __init__(
         self,
         message: str,
-        details: Optional[Dict[str, Any]] = None,
-        error_code: Optional[str] = None,
+        details: dict[str, Any] | None = None,
+        error_code: str | None = None,
         http_status: int = 500,
-        request_id: Optional[str] = None
+        request_id: str | None = None
     ):
         self.message = message
         self.details = details or {}
@@ -28,7 +29,7 @@ class KokoroError(Exception):
 
         super().__init__(self.message)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert exception to dictionary for API responses"""
         return {
             "error": self.error_code,
@@ -45,7 +46,7 @@ class KokoroError(Exception):
 class ModelError(KokoroError):
     """Raised when there are issues with the TTS model"""
 
-    def __init__(self, message: str, model_path: Optional[str] = None, **kwargs):
+    def __init__(self, message: str, model_path: str | None = None, **kwargs):
         details = kwargs.get('details', {})
         if model_path:
             details['model_path'] = model_path
@@ -58,7 +59,7 @@ class ModelError(KokoroError):
 class VoiceError(KokoroError):
     """Raised when there are issues with voice processing"""
 
-    def __init__(self, message: str, voice_name: Optional[str] = None, **kwargs):
+    def __init__(self, message: str, voice_name: str | None = None, **kwargs):
         details = kwargs.get('details', {})
         if voice_name:
             details['voice_name'] = voice_name
@@ -71,7 +72,7 @@ class VoiceError(KokoroError):
 class AudioError(KokoroError):
     """Raised when there are issues with audio processing"""
 
-    def __init__(self, message: str, audio_format: Optional[str] = None, **kwargs):
+    def __init__(self, message: str, audio_format: str | None = None, **kwargs):
         details = kwargs.get('details', {})
         if audio_format:
             details['audio_format'] = audio_format
@@ -84,7 +85,7 @@ class AudioError(KokoroError):
 class ValidationError(KokoroError):
     """Raised when input validation fails"""
 
-    def __init__(self, message: str, field: Optional[str] = None, value: Optional[Any] = None, **kwargs):
+    def __init__(self, message: str, field: str | None = None, value: Any | None = None, **kwargs):
         details = kwargs.get('details', {})
         if field:
             details['field'] = field
@@ -99,7 +100,7 @@ class ValidationError(KokoroError):
 class CacheError(KokoroError):
     """Raised when there are caching issues"""
 
-    def __init__(self, message: str, cache_key: Optional[str] = None, **kwargs):
+    def __init__(self, message: str, cache_key: str | None = None, **kwargs):
         details = kwargs.get('details', {})
         if cache_key:
             details['cache_key'] = cache_key
@@ -112,7 +113,7 @@ class CacheError(KokoroError):
 class ConfigurationError(KokoroError):
     """Raised when there are configuration issues"""
 
-    def __init__(self, message: str, config_key: Optional[str] = None, **kwargs):
+    def __init__(self, message: str, config_key: str | None = None, **kwargs):
         details = kwargs.get('details', {})
         if config_key:
             details['config_key'] = config_key
@@ -125,7 +126,7 @@ class ConfigurationError(KokoroError):
 class DownloadError(KokoroError):
     """Raised when model/voice downloads fail"""
 
-    def __init__(self, message: str, url: Optional[str] = None, file_path: Optional[str] = None, **kwargs):
+    def __init__(self, message: str, url: str | None = None, file_path: str | None = None, **kwargs):
         details = kwargs.get('details', {})
         if url:
             details['url'] = url
@@ -140,7 +141,7 @@ class DownloadError(KokoroError):
 class RateLimitError(KokoroError):
     """Raised when rate limits are exceeded"""
 
-    def __init__(self, message: str, limit: Optional[int] = None, window: Optional[int] = None, **kwargs):
+    def __init__(self, message: str, limit: int | None = None, window: int | None = None, **kwargs):
         details = kwargs.get('details', {})
         if limit:
             details['rate_limit'] = limit
@@ -164,7 +165,7 @@ class AuthenticationError(KokoroError):
 class TextProcessingError(KokoroError):
     """Raised when text processing fails"""
 
-    def __init__(self, message: str, text_length: Optional[int] = None, **kwargs):
+    def __init__(self, message: str, text_length: int | None = None, **kwargs):
         details = kwargs.get('details', {})
         if text_length:
             details['text_length'] = text_length

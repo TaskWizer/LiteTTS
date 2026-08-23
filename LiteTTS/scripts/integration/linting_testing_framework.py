@@ -4,15 +4,14 @@ Linting and Testing Framework
 Implement comprehensive linting rules, code quality checks, and testing frameworks with coverage requirements
 """
 
-import os
-import sys
 import json
 import logging
 import subprocess
+import sys
 import time
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, asdict
+from typing import Any
 
 # Add the project root to the path
 project_root = Path(__file__).parent.parent
@@ -61,8 +60,8 @@ class QualityConfiguration:
     enable_coverage: bool
     min_coverage_percentage: float
     max_line_length: int
-    exclude_patterns: List[str]
-    test_directories: List[str]
+    exclude_patterns: list[str]
+    test_directories: list[str]
 
 class LintingTestingManager:
     """Linting and testing framework manager"""
@@ -567,7 +566,7 @@ def test_environment():
                 error_message=str(e)
             )
 
-    def run_all_linting(self) -> Dict[str, LintingResult]:
+    def run_all_linting(self) -> dict[str, LintingResult]:
         """Run all enabled linting tools"""
         logger.info("Running all linting tools...")
 
@@ -594,7 +593,7 @@ def test_environment():
         self.linting_results = results
         return results
 
-    def run_all_testing(self) -> Dict[str, TestResult]:
+    def run_all_testing(self) -> dict[str, TestResult]:
         """Run all enabled testing tools"""
         logger.info("Running all testing tools...")
 
@@ -677,7 +676,7 @@ clean:
         logger.info("Generated Makefile for quality checks")
         return makefile_content
 
-    def run_comprehensive_quality_check(self) -> Dict[str, Any]:
+    def run_comprehensive_quality_check(self) -> dict[str, Any]:
         """Run comprehensive quality check"""
         logger.info("Starting comprehensive quality check...")
 
@@ -736,8 +735,8 @@ clean:
         logger.info(f"Comprehensive quality check completed. Results saved to: {results_file}")
         return results
 
-    def _generate_quality_recommendations(self, linting_results: Dict[str, LintingResult],
-                                        testing_results: Dict[str, TestResult]) -> List[str]:
+    def _generate_quality_recommendations(self, linting_results: dict[str, LintingResult],
+                                        testing_results: dict[str, TestResult]) -> list[str]:
         """Generate quality improvement recommendations"""
         recommendations = []
 
@@ -768,7 +767,7 @@ clean:
 
         return recommendations
 
-    def generate_quality_config_files(self) -> Dict[str, str]:
+    def generate_quality_config_files(self) -> dict[str, str]:
         """Generate configuration files for quality tools"""
         logger.info("Generating quality tool configuration files...")
 

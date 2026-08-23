@@ -11,21 +11,22 @@ __author__ = "Kokoro TTS Team"
 __description__ = "Lightweight TTS API with advanced linguistic features"
 
 # Core configuration and exceptions
-from .config import ConfigManager, config
-from .exceptions import (
-    KokoroError,
-    ModelError,
-    VoiceError,
-    AudioError,
-    ValidationError,
-    CacheError,
-    ConfigurationError,
-    DownloadError
-)
-from .logging_config import setup_logging, get_request_logger
-
 # Conditional imports to avoid dependency issues during structure validation
 import importlib.util
+
+from .config import ConfigManager, config
+from .exceptions import (
+    AudioError,
+    CacheError,
+    ConfigurationError,
+    DownloadError,
+    KokoroError,
+    ModelError,
+    ValidationError,
+    VoiceError,
+)
+from .logging_config import get_request_logger, setup_logging
+
 
 def _is_available(module_name: str) -> bool:
     """Check if a module is available without importing it."""

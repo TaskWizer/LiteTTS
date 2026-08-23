@@ -7,11 +7,10 @@ import logging
 import logging.handlers
 import sys
 from pathlib import Path
-from typing import Optional
 
 # Import platform-safe emoji utilities
 try:
-    from LiteTTS.utils.platform_emojis import EMOJIS, get_emoji, format_log_message
+    from LiteTTS.utils.platform_emojis import EMOJIS, format_log_message, get_emoji
 except ImportError:
     # Fallback if the utility module is not available
     def get_emoji(name: str, fallback: str = '[?]') -> str:
@@ -38,8 +37,8 @@ class CacheFilter(logging.Filter):
 
 def setup_logging(
     level: str = "INFO",
-    format_string: Optional[str] = None,
-    file_path: Optional[str] = None,
+    format_string: str | None = None,
+    file_path: str | None = None,
     max_file_size: int = 10 * 1024 * 1024,  # 10MB
     backup_count: int = 5,
     json_format: bool = False,
@@ -255,7 +254,7 @@ class JSONFormatter(logging.Formatter):
 class RequestLogger:
     """Enhanced context manager for request-specific logging with metrics"""
 
-    def __init__(self, request_id: str, logger: logging.Logger, extra_context: Optional[dict] = None):
+    def __init__(self, request_id: str, logger: logging.Logger, extra_context: dict | None = None):
         self.request_id = request_id
         self.logger = logger
         self.start_time = None
@@ -310,7 +309,7 @@ class RequestLogger:
 
 
 def get_request_logger(request_id: str, logger_name: str = "kokoro.request",
-                      extra_context: Optional[dict] = None) -> RequestLogger:
+                      extra_context: dict | None = None) -> RequestLogger:
     """Get a request-specific logger with optional context"""
     logger = logging.getLogger(logger_name)
     return RequestLogger(request_id, logger, extra_context)
@@ -328,8 +327,9 @@ def setup_performance_logging():
 def log_system_info():
     """Log system information at startup"""
     import platform
-    import psutil
     import sys
+
+    import psutil
 
     logger = logging.getLogger("kokoro.system")
 

@@ -4,6 +4,7 @@ Unit tests for clean text normalizer
 """
 
 import pytest
+
 from LiteTTS.nlp.clean_text_normalizer import CleanTextNormalizer, NormalizationResult
 
 

@@ -4,17 +4,15 @@ Proper Name and Word Pronunciation Processor for TTS
 Fixes specific word mispronunciations like Elon→alon, Joy→joie, acquisition→ek-wah-zi·shn
 """
 
-import re
-import json
-from typing import Dict, List, Tuple, Optional, Set
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
 class ProperNamePronunciationProcessor:
     """Processor for fixing specific proper name and word pronunciation issues"""
 
-    def __init__(self, config: Optional[Dict] = None):
+    def __init__(self, config: dict | None = None):
         """Initialize proper name pronunciation processor
 
         Args:
@@ -26,7 +24,7 @@ class ProperNamePronunciationProcessor:
         self.context_sensitive_fixes = self._load_context_sensitive_fixes()
         self.enabled = self._is_enabled()
 
-    def _load_default_config(self) -> Dict:
+    def _load_default_config(self) -> dict:
         """Load default configuration from centralized config system"""
         try:
             # Try to import and use the centralized config system
@@ -36,7 +34,7 @@ class ProperNamePronunciationProcessor:
             logger.warning("Could not load centralized config, using defaults")
             return self._get_fallback_config()
 
-    def _get_fallback_config(self) -> Dict:
+    def _get_fallback_config(self) -> dict:
         """Get fallback configuration if centralized config is not available"""
         return {
             'text_processing': {
@@ -52,7 +50,7 @@ class ProperNamePronunciationProcessor:
                 .get('proper_name_handling', {})
                 .get('enabled', True))
 
-    def _load_proper_name_fixes(self) -> Dict[str, str]:
+    def _load_proper_name_fixes(self) -> dict[str, str]:
         """Load proper name pronunciation fixes
 
         NOTE: These phonetic spellings use non-IPA notation and interfere with
@@ -83,7 +81,7 @@ class ProperNamePronunciationProcessor:
 
         return fixes
 
-    def _load_word_pronunciation_fixes(self) -> Dict[str, str]:
+    def _load_word_pronunciation_fixes(self) -> dict[str, str]:
         """Load general word pronunciation fixes
 
         NOTE: These phonetic spellings use non-IPA notation and interfere with
@@ -115,7 +113,7 @@ class ProperNamePronunciationProcessor:
 
         return fixes
 
-    def _load_context_sensitive_fixes(self) -> List[Tuple[str, str, str, str]]:
+    def _load_context_sensitive_fixes(self) -> list[tuple[str, str, str, str]]:
         """Load context-sensitive pronunciation fixes
 
         NOTE: These phonetic spellings use non-IPA notation and interfere with
@@ -221,7 +219,7 @@ class ProperNamePronunciationProcessor:
 
         return text
 
-    def analyze_pronunciation_issues(self, text: str) -> Dict:
+    def analyze_pronunciation_issues(self, text: str) -> dict:
         """Analyze potential pronunciation issues in text"""
         analysis = {
             'proper_names_found': [],
@@ -261,7 +259,7 @@ class ProperNamePronunciationProcessor:
             self.word_pronunciation_fixes[word] = pronunciation
             logger.info(f"Added word pronunciation: {word} → {pronunciation}")
 
-    def get_all_fixes(self) -> Dict:
+    def get_all_fixes(self) -> dict:
         """Get all pronunciation fixes"""
         return {
             'proper_names': self.proper_name_fixes.copy(),

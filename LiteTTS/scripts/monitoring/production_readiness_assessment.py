@@ -3,13 +3,13 @@
 Final Production Readiness Assessment
 """
 
-import requests
 import json
 import time
-import psutil
-import subprocess
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Any
+
+import requests
+
 
 class ProductionReadinessAssessment:
     """Comprehensive production readiness assessment"""
@@ -19,7 +19,7 @@ class ProductionReadinessAssessment:
         self.score = 0
         self.max_score = 0
 
-    def assess_core_functionality(self) -> Dict[str, Any]:
+    def assess_core_functionality(self) -> dict[str, Any]:
         """Assess core TTS functionality"""
         print("🔧 Assessing Core Functionality")
         print("-" * 40)
@@ -50,7 +50,7 @@ class ProductionReadinessAssessment:
 
         return results
 
-    def assess_performance(self) -> Dict[str, Any]:
+    def assess_performance(self) -> dict[str, Any]:
         """Assess performance characteristics"""
         print("\n⚡ Assessing Performance")
         print("-" * 40)
@@ -107,7 +107,7 @@ class ProductionReadinessAssessment:
 
         return performance_results
 
-    def assess_reliability(self) -> Dict[str, Any]:
+    def assess_reliability(self) -> dict[str, Any]:
         """Assess system reliability"""
         print("\n🛡️ Assessing Reliability")
         print("-" * 40)
@@ -135,8 +135,8 @@ class ProductionReadinessAssessment:
 
         # Test concurrent requests
         try:
-            import threading
             import queue
+            import threading
 
             results_queue = queue.Queue()
 
@@ -189,7 +189,7 @@ class ProductionReadinessAssessment:
 
         return reliability_results
 
-    def assess_configuration(self) -> Dict[str, Any]:
+    def assess_configuration(self) -> dict[str, Any]:
         """Assess configuration management"""
         print("\n⚙️ Assessing Configuration")
         print("-" * 40)
@@ -235,7 +235,7 @@ class ProductionReadinessAssessment:
 
         return config_results
 
-    def assess_documentation(self) -> Dict[str, Any]:
+    def assess_documentation(self) -> dict[str, Any]:
         """Assess documentation quality"""
         print("\n📚 Assessing Documentation")
         print("-" * 40)
@@ -268,7 +268,7 @@ class ProductionReadinessAssessment:
 
         return doc_results
 
-    def _test_basic_tts(self) -> Dict[str, Any]:
+    def _test_basic_tts(self) -> dict[str, Any]:
         """Test basic TTS functionality"""
         response = requests.post(
             "http://localhost:8354/v1/audio/speech",
@@ -281,7 +281,7 @@ class ProductionReadinessAssessment:
             'audio_size': len(response.content) if response.status_code == 200 else 0
         }
 
-    def _test_multiple_voices(self) -> Dict[str, Any]:
+    def _test_multiple_voices(self) -> dict[str, Any]:
         """Test multiple voice support"""
         voices = ["af_heart", "am_puck"]
         results = []
@@ -300,7 +300,7 @@ class ProductionReadinessAssessment:
             'voices_working': sum(results)
         }
 
-    def _test_different_formats(self) -> Dict[str, Any]:
+    def _test_different_formats(self) -> dict[str, Any]:
         """Test different audio formats"""
         formats = ["mp3", "wav"]
         results = []
@@ -319,7 +319,7 @@ class ProductionReadinessAssessment:
             'formats_working': sum(results)
         }
 
-    def _test_speed_control(self) -> Dict[str, Any]:
+    def _test_speed_control(self) -> dict[str, Any]:
         """Test speed control"""
         response = requests.post(
             "http://localhost:8354/v1/audio/speech",
@@ -331,7 +331,7 @@ class ProductionReadinessAssessment:
             'status_code': response.status_code
         }
 
-    def _test_error_handling(self) -> Dict[str, Any]:
+    def _test_error_handling(self) -> dict[str, Any]:
         """Test error handling"""
         # Test with invalid voice
         response = requests.post(
@@ -344,7 +344,7 @@ class ProductionReadinessAssessment:
             'status_code': response.status_code
         }
 
-    def generate_final_report(self) -> Dict[str, Any]:
+    def generate_final_report(self) -> dict[str, Any]:
         """Generate final production readiness report"""
         print("\n" + "=" * 60)
         print("📋 FINAL PRODUCTION READINESS ASSESSMENT")

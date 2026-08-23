@@ -7,15 +7,15 @@ Integrates all audio quality testing components into a unified system
 import asyncio
 import json
 import logging
-import time
-from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
-from dataclasses import dataclass, asdict
 import tempfile
+import time
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import Any
+
 import requests
 
-from .audio_quality_tester import AudioQualityTester, AudioTestCase, AudioQualityMetrics
-from .asr_integrations.base_asr_client import BaseASRClient
+from .audio_quality_tester import AudioQualityMetrics, AudioQualityTester, AudioTestCase
 
 logger = logging.getLogger(__name__)
 
@@ -27,11 +27,11 @@ class TestSuiteResults:
     failed_tests: int
     skipped_tests: int
     overall_score: float
-    category_results: Dict[str, Dict[str, Any]]
-    performance_metrics: Dict[str, float]
-    quality_metrics: Dict[str, float]
+    category_results: dict[str, dict[str, Any]]
+    performance_metrics: dict[str, float]
+    quality_metrics: dict[str, float]
     regression_detected: bool
-    baseline_comparison: Optional[Dict[str, Any]] = None
+    baseline_comparison: dict[str, Any] | None = None
     execution_time: float = 0.0
     timestamp: str = ""
 
@@ -40,7 +40,7 @@ class ComprehensiveAudioQualityTestSuite:
     Comprehensive audio quality testing suite that integrates all testing components
     """
 
-    def __init__(self, config_path: Optional[str] = None):
+    def __init__(self, config_path: str | None = None):
         self.config = self._load_config(config_path)
         self.audio_config = self.config.get("audio_quality_testing", {})
 
@@ -76,7 +76,7 @@ class ComprehensiveAudioQualityTestSuite:
 
         logger.info("Comprehensive Audio Quality Test Suite initialized")
 
-    def _load_config(self, config_path: Optional[str]) -> Dict[str, Any]:
+    def _load_config(self, config_path: str | None) -> dict[str, Any]:
         """Load configuration from file or use defaults"""
         if config_path and Path(config_path).exists():
             with open(config_path, 'r') as f:
@@ -109,7 +109,7 @@ class ComprehensiveAudioQualityTestSuite:
             }
         }
 
-    def _create_test_cases(self) -> List[AudioTestCase]:
+    def _create_test_cases(self) -> list[AudioTestCase]:
         """Create comprehensive test cases covering all quality aspects"""
         test_cases = []
 
@@ -281,7 +281,7 @@ class ComprehensiveAudioQualityTestSuite:
 
         return results
 
-    async def _run_category_tests(self, category: str, test_cases: List[AudioTestCase]) -> Dict[str, Any]:
+    async def _run_category_tests(self, category: str, test_cases: list[AudioTestCase]) -> dict[str, Any]:
         """Run tests for a specific category"""
         category_results = {
             "category": category,
@@ -342,7 +342,7 @@ class ComprehensiveAudioQualityTestSuite:
 
         return category_results
 
-    async def _run_single_test(self, test_case: AudioTestCase) -> Dict[str, Any]:
+    async def _run_single_test(self, test_case: AudioTestCase) -> dict[str, Any]:
         """Run a single audio quality test"""
         try:
             logger.debug(f"Running test: {test_case.test_id}")
@@ -382,7 +382,7 @@ class ComprehensiveAudioQualityTestSuite:
                 "error": str(e)
             }
 
-    async def _generate_audio(self, test_case: AudioTestCase) -> Tuple[Optional[bytes], float]:
+    async def _generate_audio(self, test_case: AudioTestCase) -> tuple[bytes | None, float]:
         """Generate audio for test case using TTS API"""
         try:
             start_time = time.time()

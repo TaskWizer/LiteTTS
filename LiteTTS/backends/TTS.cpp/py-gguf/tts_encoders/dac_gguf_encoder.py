@@ -1,5 +1,5 @@
-from .tts_encoder import TTSEncoder
 from .tensor_util import get_regularized_weight
+from .tts_encoder import TTSEncoder
 
 # DAC_RESIDUAL_UNIT_PARTS, DAC_DECODER_PARTS, DAC_DECODER_BLOCK_PARTS are static mappings
 # of the pytorch DAC Model parameter names to easily interpretable TTS.cpp names (saved to the

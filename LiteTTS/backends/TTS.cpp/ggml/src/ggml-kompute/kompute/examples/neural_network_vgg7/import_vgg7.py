@@ -1,8 +1,8 @@
-import numpy
 import json
 import os
 import sys
-import time
+
+import numpy
 import sh_common
 
 if len(sys.argv) != 2:

@@ -3,13 +3,13 @@
 Unit tests for environment bridge module
 """
 
-import pytest
 from unittest.mock import patch
+
 from LiteTTS.config.environment_bridge import (
     EnvironmentConfig,
     EnvironmentConfigLoader,
     get_environment_config,
-    initialize_environment_config
+    initialize_environment_config,
 )
 
 

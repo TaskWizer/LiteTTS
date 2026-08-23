@@ -4,13 +4,12 @@ Comprehensive OpenWebUI Integration Test
 Validates all voice/linguistic features through OpenWebUI interface
 """
 
-import requests
 import json
-import time
-import sys
-import os
-from pathlib import Path
 import logging
+import sys
+import time
+
+import requests
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

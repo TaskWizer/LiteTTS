@@ -4,12 +4,12 @@ Model-level optimizations for Kokoro TTS
 Implements aggressive model optimizations for maximum performance
 """
 
-import os
 import logging
-import numpy as np
-from typing import Dict, Any, Optional, List
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ class ModelOptimizationConfig:
     """Configuration for model optimizations"""
     reduce_mel_bins: bool = True
     target_mel_bins: int = 64  # Reduce from 80 to 64
-    max_phoneme_duration: Optional[int] = 500  # Limit phoneme sequence length (keep under voice vector size of 510)
+    max_phoneme_duration: int | None = 500  # Limit phoneme sequence length (keep under voice vector size of 510)
     enable_quantization: bool = True
     prefer_q4_model: bool = True
     enable_warm_up: bool = True
@@ -31,7 +31,7 @@ class ModelOptimizationConfig:
 class ModelOptimizer:
     """Model-level optimizations for maximum performance"""
 
-    def __init__(self, config: Optional[ModelOptimizationConfig] = None):
+    def __init__(self, config: ModelOptimizationConfig | None = None):
         self.config = config or ModelOptimizationConfig()
         self.warm_up_completed = False
         self.phonemizer_cache = {}
@@ -52,7 +52,7 @@ class ModelOptimizer:
         logger.info(f"Using original model: {model_path}")
         return str(model_path)
 
-    def get_optimized_session_options(self) -> Dict[str, Any]:
+    def get_optimized_session_options(self) -> dict[str, Any]:
         """Get ONNX session options optimized for aggressive performance"""
         try:
             from LiteTTS.utils.onnx_config_manager import create_optimized_session_options
@@ -102,7 +102,7 @@ class ModelOptimizer:
             logger.warning("ONNX Runtime not available for session optimization")
             return {}
 
-    def optimize_phoneme_processing(self, text: str, voice: str) -> Optional[str]:
+    def optimize_phoneme_processing(self, text: str, voice: str) -> str | None:
         """Optimize phoneme processing with caching and fast paths"""
         if not self.config.cache_phonemizer:
             return None
@@ -146,7 +146,7 @@ class ModelOptimizer:
                     del self.phonemizer_cache[key]
 
     def optimize_input_preparation(self, tokens: np.ndarray, voice_data: np.ndarray,
-                                 speed: float) -> Dict[str, np.ndarray]:
+                                 speed: float) -> dict[str, np.ndarray]:
         """Optimize model input preparation"""
         # Limit phoneme sequence length for faster processing
         if self.config.max_phoneme_duration and len(tokens) > self.config.max_phoneme_duration:
@@ -197,7 +197,7 @@ class ModelOptimizer:
         except Exception as e:
             logger.warning(f"Model warm-up failed: {e}")
 
-    def optimize_for_text_length(self, text_length: int) -> Dict[str, Any]:
+    def optimize_for_text_length(self, text_length: int) -> dict[str, Any]:
         """Get optimizations based on text length"""
         optimizations = {}
 
@@ -229,7 +229,7 @@ class ModelOptimizer:
 
         return optimizations
 
-    def get_performance_stats(self) -> Dict[str, Any]:
+    def get_performance_stats(self) -> dict[str, Any]:
         """Get performance statistics"""
         return {
             "warm_up_completed": self.warm_up_completed,

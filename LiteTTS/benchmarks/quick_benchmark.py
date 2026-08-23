@@ -3,14 +3,15 @@
 Quick benchmark script to test TTS performance
 """
 
-import time
-import requests
-import json
-import statistics
 import argparse
-from typing import List, Dict, Any
+import statistics
+import time
+from typing import Any
 
-def benchmark_tts(base_url: str, num_requests: int = 10, voice: str = "af_heart") -> Dict[str, Any]:
+import requests
+
+
+def benchmark_tts(base_url: str, num_requests: int = 10, voice: str = "af_heart") -> dict[str, Any]:
     """Run a quick benchmark of the TTS API"""
 
     test_texts = [

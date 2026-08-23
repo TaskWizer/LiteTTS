@@ -5,12 +5,11 @@ Cross-platform backup utility for OpenWebUI configuration and data
 Replaces openwebui-backup.sh with better error handling and cross-platform support
 """
 
-import os
-import sys
-import shutil
-import tarfile
-import logging
 import argparse
+import logging
+import shutil
+import sys
+import tarfile
 from datetime import datetime
 from pathlib import Path
 

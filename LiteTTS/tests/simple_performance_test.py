@@ -4,22 +4,21 @@ Simple Performance Test
 Lightweight performance testing without full TTS dependencies
 """
 
-import time
-import logging
 import json
+import logging
 import statistics
-from typing import Dict, List, Any, Optional
-from dataclasses import dataclass, asdict
-from pathlib import Path
 import sys
-import os
+import time
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import Any
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 try:
-    from LiteTTS.nlp.text_normalizer import TextNormalizer
     from LiteTTS.nlp.rime_ai_integration import rime_ai_processor
+    from LiteTTS.nlp.text_normalizer import TextNormalizer
     TEXT_PROCESSING_AVAILABLE = True
 except ImportError as e:
     TEXT_PROCESSING_AVAILABLE = False
@@ -35,7 +34,7 @@ class SimplePerformanceMetrics:
     processing_time: float
     throughput_chars_per_sec: float
     success: bool
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
 class SimplePerformanceTester:
     """Lightweight performance tester for text processing components"""
@@ -56,7 +55,7 @@ class SimplePerformanceTester:
 
         logger.info("Simple performance tester initialized")
 
-    def run_text_processing_performance_test(self) -> List[SimplePerformanceMetrics]:
+    def run_text_processing_performance_test(self) -> list[SimplePerformanceMetrics]:
         """Test text processing performance"""
         if not TEXT_PROCESSING_AVAILABLE:
             return [SimplePerformanceMetrics(
@@ -108,7 +107,7 @@ class SimplePerformanceTester:
 
         return results
 
-    def run_rime_ai_performance_test(self) -> List[SimplePerformanceMetrics]:
+    def run_rime_ai_performance_test(self) -> list[SimplePerformanceMetrics]:
         """Test RIME AI processing performance"""
         results = []
 
@@ -159,7 +158,7 @@ class SimplePerformanceTester:
 
         return results
 
-    def run_all_tests(self) -> Dict[str, Any]:
+    def run_all_tests(self) -> dict[str, Any]:
         """Run all available performance tests"""
         logger.info("Running all performance tests")
 
@@ -200,7 +199,7 @@ class SimplePerformanceTester:
 
         return all_results
 
-    def save_results(self, results: Dict[str, Any], filename: str = "simple_performance_results.json"):
+    def save_results(self, results: dict[str, Any], filename: str = "simple_performance_results.json"):
         """Save test results to file"""
         # Convert dataclasses to dictionaries for JSON serialization
         serializable_results = {}

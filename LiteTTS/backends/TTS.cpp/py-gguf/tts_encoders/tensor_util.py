@@ -1,11 +1,11 @@
+
 import torch
 import torch.nn as nn
 from torch.nn.utils.parametrizations import _WeightNorm
 from torch.nn.utils.weight_norm import WeightNorm
-from typing import Dict
 
 
-def get_regularized_weight(modules: Dict[str, nn.Module], parameter_name: str) -> nn.Parameter:
+def get_regularized_weight(modules: dict[str, nn.Module], parameter_name: str) -> nn.Parameter:
     """
     Attempts to call torch the forward pre-hook in order to apply and assign weight normalization on
     a weight normalized nn.Module and return the normalized weight such that a GGUF compatible weight
@@ -27,7 +27,7 @@ def get_regularized_weight(modules: Dict[str, nn.Module], parameter_name: str) -
     return module.weight
 
 
-def get_normalized_weight_from_parametrizations(modules: Dict[str, nn.Module], parameter_name: str) -> torch.Tensor:
+def get_normalized_weight_from_parametrizations(modules: dict[str, nn.Module], parameter_name: str) -> torch.Tensor:
     """
     Attempts to call the default parametrization forward pass for weight normalization such that the true weight
     can be determined via the stored parametrized variables.

@@ -3,10 +3,10 @@ Backward Compatibility Test Suite
 Tests to ensure API backward compatibility across versions
 """
 
-import pytest
 import json
+
+import pytest
 import requests
-from typing import Dict, Any
 
 # Skip - integration tests that require running server
 pytestmark = pytest.mark.skip(reason="Integration tests that require running TTS server")
@@ -144,7 +144,6 @@ class TestConfigurationCompatibility:
             os.environ[var] = "test_value"
             try:
                 # Try importing main modules
-                import sys
                 assert True  # If we get here, no import errors
             finally:
                 if var in os.environ:

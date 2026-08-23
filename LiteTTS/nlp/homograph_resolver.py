@@ -3,9 +3,9 @@
 Homograph resolution system for disambiguating word pronunciations
 """
 
-import re
-from typing import Dict, List, Tuple, Optional
 import logging
+import re
+
 from .pronunciation_dictionary import PronunciationDictionary
 
 logger = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ class HomographResolver:
         self.context_patterns = self._compile_context_patterns()
         self.pronunciation_dict = PronunciationDictionary()  # Enhanced pronunciation dictionary
 
-    def _load_homograph_dictionary(self) -> Dict[str, Dict[str, str]]:
+    def _load_homograph_dictionary(self) -> dict[str, dict[str, str]]:
         """Load homograph dictionary with different pronunciations"""
         return {
             # Removed problematic pronunciation overrides for natural speech
@@ -74,7 +74,7 @@ class HomographResolver:
             }
         }
 
-    def _compile_context_patterns(self) -> Dict[str, List[Tuple[re.Pattern, str]]]:
+    def _compile_context_patterns(self) -> dict[str, list[tuple[re.Pattern, str]]]:
         """Compile context patterns for automatic disambiguation"""
         patterns = {}
 
@@ -218,7 +218,7 @@ class HomographResolver:
 
         return text
 
-    def _find_noun_pronunciation(self, word: str, pronunciations: Dict[str, str]) -> Optional[str]:
+    def _find_noun_pronunciation(self, word: str, pronunciations: dict[str, str]) -> str | None:
         """Find the noun pronunciation for a word"""
         # Common noun keys
         noun_keys = ['noun', 'thing', 'document', 'food', 'metal', 'person', 'agreement', 'product']
@@ -227,7 +227,7 @@ class HomographResolver:
                 return key
         return None
 
-    def _find_verb_pronunciation(self, word: str, pronunciations: Dict[str, str]) -> Optional[str]:
+    def _find_verb_pronunciation(self, word: str, pronunciations: dict[str, str]) -> str | None:
         """Find the verb pronunciation for a word"""
         # Common verb keys
         verb_keys = ['verb', 'create', 'capture', 'shut', 'change', 'allow', 'advance']
@@ -236,16 +236,16 @@ class HomographResolver:
                 return key
         return None
 
-    def add_homograph(self, word: str, pronunciations: Dict[str, str]):
+    def add_homograph(self, word: str, pronunciations: dict[str, str]):
         """Add a new homograph to the dictionary"""
         self.homograph_dict[word] = pronunciations
         logger.info(f"Added homograph: {word} with pronunciations: {list(pronunciations.keys())}")
 
-    def get_homograph_info(self, word: str) -> Optional[Dict[str, str]]:
+    def get_homograph_info(self, word: str) -> dict[str, str] | None:
         """Get pronunciation options for a homograph"""
         return self.homograph_dict.get(word.lower())
 
-    def list_homographs(self) -> List[str]:
+    def list_homographs(self) -> list[str]:
         """Get list of all known homographs"""
         return list(self.homograph_dict.keys())
 

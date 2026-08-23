@@ -4,10 +4,11 @@ Debug middleware for enhanced OpenWebUI integration debugging
 Provides detailed request/response logging and analysis
 """
 
-import time
 import json
 import logging
-from typing import Callable, Dict, Any
+import time
+from typing import Any
+
 from fastapi import Request
 
 logger = logging.getLogger(__name__)
@@ -212,7 +213,7 @@ class DebugMiddleware:
         else:
             logger.info(f"✅ [REQ-{request_id}] OpenWebUI Request looks healthy")
 
-    def get_openwebui_stats(self) -> Dict[str, Any]:
+    def get_openwebui_stats(self) -> dict[str, Any]:
         """Get statistics about OpenWebUI requests"""
         if not self.openwebui_requests:
             return {"message": "No OpenWebUI requests recorded"}

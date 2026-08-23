@@ -4,13 +4,14 @@ Dynamic CPU utilization monitoring and core allocation system for Kokoro TTS API
 Provides real-time CPU monitoring with configurable thresholds for optimal performance.
 """
 
-import os
-import time
-import threading
 import logging
-from typing import Dict, List, Optional, Tuple, Callable
-from dataclasses import dataclass
+import os
+import threading
+import time
 from collections import deque
+from collections.abc import Callable
+from dataclasses import dataclass
+
 import psutil
 
 logger = logging.getLogger(__name__)
@@ -25,8 +26,8 @@ class CPUThresholds:
     allocation_cooldown: float = 5.0  # Minimum time between allocation changes
 
     # Legacy support for backward compatibility
-    min_threshold: Optional[float] = None  # Deprecated: use cpu_target instead
-    max_threshold: Optional[float] = None  # Deprecated: use cpu_target instead
+    min_threshold: float | None = None  # Deprecated: use cpu_target instead
+    max_threshold: float | None = None  # Deprecated: use cpu_target instead
 
 @dataclass
 class CPUAllocation:
@@ -42,7 +43,7 @@ class CPUAllocation:
 class CPUUtilizationMonitor:
     """Real-time CPU utilization monitoring with dynamic core allocation"""
 
-    def __init__(self, thresholds: Optional[CPUThresholds] = None):
+    def __init__(self, thresholds: CPUThresholds | None = None):
         self.thresholds = thresholds or CPUThresholds()
         self.total_cores = os.cpu_count() or 4
         self.current_allocation = CPUAllocation(
@@ -57,10 +58,10 @@ class CPUUtilizationMonitor:
 
         # Monitoring state
         self._monitoring = False
-        self._monitor_thread: Optional[threading.Thread] = None
+        self._monitor_thread: threading.Thread | None = None
         self._utilization_history = deque(maxlen=self.thresholds.history_window)
         self._last_allocation_change = 0.0
-        self._allocation_callbacks: List[Callable[[CPUAllocation], None]] = []
+        self._allocation_callbacks: list[Callable[[CPUAllocation], None]] = []
 
         # Thread safety
         self._lock = threading.RLock()
@@ -88,7 +89,7 @@ class CPUUtilizationMonitor:
                 return self.get_current_utilization()
             return sum(self._utilization_history) / len(self._utilization_history)
 
-    def calculate_optimal_cores(self, utilization: float) -> Tuple[int, str]:
+    def calculate_optimal_cores(self, utilization: float) -> tuple[int, str]:
         """Calculate optimal core count based on single CPU target threshold with hysteresis"""
         min_cores = 1
         max_cores = max(1, self.total_cores - 1)  # Leave at least 1 core for system
@@ -112,7 +113,7 @@ class CPUUtilizationMonitor:
 
         return optimal_cores, reason
 
-    def calculate_thread_allocation(self, cores: int) -> Tuple[int, int]:
+    def calculate_thread_allocation(self, cores: int) -> tuple[int, int]:
         """Calculate optimal inter_op and intra_op thread counts for given cores"""
         # Based on existing CPU optimizer logic but simplified for dynamic allocation
         if cores >= 8:
@@ -220,7 +221,7 @@ class CPUUtilizationMonitor:
         with self._lock:
             return self.current_allocation
 
-    def get_monitoring_stats(self) -> Dict:
+    def get_monitoring_stats(self) -> dict:
         """Get monitoring statistics"""
         with self._lock:
             return {
@@ -246,16 +247,16 @@ class CPUUtilizationMonitor:
             }
 
 # Global monitor instance
-_cpu_monitor: Optional[CPUUtilizationMonitor] = None
+_cpu_monitor: CPUUtilizationMonitor | None = None
 
-def get_cpu_monitor(thresholds: Optional[CPUThresholds] = None) -> CPUUtilizationMonitor:
+def get_cpu_monitor(thresholds: CPUThresholds | None = None) -> CPUUtilizationMonitor:
     """Get or create global CPU monitor instance"""
     global _cpu_monitor
     if _cpu_monitor is None:
         _cpu_monitor = CPUUtilizationMonitor(thresholds)
     return _cpu_monitor
 
-def initialize_cpu_monitoring(config: Optional[Dict] = None) -> CPUUtilizationMonitor:
+def initialize_cpu_monitoring(config: dict | None = None) -> CPUUtilizationMonitor:
     """Initialize CPU monitoring with configuration (supports both new and legacy formats)"""
     thresholds = CPUThresholds()
 

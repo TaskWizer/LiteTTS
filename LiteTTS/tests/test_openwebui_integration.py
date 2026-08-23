@@ -5,11 +5,10 @@ Tests all endpoints and compatibility routes for OpenWebUI integration
 """
 
 import sys
-import json
 import time
-import requests
 from pathlib import Path
-from typing import Dict, Any, List
+
+import requests
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))

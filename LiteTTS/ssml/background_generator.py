@@ -6,15 +6,13 @@ Generates ambient background sounds for speech synthesis enhancement.
 Supports various predefined ambient sounds and custom audio files.
 """
 
-import numpy as np
-import os
 import logging
-from typing import Optional, Dict, Any
 from dataclasses import dataclass
-from enum import Enum
+
+import numpy as np
 
 from ..audio.audio_segment import AudioSegment
-from .parser import BackgroundType, BackgroundConfig
+from .parser import BackgroundConfig, BackgroundType
 
 logger = logging.getLogger(__name__)
 
@@ -24,8 +22,8 @@ class NoiseParameters:
     frequency_range: tuple  # (min_freq, max_freq) in Hz
     amplitude_variation: float  # 0.0 to 1.0
     spectral_shape: str  # 'white', 'pink', 'brown'
-    modulation_freq: Optional[float] = None  # For amplitude modulation
-    filter_cutoff: Optional[float] = None  # Low-pass filter cutoff
+    modulation_freq: float | None = None  # For amplitude modulation
+    filter_cutoff: float | None = None  # Low-pass filter cutoff
 
 class BackgroundGenerator:
     """

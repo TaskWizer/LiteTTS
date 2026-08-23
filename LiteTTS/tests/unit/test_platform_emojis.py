@@ -3,24 +3,23 @@
 Unit tests for platform emojis module
 """
 
-import pytest
 from LiteTTS.utils.platform_emojis import (
-    is_windows_with_encoding_issues,
-    get_safe_emoji,
-    get_emoji,
-    format_log_message,
+    EMOJIS,
     clean_message_for_json,
-    log_start,
-    log_success,
-    log_error,
-    log_warning,
-    log_info,
+    format_log_message,
+    get_emoji,
+    get_safe_emoji,
+    is_windows_with_encoding_issues,
     log_config,
     log_download,
+    log_error,
+    log_info,
+    log_ready,
+    log_start,
+    log_success,
     log_test,
     log_voice,
-    log_ready,
-    EMOJIS
+    log_warning,
 )
 
 

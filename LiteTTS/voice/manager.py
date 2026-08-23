@@ -3,17 +3,18 @@
 Main voice manager that orchestrates all voice operations
 """
 
-from pathlib import Path
-from typing import Dict, List, Optional, Callable, Any
 import logging
+from collections.abc import Callable
+from pathlib import Path
+from typing import Any
 
-from .downloader import VoiceDownloader, DownloadProgress
-from .metadata import VoiceMetadataManager
 from .cache import VoiceCache
+from .downloader import DownloadProgress, VoiceDownloader
+from .metadata import VoiceMetadataManager
 
 # Optional imports that may require torch
 try:
-    from .validator import VoiceValidator, ValidationResult
+    from .validator import ValidationResult, VoiceValidator
     _HAS_VALIDATOR = True
 except ImportError:
     _HAS_VALIDATOR = False
@@ -22,7 +23,7 @@ except ImportError:
         def validate_voice(self, voice_name: str, file_path) -> 'ValidationResult':
             return ValidationResult()
 
-        def validate_all_voices(self, voices_dir) -> Dict[str, 'ValidationResult']:
+        def validate_all_voices(self, voices_dir) -> dict[str, 'ValidationResult']:
             return {}
 
     class ValidationResult:
@@ -96,7 +97,7 @@ class VoiceManager:
         logger.info(f"Voice manager initialized with strategy: {self.loading_strategy}, "
                    f"cache_size: {max_cache_size}, combined_file: {self.use_combined_file}")
 
-    def get_voice_embedding(self, voice_name: str) -> Optional[VoiceEmbedding]:
+    def get_voice_embedding(self, voice_name: str) -> VoiceEmbedding | None:
         """Get voice embedding (optimized for individual loading strategy)"""
         import time
         start_time = time.perf_counter() if self.performance_monitoring else None
@@ -162,7 +163,7 @@ class VoiceManager:
         return None
 
     def download_voice(self, voice_name: str,
-                      progress_callback: Optional[Callable[[DownloadProgress], None]] = None) -> bool:
+                      progress_callback: Callable[[DownloadProgress], None] | None = None) -> bool:
         """Download a specific voice"""
         logger.info(f"Downloading voice: {voice_name}")
 
@@ -187,12 +188,12 @@ class VoiceManager:
         return False
 
     def download_all_voices(self,
-                           progress_callback: Optional[Callable[[DownloadProgress], None]] = None) -> Dict[str, bool]:
+                           progress_callback: Callable[[DownloadProgress], None] | None = None) -> dict[str, bool]:
         """Download all available voices"""
         return self.downloader.download_all_voices(progress_callback)
 
     def download_default_voices(self,
-                               progress_callback: Optional[Callable[[DownloadProgress], None]] = None) -> Dict[str, bool]:
+                               progress_callback: Callable[[DownloadProgress], None] | None = None) -> dict[str, bool]:
         """Download default voices"""
         return self.downloader.download_default_voices(progress_callback)
 
@@ -201,11 +202,11 @@ class VoiceManager:
         voice_file = self.voices_dir / f"{voice_name}.bin"
         return self.validator.validate_voice(voice_name, voice_file)
 
-    def validate_all_voices(self) -> Dict[str, ValidationResult]:
+    def validate_all_voices(self) -> dict[str, ValidationResult]:
         """Validate all downloaded voices"""
         return self.validator.validate_all_voices(self.voices_dir)
 
-    def get_available_voices(self) -> List[str]:
+    def get_available_voices(self) -> list[str]:
         """Get list of available voices (downloaded and ready)"""
         available = []
 
@@ -254,19 +255,19 @@ class VoiceManager:
         validation_result = self.validator.validate_voice(voice_name, voice_file)
         return validation_result.is_valid
 
-    def get_voice_metadata(self, voice_name: str) -> Optional[VoiceMetadata]:
+    def get_voice_metadata(self, voice_name: str) -> VoiceMetadata | None:
         """Get metadata for a voice"""
         return self.metadata_manager.get_voice_metadata(voice_name)
 
-    def get_all_voice_metadata(self) -> Dict[str, VoiceMetadata]:
+    def get_all_voice_metadata(self) -> dict[str, VoiceMetadata]:
         """Get metadata for all voices"""
         return self.metadata_manager.get_all_voices()
 
-    def filter_voices(self, **criteria) -> List[VoiceMetadata]:
+    def filter_voices(self, **criteria) -> list[VoiceMetadata]:
         """Filter voices by criteria"""
         return self.metadata_manager.filter_voices(**criteria)
 
-    def get_recommended_voices(self, count: int = 3) -> List[VoiceMetadata]:
+    def get_recommended_voices(self, count: int = 3) -> list[VoiceMetadata]:
         """Get recommended voices"""
         return self.metadata_manager.get_recommended_voices(count)
 
@@ -274,7 +275,7 @@ class VoiceManager:
         """Preload a voice into cache"""
         return self.cache.preload_voice(voice_name)
 
-    def preload_voices(self, voice_names: List[str]) -> Dict[str, bool]:
+    def preload_voices(self, voice_names: list[str]) -> dict[str, bool]:
         """Preload multiple voices into cache"""
         return self.cache.preload_voices_batch(voice_names)
 
@@ -282,11 +283,11 @@ class VoiceManager:
         """Check if voice is currently cached"""
         return self.cache.is_voice_cached(voice_name)
 
-    def get_cached_voices(self) -> List[str]:
+    def get_cached_voices(self) -> list[str]:
         """Get list of currently cached voices"""
         return self.cache.get_cached_voices()
 
-    def get_system_status(self) -> Dict[str, Any]:
+    def get_system_status(self) -> dict[str, Any]:
         """Get comprehensive system status"""
         # Get download status
         download_info = self.downloader.get_download_info()
@@ -328,7 +329,7 @@ class VoiceManager:
         }
 
     def setup_system(self, download_all: bool = False,
-                    progress_callback: Optional[Callable[[DownloadProgress], None]] = None) -> Dict[str, Any]:
+                    progress_callback: Callable[[DownloadProgress], None] | None = None) -> dict[str, Any]:
         """Set up the voice system (download, validate, cache)"""
         logger.info("Setting up voice system")
 
@@ -403,7 +404,7 @@ class VoiceManager:
 
         return success
 
-    def get_voice_info(self, voice_name: str) -> Dict[str, Any]:
+    def get_voice_info(self, voice_name: str) -> dict[str, Any]:
         """Get comprehensive information about a voice"""
         info = {
             'name': voice_name,
@@ -456,7 +457,7 @@ class VoiceManager:
 
         return info
 
-    def get_performance_stats(self) -> Dict[str, Any]:
+    def get_performance_stats(self) -> dict[str, Any]:
         """Get performance statistics for individual loading strategy"""
         if not self.performance_monitoring:
             return {"monitoring_disabled": True}

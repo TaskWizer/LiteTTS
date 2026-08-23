@@ -12,7 +12,7 @@ import logging
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Any
 
 # Add the project root to the path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -33,7 +33,7 @@ class AudioQualityTestRunner:
     Main test runner for automated audio quality testing
     """
 
-    def __init__(self, config_path: Optional[Path] = None):
+    def __init__(self, config_path: Path | None = None):
         # Use centralized config system with fallback to specified path
         if config_path is None:
             # Try to use centralized configuration
@@ -59,7 +59,7 @@ class AudioQualityTestRunner:
         self.results_dir = Path("test_results/audio_quality")
         self.results_dir.mkdir(parents=True, exist_ok=True)
 
-    def _load_config(self) -> Dict[str, Any]:
+    def _load_config(self) -> dict[str, Any]:
         """
         Load configuration from config file with audio quality testing defaults
         """
@@ -111,7 +111,7 @@ class AudioQualityTestRunner:
 
         return config
 
-    async def run_espeak_integration_tests(self, test_filter: str = "all") -> Dict[str, Any]:
+    async def run_espeak_integration_tests(self, test_filter: str = "all") -> dict[str, Any]:
         """
         Run eSpeak integration tests
         """
@@ -148,7 +148,7 @@ class AudioQualityTestRunner:
 
         return summary
 
-    async def run_configuration_impact_tests(self) -> Dict[str, Any]:
+    async def run_configuration_impact_tests(self) -> dict[str, Any]:
         """
         Test audio quality impact of different configuration settings
         """
@@ -181,7 +181,7 @@ class AudioQualityTestRunner:
             "baseline_comparison": comparison if baseline_metrics else None
         }
 
-    def _compare_with_baseline(self, current: Dict[str, Any], baseline: Dict[str, Any]) -> Dict[str, Any]:
+    def _compare_with_baseline(self, current: dict[str, Any], baseline: dict[str, Any]) -> dict[str, Any]:
         """
         Compare current results with baseline metrics
         """
@@ -223,7 +223,7 @@ class AudioQualityTestRunner:
             "baseline_quality": baseline.get("quality_assessment", "UNKNOWN")
         }
 
-    async def run_performance_validation(self) -> Dict[str, Any]:
+    async def run_performance_validation(self) -> dict[str, Any]:
         """
         Run performance validation tests
         """
@@ -284,7 +284,7 @@ class AudioQualityTestRunner:
             "performance_assessment": performance_assessment
         }
 
-    async def run_comprehensive_test_suite(self) -> Dict[str, Any]:
+    async def run_comprehensive_test_suite(self) -> dict[str, Any]:
         """
         Run the complete comprehensive test suite
         """
@@ -335,7 +335,7 @@ class AudioQualityTestRunner:
             traceback.print_exc()
             return {"error": str(e), "results": results}
 
-    def _calculate_overall_assessment(self, results: Dict[str, Any]) -> str:
+    def _calculate_overall_assessment(self, results: dict[str, Any]) -> str:
         """
         Calculate overall assessment from all test results
         """

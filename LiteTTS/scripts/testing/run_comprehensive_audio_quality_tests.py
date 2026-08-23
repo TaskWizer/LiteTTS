@@ -4,18 +4,19 @@ Comprehensive Audio Quality Test Runner
 Executes the full audio quality testing suite with reporting and CI/CD integration
 """
 
-import asyncio
 import argparse
+import asyncio
 import logging
 import sys
-import json
 from pathlib import Path
-from typing import Optional
 
 # Add LiteTTS to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from LiteTTS.testing.comprehensive_audio_quality_suite import ComprehensiveAudioQualityTestSuite, TestSuiteResults
+from LiteTTS.testing.comprehensive_audio_quality_suite import (
+    ComprehensiveAudioQualityTestSuite,
+    TestSuiteResults,
+)
 
 # Configure logging
 logging.basicConfig(
@@ -27,7 +28,7 @@ logger = logging.getLogger(__name__)
 class AudioQualityTestRunner:
     """Main test runner for comprehensive audio quality testing"""
 
-    def __init__(self, config_path: Optional[str] = None):
+    def __init__(self, config_path: str | None = None):
         self.config_path = config_path
         self.test_suite = ComprehensiveAudioQualityTestSuite(config_path)
 

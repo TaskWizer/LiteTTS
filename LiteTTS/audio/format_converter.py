@@ -4,10 +4,11 @@ Audio format conversion utilities
 """
 
 import io
-import wave
-import numpy as np
-from typing import Dict, Any
 import logging
+import wave
+from typing import Any
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -200,7 +201,7 @@ class AudioFormatConverter:
         """Check if format is supported"""
         return format.lower() in self.supported_formats
 
-    def get_format_info(self, format: str) -> Dict[str, Any]:
+    def get_format_info(self, format: str) -> dict[str, Any]:
         """Get information about audio format"""
         format = format.lower()
 

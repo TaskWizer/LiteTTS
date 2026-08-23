@@ -3,11 +3,10 @@
 Unit tests for SIMD optimizer module
 """
 
-import pytest
 from LiteTTS.performance.simd_optimizer import (
     SIMDCapabilities,
     SIMDOptimizationConfig,
-    SIMDOptimizer
+    SIMDOptimizer,
 )
 
 

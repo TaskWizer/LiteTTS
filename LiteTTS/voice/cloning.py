@@ -4,16 +4,14 @@ Voice cloning system for LiteTTS
 Extracts speaker embeddings from audio samples and generates BIN voice files
 """
 
-import numpy as np
 import logging
-import tempfile
 import os
-from pathlib import Path
-from typing import Optional, Dict, Any
 from dataclasses import dataclass
-import hashlib
-import json
 from datetime import datetime
+from pathlib import Path
+from typing import Any
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -22,11 +20,11 @@ class VoiceCloneResult:
     """Result of voice cloning operation"""
     success: bool
     voice_name: str
-    voice_file_path: Optional[str] = None
-    embedding_data: Optional[np.ndarray] = None
-    metadata: Optional[Dict[str, Any]] = None
-    error_message: Optional[str] = None
-    similarity_score: Optional[float] = None
+    voice_file_path: str | None = None
+    embedding_data: np.ndarray | None = None
+    metadata: dict[str, Any] | None = None
+    error_message: str | None = None
+    similarity_score: float | None = None
 
 @dataclass
 class AudioAnalysisResult:
@@ -36,8 +34,8 @@ class AudioAnalysisResult:
     sample_rate: int
     channels: int
     quality_score: float
-    voice_characteristics: Dict[str, Any]
-    error_message: Optional[str] = None
+    voice_characteristics: dict[str, Any]
+    error_message: str | None = None
 
 class VoiceCloner:
     """Voice cloning system that extracts speaker embeddings from audio samples"""
@@ -255,7 +253,7 @@ class VoiceCloner:
             return 0.5  # Default moderate quality
 
     def _analyze_voice_characteristics(self, audio_data: np.ndarray,
-                                     sample_rate: int) -> Dict[str, Any]:
+                                     sample_rate: int) -> dict[str, Any]:
         """
         Analyze voice characteristics from audio
         
@@ -297,7 +295,7 @@ class VoiceCloner:
                 'zero_crossing_rate': 0.1
             }
 
-    def _extract_voice_embedding(self, audio_file_path: str) -> Optional[np.ndarray]:
+    def _extract_voice_embedding(self, audio_file_path: str) -> np.ndarray | None:
         """
         Extract voice embedding from audio file
         
@@ -443,7 +441,7 @@ class VoiceCloner:
 
         return features
 
-    def _generate_bin_file(self, voice_name: str, embedding_data: np.ndarray) -> Optional[str]:
+    def _generate_bin_file(self, voice_name: str, embedding_data: np.ndarray) -> str | None:
         """
         Generate BIN voice file compatible with LiteTTS
         
@@ -473,7 +471,7 @@ class VoiceCloner:
             logger.error(f"BIN file generation failed: {e}")
             return None
 
-    def list_custom_voices(self) -> Dict[str, Dict[str, Any]]:
+    def list_custom_voices(self) -> dict[str, dict[str, Any]]:
         """
         List all custom voices created through cloning
         
@@ -558,7 +556,6 @@ class VoiceCloner:
 
             # Clear from voice manager cache if available
             try:
-                from .manager import VoiceManager
                 # Try to get existing voice manager instance
                 if hasattr(self, '_voice_manager'):
                     voice_manager = self._voice_manager
@@ -570,7 +567,6 @@ class VoiceCloner:
 
             # Clear from audio cache if available
             try:
-                from ..cache.audio_cache import AudioCache
                 # Clear any cached audio for this voice
                 # This would require access to the audio cache instance
                 logger.debug(f"Audio cache invalidation for {voice_name} - would need cache instance")

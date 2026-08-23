@@ -9,7 +9,12 @@ from pathlib import Path
 # Add the project root to the path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from LiteTTS.nlp.unified_text_processor import UnifiedTextProcessor, ProcessingOptions, ProcessingMode
+from LiteTTS.nlp.unified_text_processor import (
+    ProcessingMode,
+    ProcessingOptions,
+    UnifiedTextProcessor,
+)
+
 
 def test_question_mark_fix():
     """Test the question mark fix in the unified processor"""
@@ -99,20 +104,19 @@ Integration Tests for Kokoro ONNX TTS API
 Tests integration with external services, OpenWebUI compatibility, and real-world scenarios
 """
 
-import pytest
-import requests
-import json
-import time
-import os
-from pathlib import Path
-from typing import Dict, Any, Optional
 
 # Import the app for testing
 import sys
+import time
+from pathlib import Path
+
+import pytest
+
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from app import app
 from fastapi.testclient import TestClient
+
+from app import app
 
 
 class TestOpenWebUIIntegration:

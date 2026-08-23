@@ -1,10 +1,12 @@
-import gguf
-from pathlib import Path
-from transformers import AutoTokenizer
-from tokenizers.models import Unigram
-from parler_tts import ParlerTTSForConditionalGeneration
-import torch
 import json
+from pathlib import Path
+
+import gguf
+import torch
+from parler_tts import ParlerTTSForConditionalGeneration
+from tokenizers.models import Unigram
+from transformers import AutoTokenizer
+
 from .dac_gguf_encoder import DACEncoder
 
 # The default repositories from which to pull Parler TTS torch models.

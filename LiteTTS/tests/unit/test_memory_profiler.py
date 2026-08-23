@@ -3,8 +3,7 @@
 Unit tests for memory profiler
 """
 
-import pytest
-from LiteTTS.performance.memory_profiler import MemorySnapshot, MemoryLeak
+from LiteTTS.performance.memory_profiler import MemoryLeak, MemorySnapshot
 
 
 class TestMemorySnapshot:

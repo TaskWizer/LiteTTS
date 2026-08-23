@@ -5,19 +5,16 @@ Extends voice cloning to support 120s audio clips, intelligent segmentation,
 multiple reference audio support, and enhanced workflow management.
 """
 
-import numpy as np
-import logging
-import tempfile
-import os
-from pathlib import Path
-from typing import Optional, Dict, Any, List
-from dataclasses import dataclass, field
-import hashlib
-import json
-from datetime import datetime
 import asyncio
-import threading
+import json
+import logging
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import Any
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -54,10 +51,10 @@ class AudioSegment:
 class MultiClipVoiceProfile:
     """Voice profile from multiple audio clips"""
     voice_name: str
-    clips: List[Dict[str, Any]]
+    clips: list[dict[str, Any]]
     combined_embedding: np.ndarray
-    quality_metrics: Dict[str, float]
-    processing_metadata: Dict[str, Any]
+    quality_metrics: dict[str, float]
+    processing_metadata: dict[str, Any]
     created_at: str
     total_duration: float
     clip_count: int
@@ -237,7 +234,7 @@ class IntelligentAudioSegmenter:
     def __init__(self, config: EnhancedVoiceCloneConfig):
         self.config = config
 
-    def segment_audio(self, audio_data: np.ndarray, sample_rate: int) -> List[AudioSegment]:
+    def segment_audio(self, audio_data: np.ndarray, sample_rate: int) -> list[AudioSegment]:
         """Segment long audio into optimal chunks"""
         duration = len(audio_data) / sample_rate
 
@@ -332,7 +329,7 @@ class IntelligentAudioSegmenter:
 class EnhancedVoiceCloner:
     """Enhanced voice cloning system with extended capabilities"""
 
-    def __init__(self, voices_dir: str = "LiteTTS/voices", config: Optional[EnhancedVoiceCloneConfig] = None):
+    def __init__(self, voices_dir: str = "LiteTTS/voices", config: EnhancedVoiceCloneConfig | None = None):
         self.voices_dir = Path(voices_dir)
         self.voices_dir.mkdir(exist_ok=True)
         self.config = config or EnhancedVoiceCloneConfig()
@@ -346,7 +343,7 @@ class EnhancedVoiceCloner:
 
         logger.info(f"EnhancedVoiceCloner initialized with max duration: {self.config.max_audio_duration}s")
 
-    def clone_voice_from_multiple_clips(self, audio_files: List[str], voice_name: str,
+    def clone_voice_from_multiple_clips(self, audio_files: list[str], voice_name: str,
                                       description: str = "") -> MultiClipVoiceProfile:
         """Clone voice from multiple audio clips"""
         if len(audio_files) > self.config.max_reference_clips:
@@ -396,7 +393,7 @@ class EnhancedVoiceCloner:
 
         return profile
 
-    def _process_single_clip(self, audio_file: str, clip_id: str) -> Dict[str, Any]:
+    def _process_single_clip(self, audio_file: str, clip_id: str) -> dict[str, Any]:
         """Process a single audio clip"""
         import soundfile as sf
 
@@ -430,7 +427,7 @@ class EnhancedVoiceCloner:
             'processed_audio_shape': processed_audio.shape
         }
 
-    def _segment_to_dict(self, segment: AudioSegment) -> Dict[str, Any]:
+    def _segment_to_dict(self, segment: AudioSegment) -> dict[str, Any]:
         """Convert AudioSegment to dictionary"""
         return {
             'segment_id': segment.segment_id,
@@ -525,7 +522,7 @@ class EnhancedVoiceCloner:
 
         return features
 
-    def _combine_clip_embeddings(self, clips_data: List[Dict[str, Any]]) -> np.ndarray:
+    def _combine_clip_embeddings(self, clips_data: list[dict[str, Any]]) -> np.ndarray:
         """Combine embeddings from multiple clips"""
         all_embeddings = []
 
@@ -566,7 +563,7 @@ class EnhancedVoiceCloner:
 
         return style_vectors.astype(np.float32)
 
-    def _calculate_combined_quality_metrics(self, clips_data: List[Dict[str, Any]]) -> Dict[str, float]:
+    def _calculate_combined_quality_metrics(self, clips_data: list[dict[str, Any]]) -> dict[str, float]:
         """Calculate combined quality metrics from all clips"""
         all_metrics = []
 

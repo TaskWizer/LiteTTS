@@ -3,10 +3,8 @@
 Create comprehensive README files for all directories
 """
 
-import os
 import logging
 from pathlib import Path
-from typing import Dict, List
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -165,7 +163,7 @@ class DirectoryReadmeCreator:
             logger.error(f"Failed to create README files: {e}")
             raise
 
-    def _create_readme(self, dir_path: str, template: Dict):
+    def _create_readme(self, dir_path: str, template: dict):
         """Create README for a specific directory"""
         directory = Path(dir_path)
 

@@ -4,10 +4,10 @@ Cross-platform server startup script for LiteTTS
 Replaces start.sh with better error handling and cross-platform compatibility
 """
 
-import os
-import sys
 import argparse
 import logging
+import os
+import sys
 from pathlib import Path
 
 # Add the project root to Python path
@@ -108,13 +108,13 @@ def main():
         check_and_run_hardware_optimization()
 
         # Import the app and get configuration
-        from app import tts_app, app
+        from app import tts_app
 
         logger.info("🚀 Starting Kokoro ONNX TTS API...")
 
         # Log configuration status
-        from pathlib import Path
         import json
+        from pathlib import Path
 
         logger.info("📋 Configuration Status:")
         config_sources = []

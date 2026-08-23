@@ -8,11 +8,11 @@ and contraction processing.
 """
 
 import logging
-import time
 import re
-from typing import Dict, List, Optional, Any, Tuple
+import time
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -62,10 +62,10 @@ class Phase6ProcessingResult:
     original_text: str
     processing_time: float
     total_changes: int = 0
-    changes_by_category: Dict[str, int] = field(default_factory=dict)
-    processing_stages: List[str] = field(default_factory=list)
-    warnings: List[str] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    changes_by_category: dict[str, int] = field(default_factory=dict)
+    processing_stages: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 class Phase6TextProcessor:
     """
@@ -79,7 +79,7 @@ class Phase6TextProcessor:
     - Context-aware text normalization
     """
 
-    def __init__(self, config: Optional[Dict] = None):
+    def __init__(self, config: dict | None = None):
         """Initialize Phase 6 text processor
         
         Args:
@@ -268,7 +268,7 @@ class Phase6TextProcessor:
             "they'll": "they will"
         }
 
-    def process_text(self, text: str, mode: Optional[Phase6ProcessingMode] = None) -> Phase6ProcessingResult:
+    def process_text(self, text: str, mode: Phase6ProcessingMode | None = None) -> Phase6ProcessingResult:
         """
         Process text with Phase 6 enhancements
         
@@ -350,7 +350,7 @@ class Phase6TextProcessor:
                 warnings=[f"Processing failed: {str(e)}"]
             )
 
-    def _process_numbers(self, text: str) -> Tuple[str, int]:
+    def _process_numbers(self, text: str) -> tuple[str, int]:
         """Process numbers, currency, and dates for better TTS pronunciation"""
         changes = 0
         original_text = text
@@ -398,7 +398,7 @@ class Phase6TextProcessor:
 
         return text, changes
 
-    def _process_numbers_fallback(self, text: str) -> Tuple[str, int]:
+    def _process_numbers_fallback(self, text: str) -> tuple[str, int]:
         """Fallback number processing when advanced processors unavailable"""
         changes = 0
 
@@ -421,7 +421,7 @@ class Phase6TextProcessor:
 
         return text, changes
 
-    def _process_units(self, text: str) -> Tuple[str, int]:
+    def _process_units(self, text: str) -> tuple[str, int]:
         """Process unit abbreviations with contraction and time format protection"""
         changes = 0
 
@@ -479,7 +479,7 @@ class Phase6TextProcessor:
 
         return False
 
-    def _process_homographs(self, text: str) -> Tuple[str, int]:
+    def _process_homographs(self, text: str) -> tuple[str, int]:
         """Process homographs with context awareness"""
         changes = 0
 
@@ -491,7 +491,7 @@ class Phase6TextProcessor:
 
         return text, changes
 
-    def _process_contractions(self, text: str) -> Tuple[str, int]:
+    def _process_contractions(self, text: str) -> tuple[str, int]:
         """Process contractions for better pronunciation using enhanced processor"""
         if not text or not text.strip():
             return text, 0
@@ -528,7 +528,7 @@ class Phase6TextProcessor:
 
         return text, changes
 
-    def _process_context_normalization(self, text: str) -> Tuple[str, int]:
+    def _process_context_normalization(self, text: str) -> tuple[str, int]:
         """Advanced context-aware normalization"""
         changes = 0
 
@@ -544,7 +544,7 @@ class Phase6TextProcessor:
 
         return text, changes
 
-    def get_capabilities(self) -> Dict[str, bool]:
+    def get_capabilities(self) -> dict[str, bool]:
         """Get Phase 6 processing capabilities"""
         return {
             'enhanced_numbers': True,
@@ -564,7 +564,7 @@ class Phase6TextProcessor:
         logger.debug(f"Phase 6 processing mode set to: {mode.value}")
 
 # Factory function for easy instantiation
-def create_phase6_processor(config: Optional[Dict] = None) -> Phase6TextProcessor:
+def create_phase6_processor(config: dict | None = None) -> Phase6TextProcessor:
     """Create a Phase 6 text processor instance"""
     return Phase6TextProcessor(config)
 

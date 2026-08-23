@@ -4,17 +4,17 @@ Dynamic emotion and intonation system for TTS
 Enhances question/exclamation intonation, italics emphasis, and context analysis
 """
 
-import re
 import logging
-from typing import Dict, List, Tuple, Optional, Union, Any
+import re
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 # Import LLM context analyzer
 try:
-    from .llm_context_analyzer import LLMContextAnalyzer, LLMContextAnalysis
+    from .llm_context_analyzer import LLMContextAnalysis, LLMContextAnalyzer
     LLM_ANALYZER_AVAILABLE = True
 except ImportError:
     LLM_ANALYZER_AVAILABLE = False
@@ -53,10 +53,10 @@ class IntonationMarker:
 class EmotionContext:
     """Emotion context for text analysis"""
     primary_emotion: str
-    secondary_emotions: List[str]
+    secondary_emotions: list[str]
     intensity: EmotionIntensity
     confidence: float
-    triggers: List[str]
+    triggers: list[str]
 
 class DynamicEmotionIntonationSystem:
     """Advanced emotion and intonation system for natural TTS expression with LLM-based context analysis"""
@@ -83,7 +83,7 @@ class DynamicEmotionIntonationSystem:
         else:
             logger.warning("LLM context analyzer not available")
 
-    def _load_punctuation_patterns(self) -> Dict[str, IntonationType]:
+    def _load_punctuation_patterns(self) -> dict[str, IntonationType]:
         """Load punctuation-based intonation patterns"""
         return {
             '?': IntonationType.QUESTIONING,
@@ -98,7 +98,7 @@ class DynamicEmotionIntonationSystem:
             '???': IntonationType.QUESTIONING,
         }
 
-    def _load_emotion_indicators(self) -> Dict[str, Tuple[str, EmotionIntensity]]:
+    def _load_emotion_indicators(self) -> dict[str, tuple[str, EmotionIntensity]]:
         """Load emotion indicator words and phrases"""
         return {
             # Excitement indicators
@@ -174,7 +174,7 @@ class DynamicEmotionIntonationSystem:
             'puzzled': ('uncertainty', EmotionIntensity.MODERATE),
         }
 
-    def _load_intonation_rules(self) -> List[Tuple[str, IntonationType, EmotionIntensity]]:
+    def _load_intonation_rules(self) -> list[tuple[str, IntonationType, EmotionIntensity]]:
         """Load intonation rules based on text patterns"""
         return [
             # Question patterns
@@ -213,7 +213,7 @@ class DynamicEmotionIntonationSystem:
             (r'\b(therefore|thus|consequently|in conclusion|finally)\b', IntonationType.FALLING, EmotionIntensity.MODERATE),
         ]
 
-    def _load_emphasis_patterns(self) -> List[Tuple[str, EmotionIntensity]]:
+    def _load_emphasis_patterns(self) -> list[tuple[str, EmotionIntensity]]:
         """Load emphasis detection patterns"""
         return [
             # Markdown-style emphasis
@@ -234,7 +234,7 @@ class DynamicEmotionIntonationSystem:
             (r'\b(very|really|extremely|incredibly|absolutely|totally|completely|utterly|quite|rather|fairly|somewhat)\b', EmotionIntensity.MODERATE),
         ]
 
-    def _load_question_patterns(self) -> List[Tuple[str, IntonationType]]:
+    def _load_question_patterns(self) -> list[tuple[str, IntonationType]]:
         """Load question detection patterns"""
         return [
             # Wh-questions
@@ -253,7 +253,7 @@ class DynamicEmotionIntonationSystem:
             (r'\b(I wonder|do you think|could you tell me)\b', IntonationType.RISING),
         ]
 
-    def process_emotion_intonation(self, text: str, conversation_history: Optional[List[str]] = None) -> Tuple[str, List[IntonationMarker]]:
+    def process_emotion_intonation(self, text: str, conversation_history: list[str] | None = None) -> tuple[str, list[IntonationMarker]]:
         """Process text for emotion and intonation markers with enhanced LLM context analysis"""
         logger.debug(f"Processing emotion and intonation in: {text[:100]}...")
 
@@ -280,7 +280,7 @@ class DynamicEmotionIntonationSystem:
 
         return processed_text, intonation_markers
 
-    def _detect_intonation_markers(self, text: str, llm_analysis: Optional[LLMContextAnalysis] = None) -> List[IntonationMarker]:
+    def _detect_intonation_markers(self, text: str, llm_analysis: LLMContextAnalysis | None = None) -> list[IntonationMarker]:
         """Detect intonation markers in text with enhanced LLM context"""
         markers = []
 
@@ -343,7 +343,7 @@ class DynamicEmotionIntonationSystem:
 
         return markers
 
-    def _detect_emotion_context(self, text: str, llm_analysis: Optional[LLMContextAnalysis] = None) -> EmotionContext:
+    def _detect_emotion_context(self, text: str, llm_analysis: LLMContextAnalysis | None = None) -> EmotionContext:
         """Detect overall emotion context of the text"""
         emotions = {}
         triggers = []
@@ -395,7 +395,7 @@ class DynamicEmotionIntonationSystem:
             triggers=triggers
         )
 
-    def _apply_intonation_markers(self, text: str, markers: List[IntonationMarker],
+    def _apply_intonation_markers(self, text: str, markers: list[IntonationMarker],
                                 emotion_context: EmotionContext) -> str:
         """Apply intonation markers to text"""
         # For now, we'll add simple markers that can be interpreted by the TTS engine
@@ -428,7 +428,7 @@ class DynamicEmotionIntonationSystem:
 
         return processed_text
 
-    def analyze_intonation_opportunities(self, text: str) -> Dict[str, List[str]]:
+    def analyze_intonation_opportunities(self, text: str) -> dict[str, list[str]]:
         """Analyze text for intonation opportunities"""
         info = {
             'questions': [],
@@ -510,7 +510,7 @@ class DynamicEmotionIntonationSystem:
         else:
             return EmotionIntensity.SUBTLE
 
-    def get_llm_analysis_info(self, text: str) -> Dict[str, Any]:
+    def get_llm_analysis_info(self, text: str) -> dict[str, Any]:
         """Get LLM analysis information for debugging"""
         if not self.llm_analyzer:
             return {"available": False, "reason": "LLM analyzer not initialized"}

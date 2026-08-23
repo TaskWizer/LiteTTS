@@ -3,8 +3,7 @@
 Unit tests for system optimizer module
 """
 
-import pytest
-from LiteTTS.performance.system_optimizer import SIMDCapabilities, BatchRequest, RequestBatcher
+from LiteTTS.performance.system_optimizer import BatchRequest, RequestBatcher, SIMDCapabilities
 
 
 class TestSIMDCapabilities:

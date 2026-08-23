@@ -4,6 +4,7 @@ Unit tests for naturalness enhancer
 """
 
 import pytest
+
 from LiteTTS.nlp.naturalness_enhancer import NaturalnessEnhancer, NaturalnessProfile
 
 

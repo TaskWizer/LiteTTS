@@ -4,14 +4,15 @@ Hardware Detection and System Optimization for Kokoro TTS
 Automatically detects system capabilities and optimizes configuration
 """
 
-import os
-import platform
-import psutil
 import hashlib
 import json
-import time
-from typing import Dict, Any, Optional, Tuple
 import logging
+import os
+import platform
+import time
+from typing import Any
+
+import psutil
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,7 @@ class HardwareDetector:
         self.storage_info = self._detect_storage_info()
         self.system_fingerprint = self._generate_system_fingerprint()
 
-    def _detect_system_info(self) -> Dict[str, Any]:
+    def _detect_system_info(self) -> dict[str, Any]:
         """Detect basic system information"""
         return {
             'platform': platform.system(),
@@ -38,7 +39,7 @@ class HardwareDetector:
             'python_version': platform.python_version()
         }
 
-    def _detect_cpu_info(self) -> Dict[str, Any]:
+    def _detect_cpu_info(self) -> dict[str, Any]:
         """Detect CPU information and capabilities"""
         cpu_info = {
             'physical_cores': psutil.cpu_count(logical=False),
@@ -69,7 +70,7 @@ class HardwareDetector:
 
         return cpu_info
 
-    def _detect_memory_info(self) -> Dict[str, Any]:
+    def _detect_memory_info(self) -> dict[str, Any]:
         """Detect memory information"""
         memory = psutil.virtual_memory()
         swap = psutil.swap_memory()
@@ -84,7 +85,7 @@ class HardwareDetector:
             'swap_usage_percent': swap.percent
         }
 
-    def _detect_gpu_info(self) -> Dict[str, Any]:
+    def _detect_gpu_info(self) -> dict[str, Any]:
         """Detect GPU information"""
         gpu_info = {
             'cuda_available': False,
@@ -138,7 +139,7 @@ class HardwareDetector:
 
         return gpu_info
 
-    def _detect_storage_info(self) -> Dict[str, Any]:
+    def _detect_storage_info(self) -> dict[str, Any]:
         """Detect storage information"""
         storage_info = {
             'total_storage_gb': 0,
@@ -190,7 +191,7 @@ class HardwareDetector:
 
         return 'unknown'
 
-    def _test_storage_speed(self) -> Tuple[float, float]:
+    def _test_storage_speed(self) -> tuple[float, float]:
         """Test storage read/write speed (simple test)"""
         try:
             test_file = 'temp_speed_test.dat'
@@ -237,7 +238,7 @@ class HardwareDetector:
         fingerprint_str = json.dumps(fingerprint_data, sort_keys=True)
         return hashlib.sha256(fingerprint_str.encode()).hexdigest()[:16]
 
-    def get_system_capabilities(self) -> Dict[str, Any]:
+    def get_system_capabilities(self) -> dict[str, Any]:
         """Get system capabilities summary"""
         return {
             'cpu_score': self._calculate_cpu_score(),
@@ -316,7 +317,7 @@ class HardwareDetector:
         overall = (cpu_score * 0.3 + memory_score * 0.3 + gpu_score * 0.2 + storage_score * 0.2)
         return int(overall)
 
-    def get_all_info(self) -> Dict[str, Any]:
+    def get_all_info(self) -> dict[str, Any]:
         """Get all detected hardware information"""
         return {
             'system_info': self.system_info,

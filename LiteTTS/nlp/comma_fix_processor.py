@@ -4,9 +4,8 @@ Comma handling fix processor for TTS pronunciation issues
 Fixes "thinking, or" → "thinkinger" pronunciation problem
 """
 
-import re
 import logging
-from typing import List, Tuple, Dict
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +16,7 @@ class CommaFixProcessor:
         self.problematic_patterns = self._load_problematic_patterns()
         self.comma_context_patterns = self._load_comma_context_patterns()
 
-    def _load_problematic_patterns(self) -> List[Tuple[str, str, str]]:
+    def _load_problematic_patterns(self) -> list[tuple[str, str, str]]:
         """Load patterns that cause comma pronunciation issues"""
         return [
             # Pattern, Replacement, Description
@@ -28,7 +27,7 @@ class CommaFixProcessor:
             (r'(\w+),\s*(please|thanks|sorry|excuse me|pardon)\b', r'\1, \2', 'Comma politeness marker spacing'),
         ]
 
-    def _load_comma_context_patterns(self) -> Dict[str, str]:
+    def _load_comma_context_patterns(self) -> dict[str, str]:
         """Load specific comma context fixes"""
         return {
             # Specific problematic phrases
@@ -137,7 +136,7 @@ class CommaFixProcessor:
 
         return text
 
-    def analyze_comma_issues(self, text: str) -> Dict[str, List[str]]:
+    def analyze_comma_issues(self, text: str) -> dict[str, list[str]]:
         """Analyze text for potential comma pronunciation issues"""
         issues = {
             'missing_space_after_comma': [],

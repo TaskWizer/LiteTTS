@@ -6,15 +6,13 @@ This script validates that LiteTTS can start up correctly on Windows 10
 without the Unicode encoding errors and other Windows-specific issues.
 """
 
-import sys
-import os
-import platform
-import warnings
-import subprocess
-import time
 import json
+import platform
+import sys
+import time
+import warnings
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Any
 
 # Add project root to path
 sys.path.insert(0, '.')
@@ -23,8 +21,8 @@ class WindowsStartupValidator:
     """Validates Windows startup process"""
 
     def __init__(self):
-        self.validation_results: Dict[str, Any] = {}
-        self.startup_log: List[str] = []
+        self.validation_results: dict[str, Any] = {}
+        self.startup_log: list[str] = []
 
     def log_step(self, step: str, success: bool, details: str = ""):
         """Log a validation step"""
@@ -86,11 +84,12 @@ class WindowsStartupValidator:
 
         try:
             # Test critical early imports
-            import warnings as warnings_module
             self.log_step("Warnings Module", True)
 
             # Test platform emoji utilities
-            from LiteTTS.utils.platform_emojis import is_windows_with_encoding_issues, format_log_message
+            from LiteTTS.utils.platform_emojis import (
+                is_windows_with_encoding_issues,
+            )
             encoding_issues = is_windows_with_encoding_issues()
             self.log_step("Platform Emojis", True, f"Encoding issues detected: {encoding_issues}")
 
@@ -214,8 +213,9 @@ class WindowsStartupValidator:
         print("\n📝 Validating Logging System...")
 
         try:
-            from LiteTTS.logging_config import setup_logging
             import logging
+
+            from LiteTTS.logging_config import setup_logging
 
             # Setup logging
             setup_logging(level="INFO")
@@ -241,7 +241,6 @@ class WindowsStartupValidator:
 
         try:
             # Test core module imports
-            from LiteTTS.config import config
             self.log_step("Config Module", True)
 
             from LiteTTS import __version__
@@ -260,7 +259,7 @@ class WindowsStartupValidator:
             self.log_step("Core Imports", False, str(e))
             return False
 
-    def run_validation(self) -> Dict[str, Any]:
+    def run_validation(self) -> dict[str, Any]:
         """Run complete Windows startup validation"""
         print("🪟 Windows Startup Validation for LiteTTS")
         print("=" * 50)

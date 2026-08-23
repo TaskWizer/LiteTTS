@@ -4,14 +4,15 @@ Comprehensive validation script for enhanced Kokoro ONNX TTS API
 Tests all enhanced features including package structure, imports, and functionality
 """
 
-import sys
 import json
+import sys
 import time
-import requests
 from pathlib import Path
-from typing import Dict, List, Any
 
-def test_package_structure() -> Dict[str, bool]:
+import requests
+
+
+def test_package_structure() -> dict[str, bool]:
     """Test that all package structure is correct"""
     print("🔍 Testing package structure...")
 
@@ -19,7 +20,6 @@ def test_package_structure() -> Dict[str, bool]:
 
     # Test critical imports that were failing
     try:
-        from LiteTTS.models.manager import ModelManager
         results["models_manager_import"] = True
         print("✅ ModelManager import successful")
     except Exception as e:
@@ -27,7 +27,6 @@ def test_package_structure() -> Dict[str, bool]:
         print(f"❌ ModelManager import failed: {e}")
 
     try:
-        from LiteTTS.performance.hot_reload import HotReloadManager
         results["hot_reload_import"] = True
         print("✅ HotReloadManager import successful")
     except Exception as e:
@@ -35,7 +34,6 @@ def test_package_structure() -> Dict[str, bool]:
         print(f"❌ HotReloadManager import failed: {e}")
 
     try:
-        from LiteTTS.performance.fault_tolerance import HealthChecker
         results["fault_tolerance_import"] = True
         print("✅ HealthChecker import successful")
     except Exception as e:
@@ -43,7 +41,6 @@ def test_package_structure() -> Dict[str, bool]:
         print(f"❌ HealthChecker import failed: {e}")
 
     try:
-        from LiteTTS.downloader import ensure_model_files
         results["downloader_import"] = True
         print("✅ Downloader import successful")
     except Exception as e:
@@ -69,7 +66,7 @@ def test_package_structure() -> Dict[str, bool]:
 
     return results
 
-def test_configuration_system() -> Dict[str, bool]:
+def test_configuration_system() -> dict[str, bool]:
     """Test the enhanced configuration system"""
     print("\n⚙️ Testing configuration system...")
 
@@ -110,7 +107,7 @@ def test_configuration_system() -> Dict[str, bool]:
 
     return results
 
-def test_logging_system() -> Dict[str, bool]:
+def test_logging_system() -> dict[str, bool]:
     """Test the comprehensive logging system"""
     print("\n📋 Testing logging system...")
 
@@ -146,7 +143,7 @@ def test_logging_system() -> Dict[str, bool]:
 
     return results
 
-def test_app_startup() -> Dict[str, bool]:
+def test_app_startup() -> dict[str, bool]:
     """Test application startup without errors"""
     print("\n🚀 Testing application startup...")
 
@@ -167,7 +164,6 @@ def test_app_startup() -> Dict[str, bool]:
 
         # Test configuration import
         try:
-            from LiteTTS.config import config
             results["app_config"] = True
             print("✅ App configuration loaded")
         except Exception as e:
@@ -182,7 +178,7 @@ def test_app_startup() -> Dict[str, bool]:
 
     return results
 
-def test_api_endpoints(base_url: str = "http://localhost:8354") -> Dict[str, bool]:
+def test_api_endpoints(base_url: str = "http://localhost:8354") -> dict[str, bool]:
     """Test API endpoints (requires running server)"""
     print(f"\n🌐 Testing API endpoints at {base_url}...")
 

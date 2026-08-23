@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 import sys
+
 import gguf
 import numpy as np
+
 
 def save_conv2d_layer(f, gguf_writer, prefix, inp_c, filters, size, batch_normalize=True):
     biases = np.fromfile(f, dtype=np.float32, count=filters)

@@ -4,13 +4,12 @@ LLM-based context analyzer for enhanced emotional and prosodic analysis
 Provides deep contextual understanding for TTS emotional enhancement
 """
 
-import re
-import json
 import logging
-from typing import Dict, List, Optional, Tuple, Any, Union
+import re
+import time
 from dataclasses import dataclass, field
 from enum import Enum
-import time
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -44,12 +43,12 @@ class ContextualEmotion(Enum):
 class EmotionalContext:
     """Comprehensive emotional context analysis"""
     primary_emotion: ContextualEmotion
-    secondary_emotions: List[Tuple[ContextualEmotion, float]] = field(default_factory=list)
+    secondary_emotions: list[tuple[ContextualEmotion, float]] = field(default_factory=list)
     intensity: EmotionalIntensity = EmotionalIntensity.MODERATE
     confidence: float = 0.5
-    emotional_trajectory: List[ContextualEmotion] = field(default_factory=list)
-    contextual_factors: Dict[str, Any] = field(default_factory=dict)
-    prosodic_suggestions: Dict[str, float] = field(default_factory=dict)
+    emotional_trajectory: list[ContextualEmotion] = field(default_factory=list)
+    contextual_factors: dict[str, Any] = field(default_factory=dict)
+    prosodic_suggestions: dict[str, float] = field(default_factory=dict)
 
 @dataclass
 class ProsodyContext:
@@ -57,8 +56,8 @@ class ProsodyContext:
     speech_rate_modifier: float = 1.0
     pitch_range_modifier: float = 1.0
     volume_modifier: float = 1.0
-    pause_patterns: List[Tuple[int, float]] = field(default_factory=list)  # (position, duration)
-    emphasis_points: List[Tuple[int, int, float]] = field(default_factory=list)  # (start, end, strength)
+    pause_patterns: list[tuple[int, float]] = field(default_factory=list)  # (position, duration)
+    emphasis_points: list[tuple[int, int, float]] = field(default_factory=list)  # (start, end, strength)
     intonation_contour: str = "neutral"  # rising, falling, rising-falling, etc.
 
 @dataclass
@@ -91,7 +90,7 @@ class LLMContextAnalyzer:
         logger.info("LLM enhancement requested but not implemented - using enhanced rule-based analysis")
         self.llm_client = None
 
-    def _load_emotional_patterns(self) -> Dict[str, Any]:
+    def _load_emotional_patterns(self) -> dict[str, Any]:
         """Load emotional pattern recognition rules"""
         return {
             'joy_patterns': [
@@ -150,7 +149,7 @@ class LLMContextAnalyzer:
             ]
         }
 
-    def _load_prosodic_patterns(self) -> Dict[str, Any]:
+    def _load_prosodic_patterns(self) -> dict[str, Any]:
         """Load prosodic pattern recognition rules"""
         return {
             'question_patterns': [
@@ -179,7 +178,7 @@ class LLMContextAnalyzer:
             ]
         }
 
-    def _load_contextual_rules(self) -> Dict[str, Any]:
+    def _load_contextual_rules(self) -> dict[str, Any]:
         """Load contextual analysis rules"""
         return {
             'sentence_types': {
@@ -201,7 +200,7 @@ class LLMContextAnalyzer:
             }
         }
 
-    def analyze_context(self, text: str, conversation_history: Optional[List[str]] = None) -> LLMContextAnalysis:
+    def analyze_context(self, text: str, conversation_history: list[str] | None = None) -> LLMContextAnalysis:
         """Perform comprehensive context analysis"""
         start_time = time.perf_counter()
 
@@ -227,7 +226,7 @@ class LLMContextAnalyzer:
         logger.debug(f"Context analysis completed in {processing_time:.3f}s with confidence {confidence_score:.2f}")
         return analysis
 
-    def _analyze_emotional_context(self, text: str, history: Optional[List[str]] = None) -> EmotionalContext:
+    def _analyze_emotional_context(self, text: str, history: list[str] | None = None) -> EmotionalContext:
         """Analyze emotional context of the text"""
         emotion_scores = {}
 
@@ -363,7 +362,7 @@ class LLMContextAnalyzer:
         else:
             return EmotionalIntensity.VERY_LOW
 
-    def _generate_prosodic_suggestions(self, emotion: ContextualEmotion, intensity: EmotionalIntensity) -> Dict[str, float]:
+    def _generate_prosodic_suggestions(self, emotion: ContextualEmotion, intensity: EmotionalIntensity) -> dict[str, float]:
         """Generate prosodic parameter suggestions based on emotion and intensity"""
         base_suggestions = {
             'speech_rate': 1.0,

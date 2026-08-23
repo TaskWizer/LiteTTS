@@ -4,14 +4,18 @@ Test script to validate contraction expansion improvements
 Tests the new configurable contraction handling system
 """
 
-import sys
 import os
+import sys
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from LiteTTS.text.phonemizer_preprocessor import phonemizer_preprocessor
-from LiteTTS.config import config
-import requests
 import time
+
+import requests
+
+from LiteTTS.config import config
+from LiteTTS.text.phonemizer_preprocessor import phonemizer_preprocessor
+
 
 def test_configuration_modes():
     """Test different configuration modes for contraction expansion"""

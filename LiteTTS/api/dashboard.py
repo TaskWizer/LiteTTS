@@ -10,12 +10,13 @@ Provides real-time monitoring and analytics for the TTS API including:
 - Error rates and status codes
 """
 
+import threading
 import time
-from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional
 from collections import defaultdict, deque
 from dataclasses import dataclass
-import threading
+from datetime import datetime, timedelta
+from typing import Any
+
 
 @dataclass
 class RequestMetric:
@@ -27,8 +28,8 @@ class RequestMetric:
     response_time: float
     client_ip: str
     user_agent: str
-    voice: Optional[str] = None
-    text_length: Optional[int] = None
+    voice: str | None = None
+    text_length: int | None = None
     cache_hit: bool = False
 
 @dataclass
@@ -79,8 +80,8 @@ class DashboardAnalytics:
                       response_time: float,
                       client_ip: str,
                       user_agent: str,
-                      voice: Optional[str] = None,
-                      text_length: Optional[int] = None,
+                      voice: str | None = None,
+                      text_length: int | None = None,
                       cache_hit: bool = False):
         """Record a completed request"""
 
@@ -126,7 +127,7 @@ class DashboardAnalytics:
 
             self.concurrency_metrics.append(metric)
 
-    def get_requests_per_minute(self, minutes: int = 60) -> List[Dict[str, Any]]:
+    def get_requests_per_minute(self, minutes: int = 60) -> list[dict[str, Any]]:
         """Get requests per minute for the last N minutes"""
 
         cutoff_time = datetime.now() - timedelta(minutes=minutes)
@@ -150,7 +151,7 @@ class DashboardAnalytics:
 
             return result
 
-    def get_response_time_stats(self, minutes: int = 60) -> Dict[str, float]:
+    def get_response_time_stats(self, minutes: int = 60) -> dict[str, float]:
         """Get response time statistics"""
 
         cutoff_time = datetime.now() - timedelta(minutes=minutes)
@@ -190,7 +191,7 @@ class DashboardAnalytics:
                 'p99': response_times[int(count * 0.99)] if math.isfinite(response_times[int(count * 0.99)]) else 0.0
             }
 
-    def get_error_rates(self, minutes: int = 60) -> Dict[str, Any]:
+    def get_error_rates(self, minutes: int = 60) -> dict[str, Any]:
         """Get error rates and status code distribution"""
 
         cutoff_time = datetime.now() - timedelta(minutes=minutes)
@@ -222,7 +223,7 @@ class DashboardAnalytics:
                 'status_code_distribution': dict(status_counts)
             }
 
-    def get_voice_usage_stats(self, minutes: int = 60) -> Dict[str, int]:
+    def get_voice_usage_stats(self, minutes: int = 60) -> dict[str, int]:
         """Get voice usage statistics"""
 
         cutoff_time = datetime.now() - timedelta(minutes=minutes)
@@ -236,7 +237,7 @@ class DashboardAnalytics:
 
             return dict(voice_counts)
 
-    def get_concurrency_stats(self) -> Dict[str, Any]:
+    def get_concurrency_stats(self) -> dict[str, Any]:
         """Get current concurrency statistics"""
 
         with self.lock:
@@ -257,7 +258,7 @@ class DashboardAnalytics:
                 ]
             }
 
-    def get_dashboard_data(self) -> Dict[str, Any]:
+    def get_dashboard_data(self) -> dict[str, Any]:
         """Get comprehensive dashboard data"""
 
         return {

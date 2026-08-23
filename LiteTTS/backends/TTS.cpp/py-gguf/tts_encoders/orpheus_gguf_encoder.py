@@ -1,18 +1,18 @@
-from huggingface_hub import hf_hub_download
+import json
+import math
 from pathlib import Path
+
+import gguf
+import torch
+from huggingface_hub import hf_hub_download
 from snac import SNAC
 from snac.layers import DecoderBlock
 from transformers import AutoModelForCausalLM
 from transformers.models.llama import LlamaForCausalLM
-from typing import Dict
-from .dac_gguf_encoder import DAC_RESIDUAL_UNIT_PARTS
-from .tts_encoder import TTSEncoder
-from .tensor_util import get_normalized_weight_from_parametrizations
 
-import gguf
-import json
-import math
-import torch
+from .dac_gguf_encoder import DAC_RESIDUAL_UNIT_PARTS
+from .tensor_util import get_normalized_weight_from_parametrizations
+from .tts_encoder import TTSEncoder
 
 DEFAULT_ORPHEUS_REPO_ID = "canopylabs/orpheus-3b-0.1-ft"
 DEFAULT_SNAC_REPO_ID = "hubertsiuzdak/snac_24khz"
@@ -73,7 +73,7 @@ class OrpheusEncoder(TTSEncoder):
         return self._snac_model
 
     @property
-    def tokenizer_json(self) -> Dict:
+    def tokenizer_json(self) -> dict:
         if self._tokenizer_json is None:
             try:
                 conf_path = hf_hub_download(repo_id=self.repo_id, filename='tokenizer.json')

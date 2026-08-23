@@ -3,13 +3,13 @@
 Fault tolerance and resilience features for Kokoro ONNX TTS API
 """
 
-import asyncio
-import time
 import logging
-from typing import Callable, Any, Optional, Dict, List
-from functools import wraps
 import threading
+import time
+from collections.abc import Callable
+from functools import wraps
 from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -155,7 +155,7 @@ class HealthChecker:
                 }
             return False
 
-    def run_all_checks(self) -> Dict[str, bool]:
+    def run_all_checks(self) -> dict[str, bool]:
         """Run all health checks"""
         results = {}
         current_time = time.time()
@@ -178,7 +178,7 @@ class HealthChecker:
 
         return results
 
-    def get_health_status(self) -> Dict[str, Any]:
+    def get_health_status(self) -> dict[str, Any]:
         """Get overall health status"""
         results = self.run_all_checks()
 
@@ -232,7 +232,7 @@ class GracefulDegradation:
         with self.lock:
             return self.component_status.get(component, True)
 
-    def get_fallback(self, component: str) -> Optional[Callable]:
+    def get_fallback(self, component: str) -> Callable | None:
         """Get fallback function for a component"""
         with self.lock:
             return self.fallback_handlers.get(component)

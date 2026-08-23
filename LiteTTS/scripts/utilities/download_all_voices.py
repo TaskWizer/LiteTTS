@@ -3,15 +3,14 @@
 Script to download all available voices from HuggingFace
 """
 
-import sys
 import logging
+import sys
 from pathlib import Path
-from typing import Dict, Any
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from LiteTTS.voice.downloader import VoiceDownloader, DownloadProgress
+from LiteTTS.voice.downloader import DownloadProgress
 from LiteTTS.voice.dynamic_manager import DynamicVoiceManager
 
 # Setup logging

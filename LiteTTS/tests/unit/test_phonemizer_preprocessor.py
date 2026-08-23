@@ -3,10 +3,10 @@
 Unit tests for phonemizer preprocessor
 """
 
+from unittest.mock import Mock, patch
+
 import pytest
-import re
-import importlib
-from unittest.mock import Mock, patch, MagicMock
+
 from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
 
 
@@ -2033,8 +2033,8 @@ class TestPhonemizationPreprocessorGlobalConfig:
 
         # Temporarily replace with a version that raises
         def mock_get_config():
-            from pathlib import Path
             import json
+            from pathlib import Path
             config_path = Path("config.json")
             if config_path.exists():
                 with open(config_path) as f:
@@ -2052,10 +2052,11 @@ class TestPhonemizationPreprocessorGlobalConfig:
 
     def test_get_global_config_loads_valid_file(self):
         """Test _get_global_config successfully loads a valid config.json (lines 1434-1437)"""
-        import LiteTTS.text.phonemizer_preprocessor as pp_module
-        from pathlib import Path
         import json
-        from unittest.mock import patch, mock_open
+        from pathlib import Path
+        from unittest.mock import mock_open, patch
+
+        import LiteTTS.text.phonemizer_preprocessor as pp_module
 
         # Create a valid config structure
         valid_config = {
@@ -2075,9 +2076,10 @@ class TestPhonemizationPreprocessorGlobalConfig:
 
     def test_get_global_config_exception_handler(self):
         """Test _get_global_config exception handler (lines 1438-1439)"""
-        import LiteTTS.text.phonemizer_preprocessor as pp_module
         from pathlib import Path
-        from unittest.mock import patch, mock_open
+        from unittest.mock import patch
+
+        import LiteTTS.text.phonemizer_preprocessor as pp_module
 
         # Mock Path.exists to return True but open to raise an exception
         with patch.object(Path, 'exists', return_value=True):
@@ -2245,7 +2247,6 @@ class TestPhonemizationPreprocessorGlobalConfig:
 
     def test_comma_number_exception_handler(self):
         """Test comma-separated number exception handler (lines 1164-1166)"""
-        import sys
         from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
         proc = PhonemizationPreprocessor()
 

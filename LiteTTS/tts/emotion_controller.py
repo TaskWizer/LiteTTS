@@ -3,10 +3,10 @@
 Emotion controller for TTS synthesis
 """
 
-import numpy as np
-from typing import Dict, List, Optional, Tuple
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class EmotionMapping:
     """Emotion mapping configuration"""
     name: str
-    weight_adjustments: Dict[str, float]
+    weight_adjustments: dict[str, float]
     pitch_adjustment: float = 0.0
     speed_adjustment: float = 1.0
     energy_adjustment: float = 1.0
@@ -27,7 +27,7 @@ class EmotionController:
         self.emotion_mappings = self._load_emotion_mappings()
         self.supported_emotions = list(self.emotion_mappings.keys())
 
-    def _load_emotion_mappings(self) -> Dict[str, EmotionMapping]:
+    def _load_emotion_mappings(self) -> dict[str, EmotionMapping]:
         """Load emotion mappings and their effects"""
         return {
             'neutral': EmotionMapping(
@@ -187,7 +187,7 @@ class EmotionController:
         logger.debug(f"Applied emotion '{emotion}' with strength {strength}")
         return modified_embedding
 
-    def get_emotion_adjustments(self, emotion: str, strength: float = 1.0) -> Dict[str, float]:
+    def get_emotion_adjustments(self, emotion: str, strength: float = 1.0) -> dict[str, float]:
         """Get audio processing adjustments for an emotion"""
         if emotion not in self.emotion_mappings:
             emotion = 'neutral'
@@ -202,7 +202,7 @@ class EmotionController:
         }
 
     def blend_emotions(self, voice_embedding: np.ndarray,
-                      emotions: List[Tuple[str, float]]) -> np.ndarray:
+                      emotions: list[tuple[str, float]]) -> np.ndarray:
         """Blend multiple emotions with different strengths"""
         if not emotions:
             return voice_embedding
@@ -230,11 +230,11 @@ class EmotionController:
         logger.debug(f"Blended emotions: {[(e, s) for e, s in normalized_emotions]}")
         return result_embedding
 
-    def get_supported_emotions(self) -> List[str]:
+    def get_supported_emotions(self) -> list[str]:
         """Get list of supported emotions"""
         return self.supported_emotions.copy()
 
-    def get_emotion_info(self, emotion: str) -> Optional[Dict[str, any]]:
+    def get_emotion_info(self, emotion: str) -> dict[str, any] | None:
         """Get information about a specific emotion"""
         if emotion not in self.emotion_mappings:
             return None
@@ -249,7 +249,7 @@ class EmotionController:
             'weight_adjustments': mapping.weight_adjustments.copy()
         }
 
-    def validate_emotion_strength(self, strength: float) -> Tuple[bool, str]:
+    def validate_emotion_strength(self, strength: float) -> tuple[bool, str]:
         """Validate emotion strength value"""
         if not isinstance(strength, (int, float)):
             return False, "Emotion strength must be a number"
@@ -292,7 +292,7 @@ class EmotionController:
 
         return 'neutral'
 
-    def create_custom_emotion(self, name: str, weight_adjustments: Dict[str, float],
+    def create_custom_emotion(self, name: str, weight_adjustments: dict[str, float],
                             pitch_adjustment: float = 0.0, speed_adjustment: float = 1.0,
                             energy_adjustment: float = 1.0, description: str = "") -> bool:
         """Create a custom emotion mapping"""

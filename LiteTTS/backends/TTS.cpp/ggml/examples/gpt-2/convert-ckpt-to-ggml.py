@@ -17,11 +17,13 @@
 # and vocabulary.
 #
 
-import sys
 import json
 import struct
+import sys
+
 import numpy as np
 import tensorflow as tf
+
 
 # ref: https://github.com/openai/gpt-2/blob/master/src/encoder.py
 def bytes_to_unicode():

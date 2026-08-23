@@ -4,7 +4,11 @@ Unit tests for espeak enhanced symbol processor
 """
 
 import pytest
-from LiteTTS.nlp.espeak_enhanced_symbol_processor import EspeakEnhancedSymbolProcessor, SymbolProcessingResult
+
+from LiteTTS.nlp.espeak_enhanced_symbol_processor import (
+    EspeakEnhancedSymbolProcessor,
+    SymbolProcessingResult,
+)
 
 
 class TestEspeakEnhancedSymbolProcessor:

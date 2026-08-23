@@ -4,14 +4,13 @@ Comprehensive Code Quality Assessment
 Reviews code structure, identifies incomplete implementations, and security vulnerabilities
 """
 
-import os
 import ast
-import re
 import json
+import logging
+import re
 import sys
 from pathlib import Path
-from typing import Dict, List, Any, Set
-import logging
+from typing import Any
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -61,7 +60,7 @@ class CodeQualityAssessor:
             (r'def\s+\w+\s*\([^)]*\)\s*:\s*$', "Empty function definitions")
         ]
 
-    def analyze_python_file(self, file_path: Path) -> Dict[str, Any]:
+    def analyze_python_file(self, file_path: Path) -> dict[str, Any]:
         """Analyze a single Python file"""
         analysis = {
             "path": str(file_path),
@@ -136,7 +135,7 @@ class CodeQualityAssessor:
 
         return analysis
 
-    def _analyze_ast(self, tree: ast.AST) -> Dict[str, Any]:
+    def _analyze_ast(self, tree: ast.AST) -> dict[str, Any]:
         """Analyze AST for code metrics"""
         analysis = {
             "functions": 0,
@@ -188,7 +187,7 @@ class CodeQualityAssessor:
 
         return complexity
 
-    def check_project_structure(self) -> Dict[str, Any]:
+    def check_project_structure(self) -> dict[str, Any]:
         """Check overall project structure"""
         logger.info("🏗️ Analyzing project structure...")
 
@@ -236,7 +235,7 @@ class CodeQualityAssessor:
 
         return structure_analysis
 
-    def check_dependencies(self) -> Dict[str, Any]:
+    def check_dependencies(self) -> dict[str, Any]:
         """Check dependency management"""
         logger.info("📦 Analyzing dependencies...")
 
@@ -283,7 +282,7 @@ class CodeQualityAssessor:
 
         return dependency_analysis
 
-    def check_configuration_security(self) -> Dict[str, Any]:
+    def check_configuration_security(self) -> dict[str, Any]:
         """Check configuration files for security issues"""
         logger.info("🔒 Analyzing configuration security...")
 
@@ -345,7 +344,7 @@ class CodeQualityAssessor:
 
         return config_analysis
 
-    def run_comprehensive_assessment(self) -> Dict[str, Any]:
+    def run_comprehensive_assessment(self) -> dict[str, Any]:
         """Run comprehensive code quality assessment"""
         logger.info("🚀 Starting comprehensive code quality assessment")
         logger.info("=" * 70)
@@ -399,7 +398,7 @@ class CodeQualityAssessor:
 
         return assessment_results
 
-    def _generate_recommendations(self) -> List[Dict[str, str]]:
+    def _generate_recommendations(self) -> list[dict[str, str]]:
         """Generate improvement recommendations"""
         recommendations = []
 
@@ -437,7 +436,7 @@ class CodeQualityAssessor:
 
         return recommendations
 
-    def _generate_assessment_report(self, results: Dict[str, Any]):
+    def _generate_assessment_report(self, results: dict[str, Any]):
         """Generate assessment report"""
         logger.info("\n" + "=" * 70)
         logger.info("📊 CODE QUALITY ASSESSMENT REPORT")

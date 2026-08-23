@@ -3,8 +3,8 @@
 Test pronunciation fixes for problematic words
 """
 
-import sys
 import json
+import sys
 from pathlib import Path
 
 # Add the project root to the path
@@ -12,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from LiteTTS.nlp.phonetic_processor import PhoneticProcessor
 from LiteTTS.nlp.processor import NLPProcessor
+
 
 def test_pronunciation_fixes():
     """Test that pronunciation fixes are working correctly"""
@@ -181,7 +182,6 @@ Tests the specific issues: comma handling, joy pronunciation, contraction proces
 """
 
 import sys
-import os
 from pathlib import Path
 
 # Add project root to path
@@ -189,6 +189,7 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 import logging
+
 from LiteTTS.nlp.unified_pronunciation_fix import unified_pronunciation_fix
 
 # Configure logging

@@ -5,26 +5,26 @@ Provides a unified interface for all text processing enhancements
 """
 
 import logging
-from typing import Dict, Any, Optional, List, Tuple
 from dataclasses import dataclass, field
+from typing import Any
 
-from .enhanced_contraction_processor import EnhancedContractionProcessor
+from .advanced_abbreviation_handler import AbbreviationMode, AdvancedAbbreviationHandler
 from .advanced_symbol_processor import AdvancedSymbolProcessor
-from .extended_pronunciation_dictionary import ExtendedPronunciationDictionary
-from .voice_modulation_system import VoiceModulationSystem, ModulationSegment
-from .enhanced_datetime_processor import EnhancedDateTimeProcessor
-from .advanced_abbreviation_handler import AdvancedAbbreviationHandler, AbbreviationMode
 from .dynamic_emotion_intonation import DynamicEmotionIntonationSystem, IntonationMarker
+from .enhanced_contraction_processor import EnhancedContractionProcessor
+from .enhanced_datetime_processor import EnhancedDateTimeProcessor
+from .extended_pronunciation_dictionary import ExtendedPronunciationDictionary
+from .voice_modulation_system import ModulationSegment, VoiceModulationSystem
 
 # Import existing components for fallback
 try:
-    from .text_normalizer import TextNormalizer
+    from ..text.phonemizer_preprocessor import phonemizer_preprocessor
+    from .emotion_detector import EmotionDetector
     from .homograph_resolver import HomographResolver
     from .phonetic_processor import PhoneticProcessor
-    from .spell_processor import SpellProcessor
     from .prosody_analyzer import ProsodyAnalyzer
-    from .emotion_detector import EmotionDetector
-    from ..text.phonemizer_preprocessor import phonemizer_preprocessor
+    from .spell_processor import SpellProcessor
+    from .text_normalizer import TextNormalizer
     EXISTING_COMPONENTS_AVAILABLE = True
 except ImportError:
     EXISTING_COMPONENTS_AVAILABLE = False
@@ -77,16 +77,16 @@ class ProcessingResult:
     processed_text: str
     original_text: str
     processing_time: float
-    components_used: List[str]
-    modulation_segments: List[ModulationSegment] = field(default_factory=list)
-    intonation_markers: List[IntonationMarker] = field(default_factory=list)
-    warnings: List[str] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    components_used: list[str]
+    modulation_segments: list[ModulationSegment] = field(default_factory=list)
+    intonation_markers: list[IntonationMarker] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 class EnhancedNLPProcessor:
     """Enhanced NLP processor with comprehensive pronunciation fixes"""
 
-    def __init__(self, options: Optional[EnhancedProcessingOptions] = None):
+    def __init__(self, options: EnhancedProcessingOptions | None = None):
         self.options = options or EnhancedProcessingOptions()
 
         # Initialize enhanced components
@@ -181,7 +181,7 @@ class EnhancedNLPProcessor:
             self.options.fallback_to_existing = False
 
     def process_text_enhanced(self, text: str,
-                            custom_options: Optional[EnhancedProcessingOptions] = None) -> ProcessingResult:
+                            custom_options: EnhancedProcessingOptions | None = None) -> ProcessingResult:
         """Process text with all enhanced components"""
         import time
 
@@ -361,7 +361,7 @@ class EnhancedNLPProcessor:
                 metadata={'processing_failed': True}
             )
 
-    def _update_stats(self, processing_time: float, components_used: List[str], had_errors: bool):
+    def _update_stats(self, processing_time: float, components_used: list[str], had_errors: bool):
         """Update processing statistics"""
         self.processing_stats['total_processed'] += 1
         self.processing_stats['total_time'] += processing_time
@@ -374,7 +374,7 @@ class EnhancedNLPProcessor:
                 self.processing_stats['component_times'][component] = []
             self.processing_stats['component_times'][component].append(processing_time)
 
-    def get_processing_stats(self) -> Dict[str, Any]:
+    def get_processing_stats(self) -> dict[str, Any]:
         """Get processing statistics"""
         stats = self.processing_stats.copy()
 
@@ -387,7 +387,7 @@ class EnhancedNLPProcessor:
 
         return stats
 
-    def analyze_text_issues(self, text: str) -> Dict[str, Any]:
+    def analyze_text_issues(self, text: str) -> dict[str, Any]:
         """Analyze text for potential pronunciation issues"""
         issues = {
             'contractions': self.contraction_processor.get_contraction_info(text),
@@ -454,7 +454,7 @@ class EnhancedNLPProcessor:
         logger.info("Processing statistics reset")
 
     # Convenience methods for backward compatibility
-    def process_text(self, text: str, options: Optional[Dict[str, Any]] = None) -> str:
+    def process_text(self, text: str, options: dict[str, Any] | None = None) -> str:
         """Process text and return just the processed text (backward compatibility)"""
         if options:
             # Convert dict options to EnhancedProcessingOptions
@@ -469,7 +469,7 @@ class EnhancedNLPProcessor:
         """Normalize text (backward compatibility)"""
         return self.process_text(text)
 
-    def get_component_versions(self) -> Dict[str, str]:
+    def get_component_versions(self) -> dict[str, str]:
         """Get version information for all components"""
         return {
             'enhanced_nlp_processor': '1.0.0',

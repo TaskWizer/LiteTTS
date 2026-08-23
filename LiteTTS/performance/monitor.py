@@ -4,16 +4,16 @@ Performance monitoring system for TTS optimization
 Tracks RTF, latency, cache performance, and system metrics
 """
 
-import time
-import threading
-import psutil
+import json
 import logging
-from typing import Dict, List, Optional, Any, Tuple
+import threading
+from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from collections import deque, defaultdict
-import json
 from pathlib import Path
+from typing import Any
+
+import psutil
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ class PerformanceMetric:
     timestamp: datetime
     metric_type: str  # 'tts_generation', 'cache_hit', 'cache_miss', 'system'
     value: float
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 @dataclass
 class TTSPerformanceData:
@@ -89,7 +89,7 @@ class PerformanceMonitor:
         }
 
         # Voice-specific statistics
-        self.voice_stats: Dict[str, Dict[str, Any]] = defaultdict(lambda: {
+        self.voice_stats: dict[str, dict[str, Any]] = defaultdict(lambda: {
             'requests': 0,
             'total_generation_time': 0.0,
             'total_audio_duration': 0.0,
@@ -106,7 +106,7 @@ class PerformanceMonitor:
         }
 
         # System monitoring
-        self.system_monitor_thread: Optional[threading.Thread] = None
+        self.system_monitor_thread: threading.Thread | None = None
         self.stop_monitoring_event = threading.Event()
         self.monitoring_interval = 5.0  # seconds
 
@@ -292,10 +292,10 @@ class PerformanceMonitor:
 
         logger.info("System monitoring worker stopped")
 
-    def get_performance_summary(self) -> Dict[str, Any]:
+    def get_performance_summary(self) -> dict[str, Any]:
         """Get comprehensive performance summary with safe calculations"""
         # Import safe division utilities
-        from LiteTTS.utils.json_sanitizer import safe_percentage, safe_division, sanitize_float
+        from LiteTTS.utils.json_sanitizer import safe_division, safe_percentage, sanitize_float
 
         with self.stats_lock:
             # Calculate cache hit rate with safe percentage calculation
@@ -356,7 +356,7 @@ class PerformanceMonitor:
                 }
             }
 
-    def get_rtf_trend(self, minutes: int = 30) -> List[Tuple[datetime, float]]:
+    def get_rtf_trend(self, minutes: int = 30) -> list[tuple[datetime, float]]:
         """Get RTF trend over specified time period"""
         cutoff_time = datetime.now() - timedelta(minutes=minutes)
 

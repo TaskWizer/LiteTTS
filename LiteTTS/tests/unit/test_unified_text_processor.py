@@ -4,11 +4,12 @@ Unit tests for unified text processor
 """
 
 import pytest
+
 from LiteTTS.nlp.unified_text_processor import (
-    UnifiedTextProcessor,
-    ProcessingOptions,
     ProcessingMode,
-    ProcessingResult
+    ProcessingOptions,
+    ProcessingResult,
+    UnifiedTextProcessor,
 )
 
 

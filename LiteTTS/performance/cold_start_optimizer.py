@@ -4,15 +4,14 @@ Cold Start Optimizer for LiteTTS
 Targeted optimization to reduce cold start latency from 562ms to <400ms
 """
 
+import logging
 import os
 import sys
-import time
-import logging
 import threading
-import asyncio
-from pathlib import Path
-from typing import Dict, List, Any, Optional
+import time
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -28,8 +27,8 @@ class ColdStartOptimizationConfig:
     enable_aggressive_preloading: bool = True
     enable_model_caching: bool = True
     enable_background_warmup: bool = True
-    warmup_texts: List[str] = None
-    preload_voices: List[str] = None
+    warmup_texts: list[str] = None
+    preload_voices: list[str] = None
     cache_size_mb: int = 64
     warmup_delay_seconds: float = 1.0
 
@@ -38,7 +37,7 @@ class ColdStartOptimizer:
     Optimizer specifically targeting cold start latency reduction
     """
 
-    def __init__(self, config: Optional[ColdStartOptimizationConfig] = None):
+    def __init__(self, config: ColdStartOptimizationConfig | None = None):
         self.config = config or ColdStartOptimizationConfig()
 
         if self.config.warmup_texts is None:
@@ -61,7 +60,7 @@ class ColdStartOptimizer:
 
         logger.info("Cold Start Optimizer initialized")
 
-    def apply_environment_optimizations(self) -> Dict[str, str]:
+    def apply_environment_optimizations(self) -> dict[str, str]:
         """Apply environment variables for cold start optimization"""
         env_vars = {
             # ONNX Runtime optimizations for faster initialization
@@ -238,7 +237,7 @@ class ColdStartOptimizer:
         logger.info(f"✅ Applied {sum(pipeline_optimizations.values())} pipeline optimizations")
         return pipeline_optimizations
 
-    def measure_cold_start_improvement(self) -> Dict[str, float]:
+    def measure_cold_start_improvement(self) -> dict[str, float]:
         """Measure cold start improvement after optimization"""
         logger.info("📊 Measuring cold start improvement...")
 
@@ -271,7 +270,7 @@ class ColdStartOptimizer:
 
         return results
 
-    def run_comprehensive_cold_start_optimization(self) -> Dict[str, Any]:
+    def run_comprehensive_cold_start_optimization(self) -> dict[str, Any]:
         """Run comprehensive cold start optimization"""
         logger.info("🎯 Starting comprehensive cold start optimization...")
 
@@ -310,7 +309,7 @@ class ColdStartOptimizer:
 
         return results
 
-    def get_optimization_status(self) -> Dict[str, Any]:
+    def get_optimization_status(self) -> dict[str, Any]:
         """Get current optimization status"""
         return {
             "preload_completed": self.preload_completed,
@@ -325,7 +324,7 @@ class ColdStartOptimizer:
         }
 
 # Global cold start optimizer instance
-_global_cold_start_optimizer: Optional[ColdStartOptimizer] = None
+_global_cold_start_optimizer: ColdStartOptimizer | None = None
 
 def get_cold_start_optimizer() -> ColdStartOptimizer:
     """Get or create global cold start optimizer instance"""
@@ -334,7 +333,7 @@ def get_cold_start_optimizer() -> ColdStartOptimizer:
         _global_cold_start_optimizer = ColdStartOptimizer()
     return _global_cold_start_optimizer
 
-def optimize_cold_start(config: Optional[ColdStartOptimizationConfig] = None) -> Dict[str, Any]:
+def optimize_cold_start(config: ColdStartOptimizationConfig | None = None) -> dict[str, Any]:
     """Convenience function to run cold start optimization"""
     optimizer = ColdStartOptimizer(config)
     return optimizer.run_comprehensive_cold_start_optimization()

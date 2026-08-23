@@ -4,11 +4,9 @@ REAL text processing audit - tests what the system ACTUALLY does to text
 No bullshit, no fake validation - this tests the actual processing pipeline
 """
 
-import sys
-import os
 import json
 import logging
-from pathlib import Path
+import sys
 
 # Add project root to path
 sys.path.insert(0, '.')
@@ -63,7 +61,11 @@ def test_text_processors_directly():
     try:
         # Test individual processors
         from LiteTTS.nlp.ticker_symbol_processor import TickerSymbolProcessor
-        from LiteTTS.nlp.unified_text_processor import UnifiedTextProcessor, ProcessingOptions, ProcessingMode
+        from LiteTTS.nlp.unified_text_processor import (
+            ProcessingMode,
+            ProcessingOptions,
+            UnifiedTextProcessor,
+        )
 
         # Test ticker symbol processor
         print("\n--- Ticker Symbol Processor ---")
@@ -173,7 +175,11 @@ def test_synthesizer_configuration():
 
         # Test with these ACTUAL settings
         print("\n--- Testing with ACTUAL synthesizer settings ---")
-        from LiteTTS.nlp.unified_text_processor import UnifiedTextProcessor, ProcessingOptions, ProcessingMode
+        from LiteTTS.nlp.unified_text_processor import (
+            ProcessingMode,
+            ProcessingOptions,
+            UnifiedTextProcessor,
+        )
 
         processor = UnifiedTextProcessor()
         actual_options = ProcessingOptions(

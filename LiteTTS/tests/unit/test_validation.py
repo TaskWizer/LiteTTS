@@ -3,8 +3,7 @@
 Unit tests for validation module
 """
 
-import pytest
-from LiteTTS.validation import InputValidator, ValidationResult, SecurityValidator, validate_request
+from LiteTTS.validation import InputValidator, SecurityValidator, ValidationResult, validate_request
 
 
 class TestInputValidator:

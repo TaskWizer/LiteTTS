@@ -5,18 +5,18 @@ Ensures that new fixes don't break existing functionality or degrade performance
 """
 
 import sys
-import os
-import unittest
-import pytest
 import time
+import unittest
+
+import pytest
+
 try:
     import memory_profiler
     MEMORY_PROFILER_AVAILABLE = True
 except ImportError:
     MEMORY_PROFILER_AVAILABLE = False
-from pathlib import Path
-from typing import Dict, List, Tuple
 import statistics
+from pathlib import Path
 
 # Skip - performance regression tests with timing/environment issues
 pytestmark = pytest.mark.skip(reason="Performance regression tests with timing/environment issues")
@@ -25,18 +25,18 @@ pytestmark = pytest.mark.skip(reason="Performance regression tests with timing/e
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from LiteTTS.nlp.enhanced_contraction_processor import EnhancedContractionProcessor
+from LiteTTS.nlp.advanced_abbreviation_handler import AdvancedAbbreviationHandler
 from LiteTTS.nlp.advanced_symbol_processor import AdvancedSymbolProcessor
+from LiteTTS.nlp.dynamic_emotion_intonation import DynamicEmotionIntonationSystem
+from LiteTTS.nlp.enhanced_contraction_processor import EnhancedContractionProcessor
+from LiteTTS.nlp.enhanced_datetime_processor import EnhancedDateTimeProcessor
 from LiteTTS.nlp.extended_pronunciation_dictionary import ExtendedPronunciationDictionary
 from LiteTTS.nlp.voice_modulation_system import VoiceModulationSystem
-from LiteTTS.nlp.enhanced_datetime_processor import EnhancedDateTimeProcessor
-from LiteTTS.nlp.advanced_abbreviation_handler import AdvancedAbbreviationHandler
-from LiteTTS.nlp.dynamic_emotion_intonation import DynamicEmotionIntonationSystem
 
 # Try to import existing components for comparison
 try:
-    from LiteTTS.nlp.text_normalizer import TextNormalizer
     from LiteTTS.nlp.processor import NLPProcessor
+    from LiteTTS.nlp.text_normalizer import TextNormalizer
     EXISTING_COMPONENTS_AVAILABLE = True
 except ImportError:
     EXISTING_COMPONENTS_AVAILABLE = False
@@ -107,7 +107,7 @@ class TestPerformanceRegression(unittest.TestCase):
         # Test data sets
         self.test_texts = self._load_test_texts()
 
-    def _load_test_texts(self) -> Dict[str, List[str]]:
+    def _load_test_texts(self) -> dict[str, list[str]]:
         """Load test texts of various sizes and complexities"""
         return {
             'short': [

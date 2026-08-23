@@ -3,12 +3,12 @@
 Unit tests for internal config module
 """
 
-import pytest
 from unittest.mock import patch
+
 from LiteTTS.config.internal_config import (
     InternalConfig,
     get_internal_config,
-    reload_internal_config
+    reload_internal_config,
 )
 
 

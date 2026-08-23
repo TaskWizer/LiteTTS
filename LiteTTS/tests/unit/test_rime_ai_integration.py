@@ -4,7 +4,8 @@ Unit tests for RIME AI integration
 """
 
 import pytest
-from LiteTTS.nlp.rime_ai_integration import RIMEAIIntegration, PhoneticAnalysis
+
+from LiteTTS.nlp.rime_ai_integration import PhoneticAnalysis, RIMEAIIntegration
 
 
 class TestRIMEAIIntegration:

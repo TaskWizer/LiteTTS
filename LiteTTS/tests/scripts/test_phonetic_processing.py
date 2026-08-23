@@ -4,7 +4,6 @@ Test script to investigate phonetic processing issues
 """
 
 import sys
-import json
 import time
 from pathlib import Path
 
@@ -154,7 +153,11 @@ def test_unified_processor_with_phonetics():
     print("=" * 50)
 
     try:
-        from LiteTTS.nlp.unified_text_processor import UnifiedTextProcessor, ProcessingOptions, ProcessingMode
+        from LiteTTS.nlp.unified_text_processor import (
+            ProcessingMode,
+            ProcessingOptions,
+            UnifiedTextProcessor,
+        )
 
         # Create a test config with phonetic processing enabled
         config = {

@@ -3,10 +3,11 @@
 Comprehensive API endpoint testing script
 """
 
-import requests
 import json
 import time
-from typing import Dict, Any
+
+import requests
+
 
 def test_health_endpoint():
     """Test the health endpoint"""

@@ -4,22 +4,24 @@ Comprehensive Error Handling Tests for Kokoro ONNX TTS API
 Tests edge cases, malformed inputs, network failures, and other error conditions
 """
 
-import pytest
-import requests
 import json
-import time
-import threading
-from pathlib import Path
-from unittest.mock import patch, Mock
-from fastapi.testclient import TestClient
 
 # Import the app for testing
 import sys
+import threading
+import time
+from pathlib import Path
+from unittest.mock import patch
+
+import pytest
+import requests
+from fastapi.testclient import TestClient
+
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from app import app
-from LiteTTS.exceptions import *
 from LiteTTS.api.error_handler import ErrorHandler
+from LiteTTS.exceptions import *
 
 
 class TestInputValidationErrors:

@@ -4,13 +4,13 @@ Advanced Phonetic Mapping System
 Sophisticated phonetic mapping system with IPA support and context-aware pronunciation rules
 """
 
-import re
 import json
 import logging
-from typing import Dict, List, Tuple, Optional, Any
+import re
+import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
-import unicodedata
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -32,12 +32,12 @@ class PhoneticRule:
     replacement: str       # IPA replacement
     context: str           # Context description
     priority: int          # Rule priority (higher = applied first)
-    conditions: List[str]  # Additional conditions
+    conditions: list[str]  # Additional conditions
 
 class AdvancedPhoneticMapper:
     """Advanced phonetic mapping system with IPA support"""
 
-    def __init__(self, config_path: Optional[str] = None):
+    def __init__(self, config_path: str | None = None):
         self.config = self._load_config(config_path)
 
         # Core phonetic mappings
@@ -56,7 +56,7 @@ class AdvancedPhoneticMapper:
 
         logger.info("Advanced phonetic mapping system initialized")
 
-    def _load_config(self, config_path: Optional[str]) -> Dict[str, Any]:
+    def _load_config(self, config_path: str | None) -> dict[str, Any]:
         """Load phonetic mapping configuration"""
         default_config = {
             "default_language": "en-US",
@@ -79,7 +79,7 @@ class AdvancedPhoneticMapper:
 
         return default_config
 
-    def _initialize_ipa_mappings(self) -> Dict[str, PhoneticMapping]:
+    def _initialize_ipa_mappings(self) -> dict[str, PhoneticMapping]:
         """Initialize comprehensive IPA phonetic mappings"""
         mappings = {}
 
@@ -154,7 +154,7 @@ class AdvancedPhoneticMapper:
 
         return mappings
 
-    def _initialize_context_rules(self) -> List[PhoneticRule]:
+    def _initialize_context_rules(self) -> list[PhoneticRule]:
         """Initialize context-aware phonetic rules"""
         return [
             # Vowel context rules
@@ -243,7 +243,7 @@ class AdvancedPhoneticMapper:
             ),
         ]
 
-    def _initialize_homograph_rules(self) -> Dict[str, List[Tuple[str, str, str]]]:
+    def _initialize_homograph_rules(self) -> dict[str, list[tuple[str, str, str]]]:
         """Initialize homograph disambiguation rules"""
         return {
             # Word -> [(pronunciation1, context1, frequency1), ...]
@@ -289,7 +289,7 @@ class AdvancedPhoneticMapper:
             ]
         }
 
-    def _initialize_language_mappings(self) -> Dict[str, Dict[str, str]]:
+    def _initialize_language_mappings(self) -> dict[str, dict[str, str]]:
         """Initialize language-specific phonetic mappings"""
         return {
             "en-US": {
@@ -312,7 +312,7 @@ class AdvancedPhoneticMapper:
             }
         }
 
-    def _initialize_phoneme_similarities(self) -> Dict[str, List[str]]:
+    def _initialize_phoneme_similarities(self) -> dict[str, list[str]]:
         """Initialize phoneme similarity mappings for error correction"""
         return {
             # Vowel similarities
@@ -354,7 +354,7 @@ class AdvancedPhoneticMapper:
             "h": ["x", "ʔ"]
         }
 
-    def _initialize_stress_patterns(self) -> Dict[str, List[str]]:
+    def _initialize_stress_patterns(self) -> dict[str, list[str]]:
         """Initialize stress pattern rules"""
         return {
             "compound_words": ["first_element_primary"],
@@ -496,11 +496,11 @@ class AdvancedPhoneticMapper:
 
         return ' '.join(stressed_words)
 
-    def get_phoneme_alternatives(self, phoneme: str) -> List[str]:
+    def get_phoneme_alternatives(self, phoneme: str) -> list[str]:
         """Get alternative phonemes for error correction"""
         return self.phoneme_similarities.get(phoneme, [])
 
-    def validate_ipa_string(self, ipa_string: str) -> Tuple[bool, List[str]]:
+    def validate_ipa_string(self, ipa_string: str) -> tuple[bool, list[str]]:
         """Validate IPA string and return errors if any"""
         errors = []
 

@@ -3,11 +3,12 @@ Performance Benchmark Suite
 Automated performance testing to ensure no regressions
 """
 
-import time
 import statistics
+import time
+
 import pytest
 import requests
-from typing import List, Dict, Any
+
 
 class TestPerformanceBenchmarks:
     """Performance benchmark tests"""
@@ -114,8 +115,9 @@ class TestPerformanceBenchmarks:
     @pytest.mark.performance
     def test_memory_usage_stability(self):
         """Test memory usage doesn't grow excessively"""
-        import psutil
         import os
+
+        import psutil
 
         # This test would need to be run with the actual service process
         # For now, just check that we can measure memory

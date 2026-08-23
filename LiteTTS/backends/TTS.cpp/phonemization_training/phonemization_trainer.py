@@ -1,14 +1,15 @@
-from nltk.corpus import words
-from os.path import isfile, join
-from phonemizer.backend.espeak.wrapper import EspeakWrapper
-from util import *
-import gguf
 import gzip
 import json
 import logging
+import re
+from os.path import isfile, join
+
+import gguf
 import nltk
 import phonemizer
-import re
+from nltk.corpus import words
+from phonemizer.backend.espeak.wrapper import EspeakWrapper
+from util import *
 
 ACRONYM_REGEX = re.compile(r'(\w\.|[A-Z]{2,}|\d+)+')
 WORD_BREAKS_REGEX = re.compile(r'\'’ -/')

@@ -5,14 +5,12 @@ Provides text-to-phoneme conversion using eSpeak library
 """
 
 import logging
-import subprocess
 import shutil
-import time
-from typing import Dict, List, Optional, Tuple, Any
-from dataclasses import dataclass
-from pathlib import Path
+import subprocess
 import threading
-import json
+import time
+from dataclasses import dataclass
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +24,7 @@ class EspeakConfig:
     cache_enabled: bool = True
     cache_size: int = 10000
     fallback_to_existing: bool = True
-    espeak_path: Optional[str] = None
+    espeak_path: str | None = None
     timeout_seconds: float = 5.0
 
 @dataclass
@@ -34,7 +32,7 @@ class PhonemeResult:
     """Result of phonemization"""
     phonemes: str
     success: bool
-    error_message: Optional[str] = None
+    error_message: str | None = None
     processing_time: float = 0.0
     cache_hit: bool = False
 
@@ -49,7 +47,7 @@ class EspeakPhonemizerBackend:
 
     def __init__(self, config: EspeakConfig):
         self.config = config
-        self.cache: Dict[str, PhonemeResult] = {}
+        self.cache: dict[str, PhonemeResult] = {}
         self.cache_lock = threading.Lock()
         self.espeak_available = False
         self.espeak_path = None
@@ -232,7 +230,7 @@ class EspeakPhonemizerBackend:
 
         return phonemes
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get backend statistics"""
         with self.cache_lock:
             cache_size = len(self.cache)
@@ -254,7 +252,7 @@ class EspeakPhonemizerBackend:
             self.cache.clear()
         logger.info("eSpeak phoneme cache cleared")
 
-    def test_phonemization(self, test_text: str = "Hello, world! How are you?") -> Dict[str, Any]:
+    def test_phonemization(self, test_text: str = "Hello, world! How are you?") -> dict[str, Any]:
         """Test phonemization with sample text"""
         logger.info(f"Testing eSpeak phonemization with: '{test_text}'")
 
@@ -282,7 +280,7 @@ class EspeakPhonemizerBackend:
         return test_result
 
 # Factory function for easy integration
-def create_espeak_backend(config_dict: Dict[str, Any]) -> EspeakPhonemizerBackend:
+def create_espeak_backend(config_dict: dict[str, Any]) -> EspeakPhonemizerBackend:
     """Create eSpeak backend from configuration dictionary"""
     config = EspeakConfig(
         enabled=config_dict.get("enabled", False),

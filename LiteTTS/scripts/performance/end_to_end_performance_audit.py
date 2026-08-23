@@ -4,18 +4,18 @@ End-to-End Performance Audit
 Comprehensive performance testing across all system components
 """
 
-import os
-import sys
 import json
-import time
 import logging
-import psutil
 import statistics
+import sys
 import threading
+import time
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, asdict
+from typing import Any
+
 import numpy as np
+import psutil
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent
@@ -47,12 +47,12 @@ class EndToEndAuditResult:
     overall_throughput: float
 
     # Component breakdown
-    components: List[ComponentPerformance]
+    components: list[ComponentPerformance]
 
     # Bottleneck analysis
     primary_bottleneck: str
     secondary_bottleneck: str
-    bottleneck_recommendations: List[str]
+    bottleneck_recommendations: list[str]
 
     # Target compliance
     rtf_target_met: bool
@@ -77,7 +77,7 @@ class EndToEndPerformanceAuditor:
 
         logger.info("End-to-End Performance Auditor initialized")
 
-    def _get_test_scenarios(self) -> List[Dict[str, Any]]:
+    def _get_test_scenarios(self) -> list[dict[str, Any]]:
         """Get comprehensive test scenarios"""
         return [
             {
@@ -316,7 +316,7 @@ class EndToEndPerformanceAuditor:
             bottleneck_score=bottleneck_score
         )
 
-    def run_end_to_end_tests(self) -> Tuple[float, float, int, int]:
+    def run_end_to_end_tests(self) -> tuple[float, float, int, int]:
         """Run end-to-end performance tests"""
         logger.info("🚀 Running end-to-end performance tests...")
 
@@ -365,7 +365,7 @@ class EndToEndPerformanceAuditor:
 
         return avg_rtf, peak_memory, successful_tests, failed_tests
 
-    def _run_single_test(self, text: str) -> Tuple[float, float]:
+    def _run_single_test(self, text: str) -> tuple[float, float]:
         """Run a single end-to-end test"""
         start_memory = self._get_memory_usage()
         start_time = time.time()
@@ -383,12 +383,12 @@ class EndToEndPerformanceAuditor:
 
         return rtf, end_memory
 
-    def _run_concurrent_tests(self, texts: List[str]) -> List[Optional[Tuple[float, float]]]:
+    def _run_concurrent_tests(self, texts: list[str]) -> list[tuple[float, float] | None]:
         """Run concurrent tests"""
         results = []
         threads = []
 
-        def worker(text: str, result_list: List, index: int):
+        def worker(text: str, result_list: list, index: int):
             try:
                 result = self._run_single_test(text)
                 result_list[index] = result
@@ -435,7 +435,7 @@ class EndToEndPerformanceAuditor:
         except Exception:
             return 0.0
 
-    def analyze_bottlenecks(self, components: List[ComponentPerformance]) -> Tuple[str, str, List[str]]:
+    def analyze_bottlenecks(self, components: list[ComponentPerformance]) -> tuple[str, str, list[str]]:
         """Analyze system bottlenecks"""
         # Sort components by bottleneck score
         sorted_components = sorted(components, key=lambda x: x.bottleneck_score, reverse=True)

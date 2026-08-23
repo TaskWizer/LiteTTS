@@ -4,6 +4,7 @@ Unit tests for phonetic contraction processor
 """
 
 import pytest
+
 from LiteTTS.nlp.phonetic_contraction_processor import PhoneticContractionProcessor
 
 

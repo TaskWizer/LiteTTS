@@ -1,17 +1,18 @@
-import gguf
-from typing import List, Optional, Dict
+import json
 from pathlib import Path
-from kokoro import KPipeline, KModel
-from huggingface_hub import hf_hub_download
-from .tts_encoder import TTSEncoder
-from .tensor_util import get_regularized_weight
+
+import gguf
 import torch
 import torch.nn as nn
-import json
+from huggingface_hub import hf_hub_download
+from kokoro import KModel, KPipeline
+
+from .tensor_util import get_regularized_weight
+from .tts_encoder import TTSEncoder
 
 # ALBERT_PARTS is a mapping of the torch parameter names in Kokoro's Albert nn.Module to names
 # interpretable by TTS.cpp and thereby saved to the GGUF file.
-ALBERT_PARTS: Dict[str, str] = {
+ALBERT_PARTS: dict[str, str] = {
     "embeddings.word_embeddings.weight": "token_embd",
     "embeddings.position_embeddings.weight": "position_embd",
     "embeddings.LayerNorm.weight": "norm",
@@ -43,7 +44,7 @@ ALBERT_TOKEN_TYPE_EMB = "embeddings.token_type_embeddings.weight"
 
 # DURATION_PREDICTOR_PARTS is a mapping of the nn.Module parameter name of Kokoro's Duration Predictor pytorch
 # nn.Module to TTS.cpp interpretable names stored in the GGUF file.
-DURATION_PREDICTOR_PARTS: Dict[str, str] = {
+DURATION_PREDICTOR_PARTS: dict[str, str] = {
     'F0_proj.weight': "f0_proj_kernel",
     'F0_proj.bias': "f0_proj_bias",
     'N_proj.weight': "n_proj_kernel",
@@ -60,7 +61,7 @@ IPA = 1
 
 # TTS_PHONEMIZATION_KEYS are the keys that the TTS.cpp phonemizer expects and thereby must be transplanted from
 # a given phonemizer GGUF file.
-TTS_PHONEMIZATION_KEYS: List[str] = [
+TTS_PHONEMIZATION_KEYS: list[str] = [
     "phonemizer.graphemes",
     "phonemizer.rules.keys",
     "phonemizer.rules.phonemes",
@@ -69,7 +70,7 @@ TTS_PHONEMIZATION_KEYS: List[str] = [
 ]
 
 # Below is a list of the voices to pull by default from the Kokoro repository.
-VOICES: List[str] = ['af_alloy', 'af_aoede', 'af_bella', 'af_heart', 'af_jessica', 'af_kore', 'af_nicole',
+VOICES: list[str] = ['af_alloy', 'af_aoede', 'af_bella', 'af_heart', 'af_jessica', 'af_kore', 'af_nicole',
                      'af_nova', 'af_river', 'af_sarah', 'af_sky', 'am_adam', 'am_echo', 'am_eric', 'am_fenrir',
                      'am_liam', 'am_michael', 'am_onyx', 'am_puck', 'am_santa', 'bf_alice', 'bf_emma',
                      'bf_isabella', 'bf_lily', 'bm_daniel', 'bm_fable', 'bm_george', 'bm_lewis', 'ef_dora',
@@ -97,7 +98,7 @@ class KokoroEncoder(TTSEncoder):
     ```
     """
     def __init__(self, model_path: Path | str = "./kokoro.gguf", repo_id: Path | str = DEFAULT_KOKORO_REPO,
-                 voices: Optional[List[str]] = None, use_espeak: bool = False,
+                 voices: list[str] | None = None, use_espeak: bool = False,
                  phonemizer_repo: Path | str = DEFAULT_TTS_PHONEMIZER_REPO):
         """
         :param Path or str model_path: The path to save the generated GGUF file.

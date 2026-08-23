@@ -4,6 +4,7 @@ Unit tests for SSML parser
 """
 
 import pytest
+
 from LiteTTS.ssml.parser import SSMLParser
 
 

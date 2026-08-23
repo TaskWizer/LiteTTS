@@ -3,10 +3,11 @@
 Debug endpoints for TTS pronunciation debugging
 """
 
-from fastapi import APIRouter, HTTPException
-from typing import Any
 import logging
 import time
+from typing import Any
+
+from fastapi import APIRouter
 
 logger = logging.getLogger(__name__)
 
@@ -63,9 +64,10 @@ class DebugRouter:
         @self.router.post("/validate")
         async def debug_validate(text: str, voice: str = "af_heart"):
             """Generate audio and transcribe with Whisper for validation."""
-            import requests
-            from pathlib import Path
             import tempfile
+            from pathlib import Path
+
+            import requests
 
             result = {
                 "input": text,

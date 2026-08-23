@@ -4,12 +4,12 @@ Input validation and sanitization for Kokoro ONNX TTS API
 Comprehensive validation for all user inputs and system parameters
 """
 
-import re
 import html
-import unicodedata
-from typing import Optional, List, Dict, Any, Tuple
-from dataclasses import dataclass
 import logging
+import re
+import unicodedata
+from dataclasses import dataclass
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -18,8 +18,8 @@ class ValidationResult:
     """Result of input validation"""
     is_valid: bool
     sanitized_value: Any = None
-    error_message: Optional[str] = None
-    warnings: List[str] = None
+    error_message: str | None = None
+    warnings: list[str] = None
 
     def __post_init__(self):
         if self.warnings is None:
@@ -127,7 +127,7 @@ class InputValidator:
         )
 
     @classmethod
-    def validate_voice(cls, voice: str, available_voices: List[str]) -> ValidationResult:
+    def validate_voice(cls, voice: str, available_voices: list[str]) -> ValidationResult:
         """Validate voice selection"""
         if not isinstance(voice, str):
             return ValidationResult(
@@ -265,7 +265,7 @@ class InputValidator:
         )
 
     @classmethod
-    def validate_tts_request(cls, request_data: Dict[str, Any], available_voices: List[str]) -> ValidationResult:
+    def validate_tts_request(cls, request_data: dict[str, Any], available_voices: list[str]) -> ValidationResult:
         """Validate complete TTS request"""
         if not isinstance(request_data, dict):
             return ValidationResult(
@@ -400,7 +400,7 @@ class SecurityValidator:
             sanitized_value=api_key
         )
 
-def validate_request(request_data: Dict[str, Any], available_voices: List[str]) -> Tuple[bool, Any, List[str]]:
+def validate_request(request_data: dict[str, Any], available_voices: list[str]) -> tuple[bool, Any, list[str]]:
     """
     Convenience function for request validation
     Returns: (is_valid, sanitized_data_or_error_message, warnings)

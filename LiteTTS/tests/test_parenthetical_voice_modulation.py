@@ -4,8 +4,8 @@ Test Enhanced Parenthetical Voice Modulation
 Validates the improved whisper mode with af_nicole blend for parenthetical content
 """
 
-import sys
 import logging
+import sys
 from pathlib import Path
 
 # Add project root to path

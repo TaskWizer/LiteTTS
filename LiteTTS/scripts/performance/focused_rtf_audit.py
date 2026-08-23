@@ -6,13 +6,13 @@ Focused audit specifically on the LiteTTS/ directory for RTF optimization
 opportunities, excluding dependencies and virtual environments.
 """
 
-import os
-import ast
-import re
 import json
-from pathlib import Path
-from typing import Dict, List, Any
+import os
+import re
 import time
+from pathlib import Path
+from typing import Any
+
 
 class FocusedRTFAuditor:
     """Focused RTF auditor for kokoro codebase only"""
@@ -27,7 +27,7 @@ class FocusedRTFAuditor:
             'recommendations': []
         }
 
-    def run_focused_audit(self) -> Dict[str, Any]:
+    def run_focused_audit(self) -> dict[str, Any]:
         """Run focused audit on kokoro codebase"""
 
         print("🎯 Focused RTF Audit - Kokoro Codebase")

@@ -3,15 +3,12 @@
 Unit tests for voice discovery module
 """
 
-import pytest
 import json
-import numpy as np
 from pathlib import Path
-from unittest.mock import Mock, patch
-from LiteTTS.voice.discovery import (
-    VoiceInfo,
-    VoiceDiscovery
-)
+
+import numpy as np
+
+from LiteTTS.voice.discovery import VoiceDiscovery, VoiceInfo
 
 
 class TestVoiceInfo:

@@ -4,15 +4,13 @@ Voice Sample Regeneration and Time-Stretching Script
 Regenerates all voice samples using the current TTS system and creates time-stretched versions
 """
 
-import os
-import sys
-import json
 import asyncio
-import aiohttp
-import subprocess
-from pathlib import Path
-from typing import List, Dict, Any
 import logging
+import subprocess
+import sys
+from pathlib import Path
+
+import aiohttp
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -47,7 +45,7 @@ class VoiceSampleGenerator:
                             "zf_xiaoxiao", "zf_xiaoyi", "zm_yunxi", "zm_yunxia", "zm_yunyang"]
         }
 
-    async def get_available_voices(self) -> List[str]:
+    async def get_available_voices(self) -> list[str]:
         """Get list of available voices from the API"""
         try:
             async with aiohttp.ClientSession() as session:

@@ -4,14 +4,14 @@ Final Integration Test for LiteTTS Phase 1 Implementation
 Comprehensive test of all implemented features and improvements
 """
 
-import sys
-import os
-import time
 import logging
+import os
+import sys
 import tempfile
-import numpy as np
+import time
 from pathlib import Path
-from typing import Dict, Any
+
+import numpy as np
 
 # Add LiteTTS to path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -206,7 +206,7 @@ def test_configuration_system():
     logger.info("-" * 40)
 
     try:
-        from config.whisper_config_loader import get_whisper_settings, WhisperConfigLoader
+        from config.whisper_config_loader import WhisperConfigLoader, get_whisper_settings
 
         # Test settings loading
         settings = get_whisper_settings()

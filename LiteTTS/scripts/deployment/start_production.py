@@ -4,10 +4,10 @@ Production startup script for Kokoro ONNX TTS API
 Optimized for VPS deployment with OpenWebUI integration
 """
 
-import os
-import sys
 import argparse
 import logging
+import os
+import sys
 from pathlib import Path
 
 # Add the project root to Python path
@@ -163,7 +163,7 @@ Examples:
         os.environ.setdefault("CACHE_ENABLED", "true")
 
         # Import the app and get configuration
-        from app import tts_app, app
+        from app import tts_app
 
         logger.info("🚀 Starting Kokoro ONNX TTS API (Production Mode)")
 

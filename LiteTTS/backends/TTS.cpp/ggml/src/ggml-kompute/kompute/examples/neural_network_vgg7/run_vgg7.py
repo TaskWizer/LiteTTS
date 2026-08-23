@@ -1,10 +1,9 @@
+import sys
+
 import kp
 import numpy
-import os
-import sys
-import time
-import sh_conv
 import sh_common
+import sh_conv
 
 if len(sys.argv) != 3:
     print("run_vgg7.py INPUT OUTPUT")

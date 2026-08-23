@@ -4,16 +4,16 @@ Deployment automation script for Kokoro ONNX TTS API
 Handles model downloading, configuration validation, and service deployment
 """
 
-import os
-import sys
-import json
-import subprocess
 import argparse
+import json
 import logging
-from pathlib import Path
-from typing import Dict, Any, List
-import requests
+import os
+import subprocess
+import sys
 import time
+from pathlib import Path
+
+import requests
 
 # Setup logging
 logging.basicConfig(
@@ -146,7 +146,7 @@ class DeploymentManager:
             logger.error(f"❌ Error downloading models: {e}")
             return False
 
-    def download_voices(self, voices: List[str] = None, force: bool = False) -> bool:
+    def download_voices(self, voices: list[str] = None, force: bool = False) -> bool:
         """Download voice files"""
         logger.info("🎤 Checking voice files...")
 

@@ -4,16 +4,16 @@ Test critical pronunciation bugs identified through testing
 """
 
 import sys
-import os
 from pathlib import Path
 
 # Add the project root to the path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from LiteTTS.nlp.processor import NLPProcessor
-from LiteTTS.nlp.clean_text_normalizer import CleanTextNormalizer
 from LiteTTS.nlp.advanced_abbreviation_handler import AdvancedAbbreviationHandler
+from LiteTTS.nlp.clean_text_normalizer import CleanTextNormalizer
+from LiteTTS.nlp.processor import NLPProcessor
+
 
 def test_meaning_bug():
     """Test the critical 'meaning' → 'meters inches grams' bug"""

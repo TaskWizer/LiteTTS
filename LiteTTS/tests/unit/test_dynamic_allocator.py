@@ -3,8 +3,9 @@
 Unit tests for dynamic allocator module
 """
 
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
 
 
 class TestDynamicAllocationConfig:
@@ -52,7 +53,10 @@ class TestDynamicCPUAllocator:
 
     def test_initialization_custom_config(self, mock_dependencies):
         """Test allocator with custom config"""
-        from LiteTTS.performance.dynamic_allocator import DynamicCPUAllocator, DynamicAllocationConfig
+        from LiteTTS.performance.dynamic_allocator import (
+            DynamicAllocationConfig,
+            DynamicCPUAllocator,
+        )
         config = DynamicAllocationConfig(min_cores=2, max_cores=6)
         allocator = DynamicCPUAllocator(config)
         assert allocator.config.min_cores == 2

@@ -4,7 +4,6 @@ Comprehensive pronunciation dictionary for Kokoro TTS system
 Contains common mispronounced words and their correct pronunciations
 """
 
-from typing import Dict, List, Tuple
 import logging
 
 logger = logging.getLogger(__name__)
@@ -18,7 +17,7 @@ class PronunciationDictionary:
         self.proper_nouns = self._load_proper_nouns()
         self.foreign_words = self._load_foreign_words()
 
-    def _load_common_mispronunciations(self) -> Dict[str, str]:
+    def _load_common_mispronunciations(self) -> dict[str, str]:
         """Load commonly mispronounced words with correct pronunciations"""
         return {
             # Words identified in the audit - removed hedonism and inherently for natural pronunciation
@@ -107,7 +106,7 @@ class PronunciationDictionary:
             'legislature': 'LEJ-is-lay-chur',  # Not "LEJ-is-lay-shur"
         }
 
-    def _load_technical_terms(self) -> Dict[str, str]:
+    def _load_technical_terms(self) -> dict[str, str]:
         """Load technical terms and their pronunciations"""
         return {
             # Computer science terms
@@ -178,7 +177,7 @@ class PronunciationDictionary:
             'mortgage': 'MOR-gij',
         }
 
-    def _load_proper_nouns(self) -> Dict[str, str]:
+    def _load_proper_nouns(self) -> dict[str, str]:
         """Load proper nouns and their pronunciations"""
         return {
             # Geographic locations
@@ -231,7 +230,7 @@ class PronunciationDictionary:
             'guillaume': 'gee-YOHM',
         }
 
-    def _load_foreign_words(self) -> Dict[str, str]:
+    def _load_foreign_words(self) -> dict[str, str]:
         """Load foreign words commonly used in English"""
         return {
             # French
@@ -329,7 +328,7 @@ class PronunciationDictionary:
 
         return False
 
-    def get_all_words(self) -> List[str]:
+    def get_all_words(self) -> list[str]:
         """Get all words that have pronunciation entries"""
         all_words = []
         for dictionary in [self.common_mispronunciations, self.technical_terms,
@@ -337,7 +336,7 @@ class PronunciationDictionary:
             all_words.extend(dictionary.keys())
         return sorted(list(set(all_words)))
 
-    def get_statistics(self) -> Dict[str, int]:
+    def get_statistics(self) -> dict[str, int]:
         """Get statistics about the pronunciation dictionary"""
         return {
             'common_mispronunciations': len(self.common_mispronunciations),

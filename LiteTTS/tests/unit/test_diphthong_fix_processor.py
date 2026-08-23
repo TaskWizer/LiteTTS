@@ -4,6 +4,7 @@ Unit tests for diphthong fix processor
 """
 
 import pytest
+
 from LiteTTS.nlp.diphthong_fix_processor import DiphthongFixProcessor
 
 

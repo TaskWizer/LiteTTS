@@ -6,11 +6,11 @@ This module provides context-aware adaptation of TTS synthesis parameters
 for optimal speech quality and appropriateness in different situations.
 """
 
+import logging
 import re
-from typing import Dict, List, Tuple, Optional, Any
 from dataclasses import dataclass
 from enum import Enum
-import logging
+from typing import Any
 
 from .emotion_detector import EmotionProfile
 
@@ -50,12 +50,12 @@ class SpeechContext:
     register: SpeechRegister
     content_type: ContentType
     audience: AudienceType
-    emotional_state: Optional[EmotionProfile]
+    emotional_state: EmotionProfile | None
     urgency_level: float  # 0.0 to 1.0
     formality_level: float  # 0.0 to 1.0
     intimacy_level: float  # 0.0 to 1.0
     technical_complexity: float  # 0.0 to 1.0
-    time_constraints: Optional[float]  # seconds available
+    time_constraints: float | None  # seconds available
     environment: str  # "quiet", "noisy", "public", "private"
 
 @dataclass
@@ -69,7 +69,7 @@ class AdaptationParameters:
     emotional_expressiveness: float  # 0.0 to 1.0
     pause_duration_multiplier: float
     emphasis_strength: float  # 0.0 to 1.0
-    voice_quality_adjustments: Dict[str, float]
+    voice_quality_adjustments: dict[str, float]
 
 class ContextAdapter:
     """Dynamic context-aware synthesis parameter adaptation"""
@@ -81,7 +81,7 @@ class ContextAdapter:
         self.audience_adaptations = self._load_audience_adaptations()
         self.environment_adaptations = self._load_environment_adaptations()
 
-    def _load_register_adaptations(self) -> Dict[SpeechRegister, Dict[str, float]]:
+    def _load_register_adaptations(self) -> dict[SpeechRegister, dict[str, float]]:
         """Load speech register adaptation parameters"""
         return {
             SpeechRegister.FORMAL: {
@@ -131,7 +131,7 @@ class ContextAdapter:
             }
         }
 
-    def _load_content_adaptations(self) -> Dict[ContentType, Dict[str, float]]:
+    def _load_content_adaptations(self) -> dict[ContentType, dict[str, float]]:
         """Load content type adaptation parameters"""
         return {
             ContentType.CONVERSATIONAL: {
@@ -171,7 +171,7 @@ class ContextAdapter:
             }
         }
 
-    def _load_audience_adaptations(self) -> Dict[AudienceType, Dict[str, float]]:
+    def _load_audience_adaptations(self) -> dict[AudienceType, dict[str, float]]:
         """Load audience-specific adaptation parameters"""
         return {
             AudienceType.CHILDREN: {
@@ -206,7 +206,7 @@ class ContextAdapter:
             }
         }
 
-    def _load_environment_adaptations(self) -> Dict[str, Dict[str, float]]:
+    def _load_environment_adaptations(self) -> dict[str, dict[str, float]]:
         """Load environment-specific adaptations"""
         return {
             "quiet": {
@@ -233,7 +233,7 @@ class ContextAdapter:
             }
         }
 
-    def analyze_context(self, text: str, metadata: Optional[Dict[str, Any]] = None) -> SpeechContext:
+    def analyze_context(self, text: str, metadata: dict[str, Any] | None = None) -> SpeechContext:
         """Analyze text and metadata to determine speech context"""
 
         # Extract context clues from text
@@ -323,7 +323,7 @@ class ContextAdapter:
 
         return ContentType.INFORMATIONAL
 
-    def _detect_audience_type(self, text: str, metadata: Optional[Dict[str, Any]]) -> AudienceType:
+    def _detect_audience_type(self, text: str, metadata: dict[str, Any] | None) -> AudienceType:
         """Detect target audience from text and metadata"""
         if metadata and "audience" in metadata:
             audience_str = metadata["audience"].lower()
@@ -465,7 +465,7 @@ class ContextAdapter:
 
         return params
 
-    def _apply_adaptations(self, params: AdaptationParameters, adaptations: Dict[str, float]):
+    def _apply_adaptations(self, params: AdaptationParameters, adaptations: dict[str, float]):
         """Apply adaptation values to parameters"""
         for key, value in adaptations.items():
             if hasattr(params, key):

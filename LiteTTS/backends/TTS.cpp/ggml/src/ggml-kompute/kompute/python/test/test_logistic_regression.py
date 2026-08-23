@@ -1,6 +1,7 @@
-import pyshader as ps
-import numpy as np
 import kp
+import numpy as np
+import pyshader as ps
+
 
 def test_logistic_regression():
 

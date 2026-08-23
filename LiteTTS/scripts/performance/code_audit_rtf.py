@@ -6,13 +6,14 @@ Comprehensive code audit to identify performance bottlenecks and optimization
 opportunities in the TTS codebase.
 """
 
-import os
 import ast
-import re
 import json
-from pathlib import Path
-from typing import Dict, List, Any, Tuple
+import os
+import re
 import time
+from pathlib import Path
+from typing import Any
+
 
 class CodeAuditor:
     """Comprehensive code auditor for RTF optimization"""
@@ -27,7 +28,7 @@ class CodeAuditor:
             'recommendations': []
         }
 
-    def run_comprehensive_audit(self) -> Dict[str, Any]:
+    def run_comprehensive_audit(self) -> dict[str, Any]:
         """Run comprehensive code audit"""
 
         print("🔍 RTF Code Audit & Analysis")
@@ -86,7 +87,7 @@ class CodeAuditor:
         self.audit_results['performance_issues'] = performance_issues
         print(f"   📊 Found {len(performance_issues)} potential performance issues")
 
-    def _analyze_ast_performance(self, tree: ast.AST, file_path: Path) -> List[Dict]:
+    def _analyze_ast_performance(self, tree: ast.AST, file_path: Path) -> list[dict]:
         """Analyze AST for performance issues"""
         issues = []
 

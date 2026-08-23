@@ -3,12 +3,13 @@
 Test suite for enhanced Kokoro ONNX TTS API features
 """
 
-import pytest
 import json
 import tempfile
-import shutil
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
+
+import pytest
+
 
 # Test configuration system
 def test_enhanced_configuration():
@@ -81,6 +82,7 @@ def test_configuration_from_json():
 def test_environment_variable_override():
     """Test environment variable configuration override"""
     import os
+
     from LiteTTS.config import ConfigManager
 
     # Set environment variables
@@ -212,7 +214,7 @@ def test_hot_reload_manager():
 
 def test_fault_tolerance():
     """Test fault tolerance features"""
-    from LiteTTS.performance.fault_tolerance import CircuitBreaker, RetryManager, HealthChecker
+    from LiteTTS.performance.fault_tolerance import CircuitBreaker, HealthChecker, RetryManager
 
     # Test circuit breaker
     circuit_breaker = CircuitBreaker(failure_threshold=2, recovery_timeout=1)
@@ -291,7 +293,7 @@ def test_dynamic_voice_list():
 @pytest.mark.skip(reason="Module LiteTTS.scripts.install_cpu_only does not exist")
 def test_cpu_only_installation():
     """Test CPU-only installation verification"""
-    from LiteTTS.scripts.install_cpu_only import check_gpu_packages, verify_installation
+    from LiteTTS.scripts.install_cpu_only import check_gpu_packages
 
     # Test GPU package detection
     with patch('subprocess.run') as mock_run:

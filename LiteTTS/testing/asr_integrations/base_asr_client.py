@@ -2,9 +2,9 @@
 Base ASR client interface for audio quality testing
 """
 
-from abc import ABC, abstractmethod
-from typing import Tuple, Optional, Dict, Any
 import logging
+from abc import ABC, abstractmethod
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -14,14 +14,14 @@ class BaseASRClient(ABC):
     Base class for ASR (Automatic Speech Recognition) clients
     """
 
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
+    def __init__(self, config: dict[str, Any] | None = None):
         self.config = config or {}
         self.timeout = self.config.get("timeout", 30)
         self.language = self.config.get("language", "en-US")
         self.model = self.config.get("model", "general")
 
     @abstractmethod
-    async def transcribe(self, audio_data: bytes) -> Tuple[str, float]:
+    async def transcribe(self, audio_data: bytes) -> tuple[str, float]:
         """
         Transcribe audio data to text
         
@@ -31,7 +31,6 @@ class BaseASRClient(ABC):
         Returns:
             Tuple of (transcription, confidence_score)
         """
-        pass
 
     @abstractmethod
     def is_available(self) -> bool:
@@ -41,9 +40,8 @@ class BaseASRClient(ABC):
         Returns:
             True if service is available, False otherwise
         """
-        pass
 
-    def get_service_info(self) -> Dict[str, Any]:
+    def get_service_info(self) -> dict[str, Any]:
         """
         Get information about the ASR service
         

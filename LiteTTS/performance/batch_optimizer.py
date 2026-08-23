@@ -7,11 +7,11 @@ Implements adaptive batching strategies to balance latency vs throughput while m
 import asyncio
 import logging
 import time
+from collections import defaultdict, deque
+from dataclasses import dataclass
+from typing import Any
+
 import psutil
-from collections import deque, defaultdict
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any, Callable
-import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -21,11 +21,11 @@ class BatchRequest:
     request_id: str
     text: str
     voice: str
-    params: Dict[str, Any]
+    params: dict[str, Any]
     timestamp: float
     text_length: int
     priority: int = 0
-    future: Optional[asyncio.Future] = None
+    future: asyncio.Future | None = None
 
 @dataclass
 class BatchConfig:
@@ -77,7 +77,7 @@ class DynamicBatchOptimizer:
     based on text length, system resources, and performance metrics
     """
 
-    def __init__(self, config: Optional[BatchConfig] = None):
+    def __init__(self, config: BatchConfig | None = None):
         self.config = config or BatchConfig()
 
         # Request queues by text length category
@@ -86,8 +86,8 @@ class DynamicBatchOptimizer:
         self.long_queue: deque = deque()
 
         # Batch processing state
-        self.active_batches: Dict[str, List[BatchRequest]] = {}
-        self.batch_timers: Dict[str, asyncio.Task] = {}
+        self.active_batches: dict[str, list[BatchRequest]] = {}
+        self.batch_timers: dict[str, asyncio.Task] = {}
 
         # Performance tracking
         self.metrics = BatchMetrics()
@@ -206,7 +206,7 @@ class DynamicBatchOptimizer:
         if batch:
             await self._process_batch(batch, category)
 
-    async def _process_batch(self, batch: List[BatchRequest], category: str):
+    async def _process_batch(self, batch: list[BatchRequest], category: str):
         """Process a batch of requests"""
         start_time = time.time()
         batch_id = f"{category}_{int(start_time * 1000)}"
@@ -258,7 +258,7 @@ class DynamicBatchOptimizer:
                 if not request.future.done():
                     request.future.set_exception(e)
 
-    async def _process_voice_batch(self, requests: List[BatchRequest], voice: str) -> Dict[str, Any]:
+    async def _process_voice_batch(self, requests: list[BatchRequest], voice: str) -> dict[str, Any]:
         """Process batch of requests for a specific voice"""
         # This would integrate with the actual TTS engine
         # For now, simulate batch processing
@@ -321,7 +321,7 @@ class DynamicBatchOptimizer:
         except Exception:
             return 0.0
 
-    def _update_metrics(self, batch: List[BatchRequest], processing_time: float, category: str):
+    def _update_metrics(self, batch: list[BatchRequest], processing_time: float, category: str):
         """Update performance metrics"""
         self.metrics.total_requests += len(batch)
         self.metrics.batched_requests += len(batch)
@@ -422,7 +422,7 @@ class DynamicBatchOptimizer:
         """Get current batch processing metrics"""
         return self.metrics
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """Get current batch optimizer status"""
         return {
             "queue_lengths": {
@@ -438,7 +438,7 @@ class DynamicBatchOptimizer:
         }
 
 # Global batch optimizer instance
-_global_batch_optimizer: Optional[DynamicBatchOptimizer] = None
+_global_batch_optimizer: DynamicBatchOptimizer | None = None
 
 def get_batch_optimizer() -> DynamicBatchOptimizer:
     """Get or create global batch optimizer instance"""

@@ -3,14 +3,11 @@
 Unit tests for voice validator module
 """
 
-import pytest
+
 import numpy as np
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
-from LiteTTS.voice.validator import (
-    ValidationResult,
-    VoiceValidator
-)
+import pytest
+
+from LiteTTS.voice.validator import ValidationResult, VoiceValidator
 
 
 class TestValidationResult:

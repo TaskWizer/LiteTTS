@@ -2,13 +2,10 @@
 Deepgram ASR client for audio quality testing
 """
 
-import asyncio
-import aiohttp
-import tempfile
-import json
-from pathlib import Path
-from typing import Tuple, Optional, Dict, Any
 import logging
+from typing import Any
+
+import aiohttp
 
 from .base_asr_client import BaseASRClient
 
@@ -20,7 +17,7 @@ class DeepgramASRClient(BaseASRClient):
     Deepgram ASR client implementation
     """
 
-    def __init__(self, api_key: str, config: Optional[Dict[str, Any]] = None):
+    def __init__(self, api_key: str, config: dict[str, Any] | None = None):
         super().__init__(config)
         self.api_key = api_key
         self.base_url = "https://api.deepgram.com/v1/listen"
@@ -32,7 +29,7 @@ class DeepgramASRClient(BaseASRClient):
         self.diarize = self.config.get("diarize", False)
         self.smart_format = self.config.get("smart_format", True)
 
-    async def transcribe(self, audio_data: bytes) -> Tuple[str, float]:
+    async def transcribe(self, audio_data: bytes) -> tuple[str, float]:
         """
         Transcribe audio using Deepgram API
         """
@@ -75,7 +72,7 @@ class DeepgramASRClient(BaseASRClient):
             logger.error(f"Deepgram transcription error: {e}")
             return "", 0.0
 
-    def _extract_transcription(self, result: Dict[str, Any]) -> Tuple[str, float]:
+    def _extract_transcription(self, result: dict[str, Any]) -> tuple[str, float]:
         """
         Extract transcription and confidence from Deepgram response
         """
@@ -106,7 +103,7 @@ class DeepgramASRClient(BaseASRClient):
         """
         return bool(self.api_key)
 
-    def get_service_info(self) -> Dict[str, Any]:
+    def get_service_info(self) -> dict[str, Any]:
         """
         Get Deepgram service information
         """

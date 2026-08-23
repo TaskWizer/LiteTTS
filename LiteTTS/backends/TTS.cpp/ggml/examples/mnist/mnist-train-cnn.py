@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys
 from time import time
+
 import gguf
 import numpy as np
 import tensorflow as tf

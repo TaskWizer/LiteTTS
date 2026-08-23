@@ -4,7 +4,8 @@ Unit tests for health monitor
 """
 
 import pytest
-from LiteTTS.monitoring.health_monitor import HealthMonitor, SystemHealth, HealthStatus
+
+from LiteTTS.monitoring.health_monitor import HealthMonitor, HealthStatus, SystemHealth
 
 
 class TestHealthMonitor:

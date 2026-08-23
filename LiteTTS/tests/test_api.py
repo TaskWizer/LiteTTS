@@ -3,8 +3,9 @@
 Simple test script for the Kokoro ONNX TTS API
 """
 
+
 import requests
-import json
+
 
 def test_api():
     base_url = "http://localhost:8000"

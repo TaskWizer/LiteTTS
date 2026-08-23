@@ -4,7 +4,8 @@ Unit tests for whisper fallback manager
 """
 
 import pytest
-from LiteTTS.backends.whisper_fallback_manager import WhisperFallbackManager, FallbackTrigger
+
+from LiteTTS.backends.whisper_fallback_manager import WhisperFallbackManager
 
 
 class TestWhisperFallbackManager:

@@ -4,6 +4,7 @@ Unit tests for proper name pronunciation processor
 """
 
 import pytest
+
 from LiteTTS.nlp.proper_name_pronunciation_processor import ProperNamePronunciationProcessor
 
 

@@ -1,7 +1,7 @@
 # SSML processing package
 
-from .parser import SSMLParser, ParsedSSML, BackgroundConfig, BackgroundType
 from .background_generator import BackgroundGenerator
+from .parser import BackgroundConfig, BackgroundType, ParsedSSML, SSMLParser
 from .processor import SSMLProcessor
 
 __all__ = [

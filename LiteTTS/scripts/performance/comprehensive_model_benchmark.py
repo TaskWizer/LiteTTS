@@ -4,17 +4,16 @@ Comprehensive Model Performance Benchmark
 Systematic performance analysis of all available model variants with RTF, memory, quality, and latency metrics
 """
 
-import os
-import sys
 import json
-import time
 import logging
-import psutil
 import statistics
+import sys
+import time
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, asdict
+
 import numpy as np
+import psutil
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent
@@ -79,11 +78,11 @@ class ComprehensiveModelBenchmark:
     def __init__(self, models_dir: str = "LiteTTS/models"):
         self.models_dir = Path(models_dir)
         self.test_texts = self._get_test_texts()
-        self.results: List[ModelBenchmarkResult] = []
+        self.results: list[ModelBenchmarkResult] = []
 
         logger.info("Comprehensive Model Benchmark initialized")
 
-    def _get_test_texts(self) -> Dict[str, List[str]]:
+    def _get_test_texts(self) -> dict[str, list[str]]:
         """Get test texts categorized by length"""
         return {
             "short": [
@@ -109,7 +108,7 @@ class ComprehensiveModelBenchmark:
             ]
         }
 
-    def discover_models(self) -> List[Tuple[str, Path]]:
+    def discover_models(self) -> list[tuple[str, Path]]:
         """Discover available model files"""
         models = []
 
@@ -128,7 +127,7 @@ class ComprehensiveModelBenchmark:
 
         return models
 
-    def benchmark_model(self, model_name: str, model_path: Path) -> Optional[ModelBenchmarkResult]:
+    def benchmark_model(self, model_name: str, model_path: Path) -> ModelBenchmarkResult | None:
         """Benchmark a single model"""
         logger.info(f"🧪 Benchmarking model: {model_name}")
 
@@ -302,7 +301,7 @@ class ComprehensiveModelBenchmark:
         except Exception:
             pass
 
-    def _generate_audio(self, text: str) -> Optional[np.ndarray]:
+    def _generate_audio(self, text: str) -> np.ndarray | None:
         """Generate audio for text"""
         try:
             # Simulate audio generation
@@ -335,7 +334,7 @@ class ComprehensiveModelBenchmark:
         quality_score = (rtf_score * 0.6 + success_rate * 0.4) * 100
         return min(100, max(0, quality_score))
 
-    def run_comprehensive_benchmark(self) -> List[ModelBenchmarkResult]:
+    def run_comprehensive_benchmark(self) -> list[ModelBenchmarkResult]:
         """Run comprehensive benchmark on all available models"""
         logger.info("🚀 Starting comprehensive model benchmark")
 

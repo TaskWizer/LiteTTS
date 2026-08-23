@@ -4,13 +4,9 @@ Documentation Cleanup and Consolidation Script
 Systematically cleans up and organizes documentation for production readiness
 """
 
-import os
-import shutil
-import json
 import logging
+import shutil
 from pathlib import Path
-from typing import Dict, List, Set
-import re
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

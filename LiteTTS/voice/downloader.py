@@ -4,14 +4,14 @@ Dynamic voice model downloader with HuggingFace API integration
 """
 
 import hashlib
-import requests
-import time
-from pathlib import Path
-from typing import Dict, List, Optional, Callable, Set
-from dataclasses import dataclass
-import logging
 import json
-import re
+import logging
+import time
+from collections.abc import Callable
+from dataclasses import dataclass
+from pathlib import Path
+
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +69,7 @@ class VoiceDownloader:
         self.hf_api_url = f"https://huggingface.co/api/repos/{self.hf_repo}"
 
         # Cache for discovered voice files
-        self.discovered_voices: Dict[str, VoiceFileInfo] = {}
+        self.discovered_voices: dict[str, VoiceFileInfo] = {}
         self.discovery_cache_file = self.voices_dir / "discovery_cache.json"
 
         # Load cached discovery data
@@ -201,12 +201,12 @@ class VoiceDownloader:
             logger.error(f"🔧 Check network connection or repository access: {self.hf_repo}")
             return False
 
-    def get_available_voice_names(self) -> List[str]:
+    def get_available_voice_names(self) -> list[str]:
         """Get list of all available voice names from HuggingFace"""
         return sorted(list(self.discovered_voices.keys()))
 
     def download_voice(self, voice_name: str,
-                      progress_callback: Optional[Callable[[DownloadProgress], None]] = None) -> bool:
+                      progress_callback: Callable[[DownloadProgress], None] | None = None) -> bool:
         """Download a specific voice model (.bin file directly)"""
         if voice_name not in self.discovered_voices:
             logger.error(f"Unknown voice: {voice_name}. Available voices: {list(self.discovered_voices.keys())}")
@@ -271,7 +271,7 @@ class VoiceDownloader:
             return False
 
     def download_all_voices(self,
-                           progress_callback: Optional[Callable[[DownloadProgress], None]] = None) -> Dict[str, bool]:
+                           progress_callback: Callable[[DownloadProgress], None] | None = None) -> dict[str, bool]:
         """Download all available voices"""
         results = {}
 
@@ -285,7 +285,7 @@ class VoiceDownloader:
         return results
 
     def download_default_voices(self,
-                               progress_callback: Optional[Callable[[DownloadProgress], None]] = None) -> Dict[str, bool]:
+                               progress_callback: Callable[[DownloadProgress], None] | None = None) -> dict[str, bool]:
         """Download default voices (backward compatibility) - now downloads ALL voices"""
         logger.info("📥 Downloading ALL available voices (simplified voice management)")
         return self.download_all_voices(progress_callback)
@@ -304,7 +304,7 @@ class VoiceDownloader:
         voice_info = self.discovered_voices[voice_name]
         return self._validate_file_integrity(local_path, voice_info)
 
-    def get_downloaded_voices(self) -> List[str]:
+    def get_downloaded_voices(self) -> list[str]:
         """Get list of downloaded voices"""
         downloaded = []
 
@@ -314,7 +314,7 @@ class VoiceDownloader:
 
         return sorted(downloaded)
 
-    def get_missing_voices(self) -> List[str]:
+    def get_missing_voices(self) -> list[str]:
         """Get list of voices that need to be downloaded"""
         missing = []
 
@@ -356,7 +356,7 @@ class VoiceDownloader:
 
         return hash_sha256.hexdigest()
 
-    def get_voice_file_path(self, voice_name: str) -> Optional[Path]:
+    def get_voice_file_path(self, voice_name: str) -> Path | None:
         """Get local file path for a voice"""
         if voice_name not in self.discovered_voices:
             return None
@@ -364,7 +364,7 @@ class VoiceDownloader:
         local_path = self.voices_dir / f"{voice_name}.bin"
         return local_path if local_path.exists() else None
 
-    def get_download_info(self) -> Dict[str, Dict]:
+    def get_download_info(self) -> dict[str, dict]:
         """Get download information for all voices"""
         info = {}
 
@@ -383,7 +383,7 @@ class VoiceDownloader:
 
         return info
 
-    def cleanup_invalid_files(self) -> List[str]:
+    def cleanup_invalid_files(self) -> list[str]:
         """Remove invalid or corrupted voice files"""
         cleaned = []
 
@@ -410,7 +410,7 @@ class VoiceDownloader:
         # Rediscover voices
         return self.discover_voices_from_huggingface()
 
-    def get_discovery_stats(self) -> Dict:
+    def get_discovery_stats(self) -> dict:
         """Get statistics about voice discovery"""
         return {
             'total_discovered': len(self.discovered_voices),

@@ -6,9 +6,9 @@ This module provides specific test cases to validate our recent eSpeak integrati
 improvements, particularly the question mark and asterisk pronunciation fixes.
 """
 
-from typing import List, Dict, Any
-from .audio_quality_tester import AudioTestCase
 import logging
+
+from .audio_quality_tester import AudioTestCase
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ class EspeakIntegrationTestSuite:
         # Edge cases and regression tests
         self.test_cases.extend(self._create_edge_case_tests())
 
-    def _create_symbol_processing_tests(self) -> List[AudioTestCase]:
+    def _create_symbol_processing_tests(self) -> list[AudioTestCase]:
         """
         Create test cases for symbol processing improvements
         """
@@ -135,7 +135,7 @@ class EspeakIntegrationTestSuite:
             )
         ]
 
-    def _create_currency_datetime_tests(self) -> List[AudioTestCase]:
+    def _create_currency_datetime_tests(self) -> list[AudioTestCase]:
         """
         Create test cases for currency and datetime processing
         """
@@ -183,7 +183,7 @@ class EspeakIntegrationTestSuite:
             )
         ]
 
-    def _create_context_aware_tests(self) -> List[AudioTestCase]:
+    def _create_context_aware_tests(self) -> list[AudioTestCase]:
         """
         Create test cases for context-aware symbol processing
         """
@@ -235,7 +235,7 @@ class EspeakIntegrationTestSuite:
             )
         ]
 
-    def _create_edge_case_tests(self) -> List[AudioTestCase]:
+    def _create_edge_case_tests(self) -> list[AudioTestCase]:
         """
         Create edge case and regression test cases
         """
@@ -292,7 +292,7 @@ class EspeakIntegrationTestSuite:
             )
         ]
 
-    def get_test_cases(self, category: str = None, priority: str = None) -> List[AudioTestCase]:
+    def get_test_cases(self, category: str = None, priority: str = None) -> list[AudioTestCase]:
         """
         Get test cases filtered by category and/or priority
         """
@@ -306,19 +306,19 @@ class EspeakIntegrationTestSuite:
 
         return filtered_cases
 
-    def get_critical_tests(self) -> List[AudioTestCase]:
+    def get_critical_tests(self) -> list[AudioTestCase]:
         """
         Get only critical test cases for quick validation
         """
         return self.get_test_cases(priority="critical")
 
-    def get_symbol_processing_tests(self) -> List[AudioTestCase]:
+    def get_symbol_processing_tests(self) -> list[AudioTestCase]:
         """
         Get symbol processing specific tests
         """
         return self.get_test_cases(category="espeak_symbols")
 
-    def get_regression_tests(self) -> List[AudioTestCase]:
+    def get_regression_tests(self) -> list[AudioTestCase]:
         """
         Get regression test cases
         """

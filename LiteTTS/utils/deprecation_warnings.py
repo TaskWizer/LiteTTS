@@ -4,9 +4,9 @@ Deprecation Warning Suppression Utilities
 Handles suppression of known deprecation warnings from third-party libraries
 """
 
-import warnings
 import logging
-from typing import List, Dict, Any
+import warnings
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -14,8 +14,8 @@ class DeprecationWarningManager:
     """Manages suppression of known deprecation warnings"""
 
     def __init__(self):
-        self.suppressed_warnings: List[Dict[str, Any]] = []
-        self.warning_counts: Dict[str, int] = {}
+        self.suppressed_warnings: list[dict[str, Any]] = []
+        self.warning_counts: dict[str, int] = {}
 
     def suppress_pkg_resources_warnings(self):
         """Suppress pkg_resources deprecation warnings from third-party libraries"""
@@ -172,7 +172,7 @@ class DeprecationWarningManager:
         # Set the custom warning handler
         warnings.showwarning = custom_warning_handler
 
-    def get_suppression_summary(self) -> Dict[str, Any]:
+    def get_suppression_summary(self) -> dict[str, Any]:
         """Get summary of suppressed warnings"""
         return {
             "suppressed_warning_types": len(self.suppressed_warnings),

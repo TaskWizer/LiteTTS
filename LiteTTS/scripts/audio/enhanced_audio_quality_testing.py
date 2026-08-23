@@ -4,19 +4,19 @@ Enhanced Automated Audio Quality Testing Framework
 Comprehensive testing with WER, MOS prediction, prosody analysis, and objective metrics
 """
 
-import os
-import sys
+import asyncio
 import json
 import logging
-import asyncio
-import aiohttp
+import os
+import sys
+import tempfile
 import time
 import wave
-import tempfile
-import statistics
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, asdict, field
+from typing import Any
+
+import aiohttp
 import numpy as np
 
 # Add the project root to the path
@@ -43,7 +43,7 @@ class EnhancedAudioMetrics:
     spectral_centroid: float = 0.0
     spectral_rolloff: float = 0.0
     zero_crossing_rate: float = 0.0
-    mfcc_features: List[float] = field(default_factory=list)
+    mfcc_features: list[float] = field(default_factory=list)
     pitch_mean: float = 0.0
     pitch_std: float = 0.0
     energy_mean: float = 0.0
@@ -82,10 +82,10 @@ class EnhancedTestCase:
     min_clarity_score: float = 0.8
 
     # Expected features
-    expected_symbols: List[str] = field(default_factory=list)
-    expected_pronunciations: Dict[str, str] = field(default_factory=dict)
-    expected_speaking_rate_range: Tuple[float, float] = (120, 200)  # WPM
-    expected_pitch_range: Tuple[float, float] = (80, 300)  # Hz
+    expected_symbols: list[str] = field(default_factory=list)
+    expected_pronunciations: dict[str, str] = field(default_factory=dict)
+    expected_speaking_rate_range: tuple[float, float] = (120, 200)  # WPM
+    expected_pitch_range: tuple[float, float] = (80, 300)  # Hz
 
 class EnhancedAudioQualityTester:
     """Enhanced automated audio quality testing framework"""
@@ -98,7 +98,7 @@ class EnhancedAudioQualityTester:
         # Create comprehensive test suite
         self.test_cases = self._create_comprehensive_test_suite()
 
-    def _create_comprehensive_test_suite(self) -> List[EnhancedTestCase]:
+    def _create_comprehensive_test_suite(self) -> list[EnhancedTestCase]:
         """Create comprehensive test suite covering all pronunciation issues"""
         test_cases = []
 
@@ -235,7 +235,7 @@ class EnhancedAudioQualityTester:
 
         return test_cases
 
-    async def generate_audio(self, text: str, voice: str = "af_heart") -> Tuple[bool, bytes, float, str]:
+    async def generate_audio(self, text: str, voice: str = "af_heart") -> tuple[bool, bytes, float, str]:
         """Generate audio for given text"""
         try:
             start_time = time.time()
@@ -266,7 +266,7 @@ class EnhancedAudioQualityTester:
             generation_time = time.time() - start_time
             return False, b"", generation_time, str(e)
 
-    def analyze_audio_properties(self, audio_data: bytes) -> Dict[str, Any]:
+    def analyze_audio_properties(self, audio_data: bytes) -> dict[str, Any]:
         """Analyze audio properties for quality metrics"""
         try:
             # Save audio to temporary file for analysis
@@ -354,7 +354,7 @@ class EnhancedAudioQualityTester:
 
         return 1.0 - (correct_words / len(ref_words))
 
-    def predict_mos_score(self, audio_props: Dict[str, Any], text: str) -> float:
+    def predict_mos_score(self, audio_props: dict[str, Any], text: str) -> float:
         """Predict Mean Opinion Score using heuristic analysis"""
         base_score = 4.0
 
@@ -395,7 +395,7 @@ class EnhancedAudioQualityTester:
 
         return min(5.0, max(1.0, base_score))
 
-    def analyze_pronunciation_accuracy(self, test_case: EnhancedTestCase, audio_props: Dict[str, Any]) -> float:
+    def analyze_pronunciation_accuracy(self, test_case: EnhancedTestCase, audio_props: dict[str, Any]) -> float:
         """Analyze pronunciation accuracy based on expected pronunciations"""
         if not test_case.expected_pronunciations:
             return 1.0
@@ -490,7 +490,7 @@ class EnhancedAudioQualityTester:
         logger.info(f"Completed: {test_case.test_id} - MOS: {mos_prediction:.2f}, RTF: {rtf:.3f}, Pronunciation: {pronunciation_accuracy:.2f}")
         return metrics
 
-    async def run_comprehensive_test_suite(self) -> Dict[str, Any]:
+    async def run_comprehensive_test_suite(self) -> dict[str, Any]:
         """Run comprehensive audio quality test suite"""
         logger.info("Starting comprehensive audio quality test suite...")
 
@@ -558,7 +558,7 @@ class EnhancedAudioQualityTester:
         logger.info(f"Test suite completed. Results saved to: {results_file}")
         return summary
 
-    def _assess_overall_quality(self, metrics: List[Dict[str, Any]]) -> str:
+    def _assess_overall_quality(self, metrics: list[dict[str, Any]]) -> str:
         """Assess overall audio quality"""
         if not metrics:
             return "NO_DATA"
@@ -578,7 +578,7 @@ class EnhancedAudioQualityTester:
         else:
             return "NEEDS_IMPROVEMENT"
 
-    def _assess_performance(self, metrics: List[Dict[str, Any]]) -> str:
+    def _assess_performance(self, metrics: list[dict[str, Any]]) -> str:
         """Assess performance characteristics"""
         if not metrics:
             return "NO_DATA"
@@ -595,7 +595,7 @@ class EnhancedAudioQualityTester:
         else:
             return "NEEDS_OPTIMIZATION"
 
-    def _generate_recommendations(self, metrics: List[Dict[str, Any]], category_stats: Dict[str, Any]) -> List[str]:
+    def _generate_recommendations(self, metrics: list[dict[str, Any]], category_stats: dict[str, Any]) -> list[str]:
         """Generate recommendations based on test results"""
         recommendations = []
 

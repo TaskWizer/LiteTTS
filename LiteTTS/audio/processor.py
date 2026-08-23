@@ -3,9 +3,11 @@
 Main audio processor that orchestrates all audio processing
 """
 
-import numpy as np
-from typing import List, Dict, Any, Iterator, AsyncIterator
 import logging
+from collections.abc import AsyncIterator, Iterator
+from typing import Any
+
+import numpy as np
 
 from .audio_segment import AudioSegment
 from .format_converter import AudioFormatConverter
@@ -29,7 +31,7 @@ class AudioProcessor:
             format=format
         )
 
-    def concatenate_segments(self, segments: List[AudioSegment]) -> AudioSegment:
+    def concatenate_segments(self, segments: list[AudioSegment]) -> AudioSegment:
         """Concatenate multiple audio segments"""
         if not segments:
             raise ValueError("No segments to concatenate")
@@ -43,7 +45,7 @@ class AudioProcessor:
 
         return result
 
-    def apply_crossfade(self, segments: List[AudioSegment],
+    def apply_crossfade(self, segments: list[AudioSegment],
                        fade_duration: float = 0.1) -> AudioSegment:
         """Concatenate segments with crossfade transitions"""
         if not segments:
@@ -111,7 +113,7 @@ class AudioProcessor:
             **kwargs
         )
 
-    def validate_audio(self, audio_segment: AudioSegment) -> Dict[str, Any]:
+    def validate_audio(self, audio_segment: AudioSegment) -> dict[str, Any]:
         """Validate audio segment and return validation results"""
         validation_result = {
             'is_valid': False,
@@ -216,11 +218,11 @@ class AudioProcessor:
 
         return compressed
 
-    def get_supported_formats(self) -> List[str]:
+    def get_supported_formats(self) -> list[str]:
         """Get list of supported audio formats"""
         return self.format_converter.supported_formats
 
-    def get_format_info(self, format: str) -> Dict[str, Any]:
+    def get_format_info(self, format: str) -> dict[str, Any]:
         """Get information about an audio format"""
         return self.format_converter.get_format_info(format)
 

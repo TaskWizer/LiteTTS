@@ -4,11 +4,11 @@ Code Quality Review and Analysis Script
 """
 
 import ast
-import os
 import re
-from pathlib import Path
-from typing import List, Dict, Any, Set
 from collections import defaultdict
+from pathlib import Path
+from typing import Any
+
 
 class CodeQualityAnalyzer:
     """Analyze code quality across the codebase"""
@@ -18,7 +18,7 @@ class CodeQualityAnalyzer:
         self.issues = defaultdict(list)
         self.stats = defaultdict(int)
 
-    def analyze_file(self, file_path: Path) -> Dict[str, Any]:
+    def analyze_file(self, file_path: Path) -> dict[str, Any]:
         """Analyze a single Python file"""
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
@@ -43,7 +43,7 @@ class CodeQualityAnalyzer:
         except Exception as e:
             return {'error': str(e)}
 
-    def _find_unused_imports(self, content: str, tree: ast.AST) -> List[str]:
+    def _find_unused_imports(self, content: str, tree: ast.AST) -> list[str]:
         """Find potentially unused imports"""
         imports = []
         used_names = set()
@@ -67,7 +67,7 @@ class CodeQualityAnalyzer:
 
         return unused
 
-    def _find_long_functions(self, tree: ast.AST) -> List[Dict[str, Any]]:
+    def _find_long_functions(self, tree: ast.AST) -> list[dict[str, Any]]:
         """Find functions that are too long"""
         long_functions = []
 
@@ -85,7 +85,7 @@ class CodeQualityAnalyzer:
 
         return long_functions
 
-    def _find_missing_docstrings(self, tree: ast.AST) -> List[Dict[str, Any]]:
+    def _find_missing_docstrings(self, tree: ast.AST) -> list[dict[str, Any]]:
         """Find functions/classes without docstrings"""
         missing = []
 
@@ -108,7 +108,7 @@ class CodeQualityAnalyzer:
 
         return missing
 
-    def _find_complex_functions(self, tree: ast.AST) -> List[Dict[str, Any]]:
+    def _find_complex_functions(self, tree: ast.AST) -> list[dict[str, Any]]:
         """Find functions with high cyclomatic complexity"""
         complex_functions = []
 
@@ -138,7 +138,7 @@ class CodeQualityAnalyzer:
 
         return complexity
 
-    def _find_potential_duplicates(self, content: str) -> List[str]:
+    def _find_potential_duplicates(self, content: str) -> list[str]:
         """Find potential code duplicates (simple heuristic)"""
         lines = content.split('\n')
         duplicates = []
@@ -156,7 +156,7 @@ class CodeQualityAnalyzer:
 
         return duplicates
 
-    def _find_naming_issues(self, tree: ast.AST) -> List[str]:
+    def _find_naming_issues(self, tree: ast.AST) -> list[str]:
         """Find naming convention issues"""
         issues = []
 
@@ -170,7 +170,7 @@ class CodeQualityAnalyzer:
 
         return issues
 
-    def _find_magic_numbers(self, tree: ast.AST) -> List[Dict[str, Any]]:
+    def _find_magic_numbers(self, tree: ast.AST) -> list[dict[str, Any]]:
         """Find magic numbers in code"""
         magic_numbers = []
 
@@ -185,7 +185,7 @@ class CodeQualityAnalyzer:
 
         return magic_numbers
 
-    def analyze_codebase(self) -> Dict[str, Any]:
+    def analyze_codebase(self) -> dict[str, Any]:
         """Analyze the entire codebase"""
         print("🔍 Analyzing Code Quality")
         print("=" * 50)

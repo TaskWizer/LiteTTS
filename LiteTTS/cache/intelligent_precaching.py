@@ -4,16 +4,13 @@ Intelligent Pre-Caching System for TTS
 Analyzes logs to extract common phrases and pre-generates audio for faster response times
 """
 
+import hashlib
 import json
-import re
 import logging
-from typing import List, Dict, Tuple
-from pathlib import Path
+import re
 from collections import Counter, defaultdict
 from datetime import datetime
-import hashlib
-import asyncio
-import time
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +64,7 @@ class IntelligentPreCaching:
             "To summarize"
         ]
 
-    def analyze_logs(self) -> Dict[str, any]:
+    def analyze_logs(self) -> dict[str, any]:
         """Analyze logs to extract usage patterns"""
         logger.info(f"Analyzing logs from {self.log_file_path}")
 
@@ -107,7 +104,7 @@ class IntelligentPreCaching:
         logger.info(f"Analyzed {total_lines} log entries, {speech_requests} speech requests, {error_count} errors")
         return self._get_analysis_summary()
 
-    def _process_log_entry(self, log_entry: Dict) -> None:
+    def _process_log_entry(self, log_entry: dict) -> None:
         """Process a single log entry"""
         message = log_entry.get('message', '')
         timestamp = log_entry.get('timestamp', '')
@@ -140,7 +137,7 @@ class IntelligentPreCaching:
                 except Exception:
                     pass
 
-    def _extract_phrases(self, text: str) -> List[str]:
+    def _extract_phrases(self, text: str) -> list[str]:
         """Extract meaningful phrases from text"""
         phrases = []
 
@@ -180,7 +177,7 @@ class IntelligentPreCaching:
 
         return True
 
-    def get_priority_phrases(self, limit: int = 50) -> List[Tuple[str, int, str]]:
+    def get_priority_phrases(self, limit: int = 50) -> list[tuple[str, int, str]]:
         """Get phrases prioritized for caching"""
         priority_phrases = []
 
@@ -198,11 +195,11 @@ class IntelligentPreCaching:
 
         return priority_phrases[:limit]
 
-    def get_recommended_voices(self, limit: int = 5) -> List[Tuple[str, int]]:
+    def get_recommended_voices(self, limit: int = 5) -> list[tuple[str, int]]:
         """Get most commonly used voices for pre-caching"""
         return self.voice_usage.most_common(limit)
 
-    def _get_analysis_summary(self) -> Dict[str, any]:
+    def _get_analysis_summary(self) -> dict[str, any]:
         """Get summary of analysis results"""
         return {
             'total_phrases': len(self.phrase_frequencies),
@@ -213,7 +210,7 @@ class IntelligentPreCaching:
             'essential_phrases_count': len(self.essential_phrases)
         }
 
-    def generate_cache_plan(self) -> Dict[str, any]:
+    def generate_cache_plan(self) -> dict[str, any]:
         """Generate a comprehensive caching plan"""
         priority_phrases = self.get_priority_phrases(50)
         recommended_voices = self.get_recommended_voices(5)
@@ -276,7 +273,7 @@ class IntelligentPreCaching:
 
         logger.info(f"Cache plan exported to {output_path}")
 
-    def get_error_patterns(self) -> Dict[str, any]:
+    def get_error_patterns(self) -> dict[str, any]:
         """Analyze error patterns from logs"""
         error_patterns = Counter()
         error_details = []

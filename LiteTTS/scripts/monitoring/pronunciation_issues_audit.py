@@ -4,18 +4,17 @@ Comprehensive Pronunciation Issues Audit Script
 Systematically tests and documents current pronunciation problems in Kokoro TTS
 """
 
-import os
-import sys
-import time
+import asyncio
 import json
 import logging
-import asyncio
-import aiohttp
-from pathlib import Path
-from typing import List, Dict, Any, Tuple
-from dataclasses import dataclass, asdict
-import tempfile
+import sys
+import time
 import wave
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import Any
+
+import aiohttp
 
 # Add the project root to the path
 project_root = Path(__file__).parent.parent
@@ -60,7 +59,7 @@ class PronunciationIssuesAuditor:
         # Define test cases for known pronunciation issues
         self.test_cases = self._create_test_cases()
 
-    def _create_test_cases(self) -> List[PronunciationTestCase]:
+    def _create_test_cases(self) -> list[PronunciationTestCase]:
         """Create comprehensive test cases for pronunciation issues"""
         test_cases = []
 
@@ -194,7 +193,7 @@ class PronunciationIssuesAuditor:
 
         return test_cases
 
-    async def generate_audio(self, text: str, voice: str = "af_heart") -> Tuple[bool, str, float, str]:
+    async def generate_audio(self, text: str, voice: str = "af_heart") -> tuple[bool, str, float, str]:
         """Generate audio for given text and return success status, file path, generation time, and error"""
         try:
             start_time = time.time()
@@ -280,7 +279,7 @@ class PronunciationIssuesAuditor:
         logger.info(f"Completed: {test_case.test_id} - Success: {success}, RTF: {rtf:.3f}")
         return result
 
-    async def run_comprehensive_audit(self) -> Dict[str, Any]:
+    async def run_comprehensive_audit(self) -> dict[str, Any]:
         """Run comprehensive pronunciation issues audit"""
         logger.info("Starting comprehensive pronunciation issues audit...")
 

@@ -4,7 +4,8 @@ Unit tests for dependency health checker
 """
 
 import pytest
-from LiteTTS.utils.dependency_health import DependencyHealth, DependencyStatus
+
+from LiteTTS.utils.dependency_health import DependencyHealth
 
 
 class TestDependencyHealth:

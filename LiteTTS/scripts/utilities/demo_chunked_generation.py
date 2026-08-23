@@ -3,9 +3,10 @@
 Demo script to showcase the improved user experience with chunked audio generation
 """
 
-import requests
-import time
 import sys
+import time
+
+import requests
 
 BASE_URL = "http://localhost:8354"
 

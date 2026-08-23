@@ -3,13 +3,10 @@
 Unit tests for chunk processor module
 """
 
+
 import pytest
-import re
-from unittest.mock import Mock, patch
-from LiteTTS.tts.chunk_processor import (
-    TextChunk,
-    ChunkProcessor
-)
+
+from LiteTTS.tts.chunk_processor import ChunkProcessor, TextChunk
 
 
 class TestTextChunk:

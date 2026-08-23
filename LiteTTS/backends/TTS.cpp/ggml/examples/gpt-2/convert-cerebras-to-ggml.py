@@ -3,14 +3,14 @@
 # ref: https://www.cerebras.net/blog/cerebras-gpt-a-family-of-open-compute-efficient-large-language-models/
 #
 
-import sys
-import struct
 import json
-import torch
-import numpy as np
 import re
+import struct
+import sys
 
+import numpy as np
 from transformers import AutoModelForCausalLM
+
 
 # ref: https://github.com/openai/gpt-2/blob/master/src/encoder.py
 def bytes_to_unicode():
