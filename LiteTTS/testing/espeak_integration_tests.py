@@ -58,7 +58,10 @@ class EspeakIntegrationTestSuite:
             AudioTestCase(
                 test_id="espeak_question_mark_multiple",
                 input_text="What time is it? Are you ready? Let's go?",
-                expected_transcription="what time is it question mark are you ready question mark let's go question mark",
+                expected_transcription=(
+                    "what time is it question mark are you ready "
+                    "question mark let's go question mark"
+                ),
                 test_category="espeak_symbols",
                 description="Multiple question marks test",
                 priority="critical",
@@ -243,8 +246,17 @@ class EspeakIntegrationTestSuite:
             ),
             AudioTestCase(
                 test_id="espeak_edge_long_text",
-                input_text="This is a longer text with multiple symbols: What time is it? The cost is $25.99. Use the * symbol. Email test@example.com for more info!",
-                expected_transcription="this is a longer text with multiple symbols what time is it question mark the cost is twenty five dollars and ninety nine cents use the asterisk symbol email test example com for more info exclamation mark",
+                input_text=(
+                    "This is a longer text with multiple symbols: "
+                    "What time is it? The cost is $25.99. "
+                    "Use the * symbol. Email test@example.com for more info!"
+                ),
+                expected_transcription=(
+                    "this is a longer text with multiple symbols "
+                    "what time is it question mark the cost is twenty five dollars "
+                    "and ninety nine cents use the asterisk symbol "
+                    "email test example com for more info exclamation mark"
+                ),
                 test_category="espeak_edge_cases",
                 description="Long text with multiple symbols",
                 priority="normal",

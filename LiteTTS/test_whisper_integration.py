@@ -64,7 +64,9 @@ def test_config_loader():
         model_info = config_loader.get_model_info(settings.default_model)
         if model_info:
             logger.info(
-                f"Model info: Size={model_info.get('size_mb')}MB, Expected RTF={model_info.get('expected_rtf', {}).get('raspberry_pi_4')}"
+                f"Model info: Size={model_info.get('size_mb')}MB, "
+                f"Expected RTF="
+                f"{model_info.get('expected_rtf', {}).get('raspberry_pi_4')}"
             )
 
         return True

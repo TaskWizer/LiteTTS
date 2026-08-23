@@ -175,8 +175,10 @@ class ComprehensiveAudioQualityTestSuite:
             ),
             AudioTestCase(
                 test_id="rtf_medium_text",
-                input_text="This is a medium length sentence to test real-time factor performance with typical conversational content.",
-                expected_transcription="This is a medium length sentence to test real-time factor performance with typical conversational content.",
+                input_text="This is a medium length sentence to test real-time "
+                    "factor performance with typical conversational content.",
+                expected_transcription="This is a medium length sentence to test "
+                    "real-time factor performance with typical conversational content.",
                 voice_model="af_heart",
                 test_category="performance",
                 description="RTF test for medium text",

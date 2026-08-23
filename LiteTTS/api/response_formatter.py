@@ -72,7 +72,10 @@ class ResponseFormatter:
             "X-Processing-Time": str(processing_time),
             "Cache-Control": "public, max-age=3600",  # Cache for 1 hour
             "Access-Control-Allow-Origin": "*",
-            "Access-Control-Expose-Headers": "X-Audio-Duration, X-Audio-Sample-Rate, X-Audio-Format, X-Processing-Time",
+            "Access-Control-Expose-Headers": (
+                            "X-Audio-Duration, X-Audio-Sample-Rate, "
+                            "X-Audio-Format, X-Processing-Time"
+                        ),
         }
 
         # Add format-specific headers

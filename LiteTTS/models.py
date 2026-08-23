@@ -247,7 +247,8 @@ def parse_voice_attributes(voice_name: str) -> dict[str, str]:
     """Parse voice attributes from voice name using naming convention.
 
     Voice naming convention: [region][gender]_[name]
-    - First character: region (A=American, B=British, J=Japanese, Z=Chinese, S=Spanish, F=French, H=Hindi, I=Italian, P=Portuguese)
+    - First character: region (A=American, B=British, J=Japanese,
+    Z=Chinese, S=Spanish, F=French, H=Hindi, I=Italian, P=Portuguese)
     - Second character: gender (f=female, m=male)
 
     Examples:

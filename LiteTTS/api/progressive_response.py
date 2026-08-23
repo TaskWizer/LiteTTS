@@ -64,7 +64,9 @@ class ProgressiveResponseHandler:
                     self._stream_chunked_audio(text, voice, response_format, speed, generation_id),
                     media_type=f"audio/{response_format}",
                     headers={
-                        "Content-Disposition": f"attachment; filename=progressive_speech.{response_format}",
+                        "Content-Disposition": (
+                            f"attachment; filename=progressive_speech.{response_format}"
+                        ),
                         "Transfer-Encoding": "chunked",
                         "Cache-Control": "no-cache",
                         "X-Generation-Mode": "progressive",
@@ -290,7 +292,10 @@ class ProgressiveResponseHandler:
                 if chunk_result.is_final:
                     # Send completion event
                     yield "event: complete\n"
-                    yield f"data: {json.dumps({'generation_id': generation_id, 'status': 'completed'})}\n\n"
+                    yield (
+                            f"data: "
+                            f"{json.dumps({'generation_id': generation_id, 'status': 'completed'})}\n\n"
+                        )
                     break
 
         except Exception as e:

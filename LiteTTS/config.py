@@ -238,7 +238,7 @@ class ApplicationConfig:
     """Application metadata configuration"""
 
     name: str = "LiteTTS"
-    description: str = "High-quality text-to-speech service with ONNX optimization and OpenWebUI compatibility (part of TaskWizer framework)"
+    description: str = "High-quality text-to-speech service with ONNX optimization and OpenWebUI compatibility (part of TaskWizer framework)"  # noqa: E501
     version: str = "1.0.0"
     author: str = "TaskWizer Team"
     license: str = "MIT"

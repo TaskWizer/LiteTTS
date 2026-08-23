@@ -269,7 +269,7 @@ class VoiceCloner:
             # Basic spectral analysis
             fft = np.fft.fft(audio_data)
             freqs = np.fft.fftfreq(len(fft), 1 / sample_rate)
-            _magnitude = np.abs(fft)
+            magnitude = np.abs(fft)
 
             # Find dominant frequencies
             positive_freqs = freqs[: len(freqs) // 2]
@@ -367,7 +367,7 @@ class VoiceCloner:
 
         # Calculate spectral features
         fft = np.fft.fft(audio_data)
-        _magnitude = np.abs(fft)
+        magnitude = np.abs(fft)
 
         # Extract mel-scale features (simplified)
         n_mels = 128
@@ -407,7 +407,7 @@ class VoiceCloner:
         """Extract mel-scale features (simplified implementation)"""
         # Simple spectral features as placeholder for mel features
         fft = np.fft.fft(audio_data)
-        _magnitude = np.abs(fft[: len(fft) // 2])
+        magnitude = np.abs(fft[: len(fft) // 2])
 
         # Downsample to n_mels features
         if len(magnitude) > n_mels:
@@ -470,7 +470,7 @@ class VoiceCloner:
             # Ensure embedding has correct shape
             if embedding_data.shape != (self.num_style_vectors, self.embedding_dim):
                 logger.error(
-                    f"Invalid embedding shape: {embedding_data.shape}, expected: ({self.num_style_vectors}, {self.embedding_dim})"
+                    f"Invalid embedding shape: {embedding_data.shape}, expected: ({self.num_style_vectors}, {self.embedding_dim})"  # noqa: E501
                 )
                 return None
 

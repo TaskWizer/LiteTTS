@@ -199,7 +199,7 @@ class AudioPreprocessor:
         # Frequency analysis
         fft = np.fft.fft(audio_data)
         freqs = np.fft.fftfreq(len(fft), 1 / sample_rate)
-        _magnitude = np.abs(fft[: len(fft) // 2])
+        magnitude = np.abs(fft[: len(fft) // 2])
 
         # Find frequency range (where magnitude > 10% of max)
         threshold = 0.1 * np.max(magnitude)
@@ -394,7 +394,7 @@ class EnhancedVoiceCloner:
 
                 if total_duration > self.config.max_total_reference_duration:
                     raise ValueError(
-                        f"Total duration exceeds limit: {total_duration:.1f}s > {self.config.max_total_reference_duration}s"
+                        f"Total duration exceeds limit: {total_duration:.1f}s > {self.config.max_total_reference_duration}s"  # noqa: E501
                     )
 
             except Exception as e:
@@ -484,7 +484,7 @@ class EnhancedVoiceCloner:
 
         # Calculate spectral features
         fft = np.fft.fft(audio_data)
-        _magnitude = np.abs(fft)
+        magnitude = np.abs(fft)
 
         # Extract mel-scale features (simplified)
         n_mels = 128
@@ -511,7 +511,7 @@ class EnhancedVoiceCloner:
     def _extract_mel_features(self, audio_data: np.ndarray, n_mels: int) -> np.ndarray:
         """Extract mel-scale features (simplified implementation)"""
         fft = np.fft.fft(audio_data)
-        _magnitude = np.abs(fft[: len(fft) // 2])
+        magnitude = np.abs(fft[: len(fft) // 2])
 
         # Downsample to n_mels features
         if len(magnitude) > n_mels:

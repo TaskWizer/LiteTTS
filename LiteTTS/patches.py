@@ -300,7 +300,7 @@ def patch_kokoro_onnx():
             create_duration = time.time() - start_t
             rtf = create_duration / audio_duration
             log.debug(
-                f"Created audio in length of {audio_duration:.2f}s for {len(phonemes)} phonemes in {create_duration:.2f}s (RTF: {rtf:.2f})"
+                f"Created audio in length of {audio_duration:.2f}s for {len(phonemes)} phonemes in {create_duration:.2f}s (RTF: {rtf:.2f})"  # noqa: E501
             )
             return audio, SAMPLE_RATE
 

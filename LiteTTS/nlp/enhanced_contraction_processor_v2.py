@@ -93,7 +93,7 @@ class EnhancedContractionProcessorV2:
                 )
 
                 logger.info(
-                    f"Loaded pronunciation config: {len(self.natural_contractions)} natural, {len(self.problematic_contractions)} problematic contractions"
+                    f"Loaded pronunciation config: {len(self.natural_contractions)} natural, {len(self.problematic_contractions)} problematic contractions"  # noqa: E501
                 )
             else:
                 # Fallback to default behavior
@@ -293,7 +293,7 @@ class EnhancedContractionProcessorV2:
         if not text or not text.strip():
             return text
 
-        _original_text = _text
+        _original_text = text
         processed_text = text
         changes_made = []
 
@@ -451,12 +451,12 @@ class EnhancedContractionProcessorV2:
         # Generate recommendations
         if analysis["high_priority_contractions"]:
             analysis["processing_recommendations"].append(
-                f"Found {len(analysis['high_priority_contractions'])} high-priority contractions that should be processed"
+                f"Found {len(analysis['high_priority_contractions'])} high-priority contractions that should be processed"  # noqa: E501
             )
 
         if analysis["context_sensitive_contractions"]:
             analysis["processing_recommendations"].append(
-                f"Found {len(analysis['context_sensitive_contractions'])} context-sensitive contractions requiring careful handling"
+                f"Found {len(analysis['context_sensitive_contractions'])} context-sensitive contractions requiring careful handling"  # noqa: E501
             )
 
         return analysis

@@ -149,8 +149,8 @@ class TTSAPIRouter:
                         # For first chunk, include proper headers for streaming
                         if first_chunk:
                             first_chunk = False
-                            # MP3 streaming needs ID3 header stripped for raw PCM, or proper container
-                            # For now, yield the raw audio data
+                            # MP3 streaming needs ID3 header stripped for raw PCM,
+                            # or proper container. For now, yield the raw audio data
                             logger.info(
                                 f"Streaming first chunk: {len(chunk_result.audio_data)} bytes, "
                                 f"duration: {chunk_result.duration:.2f}s"

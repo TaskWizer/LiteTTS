@@ -157,7 +157,7 @@ class EspeakEnhancedSymbolProcessor:
 
         start_time = time.perf_counter()
 
-        _original_text = _text
+        _original_text = text
         changes_made = []
         symbols_processed = 0
 
@@ -245,7 +245,7 @@ class EspeakEnhancedSymbolProcessor:
         for symbol, replacement in critical_fixes.items():
             if symbol in text:
                 # Only replace standalone symbols, not those in words
-                pattern = rf"\b{re.escape(symbol)}\b|\s{re.escape(symbol)}\s|{re.escape(symbol)}\s|\s{re.escape(symbol)}"
+                pattern = rf"\b{re.escape(symbol)}\b|\s{re.escape(symbol)}\s|{re.escape(symbol)}\s|\s{re.escape(symbol)}"  # noqa: E501
                 if re.search(pattern, text):
                     text = re.sub(pattern, f" {replacement} ", text)
                     text = re.sub(r"\s+", " ", text).strip()

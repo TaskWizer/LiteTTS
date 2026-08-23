@@ -632,7 +632,7 @@ class TickerSymbolProcessor:
         # - 2-5 uppercase letters
         # - Preceded or followed by financial context words
         # - Not in exclusion list
-        ticker_pattern = rf"\b([A-Z]{{2,5}})\b(?=\s+(?:{context_pattern})|\s*[\$\+\-\%]|\s+(?:up|down|gained?|lost?|fell?|rose?|climbed?))"
+        ticker_pattern = rf"\b([A-Z]{{2,5}})\b(?=\s+(?:{context_pattern})|\s*[\$\+\-\%]|\s+(?:up|down|gained?|lost?|fell?|rose?|climbed?))"  # noqa: E501
 
         def spell_out_contextual_ticker(match):
             ticker = match.group(1)

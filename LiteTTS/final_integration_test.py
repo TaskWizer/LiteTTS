@@ -331,13 +331,17 @@ def test_performance_targets():
         f"  RTF: {results['rtf_achieved']:.3f} < {targets['rtf_target']:.1f} {'✅ PASS' if rtf_pass else '❌ FAIL'}"
     )
     logger.info(
-        f"  Memory: {results['memory_achieved_mb']:.0f}MB < {targets['memory_target_mb']:.0f}MB {'✅ PASS' if memory_pass else '❌ FAIL'}"
+        f"  Memory: {results['memory_achieved_mb']:.0f}MB < "
+        f"{targets['memory_target_mb']:.0f}MB "
+        f"{'✅ PASS' if memory_pass else '❌ FAIL'}"
     )
     logger.info(
-        f"  Duration: {results['duration_achieved']:.0f}s >= {targets['duration_target']:.0f}s {'✅ PASS' if duration_pass else '❌ FAIL'}"
+        f"  Duration: {results['duration_achieved']:.0f}s >= "
+        f"{targets['duration_target']:.0f}s "
+        f"{'✅ PASS' if duration_pass else '❌ FAIL'}"
     )
     logger.info(
-        f"  Accuracy: {results['accuracy_achieved']:.1%} >= {targets['accuracy_target']:.1%} {'✅ PASS' if accuracy_pass else '❌ FAIL'}"
+        f"  Accuracy: {results['accuracy_achieved']:.1%} >= {targets['accuracy_target']:.1%} {'✅ PASS' if accuracy_pass else '❌ FAIL'}"  # noqa: E501
     )
 
     all_targets_met = rtf_pass and memory_pass and duration_pass and accuracy_pass

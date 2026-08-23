@@ -342,7 +342,7 @@ class Phase6TextProcessor:
             mode = self.mode
 
         start_time = time.perf_counter()
-        _original_text = _text
+        original_text = text
         changes_by_category = {}
         processing_stages = []
         warnings = []
@@ -414,7 +414,7 @@ class Phase6TextProcessor:
     def _process_numbers(self, text: str) -> tuple[str, int]:
         """Process numbers, currency, and dates for better TTS pronunciation"""
         changes = 0
-        _original_text = _text
+        original_text = text
 
         # Stage 1: Process currency using advanced processor
         if self.use_advanced_currency:
@@ -534,7 +534,7 @@ class Phase6TextProcessor:
             r"\d{1,2}\s+(AM|PM|a\.m\.|p\.m\.)\s+in\s+the\s+(morning|afternoon|evening|night)",  # "7 PM in the evening"
             r"in\s+the\s+(morning|afternoon|evening|night)",  # "in the morning"
             r"in\s+\d+\s+(minutes?|hours?|days?|weeks?|months?|years?)",  # "in 5 minutes"
-            r"in\s+(January|February|March|April|May|June|July|August|September|October|November|December)",  # "in January"
+            r"in\s+(January|February|March|April|May|June|July|August|September|October|November|December)",  # "in January"  # noqa: E501
             r"in\s+\d{4}",  # "in 2024"
         ]
 
@@ -561,7 +561,7 @@ class Phase6TextProcessor:
         if not text or not text.strip():
             return text, 0
 
-        _original_text = _text
+        original_text = text
 
         # Use enhanced contraction processor if available
         if self.use_enhanced_contractions:

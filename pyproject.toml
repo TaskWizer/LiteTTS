@@ -102,7 +102,7 @@ build-backend = "hatchling.build"
 packages = ["."]
 
 [tool.ruff]
-line-length = 100
+line-length = 120
 target-version = "py312"
 exclude = [
     "LiteTTS/backends/",  # Vendored C++ code
@@ -115,7 +115,7 @@ exclude = [
 ]
 
 [tool.black]
-line-length = 100
+line-length = 120
 target-version = ["py312"]
 
 [project.scripts]
