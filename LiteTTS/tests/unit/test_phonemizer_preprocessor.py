@@ -1237,7 +1237,7 @@ class TestPhonemizationPreprocessorEdgeCases2:
         result, changes = processor._fix_problematic_patterns(text)
         assert isinstance(result, str)
 
-    def test_fix_problematic_patterns_time(self, processor):
+    def test_fix_problematic_patterns_time(self, processor):  # noqa: F811
         """Test _fix_problematic_patterns with time"""
         text = "Time is 10:30"
         result, changes = processor._fix_problematic_patterns(text)
@@ -1779,7 +1779,7 @@ class TestPhonemizationPreprocessorEdgeCases2:
         result, changes = processor._fix_problematic_patterns_conservative(text)
         assert isinstance(result, str)
 
-    def test_fix_problematic_patterns_time(self):
+    def test_fix_problematic_patterns_time(self):  # noqa: F811
         """Test _fix_problematic_patterns_conservative with time"""
         processor = PhonemizationPreprocessor()
         text = "at 10:30"
@@ -1813,7 +1813,7 @@ class TestPhonemizationPreprocessorEnhancedPath:
 
         proc.enhanced_contraction_processor = original_enhanced
 
-    def test_expand_contractions_enhanced_natural_mode(self):
+    def test_expand_contractions_enhanced_natural_mode(self):  # noqa: F811
         """Test _expand_contractions with enhanced processor in natural mode"""
         import LiteTTS.text.phonemizer_preprocessor as pp_module
 
@@ -1857,7 +1857,7 @@ class TestPhonemizationPreprocessorEnhancedPath:
 
         proc.enhanced_contraction_processor = original_enhanced
 
-    def test_expand_contractions_enhanced_natural_mode(self):
+    def test_expand_contractions_enhanced_natural_mode(self):  # noqa: F811
         """Test _expand_contractions with enhanced processor in natural mode"""
         import LiteTTS.text.phonemizer_preprocessor as pp_module
 
@@ -2269,7 +2269,7 @@ class TestPhonemizationPreprocessorGlobalConfig:
         result = proc.preprocess_text(text)
         assert isinstance(result.processed_text, str)
 
-    def test_comma_number_exception_handler(self):
+    def test_comma_number_exception_handler(self):  # noqa: F811
         """Test comma-separated number exception handler (lines 1164-1166)"""
         from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
 
@@ -2376,7 +2376,7 @@ class TestPhonemizationPreprocessorGlobalConfig:
         assert isinstance(result, str)
         assert isinstance(changes, list)
 
-    def test_comma_number_exception_handler(self):
+    def test_comma_number_exception_handler(self):  # noqa: F811
         """Test comma number exception handler (lines 1171-1173)"""
         from LiteTTS.text.phonemizer_preprocessor import PhonemizationPreprocessor
 

@@ -144,7 +144,11 @@ class DeprecationWarningManager:
                     ]
                 ):
                     logger.warning(f"{category.__name__}: {message} ({filename}:{lineno})")
-                elif category == DeprecationWarning and "pkg_resources" not in warning_str:
+                elif (
+                    isinstance(category, type)
+                    and issubclass(category, DeprecationWarning)
+                    and "pkg_resources" not in warning_str
+                ):
                     # Log non-pkg_resources deprecation warnings
                     logger.debug(f"Deprecation: {message} ({filename}:{lineno})")
             elif self.warning_counts[warning_key] == 10:

@@ -200,7 +200,7 @@ class DockerProductionAuditor:
         for i, line in enumerate(lines):
             if line.strip().startswith("FROM"):
                 # Check for latest tag
-                if ":latest" in line or not ":" in line.split()[-1]:
+                if ":latest" in line or ":" not in line.split()[-1]:
                     issues.append(
                         DockerAuditIssue(
                             category="security",

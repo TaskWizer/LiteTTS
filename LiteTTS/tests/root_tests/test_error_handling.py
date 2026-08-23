@@ -21,7 +21,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from app import app
 from LiteTTS.api.error_handler import ErrorHandler
-from LiteTTS.exceptions import *
+from LiteTTS.exceptions import *  # noqa: F403
 
 
 class TestInputValidationErrors:
@@ -300,7 +300,7 @@ class TestErrorHandlerUnit:
     @pytest.mark.skip(reason="Internal ErrorHandler unit tests with JSON serialization issues")
     def test_validation_error_handling(self):
         """Test ValidationError handling"""
-        error = ValidationError("Invalid input", field="input")
+        error = ValidationError("Invalid input", field="input")  # noqa: F405
         response = self.error_handler.handle_validation_error(error)
 
         assert response.status_code == 400
@@ -311,7 +311,7 @@ class TestErrorHandlerUnit:
     @pytest.mark.skip(reason="Internal ErrorHandler unit tests with JSON serialization issues")
     def test_voice_not_found_error(self):
         """Test VoiceNotFoundError handling"""
-        error = VoiceNotFoundError("Voice not found", voice_name="test_voice")
+        error = VoiceNotFoundError("Voice not found", voice_name="test_voice")  # noqa: F405
         response = self.error_handler.handle_voice_error(error)
 
         assert response.status_code == 400
@@ -334,7 +334,7 @@ class TestErrorHandlerUnit:
         """Test error count tracking"""
         initial_count = self.error_handler.error_counts.get("VALIDATION_ERROR", 0)
 
-        error = ValidationError("Test error")
+        error = ValidationError("Test error")  # noqa: F405
         self.error_handler.handle_validation_error(error)
 
         new_count = self.error_handler.error_counts.get("VALIDATION_ERROR", 0)
