@@ -403,10 +403,8 @@ class AdvancedPhoneticMapper:
         # Simplified condition checking
         for condition in rule.conditions:
             if (
-                condition == "word_initial"
-                and not re.search(r"\b" + rule.pattern, text)
-                or condition == "word_final"
-                and not re.search(rule.pattern + r"\b", text)
+                (condition == "word_initial" and not re.search(r"\b" + rule.pattern, text))
+                or (condition == "word_final" and not re.search(rule.pattern + r"\b", text))
             ):
                 return False
             # Add more condition checks as needed

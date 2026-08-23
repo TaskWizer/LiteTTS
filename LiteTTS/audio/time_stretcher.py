@@ -109,10 +109,7 @@ class TimeStretcher:
             return False
 
         # Don't apply to very short texts (overhead not worth it)
-        if text_length < 20:
-            return False
-
-        return True
+        return not text_length < 20
 
     def get_generation_speed_multiplier(self) -> float:
         """Get the speed multiplier for generation"""

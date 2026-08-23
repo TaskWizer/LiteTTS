@@ -729,7 +729,7 @@ class TextNormalizer:
             numerator = int(match.group(1))
             fraction_char = match.group(2)
             if fraction_char in unicode_fractions:
-                base_num, base_denom = unicode_fractions[fraction_char]
+                _base_num, base_denom = unicode_fractions[fraction_char]
                 num_word = self._integer_to_words(numerator)
                 # Handle plural: "1 half" vs "2 halves"
                 if numerator == 1:

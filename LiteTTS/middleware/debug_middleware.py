@@ -177,10 +177,7 @@ class DebugMiddleware:
         mobile_indicators = ["mobile", "iphone", "android", "ipad"]
 
         # If it's a mobile browser accessing TTS endpoints, likely OpenWebUI
-        if any(indicator in user_agent_lower for indicator in mobile_indicators) and "/audio/" in url:
-            return True
-
-        return False
+        return any(indicator in user_agent_lower for indicator in mobile_indicators) and "/audio/" in url
 
     def _analyze_openwebui_request(
         self, request_id: int, status: int, response_size: int, duration: float

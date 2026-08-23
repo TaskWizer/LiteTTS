@@ -277,7 +277,7 @@ class ProgressiveAudioGenerator:
 
         while tasks:
             # Wait for next completion
-            done, pending = await asyncio.wait(
+            done, _pending = await asyncio.wait(
                 tasks, return_when=asyncio.FIRST_COMPLETED, timeout=self.config.chunk_timeout
             )
 
@@ -363,7 +363,7 @@ class ProgressiveAudioGenerator:
         text = chunk.text
 
         # Add overlap text if available and prosody continuity is enabled
-        if self.config.enable_prosody_continuity and chunk.overlap_text and not chunk.chunk_id == 0:
+        if self.config.enable_prosody_continuity and chunk.overlap_text and chunk.chunk_id != 0:
             text = chunk.overlap_text + " " + text
 
         return text.strip()

@@ -365,7 +365,7 @@ class AdvancedAbbreviationHandler:
                 return pronunciation
 
         # Return first option if no context match
-        return list(context_options.values())[0]
+        return next(iter(context_options.values()))
 
     def analyze_abbreviations(self, text: str) -> dict[str, list[str]]:
         """Analyze abbreviations in text"""

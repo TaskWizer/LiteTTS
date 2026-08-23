@@ -93,7 +93,7 @@ class DynamicVoiceManager:
             if "_" in voice_name:
                 parts = voice_name.split("_", 1)
                 if len(parts) == 2:
-                    prefix, short_name = parts
+                    _prefix, short_name = parts
 
                     # Only create mapping if short name doesn't conflict
                     if short_name not in self.voice_mappings:

@@ -113,7 +113,7 @@ def _fallback_voice_discovery(voices_dir: str) -> list[str]:
             if "_" in voice:
                 parts = voice.split("_", 1)
                 if len(parts) == 2:
-                    prefix, short_name = parts
+                    _prefix, short_name = parts
                     if short_name not in short_mappings:
                         short_mappings[short_name] = voice
 

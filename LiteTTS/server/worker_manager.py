@@ -360,7 +360,7 @@ class WorkerManager:
                 # Wait for graceful shutdown with reduced timeout
                 graceful_timeout = min(5.0, self.config.graceful_shutdown_timeout)  # Max 5 seconds
                 logger.debug(f"Waiting up to {graceful_timeout}s for graceful shutdown...")
-                gone, alive = psutil.wait_procs(children, timeout=graceful_timeout)
+                gone, _alive = psutil.wait_procs(children, timeout=graceful_timeout)
 
                 # Force kill any remaining processes
                 if alive:

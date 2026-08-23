@@ -58,24 +58,21 @@ _CACHE_AVAILABLE = _is_available(".cache")
 
 # Build __all__ dynamically based on available imports
 __all__ = [
-    # Version and metadata
-    "__version__",
-    "__author__",
-    "__description__",
-    # Configuration (always available)
-    "ConfigManager",
-    "config",
-    "setup_logging",
-    "get_request_logger",
-    # Exceptions (always available)
-    "KokoroError",
-    "ModelError",
-    "VoiceError",
     "AudioError",
-    "ValidationError",
     "CacheError",
+    "ConfigManager",
     "ConfigurationError",
     "DownloadError",
+    "KokoroError",
+    "ModelError",
+    "ValidationError",
+    "VoiceError",
+    "__author__",
+    "__description__",
+    "__version__",
+    "config",
+    "get_request_logger",
+    "setup_logging",
 ]
 
 # Add conditional exports

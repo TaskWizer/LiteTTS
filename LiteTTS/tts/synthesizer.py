@@ -226,7 +226,7 @@ class TTSSynthesizer:
                 progress_callback({"stage": "ssml_processing", "progress": 0.05})
 
             # Check if input contains SSML and process it
-            plain_text, background_config, ssml_metadata = self.ssml_processor.process_ssml(
+            plain_text, background_config, _ssml_metadata = self.ssml_processor.process_ssml(
                 request.input
             )
 

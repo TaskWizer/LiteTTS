@@ -20,10 +20,10 @@ _ENHANCED_AVAILABLE = (
 
 # Build exports list
 __all__ = [
-    "cache_manager",
     "ICache",
     "ILRUCache",
     "LRUCache",
+    "cache_manager",
 ]
 
 if _ENHANCED_AVAILABLE:

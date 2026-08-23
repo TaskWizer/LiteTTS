@@ -439,7 +439,7 @@ class IntelligentPreloader:
             generation_timeout = 5.0 if task.priority <= 2 else 10.0
 
             try:
-                audio, sample_rate = self.tts_app.model.create(
+                audio, _sample_rate = self.tts_app.model.create(
                     task.text, voice=task.voice, speed=1.0, lang="en-us"
                 )
 

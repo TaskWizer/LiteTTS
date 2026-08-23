@@ -725,7 +725,7 @@ class UnifiedTextProcessor:
         if options.apply_voice_modulation and self.voice_modulation:
             try:
                 original_text = text
-                modulation_result, segments = self.voice_modulation.process_voice_modulation(text)
+                modulation_result, _segments = self.voice_modulation.process_voice_modulation(text)
                 if modulation_result != original_text:
                     text = modulation_result
                     result.audio_enhancements += 1

@@ -258,7 +258,7 @@ class EnhancedDateTimeProcessor:
 
             elif date_type == "written_date_abbrev_ordinal":
                 # Jan. 1st, 2024 format
-                month_abbrev, day, ordinal_suffix, year = match.groups()
+                month_abbrev, day, _ordinal_suffix, year = match.groups()
                 month_name = self._expand_month_abbreviation(month_abbrev)
                 return self._format_written_date(month_name, day, year)
 

@@ -313,7 +313,7 @@ async def initialize_system() -> bool:
 
         # Run startup validations
         validator = StartupValidator()
-        success, errors, warnings = validator.run_all_validations()
+        _success, errors, warnings = validator.run_all_validations()
 
         # Log warnings
         for warning in warnings:

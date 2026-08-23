@@ -241,9 +241,8 @@ class TextChunker:
     def _chunk_by_fixed_size(self, text: str) -> list[TextChunk]:
         """Chunk text by fixed character size"""
         chunks = []
-        chunk_id = 0
 
-        for i in range(0, len(text), self.config.max_chunk_size):
+        for chunk_id, i in enumerate(range(0, len(text), self.config.max_chunk_size)):
             chunk_text = text[i : i + self.config.max_chunk_size]
 
             # Try to break at word boundary if possible
@@ -262,8 +261,6 @@ class TextChunker:
                     is_paragraph_boundary="\n" in chunk_text,
                 )
             )
-
-            chunk_id += 1
 
         return chunks
 

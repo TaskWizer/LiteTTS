@@ -214,10 +214,7 @@ class IntelligentPreCaching:
             return False
 
         # Skip if contains only numbers or single characters
-        if all(len(w) <= 1 or w.isdigit() for w in words):
-            return False
-
-        return True
+        return not all(len(w) <= 1 or w.isdigit() for w in words)
 
     def get_priority_phrases(self, limit: int = 50) -> list[tuple[str, int, str]]:
         """Get phrases prioritized for caching"""

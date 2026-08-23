@@ -7,6 +7,7 @@ import logging
 import logging.handlers
 import sys
 from pathlib import Path
+from typing import ClassVar
 
 # Import platform-safe emoji utilities
 try:
@@ -211,8 +212,8 @@ def setup_logging(
 class ColoredFormatter(logging.Formatter):
     """Custom formatter with color support for console output"""
 
-    # Color codes
-    COLORS = {
+    # Color codes - ClassVar to avoid mutable default issue
+    COLORS: ClassVar[dict[str, str]] = {
         "DEBUG": "\033[36m",  # Cyan
         "INFO": "\033[32m",  # Green
         "WARNING": "\033[33m",  # Yellow

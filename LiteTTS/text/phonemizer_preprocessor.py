@@ -1316,9 +1316,7 @@ class PhonemizationPreprocessor:
             if 0x0530 <= code <= 0x058F:
                 return True
             # Tibetan
-            if 0x0F00 <= code <= 0x0FFF:
-                return True
-            return False
+            return 0x0F00 <= code <= 0x0FFF
 
         if re.search(r"[^\x00-\x7F]", text):
             result_parts = []

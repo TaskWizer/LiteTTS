@@ -562,10 +562,7 @@ class ComprehensiveAudioQualityTestSuite:
             return False
 
         # Check prosody score
-        if metrics.prosody_score < getattr(test_case, "min_prosody_score", 0.7):
-            return False
-
-        return True
+        return metrics.prosody_score >= getattr(test_case, "min_prosody_score", 0.7)
 
     def _calculate_overall_score(self, results: TestSuiteResults) -> float:
         """Calculate overall quality score from test results"""

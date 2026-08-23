@@ -43,10 +43,7 @@ def is_windows_with_encoding_issues() -> bool:
 
         # If we can encode to console encodings, check if it's actually cp1252
         # which is the problematic encoding on Windows
-        if stdout_encoding.lower() in ["cp1252", "windows-1252"]:
-            return True
-
-        return False  # Encoding works fine
+        return stdout_encoding.lower() in ["cp1252", "windows-1252"]
 
     except (UnicodeEncodeError, LookupError, AttributeError):
         return True  # Encoding issues detected

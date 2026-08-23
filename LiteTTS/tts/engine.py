@@ -778,10 +778,7 @@ class KokoroTTSEngine:
 
         # Check minimum text length
         min_length = getattr(chunked_config, "min_text_length_for_chunking", 100)
-        if len(text) < min_length:
-            return False
-
-        return True
+        return not len(text) < min_length
 
     async def synthesize_progressive(
         self,
