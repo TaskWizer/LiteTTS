@@ -394,7 +394,7 @@ def run_comprehensive_tests():
                 print(f"✗ {method_name} FAILED: {e}")
 
     print(f"\n{'=' * 80}")
-    print(f"TEST SUMMARY")
+    print("TEST SUMMARY")
     print(f"{'=' * 80}")
     success_rate = passed_tests / total_tests if total_tests > 0 else 0
     print(f"Tests Passed: {passed_tests}/{total_tests} ({success_rate:.1%})")

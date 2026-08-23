@@ -343,7 +343,7 @@ class ChunkedGenerationTester:
 
                 duration = time.time() - start_time
 
-                logger.info(f"   ✅ Fallback test successful")
+                logger.info("   ✅ Fallback test successful")
                 logger.info(f"      Generation mode: {generation_mode}")
                 logger.info(f"      Audio size: {len(audio_data)} bytes")
                 logger.info(f"      Duration: {duration:.2f}s")

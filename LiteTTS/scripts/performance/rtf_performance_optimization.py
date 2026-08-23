@@ -608,19 +608,19 @@ async def main():
         print(f"RTF Improvement: {summary['rtf_improvement_percent']:.1f}%")
         print(f"Target Compliance Improvement: {summary['optimized_target_compliance']:.1%}")
 
-        print(f"\nCritical Targets:")
+        print("\nCritical Targets:")
         targets = summary["critical_targets_met"]
         print(f"  Ultra-short RTF < 0.15: {'✅' if targets['ultra_short_rtf_015'] else '❌'}")
         print(f"  Short RTF < 0.20: {'✅' if targets['short_rtf_020'] else '❌'}")
         print(f"  Overall RTF < 0.25: {'✅' if targets['overall_rtf_025'] else '❌'}")
 
-        print(f"\nCategory Performance:")
+        print("\nCategory Performance:")
         for category in ["ultra_short", "short", "medium", "overall"]:
             if category in analysis:
                 cat_data = analysis[category]
                 print(f"  {category.title()}: {cat_data['baseline_avg_rtf']:.3f} → {cat_data['optimized_avg_rtf']:.3f} RTF")
 
-        print(f"\nRecommendations:")
+        print("\nRecommendations:")
         for i, rec in enumerate(results["recommendations"], 1):
             print(f"  {i}. {rec}")
 

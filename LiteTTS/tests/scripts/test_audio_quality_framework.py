@@ -93,7 +93,7 @@ def test_test_case_creation():
         critical_tests = suite.get_critical_tests()
         symbol_tests = suite.get_symbol_processing_tests()
 
-        print(f"✅ Test suite created successfully")
+        print("✅ Test suite created successfully")
         print(f"   Total test cases: {len(all_tests)}")
         print(f"   Critical tests: {len(critical_tests)}")
         print(f"   Symbol processing tests: {len(symbol_tests)}")
@@ -131,7 +131,7 @@ def test_audio_quality_tester_init():
 
         # Test quality thresholds
         thresholds = tester.quality_thresholds
-        print(f"   Quality Thresholds:")
+        print("   Quality Thresholds:")
         for key, value in thresholds.items():
             print(f"     {key}: {value}")
 
@@ -218,7 +218,7 @@ async def test_api_connectivity():
             # Try to generate audio
             audio_data, processing_time = await tester.generate_audio(test_case)
 
-            print(f"✅ TTS API connectivity successful")
+            print("✅ TTS API connectivity successful")
             print(f"   Audio size: {len(audio_data)} bytes")
             print(f"   Processing time: {processing_time:.3f}s")
 

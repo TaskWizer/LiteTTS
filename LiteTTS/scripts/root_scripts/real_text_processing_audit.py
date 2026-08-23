@@ -168,10 +168,10 @@ def test_synthesizer_configuration():
         print("ACTUAL synthesizer configuration would be:")
         print(f"  use_ticker_symbol_processing: {ticker_processing_enabled}")
         print(f"  use_proper_name_pronunciation: {proper_name_enabled}")
-        print(f"  use_advanced_symbols: False")  # Hardcoded in our fix
+        print("  use_advanced_symbols: False")  # Hardcoded in our fix
         print(f"  use_espeak_enhanced_symbols: {espeak_enhanced_enabled}")
-        print(f"  use_clean_normalizer: False")  # Hardcoded in our fix
-        print(f"  process_phonetics: False")  # Hardcoded in our fix
+        print("  use_clean_normalizer: False")  # Hardcoded in our fix
+        print("  process_phonetics: False")  # Hardcoded in our fix
 
         # Test with these ACTUAL settings
         print("\n--- Testing with ACTUAL synthesizer settings ---")

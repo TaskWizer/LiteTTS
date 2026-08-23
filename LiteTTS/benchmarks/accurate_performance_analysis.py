@@ -193,7 +193,7 @@ def main():
         avg_rtf = summary.get('avg_rtf', 0)
         cache_hit_rate = summary.get('cache_hit_rate_percent', 0)
 
-        print(f"\n📊 Key Findings:")
+        print("\n📊 Key Findings:")
         print(f"   • Server RTF: {avg_rtf:.3f}")
         print(f"   • Cache Hit Rate: {cache_hit_rate:.1f}%")
         print(f"   • Average Response Time: {statistics.mean(response_times):.3f}s" if response_times else "   • No response time data")

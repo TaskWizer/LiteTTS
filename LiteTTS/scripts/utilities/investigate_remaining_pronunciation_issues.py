@@ -87,7 +87,7 @@ def test_quote_edge_cases():
                 'quotes_found': found_quotes + non_contraction_quotes
             })
         else:
-            print(f"  ✅ No problematic quotes in output")
+            print("  ✅ No problematic quotes in output")
 
     if issues_found:
         print(f"\n❌ Found {len(issues_found)} quote processing issues:")
@@ -145,9 +145,9 @@ def test_boy_pronunciation_contexts():
         # Check if "Boy" is preserved correctly
         if 'boy' in test_case.lower():
             if 'boy' in nlp_result.lower():
-                print(f"  ✅ 'Boy' preserved in text processing")
+                print("  ✅ 'Boy' preserved in text processing")
             else:
-                print(f"  ❌ 'Boy' not found in output")
+                print("  ❌ 'Boy' not found in output")
 
         # Check for any unexpected transformations
         original_words = test_case.lower().split()
@@ -225,7 +225,7 @@ def test_api_pronunciation_issues():
                 with open(filename, 'wb') as f:
                     f.write(response.content)
                 print(f"   Audio saved as: {filename}")
-                print(f"   🎧 MANUAL CHECK REQUIRED: Listen for pronunciation issues")
+                print("   🎧 MANUAL CHECK REQUIRED: Listen for pronunciation issues")
 
             else:
                 print(f"❌ API Error: {response.status_code}")
@@ -312,7 +312,7 @@ def check_different_processing_paths():
         print("✅ Processing paths are consistent")
     else:
         print("❌ Processing paths produce different results!")
-        print(f"   Difference detected between direct NLP and preprocess+NLP")
+        print("   Difference detected between direct NLP and preprocess+NLP")
 
 def main():
     """Run comprehensive investigation of remaining pronunciation issues"""

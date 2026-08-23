@@ -817,7 +817,7 @@ echo "Summary report: $ANALYSIS_DIR/analysis_report.txt"
 
         successful_tests = sum(1 for key, value in test_results.items()
                              if key != "errors" and key != "log_files_created" and value is True)
-        total_tests = len([key for key in test_results.keys()
+        total_tests = len([key for key in test_results
                           if key != "errors" and key != "log_files_created"])
 
         summary = {
@@ -892,7 +892,7 @@ def main():
         print(f"Handlers Configured: {summary['handlers_configured']}")
         print(f"Log Files Created: {summary['log_files_created']}")
 
-        print(f"\nLogging Configuration:")
+        print("\nLogging Configuration:")
         print(f"  Log Level: {config['log_level']}")
         print(f"  Log Directory: {config['log_directory']}")
         print(f"  Structured Logging: {'✅' if config['enable_structured_logging'] else '❌'}")
@@ -900,13 +900,13 @@ def main():
         print(f"  Max File Size: {config['max_file_size_mb']}MB")
         print(f"  Backup Count: {config['backup_count']}")
 
-        print(f"\nSpecialized Loggers:")
+        print("\nSpecialized Loggers:")
         specialized = summary["specialized_loggers_enabled"]
         print(f"  Performance: {'✅' if specialized['performance'] else '❌'}")
         print(f"  Security: {'✅' if specialized['security'] else '❌'}")
         print(f"  API: {'✅' if specialized['api'] else '❌'}")
 
-        print(f"\nTest Results:")
+        print("\nTest Results:")
         test_results = results["test_results"]
         for test_name, result in test_results.items():
             if test_name not in ["errors", "log_files_created"]:
@@ -914,17 +914,17 @@ def main():
                 print(f"  {emoji} {test_name.replace('_', ' ').title()}")
 
         if test_results.get("errors"):
-            print(f"\nErrors:")
+            print("\nErrors:")
             for error in test_results["errors"]:
                 print(f"  ❌ {error}")
 
-        print(f"\nGenerated Files:")
+        print("\nGenerated Files:")
         for file_type, filename in results["generated_files"].items():
             print(f"  {file_type}: {filename}")
 
         print(f"\nProduction Ready: {'✅' if summary['production_ready'] else '❌'}")
 
-        print(f"\nNext Steps:")
+        print("\nNext Steps:")
         for i, step in enumerate(results["next_steps"][:5], 1):
             print(f"  {i}. {step}")
 

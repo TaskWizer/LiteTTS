@@ -920,7 +920,7 @@ def main():
         print(f"Target Coverage: {manager.config.min_documentation_coverage}%")
 
         if coverage.coverage_percentage < manager.config.min_documentation_coverage:
-            print(f"ERROR: Documentation coverage below target")
+            print("ERROR: Documentation coverage below target")
             print("Missing docstrings:")
             for missing in coverage.missing_docstrings[:10]:
                 print(f"  - {missing}")
@@ -947,7 +947,7 @@ def main():
         if doc_summary['missing_count'] > 0:
             print(f"Missing Docstrings: {doc_summary['missing_count']}")
 
-        print(f"\nCI/CD Features:")
+        print("\nCI/CD Features:")
         features = summary["cicd_features"]
         print(f"  GitHub Actions: {'✅' if features['github_actions'] else '❌'}")
         print(f"  GitLab CI: {'✅' if features['gitlab_ci'] else '❌'}")
@@ -956,18 +956,18 @@ def main():
         print(f"  Security Scanning: {'✅' if features['security_scanning'] else '❌'}")
         print(f"  Performance Testing: {'✅' if features['performance_testing'] else '❌'}")
 
-        print(f"\nConfiguration:")
+        print("\nConfiguration:")
         print(f"  Test Coverage Target: {summary['test_coverage_target']}%")
         print(f"  Python Versions: {summary['python_versions_supported']}")
         print(f"  Deployment Environments: {summary['deployment_environments']}")
 
-        print(f"\nGenerated Files:")
+        print("\nGenerated Files:")
         for file_type, filename in results["generated_files"].items():
             print(f"  {file_type}: {filename}")
 
         print(f"\nProduction Ready: {'✅' if summary['production_ready'] else '❌'}")
 
-        print(f"\nNext Steps:")
+        print("\nNext Steps:")
         for i, step in enumerate(results["next_steps"][:5], 1):
             print(f"  {i}. {step}")
 

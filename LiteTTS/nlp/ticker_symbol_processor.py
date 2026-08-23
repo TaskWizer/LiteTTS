@@ -64,11 +64,11 @@ class TickerSymbolProcessor:
             'XLP', 'XLY', 'XLU', 'XLRE', 'XLB', 'XME', 'KRE', 'SMH', 'IBB',
 
             # Crypto-related
-            'MSTR', 'COIN', 'RIOT', 'MARA', 'BITF', 'HUT', 'BTBT', 'CAN',
+            'MSTR', 'RIOT', 'MARA', 'BITF', 'HUT', 'BTBT', 'CAN',
 
             # International
             'BABA', 'TSM', 'ASML', 'SAP', 'TM', 'NVO', 'SHEL', 'UL', 'NESN',
-            'RHHBY', 'ADYEN', 'SHOP', 'SE', 'GRAB', 'DIDI', 'PDD', 'JD',
+            'RHHBY', 'ADYEN', 'SE', 'GRAB', 'DIDI', 'PDD', 'JD',
 
             # Indices (often referenced)
             'SPX', 'NDX', 'RUT', 'VIX', 'DJI', 'IXIC', 'FTSE', 'DAX', 'CAC',
@@ -110,13 +110,12 @@ class TickerSymbolProcessor:
             'THE', 'AND', 'FOR', 'ARE', 'BUT', 'NOT', 'YOU', 'ALL', 'CAN',
             'HER', 'WAS', 'ONE', 'OUR', 'OUT', 'DAY', 'GET', 'HAS', 'HIM',
             'HIS', 'HOW', 'ITS', 'MAY', 'NEW', 'NOW', 'OLD', 'SEE', 'TWO',
-            'WHO', 'BOY', 'DID', 'ITS', 'LET', 'PUT', 'SAY', 'SHE', 'TOO',
+            'WHO', 'BOY', 'DID', 'LET', 'PUT', 'SAY', 'SHE', 'TOO',
             'USE', 'WAY', 'WIN', 'YES', 'YET', 'BIG', 'END', 'FAR', 'FEW',
             'GOT', 'LOT', 'MAN', 'OWN', 'RUN', 'SET', 'TOP', 'TRY', 'ASK',
             'BAD', 'BAG', 'BED', 'BOX', 'CAR', 'CUT', 'DOG', 'EAR', 'EYE',
             'FUN', 'GUN', 'HAD', 'HAT', 'HOT', 'JOB', 'LAW', 'LEG', 'MAP',
-            'MOM', 'POP', 'RED', 'SIT', 'SUN', 'TAX', 'TEA', 'TEN', 'TOP',
-            'VAN', 'WAR', 'WIN', 'ZIP', 'IS', 'OF', 'TO', 'IN', 'ON', 'AT',
+            'MOM', 'POP', 'RED', 'SIT', 'SUN', 'TAX', 'TEA', 'TEN', 'VAN', 'WAR', 'ZIP', 'IS', 'OF', 'TO', 'IN', 'ON', 'AT',
             'BY', 'UP', 'SO', 'NO', 'IF', 'OR', 'MY', 'WE', 'BE', 'DO', 'GO',
 
             # Abbreviations that aren't tickers
@@ -124,11 +123,11 @@ class TickerSymbolProcessor:
             'PR', 'QA', 'RD', 'AI', 'ML', 'AR', 'VR', 'IoT', 'API', 'SDK',
             'URL', 'URI', 'HTTP', 'HTTPS', 'FTP', 'SSH', 'SSL', 'TLS',
             'HTML', 'CSS', 'XML', 'JSON', 'CSV', 'PDF', 'DOC', 'XLS',
-            'PPT', 'ZIP', 'RAR', 'TAR', 'GZ', 'MP3', 'MP4', 'AVI', 'MOV',
+            'PPT', 'RAR', 'TAR', 'GZ', 'MP3', 'MP4', 'AVI', 'MOV',
             'JPG', 'PNG', 'GIF', 'SVG', 'BMP', 'TIFF', 'WEBP',
 
             # Units and measurements
-            'KG', 'LB', 'OZ', 'CM', 'MM', 'IN', 'FT', 'YD', 'MI', 'KM',
+            'KG', 'LB', 'OZ', 'CM', 'MM', 'FT', 'YD', 'MI', 'KM',
             'MPH', 'KPH', 'PSI', 'BAR', 'ATM', 'BTU', 'CAL', 'KWH',
 
             # Time zones and locations

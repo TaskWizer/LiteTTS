@@ -23,7 +23,7 @@ def validate_voice_cache_file():
         with open(cache_file, 'r') as f:
             cache_data = json.load(f)
 
-        print(f"   ✅ Cache file loaded successfully")
+        print("   ✅ Cache file loaded successfully")
         print(f"   📊 Total cached voices: {len(cache_data)}")
 
         # Validate cache structure
@@ -104,7 +104,7 @@ def validate_voice_files():
                 missing_files.append(voice_name)
                 print(f"   ❌ {voice_name}: File missing at {file_path}")
 
-        print(f"\n   📊 Sample validation results:")
+        print("\n   📊 Sample validation results:")
         print(f"      Existing files: {existing_files}/{len(sample_voices)}")
         print(f"      Size matches: {checksum_matches}/{existing_files}")
 
@@ -178,7 +178,7 @@ def test_cache_performance():
                     if second_time < first_time * 0.8:  # 20% faster
                         print(f"      ✅ Cache hit detected (speedup: {first_time/second_time:.1f}x)")
                     else:
-                        print(f"      ⚠️ No significant speedup detected")
+                        print("      ⚠️ No significant speedup detected")
                 else:
                     print(f"      ❌ Second call failed: {response2.status_code}")
             else:
@@ -239,7 +239,7 @@ def validate_cache_metadata():
             if nationality:
                 nationalities[nationality] = nationalities.get(nationality, 0) + 1
 
-        print(f"   📊 Metadata analysis:")
+        print("   📊 Metadata analysis:")
         print(f"      Sources: {dict(sources)}")
         print(f"      Languages: {dict(languages)}")
         print(f"      Genders: {dict(genders)}")
@@ -250,7 +250,7 @@ def validate_cache_metadata():
         huggingface_voices = sources.get("huggingface", 0)
         custom_voices = sources.get("custom", 0)
 
-        print(f"\n   📋 Consistency check:")
+        print("\n   📋 Consistency check:")
         print(f"      Total voices: {total_voices}")
         print(f"      HuggingFace voices: {huggingface_voices}")
         print(f"      Custom voices: {custom_voices}")

@@ -336,7 +336,7 @@ class DocumentationCleanup:
         for path, description in summary['new_structure'].items():
             content += f"- **{path}** - {description}\n"
 
-        content += f"\n## Backup Location\n\n"
+        content += "\n## Backup Location\n\n"
         content += f"Original documentation backed up to: `{summary['backup_location']}`\n"
 
         with open(summary_path, 'w') as f:

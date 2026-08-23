@@ -445,8 +445,8 @@ def main():
     auditor.save_focused_report()
 
     # Print summary
-    print(f"\n📊 FOCUSED AUDIT SUMMARY")
-    print(f"=" * 25)
+    print("\n📊 FOCUSED AUDIT SUMMARY")
+    print("=" * 25)
     print(f"Performance Issues: {len(results.get('performance_issues', []))}")
     print(f"RTF-Specific Findings: {len(results.get('rtf_specific_findings', []))}")
     print(f"Optimization Opportunities: {len(results.get('optimization_opportunities', []))}")

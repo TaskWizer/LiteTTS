@@ -83,10 +83,10 @@ def test_api_with_question_marks():
 
                 # Validate performance target
                 if processing_time < 5.0:  # Should be much faster, but allow generous margin
-                    print(f"   🚀 Performance: EXCELLENT (< 5s)")
+                    print("   🚀 Performance: EXCELLENT (< 5s)")
                     success_count += 1
                 else:
-                    print(f"   ⚠️  Performance: SLOW (> 5s)")
+                    print("   ⚠️  Performance: SLOW (> 5s)")
 
                 # Save audio file for manual verification
                 output_file = f"final_test_{i}.mp3"
@@ -102,17 +102,17 @@ def test_api_with_question_marks():
             print(f"   ❌ Exception: {e}")
 
     # Summary
-    print(f"\n📊 Test Summary:")
+    print("\n📊 Test Summary:")
     print(f"   ✅ Successful tests: {success_count}/{total_tests}")
     print(f"   📈 Success rate: {success_count/total_tests*100:.1f}%")
 
     if success_count == total_tests:
-        print(f"\n🎉 ALL TESTS PASSED!")
-        print(f"   The eSpeak integration is working correctly.")
-        print(f"   Question mark pronunciation should now be fixed.")
+        print("\n🎉 ALL TESTS PASSED!")
+        print("   The eSpeak integration is working correctly.")
+        print("   Question mark pronunciation should now be fixed.")
         return True
     else:
-        print(f"\n❌ Some tests failed.")
+        print("\n❌ Some tests failed.")
         return False
 
 def test_text_processing_pipeline():

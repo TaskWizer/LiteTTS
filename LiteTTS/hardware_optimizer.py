@@ -97,7 +97,7 @@ class HardwareOptimizer:
             architecture=architecture
         )
 
-        logger.info(f"📊 Hardware Profile:")
+        logger.info("📊 Hardware Profile:")
         logger.info(f"   CPU: {cpu_cores} cores, {cpu_threads} threads @ {cpu_frequency:.0f}MHz")
         logger.info(f"   Memory: {total_memory_gb:.1f}GB total, {available_memory_gb:.1f}GB available")
         logger.info(f"   GPU: {'Yes' if has_gpu else 'No'}{f' ({gpu_memory_gb:.1f}GB)' if gpu_memory_gb else ''}")
@@ -148,7 +148,7 @@ class HardwareOptimizer:
         io_time = time.time() - io_start
         benchmarks['io_performance'] = 1.0 / io_time
 
-        logger.info(f"📊 Benchmark Results:")
+        logger.info("📊 Benchmark Results:")
         logger.info(f"   CPU: {benchmarks['cpu_performance']:.2f}")
         logger.info(f"   Memory: {benchmarks['memory_performance']:.2f}")
         logger.info(f"   I/O: {benchmarks['io_performance']:.2f}")
@@ -227,7 +227,7 @@ class HardwareOptimizer:
             device=device
         )
 
-        logger.info(f"🎯 Optimal Settings:")
+        logger.info("🎯 Optimal Settings:")
         logger.info(f"   Workers: {workers}")
         logger.info(f"   Chunk Size: {chunk_size}")
         logger.info(f"   Cache: {'Enabled' if cache_enabled else 'Disabled'} ({cache_size} items)")

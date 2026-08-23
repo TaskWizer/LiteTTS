@@ -79,11 +79,11 @@ def test_pronunciation_fixes():
 
             # Check if it's using custom dictionary
             if entry.notation == "custom":
-                print(f"   ✅ Using custom dictionary (high priority)")
+                print("   ✅ Using custom dictionary (high priority)")
             else:
                 print(f"   ⚠️  Using {entry.notation} dictionary instead of custom")
         else:
-            print(f"   ❌ Not found in any dictionary")
+            print("   ❌ Not found in any dictionary")
             all_passed = False
 
         # Test 2: Phonetic processing
@@ -102,12 +102,12 @@ def test_pronunciation_fixes():
 
         # Check if the word was modified (indicating phonetic processing occurred)
         if phonetic_result != word:
-            print(f"   ✅ Word was phonetically processed")
+            print("   ✅ Word was phonetically processed")
         else:
-            print(f"   ⚠️  Word was not modified by phonetic processing")
+            print("   ⚠️  Word was not modified by phonetic processing")
 
     # Test comprehensive sentences
-    print(f"\n🔄 Testing comprehensive sentences:")
+    print("\n🔄 Testing comprehensive sentences:")
 
     comprehensive_tests = [
         "The concept of hedonism is often discussed when analyzing prices on philosophy websites.",
@@ -125,7 +125,7 @@ def test_pronunciation_fixes():
             all_passed = False
 
     # Performance check
-    print(f"\n⚡ Performance check:")
+    print("\n⚡ Performance check:")
     import time
 
     test_text = "The hedonism philosophy affects prices on our website."
@@ -140,13 +140,13 @@ def test_pronunciation_fixes():
     print(f"   📊 Processing rate: {1/avg_time:.1f} sentences/second")
 
     if avg_time < 0.1:  # Less than 100ms per sentence
-        print(f"   ✅ Performance within acceptable limits")
+        print("   ✅ Performance within acceptable limits")
     else:
-        print(f"   ⚠️  Performance may be slower than expected")
+        print("   ⚠️  Performance may be slower than expected")
 
     # Get statistics
     stats = phonetic_processor.get_statistics()
-    print(f"\n📊 System Statistics:")
+    print("\n📊 System Statistics:")
     print(f"   Total dictionary entries: {stats.get('total_entries', 0):,}")
     print(f"   Cache hit rate: {stats.get('cache_hit_rate', 0):.1%}")
     print(f"   Lookup count: {stats.get('lookup_count', 0):,}")
@@ -157,7 +157,7 @@ def main():
     """Main test function"""
     success = test_pronunciation_fixes()
 
-    print(f"\n🏁 TEST SUMMARY")
+    print("\n🏁 TEST SUMMARY")
     print("=" * 50)
 
     if success:
@@ -397,12 +397,12 @@ def test_analysis_features():
     stats = unified_pronunciation_fix.get_fix_statistics(test_text)
 
     print(f"📝 Text: '{test_text}'")
-    print(f"📊 Statistics:")
+    print("📊 Statistics:")
     print(f"   Words: {stats['total_words']}")
     print(f"   Characters: {stats['total_characters']}")
     print(f"   Potential fixes: {stats['potential_fixes']}")
 
-    print(f"\n🔍 Issues found:")
+    print("\n🔍 Issues found:")
     for category, category_issues in issues.items():
         if isinstance(category_issues, dict) and 'error' not in category_issues:
             issue_count = sum(len(v) if isinstance(v, list) else 1 for v in category_issues.values())

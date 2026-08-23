@@ -72,23 +72,22 @@ class VoiceSampleGenerator:
                 "volume_multiplier": 1.0
             }
 
-            async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    f"{self.api_base_url}/v1/audio/speech",
-                    json=payload
-                ) as response:
-                    if response.status == 200:
-                        audio_data = await response.read()
-                        output_file = self.samples_dir / f"{voice}.mp3"
+            async with aiohttp.ClientSession() as session, session.post(
+                f"{self.api_base_url}/v1/audio/speech",
+                json=payload
+            ) as response:
+                if response.status == 200:
+                    audio_data = await response.read()
+                    output_file = self.samples_dir / f"{voice}.mp3"
 
-                        with open(output_file, "wb") as f:
-                            f.write(audio_data)
+                    with open(output_file, "wb") as f:
+                        f.write(audio_data)
 
-                        logger.info(f"✅ Generated sample for {voice}")
-                        return True
-                    else:
-                        logger.error(f"❌ Failed to generate sample for {voice}: {response.status}")
-                        return False
+                    logger.info(f"✅ Generated sample for {voice}")
+                    return True
+                else:
+                    logger.error(f"❌ Failed to generate sample for {voice}: {response.status}")
+                    return False
         except Exception as e:
             logger.error(f"❌ Error generating sample for {voice}: {e}")
             return False
@@ -204,7 +203,7 @@ class VoiceSampleGenerator:
         with open(report_file, "w") as f:
             f.write("# Voice Sample Generation Report\n\n")
             f.write(f"**Generated on:** {asyncio.get_event_loop().time()}\n\n")
-            f.write(f"## Summary\n\n")
+            f.write("## Summary\n\n")
             f.write(f"- **Original Samples:** {len(original_samples)}\n")
             f.write(f"- **Time-Stretched Samples:** {len(stretched_samples)}\n")
             f.write(f"- **Restored Samples:** {len(restored_samples)}\n\n")

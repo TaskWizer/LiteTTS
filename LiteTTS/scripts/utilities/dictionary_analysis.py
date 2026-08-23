@@ -462,18 +462,18 @@ def main():
             print(f"  File Size: {stats['file_size_mb']:.2f} MB")
             print(f"  Missing Critical Words: {len(stats['missing_critical_words'])}")
 
-        print(f"\nOverall Statistics:")
+        print("\nOverall Statistics:")
         overall = summary['overall_statistics']
         print(f"  Total Unique Words: {overall['total_unique_words']:,}")
         print(f"  Average Coverage: {overall['average_coverage_score']:.1f}%")
         print(f"  Average Quality: {overall['average_quality_score']:.1f}%")
         print(f"  Total Size: {overall['total_file_size_mb']:.2f} MB")
 
-        print(f"\nCoverage by Category:")
+        print("\nCoverage by Category:")
         for analysis in summary['coverage_by_category']:
             print(f"  {analysis['category']}: {analysis['coverage_percentage']:.1f}% ({analysis['covered_words']}/{analysis['total_words']})")
 
-        print(f"\nRecommendations:")
+        print("\nRecommendations:")
         for i, rec in enumerate(summary['recommendations'], 1):
             print(f"  {i}. {rec}")
 

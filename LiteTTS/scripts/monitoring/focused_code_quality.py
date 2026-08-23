@@ -375,7 +375,7 @@ class FocusedCodeQualityAssessor:
 
         # Project metrics
         metrics = results["metrics"]
-        logger.info(f"📁 Project Code Metrics:")
+        logger.info("📁 Project Code Metrics:")
         logger.info(f"   Python Files: {metrics['total_files']}")
         logger.info(f"   Total Lines: {metrics['total_lines']}")
         logger.info(f"   Functions: {metrics['total_functions']}")
@@ -385,7 +385,7 @@ class FocusedCodeQualityAssessor:
         # Issues summary
         issues = results["issues_summary"]
         total_issues = sum(issues.values())
-        logger.info(f"\n🚨 Issues Summary:")
+        logger.info("\n🚨 Issues Summary:")
         logger.info(f"   Security Issues: {issues['security']}")
         logger.info(f"   Incomplete Implementations: {issues['incomplete']}")
         logger.info(f"   Structure Issues: {issues['structure']}")
@@ -394,14 +394,14 @@ class FocusedCodeQualityAssessor:
 
         # Configuration analysis
         config = results["configuration"]
-        logger.info(f"\n🔧 Configuration Analysis:")
+        logger.info("\n🔧 Configuration Analysis:")
         logger.info(f"   Files Checked: {len(config['files_checked'])}")
         logger.info(f"   Security Issues: {len(config['security_issues'])}")
         logger.info(f"   Structure Issues: {len(config['structure_issues'])}")
 
         # Top issues by file
         if results["file_analysis"]:
-            logger.info(f"\n📋 Files with Most Issues:")
+            logger.info("\n📋 Files with Most Issues:")
             file_issue_counts = {}
             for file_path, analysis in results["file_analysis"].items():
                 issue_count = (len(analysis["security_issues"]) +
@@ -418,7 +418,7 @@ class FocusedCodeQualityAssessor:
         # Recommendations
         recommendations = results["recommendations"]
         if recommendations:
-            logger.info(f"\n💡 Recommendations:")
+            logger.info("\n💡 Recommendations:")
             for rec in recommendations:
                 priority_icon = "🔴" if rec["priority"] == "High" else "🟡" if rec["priority"] == "Medium" else "🟢"
                 logger.info(f"   {priority_icon} {rec['category']}: {rec['recommendation']}")

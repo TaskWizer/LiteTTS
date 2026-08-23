@@ -210,7 +210,7 @@ class UnifiedPronunciationFix:
         self.enable_interjection_fixes = enable_interjection
         self.contraction_mode = contraction_mode
 
-        logger.info(f"Pronunciation fix configuration updated:")
+        logger.info("Pronunciation fix configuration updated:")
         logger.info(f"  Comma fixes: {enable_comma}")
         logger.info(f"  Diphthong fixes: {enable_diphthong}")
         logger.info(f"  Contraction fixes: {enable_contraction} (mode: {contraction_mode})")

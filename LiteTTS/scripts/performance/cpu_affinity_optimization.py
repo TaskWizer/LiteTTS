@@ -83,7 +83,7 @@ class CPUAffinityOptimizer:
                 # Fallback: assume first half are P-cores, second half are E-cores
                 # This is a heuristic and may not be accurate
                 mid_point = physical_cores // 2
-                p_cores = list(range(0, mid_point))
+                p_cores = list(range(mid_point))
                 e_cores = list(range(mid_point, physical_cores))
         except Exception as e:
             logger.warning(f"Could not detect core types: {e}")
@@ -148,7 +148,7 @@ class CPUAffinityOptimizer:
                 # Fallback
                 total_cores = psutil.cpu_count(logical=False)
                 mid_point = total_cores // 2
-                p_cores = list(range(0, mid_point))
+                p_cores = list(range(mid_point))
                 e_cores = list(range(mid_point, total_cores))
 
         except Exception as e:
@@ -507,14 +507,14 @@ def main():
         topology = results["cpu_topology"]
         config = results["affinity_configuration"]
 
-        print(f"CPU Topology:")
+        print("CPU Topology:")
         print(f"  Total Cores: {topology['total_cores']}")
         print(f"  Physical Cores: {topology['physical_cores']}")
         print(f"  P-Cores: {len(topology['p_cores'])} {topology['p_cores']}")
         print(f"  E-Cores: {len(topology['e_cores'])} {topology['e_cores']}")
         print(f"  Architecture: {topology['architecture']}")
 
-        print(f"\nOptimal Configuration:")
+        print("\nOptimal Configuration:")
         print(f"  ONNX Cores: {config['onnx_cores']}")
         print(f"  System Cores: {config['system_cores']}")
         print(f"  Thread Pool Size: {config['thread_pool_size']}")
@@ -523,7 +523,7 @@ def main():
 
         print(f"\nAffinity Applied: {'✅' if results['affinity_applied'] else '❌'}")
 
-        print(f"\nRecommendations:")
+        print("\nRecommendations:")
         for i, rec in enumerate(results["recommendations"], 1):
             print(f"  {i}. {rec}")
 

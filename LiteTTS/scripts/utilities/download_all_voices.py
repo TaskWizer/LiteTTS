@@ -38,7 +38,7 @@ def main():
 
         # Get discovery stats
         stats = voice_manager.get_download_status()
-        print(f"📊 Discovery Stats:")
+        print("📊 Discovery Stats:")
         print(f"   - Discovered voices: {stats['discovered_voices']}")
         print(f"   - Downloaded voices: {stats['downloaded_voices']}")
         print(f"   - Missing voices: {stats['missing_voices']}")
@@ -52,7 +52,7 @@ def main():
             print(f"   {i:2d}. {voice} {status}")
 
         # Ask user what to download
-        print(f"\n📥 Download Options:")
+        print("\n📥 Download Options:")
         print("1. Download all voices (~26MB)")
         print("2. Download default voices only (af_heart, am_puck)")
         print("3. Download specific voices")
@@ -131,7 +131,7 @@ def main():
             success = voice_manager.refresh_discovery()
             if success:
                 new_stats = voice_manager.get_download_status()
-                print(f"✅ Discovery refreshed!")
+                print("✅ Discovery refreshed!")
                 print(f"   - Discovered voices: {new_stats['discovered_voices']}")
                 print(f"   - Voice mappings: {new_stats['voice_mappings']}")
             else:
@@ -143,7 +143,7 @@ def main():
 
         # Final stats
         final_stats = voice_manager.get_download_status()
-        print(f"\n📈 Final Stats:")
+        print("\n📈 Final Stats:")
         print(f"   - Total discovered: {final_stats['discovered_voices']}")
         print(f"   - Total downloaded: {final_stats['downloaded_voices']}")
         print(f"   - Voice mappings: {final_stats['voice_mappings']}")

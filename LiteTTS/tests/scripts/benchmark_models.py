@@ -360,19 +360,19 @@ def main():
         print("🏆 MODEL BENCHMARK RESULTS")
         print("="*60)
 
-        print(f"\n📊 Summary:")
+        print("\n📊 Summary:")
         print(f"  Models Tested: {analysis['summary']['total_models_tested']}")
         print(f"  Successful: {analysis['summary']['successful_models']}")
         print(f"  Best RTF: {analysis['summary']['best_rtf_achieved']:.3f}")
         print(f"  Memory Range: {analysis['summary']['memory_range_mb']} MB")
 
-        print(f"\n🏆 Best Performers:")
+        print("\n🏆 Best Performers:")
         best = analysis["best_performers"]
         print(f"  🚀 Best RTF: {best['best_rtf']['model']} (RTF: {best['best_rtf']['rtf']:.3f})")
         print(f"  💾 Best Memory: {best['best_memory']['model']} ({best['best_memory']['memory_mb']:.0f}MB)")
         print(f"  ⚖️ Best Overall: {best['best_overall']['model']} (Score: {best['best_overall']['efficiency_score']:.3f})")
 
-        print(f"\n🎯 Recommendations:")
+        print("\n🎯 Recommendations:")
         rec = analysis["recommendations"]
         print(f"  Production: {rec['production']}")
         print(f"  Low Memory: {rec['low_memory']}")

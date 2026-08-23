@@ -84,7 +84,7 @@ def benchmark_single_requests():
             print(f"      ❌ Error: {e}")
 
     if times:
-        print(f"\n   📊 Performance Summary:")
+        print("\n   📊 Performance Summary:")
         print(f"      Average time: {statistics.mean(times):.3f}s")
         print(f"      Median time: {statistics.median(times):.3f}s")
         print(f"      Min time: {min(times):.3f}s")
@@ -225,7 +225,7 @@ def monitor_system_resources():
         cpu_values = [d["cpu"] for d in resource_data]
         memory_values = [d["memory"] for d in resource_data]
 
-        print(f"\n   📊 Resource usage during test:")
+        print("\n   📊 Resource usage during test:")
         print(f"      CPU - Avg: {statistics.mean(cpu_values):.1f}%, Max: {max(cpu_values):.1f}%")
         print(f"      Memory - Avg: {statistics.mean(memory_values):.1f} MB, Max: {max(memory_values):.1f} MB")
         print(f"      Memory increase: {max(memory_values) - initial_memory:.1f} MB")
@@ -292,7 +292,7 @@ def test_cache_performance():
             speedup = cache_miss_time / cache_hit_time
             print(f"      ⚡ Good cache performance (speedup: {speedup:.1f}x)")
         else:
-            print(f"      ⚠️ Cache performance could be improved")
+            print("      ⚠️ Cache performance could be improved")
     else:
         print(f"      ❌ Cache hit test failed: {response.status_code}")
 

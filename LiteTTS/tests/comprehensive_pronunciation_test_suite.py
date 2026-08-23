@@ -477,13 +477,13 @@ def main():
 
         # Print summary
         summary = results["summary"]
-        print(f"\n📊 Test Results Summary:")
+        print("\n📊 Test Results Summary:")
         print(f"   Total Tests: {summary['total_tests']}")
         print(f"   Passed: {summary['total_passed']}")
         print(f"   Failed: {summary['total_failed']}")
         print(f"   Success Rate: {summary['success_rate']:.1f}%")
 
-        print(f"\n📋 Category Breakdown:")
+        print("\n📋 Category Breakdown:")
         for category, stats in summary["categories"].items():
             print(f"   {category}: {stats['passed']}/{stats['total']} ({stats['success_rate']:.1f}%)")
 
@@ -492,7 +492,7 @@ def main():
 
         # Print recommendations
         if report["recommendations"]:
-            print(f"\n💡 Recommendations:")
+            print("\n💡 Recommendations:")
             for rec in report["recommendations"]:
                 print(f"   - {rec}")
 

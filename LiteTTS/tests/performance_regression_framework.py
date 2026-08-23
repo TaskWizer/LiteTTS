@@ -418,7 +418,7 @@ def main():
         report = tester.generate_performance_report(result)
 
         # Print summary
-        print(f"\nTest Results:")
+        print("\nTest Results:")
         print(f"  Total Tests: {result.total_tests}")
         print(f"  Passed: {result.passed_tests}")
         print(f"  Failed: {result.failed_tests}")
@@ -427,7 +427,7 @@ def main():
         print(f"  Performance Status: {report['analysis']['performance_status']}")
 
         if report['analysis']['recommendations']:
-            print(f"\nRecommendations:")
+            print("\nRecommendations:")
             for rec in report['analysis']['recommendations']:
                 print(f"  - {rec}")
 

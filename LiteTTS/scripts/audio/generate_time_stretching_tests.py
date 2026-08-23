@@ -177,9 +177,9 @@ class TimeStretchingTestGenerator:
         # Add additional sections
         report_content += "\n\n## Test Configuration\n\n"
         report_content += f"- **Test Text:** {self.test_text}\n"
-        report_content += f"- **Baseline Voice:** af_heart\n"
+        report_content += "- **Baseline Voice:** af_heart\n"
         report_content += f"- **Test Rates:** {', '.join(map(str, self.test_rates))}%\n"
-        report_content += f"- **Quality Level:** Medium\n"
+        report_content += "- **Quality Level:** Medium\n"
         report_content += f"- **Generated:** {time.strftime('%Y-%m-%d %H:%M:%S')}\n"
 
         # Save report
@@ -244,13 +244,13 @@ class TimeStretchingTestGenerator:
         # Recommendation
         if best_metrics.rtf_stretched < 0.8:
             print("\n✅ RECOMMENDATION: Enable time-stretching")
-            print(f"   Significant latency improvement achieved")
+            print("   Significant latency improvement achieved")
         elif best_metrics.rtf_stretched < 1.0:
             print("\n⚠️  RECOMMENDATION: Consider for longer texts")
-            print(f"   Modest improvement, test with real workloads")
+            print("   Modest improvement, test with real workloads")
         else:
             print("\n❌ RECOMMENDATION: Keep disabled")
-            print(f"   No significant benefit observed")
+            print("   No significant benefit observed")
 
         print(f"\n📁 Results saved to: {self.output_dir}")
         print("="*60)

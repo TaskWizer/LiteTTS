@@ -110,9 +110,9 @@ def test_audio_quality_enhancements():
             print(f"   Enhanced: '{enhanced_text}'")
             total_enhancements += 1
         else:
-            print(f"   Enhanced: (no changes)")
+            print("   Enhanced: (no changes)")
 
-        print(f"   Analysis:")
+        print("   Analysis:")
         print(f"     - Emotional content: {analysis['emotional_content']}")
         print(f"     - Prosodic opportunities: {len(analysis['prosodic_opportunities'])}")
         print(f"     - Context adaptations: {analysis['context_adaptations']}")
@@ -172,13 +172,13 @@ def test_api_performance():
                 print(f"   ❌ Error: {response.status_code} - {response.text[:100]}")
 
         except requests.exceptions.ConnectionError:
-            print(f"   ❌ API not running. Start with: python app.py")
+            print("   ❌ API not running. Start with: python app.py")
             return False
         except Exception as e:
             print(f"   ❌ Test failed: {e}")
 
     if performance_results:
-        print(f"\n📊 Performance Summary:")
+        print("\n📊 Performance Summary:")
         avg_rtf = sum(r['rtf'] for r in performance_results) / len(performance_results)
         avg_time = sum(r['time'] for r in performance_results) / len(performance_results)
         print(f"   Average RTF: {avg_rtf:.3f}")
@@ -195,24 +195,24 @@ def test_end_to_end_processing():
     # Complex test case with multiple issues
     test_text = "hmm, thinking, or maybe I'm wrong about joy, but you're absolutely right! Are you excited? I'd say this is fantastic news, however, we should be careful."
 
-    print(f"📝 Original Text:")
+    print("📝 Original Text:")
     print(f"   '{test_text}'")
 
     # Step 1: Pronunciation fixes
-    print(f"\n🔧 Step 1: Pronunciation Fixes")
+    print("\n🔧 Step 1: Pronunciation Fixes")
     pronunciation_result = unified_pronunciation_fix.process_pronunciation_fixes(test_text)
     print(f"   Result: '{pronunciation_result.processed_text}'")
     print(f"   Fixes: {pronunciation_result.fixes_applied}")
 
     # Step 2: Audio quality enhancements
-    print(f"\n🎵 Step 2: Audio Quality Enhancements")
+    print("\n🎵 Step 2: Audio Quality Enhancements")
     quality_analysis = audio_quality_enhancer.analyze_quality_potential(pronunciation_result.processed_text)
     enhanced_text = audio_quality_enhancer.enhance_audio_quality(pronunciation_result.processed_text)
     print(f"   Result: '{enhanced_text}'")
     print(f"   Analysis: {quality_analysis['enhancement_potential']} potential")
 
     # Step 3: API test
-    print(f"\n🚀 Step 3: API Generation Test")
+    print("\n🚀 Step 3: API Generation Test")
     try:
         start_time = time.time()
         response = requests.post("http://localhost:8354/v1/audio/speech", json={

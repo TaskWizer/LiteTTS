@@ -173,7 +173,7 @@ def main():
 
     # Get system information
     system_info = get_system_info()
-    print(f"System Info:")
+    print("System Info:")
     print(f"  CPU Cores (logical): {system_info['cpu_count_logical']}")
     print(f"  CPU Cores (physical): {system_info['cpu_count_physical']}")
     print(f"  Memory Total: {system_info['memory_total_gb']:.1f} GB")

@@ -127,7 +127,7 @@ class PhonemizationTrainer:
             with gzip.open(dictionary_path, "rb") as f:
                 dictionary = json.load(f)
                 out_dict = {}
-                self.logger.info(f"Finding excpetions in dictionary.")
+                self.logger.info("Finding excpetions in dictionary.")
                 for word, phoneme in self.get_unpronounceable_from_dictionary(dictionary):
                     dict_key = word
                     found_sub_key = False
@@ -181,11 +181,11 @@ class PhonemizationTrainer:
                                 out_dict[dict_key] = [f"{expected}:{word[len(dict_key):]}"]
                             else:
                                 out_dict[dict_key].append(f"{expected}:{word[len(dict_key):]}")
-                self.logger.info(f"Saving dictionary exceptions to gguf file.")
+                self.logger.info("Saving dictionary exceptions to gguf file.")
                 gguf_writer.add_array("phonemizer.dictionary.keys", list(out_dict.keys()))
                 gguf_writer.add_array("phonemizer.dictionary.values", [",".join(vals) for vals in out_dict.values()])
         gguf_writer.write_header_to_file(path=path)
-        self.logger.info(f"Writing gguf data to disk.")
+        self.logger.info("Writing gguf data to disk.")
         gguf_writer.write_kv_data_to_file()
         gguf_writer.close()
 
@@ -522,9 +522,7 @@ class PhonemizationTrainer:
                         best_fit = possible
                         should_match_l = True
                         continue
-                    if should_fully_match and not match:
-                        continue
-                    elif should_match_l and not lmatch:
+                    if should_fully_match and not match or should_match_l and not lmatch:
                         continue
                     if dist < closest_score:
                         closest_score = dist

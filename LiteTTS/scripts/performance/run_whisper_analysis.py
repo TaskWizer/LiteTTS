@@ -488,9 +488,9 @@ async def main():
 
         print(f"\nResults saved to: {args.output_dir}")
         print("Key files:")
-        print(f"  - comprehensive_analysis_report.json")
-        print(f"  - executive_summary.json")
-        print(f"  - performance_matrix.json")
+        print("  - comprehensive_analysis_report.json")
+        print("  - executive_summary.json")
+        print("  - performance_matrix.json")
 
     except Exception as e:
         logger.error(f"Analysis failed: {e}")

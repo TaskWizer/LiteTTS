@@ -247,7 +247,7 @@ if __name__ == "__main__":
                         print(f"  {key}: {value}")
 
     # Test environment override
-    print(f"\n🔧 Testing Environment Override:")
+    print("\n🔧 Testing Environment Override:")
     print("Set KOKORO_INTERNAL_PERFORMANCE_CHUNK_SIZE=100 to test")
 
     # Test override

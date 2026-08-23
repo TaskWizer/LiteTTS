@@ -624,18 +624,18 @@ async def main():
         print(f"Voice Models: {', '.join(report['voice_models_tested'])}")
         print(f"Overall Grade: {summary['overall_grade']}")
 
-        print(f"\nBaseline Metrics:")
+        print("\nBaseline Metrics:")
         print(f"  Overall Accuracy: {baseline['overall_accuracy']:.3f}")
         print(f"  Average WER: {baseline['wer_statistics']['mean']:.3f}")
         print(f"  Average RTF: {baseline['rtf_statistics']['mean']:.3f}")
         print(f"  Success Rate: {summary['success_rate']:.1%}")
         print(f"  Critical Success Rate: {summary['critical_success_rate']:.1%}")
 
-        print(f"\nCategory Performance:")
+        print("\nCategory Performance:")
         for category, accuracy in baseline["category_accuracies"].items():
             print(f"  {category}: {accuracy:.3f}")
 
-        print(f"\nVoice Model Performance:")
+        print("\nVoice Model Performance:")
         for voice, accuracy in baseline["voice_model_performance"].items():
             print(f"  {voice}: {accuracy:.3f}")
 
@@ -643,7 +643,7 @@ async def main():
         for issue in baseline["critical_issues"]:
             print(f"  - {issue}")
 
-        print(f"\nRecommendations:")
+        print("\nRecommendations:")
         for i, rec in enumerate(report["recommendations"], 1):
             print(f"  {i}. {rec}")
 

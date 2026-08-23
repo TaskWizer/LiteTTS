@@ -27,7 +27,7 @@ header = '\n'.join([l for l in header.split('\n') if '__darwin_va_list' not in l
 
 # Replace constant size expressions w/ their value (compile & run a mini exe for each, because why not).
 # First, extract anyting *inside* square brackets and anything that looks like a sizeof call.
-for expr in set(re.findall(f'(?<=\\[)[^\\]]+(?=])|sizeof\\s*\\([^()]+\\)', header)):
+for expr in set(re.findall('(?<=\\[)[^\\]]+(?=])|sizeof\\s*\\([^()]+\\)', header)):
     if re.match(r'^(\d+|\s*)$', expr): continue # skip constants and empty bracket contents
     subprocess.run([CC, "-o", "eval_size_expr", *CPPFLAGS, "-x", "c", "-"], text=True, check=True,
                    input=f'''#include <stdio.h>
@@ -39,7 +39,7 @@ for expr in set(re.findall(f'(?<=\\[)[^\\]]+(?=])|sizeof\\s*\\([^()]+\\)', heade
 
 ffibuilder = cffi.FFI()
 ffibuilder.cdef(header)
-ffibuilder.set_source(f'ggml.cffi', None) # we're not compiling a native extension, as this quickly gets hairy
+ffibuilder.set_source('ggml.cffi', None) # we're not compiling a native extension, as this quickly gets hairy
 ffibuilder.compile(verbose=True)
 
 with open("ggml/__init__.pyi", "wt") as f:

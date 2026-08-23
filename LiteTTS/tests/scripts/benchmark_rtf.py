@@ -236,7 +236,7 @@ def main():
             logger.info(f"Benchmarking custom text: '{args.text[:50]}{'...' if len(args.text) > 50 else ''}'")
             results = benchmark_single_synthesis(args.text, args.voice, args.iterations)
 
-            print(f"\nBenchmark Results:")
+            print("\nBenchmark Results:")
             rtf_mean = results.get('rtf_mean', 0)
             rtf_median = results.get('rtf_median', 0)
             rtf_min = results.get('rtf_min', 0)
@@ -255,7 +255,7 @@ def main():
             # Run comprehensive benchmark
             results = run_comprehensive_benchmark()
 
-            print(f"\nComprehensive Benchmark Results:")
+            print("\nComprehensive Benchmark Results:")
             summary = results.get('summary', {})
             rtf_mean = summary.get('overall_rtf_mean', 0)
             rtf_min = summary.get('overall_rtf_min', 0)

@@ -178,11 +178,7 @@ class CodeQualityAssessor:
         complexity = 1  # Base complexity
 
         for child in ast.walk(node):
-            if isinstance(child, (ast.If, ast.While, ast.For, ast.AsyncFor)):
-                complexity += 1
-            elif isinstance(child, ast.ExceptHandler):
-                complexity += 1
-            elif isinstance(child, (ast.And, ast.Or)):
+            if isinstance(child, (ast.If, ast.While, ast.For, ast.AsyncFor)) or isinstance(child, ast.ExceptHandler) or isinstance(child, (ast.And, ast.Or)):
                 complexity += 1
 
         return complexity
@@ -444,7 +440,7 @@ class CodeQualityAssessor:
 
         # Project metrics
         metrics = results["metrics"]
-        logger.info(f"📁 Project Metrics:")
+        logger.info("📁 Project Metrics:")
         logger.info(f"   Total Files: {metrics['total_files']}")
         logger.info(f"   Python Files: {metrics['python_files']}")
         logger.info(f"   Total Lines: {metrics['total_lines']}")
@@ -452,7 +448,7 @@ class CodeQualityAssessor:
         # Issues summary
         issues = results["issues_summary"]
         total_issues = sum(issues.values())
-        logger.info(f"\n🚨 Issues Summary:")
+        logger.info("\n🚨 Issues Summary:")
         logger.info(f"   Security Issues: {issues['security']}")
         logger.info(f"   Structure Issues: {issues['structure']}")
         logger.info(f"   Performance Issues: {issues['performance']}")
@@ -461,7 +457,7 @@ class CodeQualityAssessor:
 
         # Project structure
         structure = results["project_structure"]
-        logger.info(f"\n🏗️ Project Structure:")
+        logger.info("\n🏗️ Project Structure:")
         logger.info(f"   Has Tests: {'✅' if structure['has_tests'] else '❌'}")
         logger.info(f"   Has Documentation: {'✅' if structure['has_docs'] else '❌'}")
         logger.info(f"   Has Configuration: {'✅' if structure['has_config'] else '❌'}")
@@ -470,7 +466,7 @@ class CodeQualityAssessor:
         # Recommendations
         recommendations = results["recommendations"]
         if recommendations:
-            logger.info(f"\n💡 Recommendations:")
+            logger.info("\n💡 Recommendations:")
             for rec in recommendations:
                 priority_icon = "🔴" if rec["priority"] == "High" else "🟡" if rec["priority"] == "Medium" else "🟢"
                 logger.info(f"   {priority_icon} {rec['category']}: {rec['recommendation']}")

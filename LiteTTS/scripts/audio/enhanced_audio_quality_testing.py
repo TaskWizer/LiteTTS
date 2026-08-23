@@ -645,7 +645,7 @@ async def main():
         print(f"Total Tests: {summary['total_tests']}")
 
         overall = summary["overall_metrics"]
-        print(f"\nOverall Metrics:")
+        print("\nOverall Metrics:")
         print(f"  Average MOS Score: {overall['avg_mos']:.2f}")
         print(f"  Average RTF: {overall['avg_rtf']:.3f}")
         print(f"  Average Pronunciation Accuracy: {overall['avg_pronunciation_accuracy']:.2f}")
@@ -656,11 +656,11 @@ async def main():
         print(f"\nQuality Assessment: {summary['quality_assessment']}")
         print(f"Performance Assessment: {summary['performance_assessment']}")
 
-        print(f"\nCategory Breakdown:")
+        print("\nCategory Breakdown:")
         for category, stats in summary["category_breakdown"].items():
             print(f"  {category}: {stats['total']} tests, MOS: {stats['avg_mos']:.2f}, RTF: {stats['avg_rtf']:.3f}")
 
-        print(f"\nRecommendations:")
+        print("\nRecommendations:")
         for i, rec in enumerate(summary["recommendations"], 1):
             print(f"  {i}. {rec}")
 

@@ -188,13 +188,13 @@ class CPUOptimizer:
             # Aggressive mode: use 90-95% of cores for maximum performance
             if total_cores >= 16:
                 # High-end CPU: use almost all cores (leave 1-2 for system)
-                return list(range(0, total_cores - 1))
+                return list(range(total_cores - 1))
             elif total_cores >= 8:
                 # Mid-range CPU: use 85-90% of cores
-                return list(range(0, max(6, int(total_cores * 0.9))))
+                return list(range(max(6, int(total_cores * 0.9))))
             else:
                 # Low-end CPU: use all but one core
-                return list(range(0, max(1, total_cores - 1)))
+                return list(range(max(1, total_cores - 1)))
         else:
             # Conservative mode (original behavior)
             if total_cores >= 16:
@@ -205,15 +205,15 @@ class CPUOptimizer:
                     logical_cores = list(range(1, min(total_cores, 12), 2))
                     return physical_cores + logical_cores[:4]
                 else:
-                    return list(range(0, min(12, total_cores)))
+                    return list(range(min(12, total_cores)))
 
             elif total_cores >= 8:
                 # Mid-range CPU: use 50-75% of cores
-                return list(range(0, min(6, total_cores)))
+                return list(range(min(6, total_cores)))
 
             else:
                 # Low-end CPU: use most cores but leave one for system
-                return list(range(0, max(1, total_cores - 1)))
+                return list(range(max(1, total_cores - 1)))
 
     def restore_cpu_affinity(self) -> bool:
         """Restore original CPU affinity"""
@@ -444,12 +444,12 @@ class CPUOptimizer:
 
             if enable_aggressive:
                 # Use all P-cores and most E-cores
-                p_core_threads = list(range(0, p_cores * 2))  # P-cores with hyperthreading
+                p_core_threads = list(range(p_cores * 2))  # P-cores with hyperthreading
                 e_core_threads = list(range(p_cores * 2, p_cores * 2 + e_cores - 1))  # Most E-cores
                 core_list = p_core_threads + e_core_threads
             else:
                 # Use P-cores and some E-cores
-                p_core_threads = list(range(0, p_cores * 2))  # All P-core threads
+                p_core_threads = list(range(p_cores * 2))  # All P-core threads
                 e_core_threads = list(range(p_cores * 2, p_cores * 2 + e_cores // 2))  # Half E-cores
                 core_list = p_core_threads + e_core_threads
 

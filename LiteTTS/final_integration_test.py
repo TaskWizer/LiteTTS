@@ -123,7 +123,7 @@ def test_whisper_optimization():
             avg_rtf = sum(r['rtf'] for r in successful_results) / len(successful_results)
             avg_memory = sum(r['memory_mb'] for r in successful_results) / len(successful_results)
 
-            logger.info(f"\nWhisper Optimization Summary:")
+            logger.info("\nWhisper Optimization Summary:")
             logger.info(f"  Successful models: {len(successful_results)}/{len(results)}")
             logger.info(f"  Average RTF: {avg_rtf:.3f}")
             logger.info(f"  Average memory: {avg_memory:.1f}MB")
@@ -188,7 +188,7 @@ def test_enhanced_voice_cloning():
             avg_quality = sum(r['quality_score'] for r in results) / len(results)
             avg_rate = sum(r['processing_rate'] for r in results) / len(results)
 
-            logger.info(f"\nVoice Cloning Summary:")
+            logger.info("\nVoice Cloning Summary:")
             logger.info(f"  Max duration supported: {max_duration}s")
             logger.info(f"  Average quality score: {avg_quality:.3f}")
             logger.info(f"  Average processing rate: {avg_rate:.1f}x")
@@ -211,7 +211,7 @@ def test_configuration_system():
         # Test settings loading
         settings = get_whisper_settings()
 
-        logger.info(f"Configuration loaded successfully:")
+        logger.info("Configuration loaded successfully:")
         logger.info(f"  Default model: {settings.default_model}")
         logger.info(f"  Implementation: {settings.implementation}")
         logger.info(f"  Quantization: {settings.quantization}")
@@ -228,7 +228,7 @@ def test_configuration_system():
         new_loader = WhisperConfigLoader()
         new_settings = new_loader.get_settings()
 
-        logger.info(f"\nEnvironment variable test:")
+        logger.info("\nEnvironment variable test:")
         logger.info(f"  Original model: {original_model}")
         logger.info(f"  Override model: {new_settings.default_model}")
         logger.info(f"  Override working: {'✅ YES' if new_settings.default_model == 'base' else '❌ NO'}")
@@ -258,7 +258,7 @@ def test_fallback_system():
         # Test statistics (should be empty initially)
         stats = manager.get_fallback_statistics()
 
-        logger.info(f"Fallback statistics:")
+        logger.info("Fallback statistics:")
         logger.info(f"  Total attempts: {stats['total_attempts']}")
         logger.info(f"  Success rate: {stats['success_rate']:.1%}")
         logger.info(f"  Common triggers: {stats['common_triggers']}")
@@ -270,7 +270,7 @@ def test_fallback_system():
             # Test transcription with fallback
             result = manager.transcribe_with_fallback(audio_file, 5.0)
 
-            logger.info(f"Fallback transcription test:")
+            logger.info("Fallback transcription test:")
             logger.info(f"  Success: {result.success}")
             logger.info(f"  Model used: {result.model_used}")
             logger.info(f"  RTF: {result.rtf:.3f}")

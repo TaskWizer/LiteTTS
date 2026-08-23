@@ -365,7 +365,7 @@ class DynamicEmotionIntonationSystem:
                 emotion_scores[emotion] = score
 
             primary_emotion = max(emotion_scores, key=emotion_scores.get)
-            secondary_emotions = [e for e in emotion_scores.keys() if e != primary_emotion]
+            secondary_emotions = [e for e in emotion_scores if e != primary_emotion]
 
             # Determine overall intensity
             primary_intensities = emotions[primary_emotion]

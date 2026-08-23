@@ -728,7 +728,7 @@ echo "SSL/TLS tests completed!"
         """Generate TLS setup summary"""
         verification_score = sum(1 for key, value in verification.items()
                                if key != "issues" and value is True)
-        total_checks = len([key for key in verification.keys() if key != "issues"])
+        total_checks = len([key for key in verification if key != "issues"])
 
         summary = {
             "https_enabled": config.enable_https,
@@ -797,33 +797,33 @@ def main():
         summary = results["setup_summary"]
         verification = results["verification_results"]
 
-        print(f"✅ TLS setup completed successfully")
+        print("✅ TLS setup completed successfully")
         print(f"HTTPS Port: {config['https_port']}")
         print(f"Certificate Validity: {config['cert_validity_days']} days")
         print(f"Common Name: {cert_info['common_name']}")
         print(f"Subject Alt Names: {len(cert_info['subject_alt_names'])}")
 
-        print(f"\nVerification Results:")
+        print("\nVerification Results:")
         print(f"  Score: {summary['verification_score']} ({summary['verification_percentage']:.1f}%)")
         print(f"  Issues Found: {summary['issues_found']}")
 
         if verification["issues"]:
-            print(f"\nIssues:")
+            print("\nIssues:")
             for issue in verification["issues"]:
                 print(f"  ⚠️  {issue}")
 
-        print(f"\nSecurity Features:")
+        print("\nSecurity Features:")
         security = summary["security_features"]
         print(f"  HSTS Enabled: {'✅' if security['hsts_enabled'] else '❌'}")
         print(f"  HTTPS Redirect: {'✅' if security['force_https_redirect'] else '❌'}")
         print(f"  Modern Ciphers: {'✅' if security['modern_ciphers'] else '❌'}")
         print(f"  TLS 1.3 Support: {'✅' if security['tls_1_3_support'] else '❌'}")
 
-        print(f"\nGenerated Files:")
+        print("\nGenerated Files:")
         for file_type, filename in results["generated_files"].items():
             print(f"  {file_type}: {filename}")
 
-        print(f"\nNext Steps:")
+        print("\nNext Steps:")
         for i, step in enumerate(results["next_steps"][:5], 1):
             print(f"  {i}. {step}")
 

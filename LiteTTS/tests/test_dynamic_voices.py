@@ -28,11 +28,11 @@ def test_voice_discovery():
     try:
         # Test voice manager initialization
         voice_manager = DynamicVoiceManager()
-        print(f"✅ Voice manager initialized")
+        print("✅ Voice manager initialized")
 
         # Test discovery stats
         stats = voice_manager.get_download_status()
-        print(f"📊 Discovery Stats:")
+        print("📊 Discovery Stats:")
         print(f"   - Discovered voices: {stats['discovered_voices']}")
         print(f"   - Downloaded voices: {stats['downloaded_voices']}")
         print(f"   - Missing voices: {stats['missing_voices']}")
@@ -70,7 +70,7 @@ def test_voice_mappings():
 
         # Test voice resolution
         test_voices = ["heart", "puck", "alloy", "af_heart", "am_liam", "nonexistent"]
-        print(f"\n🎯 Testing voice resolution:")
+        print("\n🎯 Testing voice resolution:")
         for voice in test_voices:
             resolved = voice_manager.resolve_voice_name(voice)
             available = voice_manager.is_voice_available(voice)
@@ -95,7 +95,7 @@ def test_module_functions():
 
         # Test resolve_voice_name function
         test_names = ["heart", "af_heart", "puck", "nonexistent"]
-        print(f"🎯 Testing resolve_voice_name():")
+        print("🎯 Testing resolve_voice_name():")
         for name in test_names:
             resolved = resolve_voice_name(name)
             print(f"   {name} -> {resolved}")
@@ -105,7 +105,7 @@ def test_module_functions():
         if manager:
             print(f"✅ get_voice_manager(): {type(manager).__name__}")
         else:
-            print(f"❌ get_voice_manager(): None")
+            print("❌ get_voice_manager(): None")
 
         return True
 
@@ -163,7 +163,7 @@ def test_download_functionality():
         print(f"📊 Download status: {downloaded_count}/{total_count} voices downloaded")
 
         # Show download info for a few voices
-        print(f"📋 Sample download info:")
+        print("📋 Sample download info:")
         for i, (name, info) in enumerate(list(download_info.items())[:5]):
             status = "✅ Downloaded" if info['downloaded'] else "❌ Missing"
             size_mb = info['file_size'] / (1024 * 1024) if info['file_size'] > 0 else 0

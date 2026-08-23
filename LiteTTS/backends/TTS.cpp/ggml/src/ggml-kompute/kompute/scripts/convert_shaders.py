@@ -88,7 +88,7 @@ def run_cli(
     logger.debug(f"Starting script with variables: {locals()}")
 
     if is_windows:
-        logger.debug(f"Running on windows, converting input paths")
+        logger.debug("Running on windows, converting input paths")
         shader_path = shader_path.replace("/", "\\")
         header_path = header_path.replace("/", "\\")
 
@@ -112,7 +112,7 @@ def run_cli(
 
     # Create cpp files if header_path provided
     if header_path:
-        logger.debug(f"Header path provided. Converting bin files to hpp.")
+        logger.debug("Header path provided. Converting bin files to hpp.")
         logger.debug(f"Output header path: {shader_path}")
 
         # Check if xxd command options are available

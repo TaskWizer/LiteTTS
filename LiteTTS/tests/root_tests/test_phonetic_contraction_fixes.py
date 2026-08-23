@@ -313,7 +313,7 @@ def run_comprehensive_contraction_tests():
     success_rate = passed_tests / total_tests if total_tests > 0 else 0
 
     print(f"\n{'='*60}")
-    print(f"CONTRACTION FIXES TEST SUMMARY")
+    print("CONTRACTION FIXES TEST SUMMARY")
     print(f"{'='*60}")
     print(f"Tests Run: {total_tests}")
     print(f"Tests Passed: {passed_tests}")

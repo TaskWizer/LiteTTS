@@ -142,40 +142,40 @@ for name in list_vars.keys():
     elif name == "wpe.weight":
         name = "model/wpe"
     elif re.match(r"h\.\d+\.ln_1\.weight", name):
-        i = re.findall("\d+", name)[0]
+        i = re.findall(r"\d+", name)[0]
         name = f"model/h{i}/ln_1/g"
     elif re.match(r"h\.\d+\.ln_1\.bias", name):
-        i = re.findall("\d+", name)[0]
+        i = re.findall(r"\d+", name)[0]
         name = f"model/h{i}/ln_1/b"
     elif re.match(r"h\.\d+\.attn\.c_attn\.weight", name):
-        i = re.findall("\d+", name)[0]
+        i = re.findall(r"\d+", name)[0]
         name = f"model/h{i}/attn/c_attn/w"
     elif re.match(r"h\.\d+\.attn\.c_attn\.bias", name):
-        i = re.findall("\d+", name)[0]
+        i = re.findall(r"\d+", name)[0]
         name = f"model/h{i}/attn/c_attn/b"
     elif re.match(r"h\.\d+\.attn\.c_proj\.weight", name):
-        i = re.findall("\d+", name)[0]
+        i = re.findall(r"\d+", name)[0]
         name = f"model/h{i}/attn/c_proj/w"
     elif re.match(r"h.\d+.attn.c_proj.bias", name):
-        i = re.findall("\d+", name)[0]
+        i = re.findall(r"\d+", name)[0]
         name = f"model/h{i}/attn/c_proj/b"
     elif re.match(r"h.\d+.ln_2.weight", name):
-        i = re.findall("\d+", name)[0]
+        i = re.findall(r"\d+", name)[0]
         name = f"model/h{i}/ln_2/g"
     elif re.match(r"h.\d+.ln_2.bias", name):
-        i = re.findall("\d+", name)[0]
+        i = re.findall(r"\d+", name)[0]
         name = f"model/h{i}/ln_2/b"
     elif re.match(r"h.\d+.mlp.c_fc.weight", name):
-        i = re.findall("\d+", name)[0]
+        i = re.findall(r"\d+", name)[0]
         name = f"model/h{i}/mlp/c_fc/w"
     elif re.match(r"h.\d+.mlp.c_fc.bias", name):
-        i = re.findall("\d+", name)[0]
+        i = re.findall(r"\d+", name)[0]
         name = f"model/h{i}/mlp/c_fc/b"
     elif re.match(r"h.\d+.mlp.c_proj.weight", name):
-        i = re.findall("\d+", name)[0]
+        i = re.findall(r"\d+", name)[0]
         name = f"model/h{i}/mlp/c_proj/w"
     elif re.match(r"h.\d+.mlp.c_proj.bias", name):
-        i = re.findall("\d+", name)[0]
+        i = re.findall(r"\d+", name)[0]
         name = f"model/h{i}/mlp/c_proj/b"
     else:
         print("Unrecognized variable name. %s", name)

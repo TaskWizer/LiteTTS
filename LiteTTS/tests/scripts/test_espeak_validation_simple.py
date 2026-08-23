@@ -102,7 +102,7 @@ def test_text_processing_pipeline():
                 print(f"   ❌ Error: {e}")
 
         success_rate = passed_tests / total_tests
-        print(f"\n📊 Text Processing Results:")
+        print("\n📊 Text Processing Results:")
         print(f"   Passed: {passed_tests}/{total_tests}")
         print(f"   Success Rate: {success_rate:.1%}")
 
@@ -195,7 +195,7 @@ async def test_audio_generation():
             print(f"   ❌ Exception: {e}")
 
     success_rate = passed_tests / total_tests
-    print(f"\n📊 Audio Generation Results:")
+    print("\n📊 Audio Generation Results:")
     print(f"   Passed: {passed_tests}/{total_tests}")
     print(f"   Success Rate: {success_rate:.1%}")
 

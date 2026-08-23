@@ -54,7 +54,7 @@ class DebugMiddleware:
 
         # Log headers for OpenWebUI requests
         if is_openwebui:
-            logger.debug(f"   📋 Headers:")
+            logger.debug("   📋 Headers:")
             for name, value in request.headers.items():
                 if name.lower() not in ['authorization', 'cookie']:  # Skip sensitive headers
                     logger.debug(f"      {name}: {value}")
@@ -95,7 +95,7 @@ class DebugMiddleware:
 
                 if is_openwebui:
                     logger.debug(f"   📤 Response Status: {response_status}")
-                    logger.debug(f"   📋 Response Headers:")
+                    logger.debug("   📋 Response Headers:")
                     for name, value in response_headers.items():
                         if isinstance(name, bytes):
                             name = name.decode()

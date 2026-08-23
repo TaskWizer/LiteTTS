@@ -266,7 +266,7 @@ class TimeStretchingSampleGenerator:
         report.append("")
         report.append("## Test Configuration")
         report.append("")
-        report.append(f"- **Audio Type:** Synthetic speech-like signal")
+        report.append("- **Audio Type:** Synthetic speech-like signal")
         report.append(f"- **Duration:** {self.duration} seconds")
         report.append(f"- **Sample Rate:** {self.sample_rate} Hz")
         report.append(f"- **Test Rates:** {', '.join(map(str, self.test_rates))}%")
@@ -374,13 +374,13 @@ class TimeStretchingSampleGenerator:
         # Recommendation
         if best_metrics['rtf_stretched'] < 0.8:
             print("\n✅ RECOMMENDATION: Enable time-stretching")
-            print(f"   Significant latency improvement achieved")
+            print("   Significant latency improvement achieved")
         elif best_metrics['rtf_stretched'] < 1.0:
             print("\n⚠️  RECOMMENDATION: Consider for longer texts")
-            print(f"   Modest improvement, test with real workloads")
+            print("   Modest improvement, test with real workloads")
         else:
             print("\n❌ RECOMMENDATION: Keep disabled")
-            print(f"   No significant benefit observed")
+            print("   No significant benefit observed")
 
         print(f"\n📁 Results saved to: {self.output_dir}")
         print("="*60)

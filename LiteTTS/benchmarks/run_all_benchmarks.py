@@ -453,7 +453,7 @@ class BenchmarkReporter:
         for model_name, stats in summary["model_performance"].items():
             report += f"| `{model_name}` | {stats['model_size_mb']:.1f} | {stats['avg_rtf']:.3f} | {stats['avg_latency_ms']:.0f} | {stats['avg_quality_score']:.1f} | {stats['avg_memory_mb']:.0f} | {stats['load_time_ms']:.0f} |\n"
 
-        report += f"""
+        report += """
 ## 📈 Performance Analysis
 
 ### Real-Time Factor (RTF) Comparison
@@ -469,7 +469,7 @@ Lower RTF values indicate better real-time performance (RTF < 1.0 = faster than 
             status = "🟢 Excellent" if rtf < 0.3 else "🟡 Good" if rtf < 0.6 else "🟠 Fair" if rtf < 1.0 else "🔴 Slow"
             report += f"{i}. **{model}**: {rtf:.3f} {status}\n"
 
-        report += f"""
+        report += """
 ### Quality vs Performance Trade-offs
 
 The following analysis shows the balance between audio quality and performance:
@@ -578,7 +578,7 @@ def main():
 
         # Print summary
         summary = results["summary"]
-        print(f"\n📈 Quick Summary:")
+        print("\n📈 Quick Summary:")
         print(f"   Best RTF: {summary['best_rtf_model']} ({summary['model_performance'][summary['best_rtf_model']]['avg_rtf']:.3f})")
         print(f"   Best Quality: {summary['best_quality_model']} ({summary['model_performance'][summary['best_quality_model']]['avg_quality_score']:.1f}/100)")
         print(f"   Fastest: {summary['fastest_model']} ({summary['model_performance'][summary['fastest_model']]['avg_latency_ms']:.0f}ms)")
@@ -598,11 +598,11 @@ def main_with_all_scripts():
     script_results = run_all_benchmark_scripts()
 
     # Then run the comprehensive benchmark
-    print(f"\n🔬 Running Comprehensive Model Benchmark...")
+    print("\n🔬 Running Comprehensive Model Benchmark...")
     comprehensive_result = main()
 
     # Summary
-    print(f"\n📋 Master Benchmark Summary")
+    print("\n📋 Master Benchmark Summary")
     print("=" * 40)
 
     successful_scripts = sum(1 for r in script_results.values() if r.get("success", False))
@@ -612,10 +612,10 @@ def main_with_all_scripts():
     print(f"Comprehensive Benchmark: {'✅ Success' if comprehensive_result == 0 else '❌ Failed'}")
 
     if comprehensive_result == 0 and successful_scripts == total_scripts:
-        print(f"\n🎉 All benchmarks completed successfully!")
+        print("\n🎉 All benchmarks completed successfully!")
         return 0
     else:
-        print(f"\n⚠️  Some benchmarks failed. Check output above for details.")
+        print("\n⚠️  Some benchmarks failed. Check output above for details.")
         return 1
 
 if __name__ == "__main__":

@@ -70,12 +70,12 @@ def test_problematic_phrases():
 
         time.sleep(0.1)  # Small delay
 
-    print(f"\n📊 Results:")
+    print("\n📊 Results:")
     print(f"   ✅ Successful: {len(successful_phrases)}")
     print(f"   ❌ Failed: {len(failed_phrases)}")
 
     if failed_phrases:
-        print(f"\n❌ Failed phrases:")
+        print("\n❌ Failed phrases:")
         for phrase in failed_phrases:
             print(f"   - '{phrase[:50]}{'...' if len(phrase) > 50 else ''}'")
 
@@ -198,7 +198,7 @@ def benchmark_rtf_optimization():
         time.sleep(0.1)
 
     if rtf_results:
-        print(f"\n📊 RTF Analysis:")
+        print("\n📊 RTF Analysis:")
         avg_rtf = sum(r['estimated_rtf'] for r in rtf_results) / len(rtf_results)
         print(f"   Average estimated RTF: {avg_rtf:.3f}")
 
@@ -264,12 +264,12 @@ def main():
     print("🎯 OPTIMIZATION ANALYSIS COMPLETE")
 
     # Summary and recommendations
-    print(f"\n📋 Summary:")
+    print("\n📋 Summary:")
     if failed:
         print(f"   ⚠️ {len(failed)} phrases still cause errors")
-        print(f"   💡 Recommendation: Improve text preprocessing")
+        print("   💡 Recommendation: Improve text preprocessing")
     else:
-        print(f"   ✅ All test phrases working correctly")
+        print("   ✅ All test phrases working correctly")
 
     if metrics:
         summary = metrics.get('summary', {})
@@ -280,18 +280,18 @@ def main():
         print(f"   🎯 Cache Hit Rate: {cache_rate:.1f}%")
 
         if avg_rtf <= 0.30:
-            print(f"   🎉 RTF is excellent!")
+            print("   🎉 RTF is excellent!")
         elif avg_rtf <= 0.40:
-            print(f"   ✅ RTF is good, minor optimizations possible")
+            print("   ✅ RTF is good, minor optimizations possible")
         else:
-            print(f"   ⚠️ RTF needs optimization")
+            print("   ⚠️ RTF needs optimization")
 
         if cache_rate >= 80:
-            print(f"   🎉 Cache performance is excellent!")
+            print("   🎉 Cache performance is excellent!")
         elif cache_rate >= 60:
-            print(f"   ✅ Cache performance is good")
+            print("   ✅ Cache performance is good")
         else:
-            print(f"   ⚠️ Cache hit rate could be improved")
+            print("   ⚠️ Cache hit rate could be improved")
 
     return len(failed) == 0 and (not metrics or metrics.get('summary', {}).get('avg_rtf', 1.0) <= 0.40)
 

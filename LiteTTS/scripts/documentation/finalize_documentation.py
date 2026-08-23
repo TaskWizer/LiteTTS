@@ -48,7 +48,7 @@ class DocumentationFinalizer:
         print("\n📊 6. Creating Final Summary")
         self.create_final_summary()
 
-        print(f"\n✅ Documentation finalization complete!")
+        print("\n✅ Documentation finalization complete!")
         print(f"   📄 Created: {len(self.docs_created)} documents")
         print(f"   📝 Updated: {len(self.docs_updated)} documents")
 

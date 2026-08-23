@@ -629,7 +629,7 @@ async def test_enhanced_cloning():
             "Test voice created with enhanced cloning system"
         )
 
-        print(f"✅ Enhanced voice cloning successful!")
+        print("✅ Enhanced voice cloning successful!")
         print(f"   Voice: {profile.voice_name}")
         print(f"   Clips: {profile.clip_count}")
         print(f"   Duration: {profile.total_duration:.1f}s")

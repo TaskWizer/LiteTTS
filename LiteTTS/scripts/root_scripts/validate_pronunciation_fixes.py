@@ -257,7 +257,7 @@ Generated: {time.strftime('%Y-%m-%d %H:%M:%S')}
             status = "✅ PASS" if result else "❌ FAIL"
             report += f"- {test_name}: {status}\n"
 
-        report += f"""
+        report += """
 ## Audio Files Generated
 All test audio files have been saved in the current directory for manual verification:
 - validation_*.mp3: Configuration compliance tests

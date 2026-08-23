@@ -660,7 +660,7 @@ async def main():
         print(f"Successful Tests: {report['successful_tests']}")
         print(f"Overall Grade: {overall['overall_grade']}")
 
-        print(f"\nPerformance Metrics:")
+        print("\nPerformance Metrics:")
         print(f"  Average RTF: {overall['avg_rtf']:.3f}")
         print(f"  RTF Target Compliance: {overall['rtf_target_compliance']:.1%}")
         print(f"  Short Text RTF Compliance: {overall['short_text_rtf_compliance']:.1%}")
@@ -669,11 +669,11 @@ async def main():
         print(f"  Average Memory Usage: {overall['avg_memory_usage']:.1f} MB")
         print(f"  Peak Memory Usage: {overall['peak_memory_usage']:.1f} MB")
 
-        print(f"\nCategory Performance:")
+        print("\nCategory Performance:")
         for category, stats in report["category_performance"].items():
             print(f"  {category}: Grade {stats['performance_grade']}, RTF {stats['avg_rtf']:.3f}, CPU {stats['avg_cpu']:.1f}%")
 
-        print(f"\nOptimization Recommendations:")
+        print("\nOptimization Recommendations:")
         for i, rec in enumerate(report["optimization_recommendations"], 1):
             print(f"  {i}. {rec}")
 

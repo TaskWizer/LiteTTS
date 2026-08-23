@@ -136,7 +136,7 @@ def test_tts_endpoint(text: str, voice: str = "af_heart", format: str = "mp3",
 
         # Print immediate results
         if result["failure_detected"]:
-            print(f"   ❌ FAILURE DETECTED:")
+            print("   ❌ FAILURE DETECTED:")
             if is_truncated:
                 print(f"      - TRUNCATED: {actual_duration:.2f}s < {expected_min_duration}s expected")
             if is_silent:
@@ -401,7 +401,7 @@ def main():
     with open("tts_diagnosis_results.json", "w") as f:
         json.dump(results, f, indent=2, default=str)
 
-    print(f"\n📄 Detailed results saved to: tts_diagnosis_results.json")
+    print("\n📄 Detailed results saved to: tts_diagnosis_results.json")
 
     return failed_tests == 0
 

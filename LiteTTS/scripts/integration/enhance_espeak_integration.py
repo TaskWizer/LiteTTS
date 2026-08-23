@@ -584,7 +584,7 @@ def main():
 
         # Test results
         test_results = results["test_results"]
-        print(f"\nTest Results:")
+        print("\nTest Results:")
         print(f"  Total Tests: {test_results['total_tests']}")
         print(f"  Successful: {test_results['successful_tests']}")
         print(f"  Failed: {test_results['failed_tests']}")
@@ -594,13 +594,13 @@ def main():
         # Performance benchmarks
         benchmarks = results["performance_benchmarks"]
         if "ascii_phonemes_avg_time" in benchmarks:
-            print(f"\nPerformance Benchmarks:")
+            print("\nPerformance Benchmarks:")
             print(f"  ASCII Phonemes Avg Time: {benchmarks['ascii_phonemes_avg_time']:.4f}s")
             if "ipa_phonemes_avg_time" in benchmarks:
                 print(f"  IPA Phonemes Avg Time: {benchmarks['ipa_phonemes_avg_time']:.4f}s")
 
         # Recommendations
-        print(f"\nRecommendations:")
+        print("\nRecommendations:")
         for i, rec in enumerate(results["recommendations"], 1):
             print(f"  {i}. {rec}")
 

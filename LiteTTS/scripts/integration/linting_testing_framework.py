@@ -935,30 +935,30 @@ def main():
         print(f"Linting Tools: {summary['successful_linting_tools']}/{summary['total_linting_tools']}")
         print(f"Testing Tools: {summary['successful_testing_tools']}/{summary['total_testing_tools']}")
 
-        print(f"\nIssue Summary:")
+        print("\nIssue Summary:")
         print(f"  Total Issues: {summary['total_issues']}")
         print(f"  Critical Issues: {summary['critical_issues']}")
         print(f"  Warnings: {summary['warnings']}")
 
-        print(f"\nLinting Results:")
+        print("\nLinting Results:")
         for tool_name, result_data in results["linting_results"].items():
             status = "✅" if result_data["success"] else "❌"
             print(f"  {status} {tool_name}: {result_data['issues_found']} issues ({result_data['execution_time']:.2f}s)")
 
-        print(f"\nTesting Results:")
+        print("\nTesting Results:")
         for test_name, result_data in results["testing_results"].items():
             status = "✅" if result_data["success"] else "❌"
             coverage = f" - {result_data['coverage_percentage']:.1f}% coverage" if result_data['coverage_percentage'] > 0 else ""
             print(f"  {status} {test_name}: {result_data['tests_passed']}/{result_data['tests_run']} passed{coverage}")
 
-        print(f"\nGenerated Files:")
+        print("\nGenerated Files:")
         for file_type, files in results["generated_files"].items():
             if isinstance(files, list):
                 print(f"  {file_type}: {', '.join(files)}")
             else:
                 print(f"  {file_type}: {files}")
 
-        print(f"\nRecommendations:")
+        print("\nRecommendations:")
         for i, rec in enumerate(results["recommendations"][:5], 1):
             print(f"  {i}. {rec}")
 

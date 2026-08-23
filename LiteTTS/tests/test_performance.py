@@ -97,7 +97,7 @@ class PerformanceTest:
         """Run comprehensive performance test"""
         print(f"🧪 Running performance test with {len(test_cases)} test cases, {iterations} iterations each")
         print(f"🎭 Using voice: {voice}")
-        print(f"🎯 Target RTF: < 0.5 (Docker optimization goal)")
+        print("🎯 Target RTF: < 0.5 (Docker optimization goal)")
         print("-" * 60)
 
         all_results = []
@@ -193,18 +193,18 @@ class PerformanceTest:
         time_stats = summary["time_stats"]
         assessment = summary["performance_assessment"]
 
-        print(f"\n⚡ RTF Performance:")
+        print("\n⚡ RTF Performance:")
         print(f"   Mean RTF: {rtf_stats['mean']:.3f}")
         print(f"   Median RTF: {rtf_stats['median']:.3f}")
         print(f"   Range: {rtf_stats['min']:.3f} - {rtf_stats['max']:.3f}")
         print(f"   Std Dev: {rtf_stats['stdev']:.3f}")
 
-        print(f"\n⏱️  Synthesis Time:")
+        print("\n⏱️  Synthesis Time:")
         print(f"   Mean: {time_stats['mean']:.3f}s")
         print(f"   Median: {time_stats['median']:.3f}s")
         print(f"   Range: {time_stats['min']:.3f}s - {time_stats['max']:.3f}s")
 
-        print(f"\n🎯 Performance Assessment:")
+        print("\n🎯 Performance Assessment:")
         print(f"   Target RTF: < {assessment['target_rtf']}")
         print(f"   Achieved RTF: {assessment['achieved_rtf']:.3f}")
         print(f"   Target Met: {'✅ YES' if assessment['target_met'] else '❌ NO'}")

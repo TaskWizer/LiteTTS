@@ -68,24 +68,24 @@ def test_config_validation():
     # Test 2: Python config loading
     try:
         from LiteTTS.config import config
-        print(f"\n🐍 Python config loading:")
-        print(f"   ✅ Config loaded successfully")
+        print("\n🐍 Python config loading:")
+        print("   ✅ Config loaded successfully")
         print(f"   📊 Default voice: {config.voice.default_voice}")
         print(f"   📊 Sample rate: {config.audio.sample_rate}")
         print(f"   📊 Max text length: {config.performance.max_text_length}")
 
         # Test new values
         if hasattr(config, 'tokenizer'):
-            print(f"   ✅ Tokenizer config available")
+            print("   ✅ Tokenizer config available")
             print(f"   📊 Character set length: {len(config.tokenizer.character_set)}")
         else:
-            print(f"   ❌ Tokenizer config missing")
+            print("   ❌ Tokenizer config missing")
 
         if hasattr(config.audio, 'compression_threshold'):
-            print(f"   ✅ Audio compression config available")
+            print("   ✅ Audio compression config available")
             print(f"   📊 Compression threshold: {config.audio.compression_threshold}")
         else:
-            print(f"   ❌ Audio compression config missing")
+            print("   ❌ Audio compression config missing")
 
     except Exception as e:
         print(f"❌ Error loading Python config: {e}")
@@ -94,7 +94,7 @@ def test_config_validation():
 
 def test_hardcoded_values():
     """Check for remaining hardcoded values"""
-    print(f"\n🔍 Checking for hardcoded values...")
+    print("\n🔍 Checking for hardcoded values...")
 
     # This is a simple check - in a real audit we'd scan the codebase
     hardcoded_checks = [

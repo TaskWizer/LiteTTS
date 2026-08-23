@@ -377,10 +377,10 @@ class ExternalStorageConfigurator:
         for volume in config.volumes:
             # Add to volumes section
             volumes_section += f"  {volume.name}:\n"
-            volumes_section += f"    driver: local\n"
-            volumes_section += f"    driver_opts:\n"
-            volumes_section += f"      type: none\n"
-            volumes_section += f"      o: bind\n"
+            volumes_section += "    driver: local\n"
+            volumes_section += "    driver_opts:\n"
+            volumes_section += "      type: none\n"
+            volumes_section += "      o: bind\n"
             volumes_section += f"      device: {volume.external_path}\n\n"
 
             # Add to service volumes
@@ -693,7 +693,7 @@ def main():
         print(f"Total Volumes Configured: {summary['total_volumes_configured']}")
         print(f"Total Estimated Storage: {results['total_estimated_storage_gb']:.1f}GB")
 
-        print(f"\nSetup Results:")
+        print("\nSetup Results:")
         print(f"  Directories Created: {summary['directories_created_successfully']}/{summary['total_volumes_configured']}")
         print(f"  Successful Migrations: {summary['successful_migrations']}")
         print(f"  Failed Migrations: {summary['failed_migrations']}")
@@ -701,16 +701,16 @@ def main():
         print(f"  Migration Time: {summary['migration_time_seconds']:.1f}s")
         print(f"  Setup Success Rate: {summary['setup_success_rate']:.1%}")
 
-        print(f"\nVolume Configuration:")
+        print("\nVolume Configuration:")
         for volume in config["volumes"]:
             print(f"  {volume['name']}: {volume['external_path']} ({volume['size_estimate_gb']:.1f}GB, {volume['backup_priority']} priority)")
 
-        print(f"\nGenerated Files:")
-        print(f"  Docker Compose: docker-compose-external-storage.yml")
+        print("\nGenerated Files:")
+        print("  Docker Compose: docker-compose-external-storage.yml")
         print(f"  Backup Scripts: {', '.join(results['backup_scripts_generated'])}")
-        print(f"  Monitoring Script: storage_monitor.sh")
+        print("  Monitoring Script: storage_monitor.sh")
 
-        print(f"\nNext Steps:")
+        print("\nNext Steps:")
         for i, step in enumerate(results["next_steps"][:5], 1):  # Show first 5 steps
             print(f"  {i}. {step}")
 

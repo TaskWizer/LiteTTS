@@ -311,7 +311,7 @@ class DirectoryReorganizer:
         for update in summary['manual_updates_needed']:
             content += f"- {update}\n"
 
-        content += f"\n## Backup Location\n\n"
+        content += "\n## Backup Location\n\n"
         content += f"Original structure backed up to: `{self.backup_dir}`\n"
 
         with open(summary_file, 'w') as f:

@@ -182,19 +182,18 @@ class AudioQualityTester:
 
         start_time = time.perf_counter()
 
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                f"{self.api_base_url}/v1/audio/speech",
-                json=payload,
-                timeout=aiohttp.ClientTimeout(total=self.api_timeout)
-            ) as response:
-                if response.status == 200:
-                    audio_data = await response.read()
-                    processing_time = time.perf_counter() - start_time
-                    return audio_data, processing_time
-                else:
-                    error_text = await response.text()
-                    raise Exception(f"TTS API error {response.status}: {error_text}")
+        async with aiohttp.ClientSession() as session, session.post(
+            f"{self.api_base_url}/v1/audio/speech",
+            json=payload,
+            timeout=aiohttp.ClientTimeout(total=self.api_timeout)
+        ) as response:
+            if response.status == 200:
+                audio_data = await response.read()
+                processing_time = time.perf_counter() - start_time
+                return audio_data, processing_time
+            else:
+                error_text = await response.text()
+                raise Exception(f"TTS API error {response.status}: {error_text}")
 
     def analyze_audio_properties(self, audio_data: bytes) -> dict[str, float]:
         """
@@ -635,7 +634,7 @@ class AudioQualityTester:
             "# Audio Quality Testing Report",
             "=" * 50,
             "",
-            f"**Test Summary:**",
+            "**Test Summary:**",
             f"- Total Tests: {summary['total_tests']}",
             f"- Passed: {summary['passed_tests']}",
             f"- Failed: {summary['failed_tests']}",

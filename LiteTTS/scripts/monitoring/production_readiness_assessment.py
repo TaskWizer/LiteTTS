@@ -425,7 +425,7 @@ def main():
     with open('production_readiness_report.json', 'w') as f:
         json.dump(results, f, indent=2)
 
-    print(f"\n📄 Detailed report saved to: production_readiness_report.json")
+    print("\n📄 Detailed report saved to: production_readiness_report.json")
     print("\n🎉 Assessment complete!")
 
 if __name__ == "__main__":

@@ -535,12 +535,12 @@ class APIEndpointValidator:
         logger.info(f"Success Rate: {(passed_tests/total_tests)*100:.1f}%")
 
         if self.passed_tests:
-            logger.info(f"\n✅ PASSED TESTS:")
+            logger.info("\n✅ PASSED TESTS:")
             for test in self.passed_tests:
                 logger.info(f"   • {test}")
 
         if self.failed_tests:
-            logger.info(f"\n❌ FAILED TESTS:")
+            logger.info("\n❌ FAILED TESTS:")
             for test in self.failed_tests:
                 logger.info(f"   • {test}")
 

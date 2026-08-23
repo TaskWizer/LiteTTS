@@ -270,7 +270,7 @@ if __name__ == "__main__":
             print(f"⚪ '{text}' (no changes)")
 
     # Analyze configuration
-    print(f"\n📊 Configuration Analysis")
+    print("\n📊 Configuration Analysis")
     print("=" * 30)
     validation = processor.validate_config()
     print(f"Config loaded: {validation['config_loaded']}")
@@ -285,7 +285,7 @@ if __name__ == "__main__":
     # Analyze sample text
     sample_text = "I wasn't sure if I'll make it, but you'll see that I'm committed."
     analysis = processor.analyze_contractions(sample_text)
-    print(f"\n🔍 Sample Text Analysis")
+    print("\n🔍 Sample Text Analysis")
     print("=" * 30)
     print(f"Text: {sample_text}")
     print(f"Contractions found: {analysis['contractions_found']}")

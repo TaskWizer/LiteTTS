@@ -106,5 +106,5 @@ class DACEncoder(TTSEncoder):
             self.gguf_writer.add_uint32(f"dac.dac_layer_padding_{i}", self.dac_model.decoder.model[i+1].block[1].padding[0])
 
         # DAC audio token configuration
-        self.gguf_writer.add_uint32(f"audio.bos_token_id", bos_token_id)
-        self.gguf_writer.add_uint32(f"audio.eos_token_id", eos_token_id)
+        self.gguf_writer.add_uint32("audio.bos_token_id", bos_token_id)
+        self.gguf_writer.add_uint32("audio.eos_token_id", eos_token_id)

@@ -68,7 +68,7 @@ class CircuitBreaker:
 
         if self.failure_count >= self.failure_threshold:
             self.state = "OPEN"
-            logger.warning(f"⚠️ Circuit breaker OPEN (failure threshold reached)")
+            logger.warning("⚠️ Circuit breaker OPEN (failure threshold reached)")
 
 class RetryManager:
     """Retry logic with exponential backoff"""

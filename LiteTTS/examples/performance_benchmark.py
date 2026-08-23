@@ -420,7 +420,7 @@ def main():
 
         if 'rtf_stats' in report:
             rtf_stats = report['rtf_stats']
-            logger.info(f"\nRTF Statistics:")
+            logger.info("\nRTF Statistics:")
             logger.info(f"  Mean: {rtf_stats['mean']:.3f}")
             logger.info(f"  Median: {rtf_stats['median']:.3f}")
             logger.info(f"  Range: {rtf_stats['min']:.3f} - {rtf_stats['max']:.3f}")
@@ -428,21 +428,21 @@ def main():
 
         if 'memory_stats' in report:
             mem_stats = report['memory_stats']
-            logger.info(f"\nMemory Statistics:")
+            logger.info("\nMemory Statistics:")
             logger.info(f"  Mean: {mem_stats['mean']:.1f}MB")
             logger.info(f"  Median: {mem_stats['median']:.1f}MB")
             logger.info(f"  Range: {mem_stats['min']:.1f} - {mem_stats['max']:.1f}MB")
 
         if 'best_performers' in report:
             best = report['best_performers']
-            logger.info(f"\nBest Performers:")
+            logger.info("\nBest Performers:")
             logger.info(f"  Fastest RTF: {best['fastest_rtf']['model']} ({best['fastest_rtf']['rtf']:.3f})")
             logger.info(f"  Lowest Memory: {best['lowest_memory']['model']} ({best['lowest_memory']['memory_mb']:.1f}MB)")
 
         # Save report
         report_file = benchmark.save_report()
 
-        logger.info(f"\n✅ Benchmark completed successfully!")
+        logger.info("\n✅ Benchmark completed successfully!")
         logger.info(f"📄 Detailed report: {report_file}")
 
         return True

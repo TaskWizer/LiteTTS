@@ -391,7 +391,7 @@ class RIMEAIIntegration:
 
     def get_phonetic_analysis_summary(self, analysis: PhoneticAnalysis) -> str:
         """Generate a human-readable summary of phonetic analysis"""
-        summary = f"RIME AI Phonetic Analysis Summary:\n"
+        summary = "RIME AI Phonetic Analysis Summary:\n"
         summary += f"Original: {analysis.original_text[:100]}...\n"
         summary += f"Processed: {analysis.processed_text[:100]}...\n"
         summary += f"Confidence: {analysis.confidence_score:.2f}\n"

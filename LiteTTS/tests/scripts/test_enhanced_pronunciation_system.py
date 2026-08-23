@@ -238,7 +238,7 @@ def test_performance():
 
     # Get processing statistics
     stats = processor.get_processing_stats()
-    print(f"\nProcessing Statistics:")
+    print("\nProcessing Statistics:")
     print(f"Total processed: {stats['total_processed']}")
     print(f"Average time: {stats['average_time']:.4f}s")
     print(f"Error rate: {stats['error_rate']:.2%}")

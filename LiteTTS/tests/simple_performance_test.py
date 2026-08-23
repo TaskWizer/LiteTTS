@@ -231,7 +231,7 @@ def main():
 
         # Print summary
         summary = results['summary']
-        print(f"\nTest Summary:")
+        print("\nTest Summary:")
         print(f"  Total Tests: {summary['total_tests']}")
         print(f"  Successful: {summary['successful_tests']}")
         print(f"  Failed: {summary['failed_tests']}")
@@ -245,7 +245,7 @@ def main():
         tester.save_results(results)
 
         # Print detailed results
-        print(f"\nDetailed Results:")
+        print("\nDetailed Results:")
         for category, metrics in results.items():
             if category == 'summary':
                 continue
@@ -260,7 +260,7 @@ def main():
 
         success = summary['failed_tests'] == 0
         if success:
-            print(f"\n🎉 All tests passed!")
+            print("\n🎉 All tests passed!")
         else:
             print(f"\n⚠️  {summary['failed_tests']} tests failed.")
 

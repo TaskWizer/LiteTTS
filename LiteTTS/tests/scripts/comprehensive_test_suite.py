@@ -529,8 +529,8 @@ class ComprehensiveTestSuite:
         """Print test summary"""
         summary = self.test_results['summary']
 
-        print(f"\n📊 COMPREHENSIVE TEST SUMMARY")
-        print(f"=" * 35)
+        print("\n📊 COMPREHENSIVE TEST SUMMARY")
+        print("=" * 35)
         print(f"Total Tests: {summary['total_tests']}")
         print(f"Passed: {summary['passed']} ✅")
         print(f"Failed: {summary['failed']} ❌")
@@ -539,13 +539,13 @@ class ComprehensiveTestSuite:
 
         # Overall status
         if summary['success_rate'] >= 95:
-            print(f"Overall Status: 🟢 EXCELLENT")
+            print("Overall Status: 🟢 EXCELLENT")
         elif summary['success_rate'] >= 85:
-            print(f"Overall Status: 🟡 GOOD")
+            print("Overall Status: 🟡 GOOD")
         elif summary['success_rate'] >= 70:
-            print(f"Overall Status: 🟠 FAIR")
+            print("Overall Status: 🟠 FAIR")
         else:
-            print(f"Overall Status: 🔴 NEEDS ATTENTION")
+            print("Overall Status: 🔴 NEEDS ATTENTION")
 
 def main():
     """Run comprehensive test suite"""

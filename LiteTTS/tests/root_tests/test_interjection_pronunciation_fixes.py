@@ -236,7 +236,7 @@ class TestInterjectionPronunciationFixes(unittest.TestCase):
         avg_time = sum(times) / len(times)
         max_time = max(times)
 
-        print(f"\n🔧 Testing Performance")
+        print("\n🔧 Testing Performance")
         print("=" * 25)
         print(f"Average processing time: {avg_time:.3f}s")
         print(f"Maximum processing time: {max_time:.3f}s")
@@ -290,7 +290,7 @@ def run_comprehensive_interjection_tests():
     success_rate = passed_tests / total_tests if total_tests > 0 else 0
 
     print(f"\n{'='*60}")
-    print(f"INTERJECTION FIXES TEST SUMMARY")
+    print("INTERJECTION FIXES TEST SUMMARY")
     print(f"{'='*60}")
     print(f"Tests Run: {total_tests}")
     print(f"Tests Passed: {passed_tests}")

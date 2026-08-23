@@ -152,7 +152,7 @@ def analyze_contraction_behavior(results):
     expanded_tests = len([r for r in results if r["contraction_changes"]])
     preserved_tests = len([r for r in results if not r["contraction_changes"] and ("'" in r["input"] or "&#x27;" in r["input"])])
 
-    print(f"📈 Statistics:")
+    print("📈 Statistics:")
     print(f"   Total tests: {total_tests}")
     print(f"   HTML entity tests: {html_entity_tests}")
     print(f"   Tests with contractions expanded: {expanded_tests}")
@@ -160,7 +160,7 @@ def analyze_contraction_behavior(results):
     print(f"   Expansion rate: {expanded_tests/total_tests*100:.1f}%")
 
     # Analyze by category
-    print(f"\n📋 By Category:")
+    print("\n📋 By Category:")
     categories = {}
     for result in results:
         cat = result["category"]
@@ -177,7 +177,7 @@ def analyze_contraction_behavior(results):
         print(f"   {cat}: {stats['expanded']}/{stats['total']} expanded ({expansion_rate:.1f}%)")
 
     # Check for patterns
-    print(f"\n🔍 Pattern Analysis:")
+    print("\n🔍 Pattern Analysis:")
 
     # HTML entity handling
     html_results = [r for r in results if "&#x27;" in r["input"]]

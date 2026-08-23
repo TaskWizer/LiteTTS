@@ -94,7 +94,7 @@ def test_ssml_background():
             duration_ok = duration >= (test_case['expected_duration'] * 0.7)  # Allow 30% variance
 
             if duration_ok:
-                print(f"   ✅ Duration check passed")
+                print("   ✅ Duration check passed")
             else:
                 print(f"   ⚠️ Duration shorter than expected ({test_case['expected_duration']}s)")
 
@@ -147,14 +147,14 @@ def test_ssml_background():
         avg_bg_duration = sum(r['duration'] for r in background_tests) / len(background_tests)
         avg_control_duration = sum(r['duration'] for r in control_tests) / len(control_tests)
 
-        print(f"\n🎯 Background Analysis:")
+        print("\n🎯 Background Analysis:")
         print(f"   Average background test duration: {avg_bg_duration:.2f}s")
         print(f"   Average control test duration: {avg_control_duration:.2f}s")
 
         if avg_bg_duration > avg_control_duration * 0.8:  # Background tests should be similar duration
-            print(f"   ✅ Background processing appears to be working")
+            print("   ✅ Background processing appears to be working")
         else:
-            print(f"   ⚠️ Background tests significantly shorter - may indicate processing issues")
+            print("   ⚠️ Background tests significantly shorter - may indicate processing issues")
 
     return len(failed_tests) == 0
 

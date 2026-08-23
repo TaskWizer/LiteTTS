@@ -43,7 +43,7 @@ def download_all_voices():
 
         # Get current status
         stats = voice_manager.get_download_status()
-        print(f"📊 Current Status:")
+        print("📊 Current Status:")
         print(f"   - Discovered voices: {stats['discovered_voices']}")
         print(f"   - Downloaded voices: {stats['downloaded_voices']}")
         print(f"   - Missing voices: {stats['missing_voices']}")
@@ -81,13 +81,13 @@ def download_all_voices():
         total = len(results)
         download_time = time.time() - start_time
 
-        print(f"\n✅ Download complete!")
+        print("\n✅ Download complete!")
         print(f"   - Success: {successful}/{total} voices")
         print(f"   - Time: {download_time:.1f} seconds")
         print(f"   - Average: {download_time/total:.1f}s per voice")
 
         if successful < total:
-            print(f"\n❌ Failed downloads:")
+            print("\n❌ Failed downloads:")
             for voice, success in results.items():
                 if not success:
                     print(f"   - {voice}")
@@ -119,7 +119,7 @@ def test_voice_system():
 
         # Test voice resolution
         test_voices = ["heart", "puck", "alloy", "alice", "af_heart"]
-        print(f"\n🎯 Testing voice resolution:")
+        print("\n🎯 Testing voice resolution:")
         for voice in test_voices:
             resolved = voice_manager.resolve_voice_name(voice)
             available = voice_manager.is_voice_available(voice)
@@ -147,7 +147,7 @@ def show_voice_summary():
 
         # Discovery stats
         stats = voice_manager.get_download_status()
-        print(f"🔍 Discovery:")
+        print("🔍 Discovery:")
         print(f"   - Total discovered: {stats['discovered_voices']}")
         print(f"   - Downloaded: {stats['downloaded_voices']}")
         print(f"   - Missing: {stats['missing_voices']}")
@@ -163,7 +163,7 @@ def show_voice_summary():
                     categories[prefix] = []
                 categories[prefix].append(voice)
 
-        print(f"\n🎭 Voice Categories:")
+        print("\n🎭 Voice Categories:")
         for category, voices in sorted(categories.items()):
             category_name = {
                 'af': 'American Female',
@@ -190,7 +190,7 @@ def show_voice_summary():
         # Voice mappings
         mappings = voice_manager.get_voice_mappings()
         if mappings:
-            print(f"\n🔗 Short Name Mappings:")
+            print("\n🔗 Short Name Mappings:")
             for short, full in sorted(mappings.items()):
                 print(f"   {short} -> {full}")
 
@@ -214,7 +214,7 @@ def main():
     show_voice_summary()
 
     # Ask about downloading all voices
-    print(f"\n🤔 Options:")
+    print("\n🤔 Options:")
     print("1. Download all missing voices")
     print("2. Show detailed voice information")
     print("3. Exit")
@@ -235,7 +235,7 @@ def main():
         voice_manager = DynamicVoiceManager()
         download_info = voice_manager.downloader.get_download_info()
 
-        print(f"\n📋 Detailed Voice Information:")
+        print("\n📋 Detailed Voice Information:")
         for voice_name, info in sorted(download_info.items()):
             status = "✅ Downloaded" if info['downloaded'] else "❌ Missing"
             size_mb = info['file_size'] / (1024 * 1024) if info['file_size'] > 0 else 0

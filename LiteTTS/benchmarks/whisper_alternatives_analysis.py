@@ -665,15 +665,15 @@ async def main():
         print(f"Total models tested: {report['total_models_tested']}")
         print(f"Total tests run: {report['total_tests_run']}")
 
-        print(f"\nModels meeting RTF < 1.0 target:")
+        print("\nModels meeting RTF < 1.0 target:")
         for model in report['models_meeting_rtf_target']:
             print(f"  ✅ {model}")
 
-        print(f"\nTop RTF performers:")
+        print("\nTop RTF performers:")
         for i, (model, stats) in enumerate(report['best_rtf_performers'][:3], 1):
             print(f"  {i}. {model}: RTF {stats['avg_rtf']:.3f}")
 
-        print(f"\nTop memory performers:")
+        print("\nTop memory performers:")
         for i, (model, stats) in enumerate(report['best_memory_performers'][:3], 1):
             print(f"  {i}. {model}: {stats['avg_memory_mb']:.1f} MB")
 

@@ -338,22 +338,22 @@ if __name__ == "__main__":
 
     info = detector.get_all_info()
 
-    print(f"\n💻 System Info:")
+    print("\n💻 System Info:")
     print(f"  Platform: {info['system_info']['platform']} {info['system_info']['architecture']}")
     print(f"  Hostname: {info['system_info']['hostname']}")
     print(f"  Fingerprint: {info['system_fingerprint']}")
 
-    print(f"\n🔥 CPU Info:")
+    print("\n🔥 CPU Info:")
     print(f"  Cores: {info['cpu_info']['physical_cores']} physical, {info['cpu_info']['logical_cores']} logical")
     print(f"  Frequency: {info['cpu_info']['max_frequency']:.0f} MHz")
     print(f"  Usage: {info['cpu_info']['cpu_usage_percent']:.1f}%")
 
-    print(f"\n💾 Memory Info:")
+    print("\n💾 Memory Info:")
     print(f"  Total RAM: {info['memory_info']['total_ram_gb']} GB")
     print(f"  Available: {info['memory_info']['available_ram_gb']} GB")
     print(f"  Usage: {info['memory_info']['ram_usage_percent']:.1f}%")
 
-    print(f"\n🎮 GPU Info:")
+    print("\n🎮 GPU Info:")
     print(f"  CUDA Available: {info['gpu_info']['cuda_available']}")
     print(f"  GPU Count: {info['gpu_info']['gpu_count']}")
     if info['gpu_info']['gpu_names']:
@@ -361,13 +361,13 @@ if __name__ == "__main__":
     if info['gpu_info']['total_vram_gb'] > 0:
         print(f"  VRAM: {info['gpu_info']['total_vram_gb']} GB total, {info['gpu_info']['available_vram_gb']} GB available")
 
-    print(f"\n💿 Storage Info:")
+    print("\n💿 Storage Info:")
     print(f"  Type: {info['storage_info']['storage_type']}")
     print(f"  Total: {info['storage_info']['total_storage_gb']} GB")
     print(f"  Free: {info['storage_info']['free_storage_gb']} GB")
     print(f"  Speed: {info['storage_info']['read_speed_mbps']} MB/s read, {info['storage_info']['write_speed_mbps']} MB/s write")
 
-    print(f"\n📊 Performance Scores:")
+    print("\n📊 Performance Scores:")
     caps = info['capabilities']
     print(f"  CPU Score: {caps['cpu_score']}/100")
     print(f"  Memory Score: {caps['memory_score']}/100")

@@ -46,11 +46,11 @@ def test_openwebui_real_scenario():
             # Save audio file
             with open("openwebui_test_standard.mp3", "wb") as f:
                 f.write(response.content)
-            print(f"   ✅ Audio saved to: openwebui_test_standard.mp3")
+            print("   ✅ Audio saved to: openwebui_test_standard.mp3")
 
             # Check if audio is valid MP3
             if response.content.startswith(b'\xff\xf3') or response.content.startswith(b'\xff\xfb') or response.content.startswith(b'ID3'):
-                print(f"   ✅ Valid MP3 format detected")
+                print("   ✅ Valid MP3 format detected")
             else:
                 print(f"   ⚠️ Invalid MP3 format - first bytes: {response.content[:10].hex()}")
         else:
@@ -89,11 +89,11 @@ def test_openwebui_real_scenario():
             # Save audio file
             with open("openwebui_test_streaming.mp3", "wb") as f:
                 f.write(audio_data)
-            print(f"   ✅ Streaming audio saved to: openwebui_test_streaming.mp3")
+            print("   ✅ Streaming audio saved to: openwebui_test_streaming.mp3")
 
             # Check if audio is valid MP3
             if audio_data.startswith(b'\xff\xf3') or audio_data.startswith(b'\xff\xfb') or audio_data.startswith(b'ID3'):
-                print(f"   ✅ Valid MP3 format detected")
+                print("   ✅ Valid MP3 format detected")
             else:
                 print(f"   ⚠️ Invalid MP3 format - first bytes: {audio_data[:10].hex()}")
         else:

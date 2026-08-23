@@ -103,7 +103,7 @@ class TimeProcessingValidator:
                 results['enhanced_datetime'][input_text] = enhanced_result
                 print(f"   Enhanced DateTime: '{enhanced_result}'")
                 if "meters" in enhanced_result.lower():
-                    print(f"   ❌ CORRUPTION DETECTED: 'meters' found in output!")
+                    print("   ❌ CORRUPTION DETECTED: 'meters' found in output!")
             except Exception as e:
                 results['enhanced_datetime'][input_text] = f"ERROR: {e}"
                 print(f"   Enhanced DateTime: ERROR - {e}")
@@ -114,7 +114,7 @@ class TimeProcessingValidator:
                 results['text_normalizer'][input_text] = normalizer_result
                 print(f"   Text Normalizer: '{normalizer_result}'")
                 if "meters" in normalizer_result.lower():
-                    print(f"   ❌ CORRUPTION DETECTED: 'meters' found in output!")
+                    print("   ❌ CORRUPTION DETECTED: 'meters' found in output!")
             except Exception as e:
                 results['text_normalizer'][input_text] = f"ERROR: {e}"
                 print(f"   Text Normalizer: ERROR - {e}")
@@ -125,7 +125,7 @@ class TimeProcessingValidator:
                 results['phase6_processor'][input_text] = phase6_result.processed_text
                 print(f"   Phase6 Processor: '{phase6_result.processed_text}'")
                 if "meters" in phase6_result.processed_text.lower():
-                    print(f"   ❌ CORRUPTION DETECTED: 'meters' found in output!")
+                    print("   ❌ CORRUPTION DETECTED: 'meters' found in output!")
             except Exception as e:
                 results['phase6_processor'][input_text] = f"ERROR: {e}"
                 print(f"   Phase6 Processor: ERROR - {e}")
@@ -137,7 +137,7 @@ class TimeProcessingValidator:
                 results['unified_processor'][input_text] = unified_result.processed_text
                 print(f"   Unified Processor: '{unified_result.processed_text}'")
                 if "meters" in unified_result.processed_text.lower():
-                    print(f"   ❌ CORRUPTION DETECTED: 'meters' found in output!")
+                    print("   ❌ CORRUPTION DETECTED: 'meters' found in output!")
             except Exception as e:
                 results['unified_processor'][input_text] = f"ERROR: {e}"
                 print(f"   Unified Processor: ERROR - {e}")
@@ -216,9 +216,9 @@ class TimeProcessingValidator:
 
             # Check for specific corruption patterns
             if "meters" in enhanced_result.lower():
-                print(f"   ❌ Enhanced DateTime corrupted: 'meters' found!")
+                print("   ❌ Enhanced DateTime corrupted: 'meters' found!")
             if "meters" in normalizer_result.lower():
-                print(f"   ❌ Text Normalizer corrupted: 'meters' found!")
+                print("   ❌ Text Normalizer corrupted: 'meters' found!")
 
         return results
 

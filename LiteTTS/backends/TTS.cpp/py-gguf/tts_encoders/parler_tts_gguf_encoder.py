@@ -109,7 +109,7 @@ class ParlerTTSEncoder(DACEncoder):
         )
         data = model_kwargs["encoder_outputs"].last_hidden_state.squeeze()
         self.set_tensor("decoder.text_encoding", data)
-        self.gguf_writer.add_uint32(f"parler-tts.decoder.encode_length", data.shape[0])
+        self.gguf_writer.add_uint32("parler-tts.decoder.encode_length", data.shape[0])
 
     def prepare_decoder_tensors(self):
         """

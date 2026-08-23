@@ -304,7 +304,7 @@ class BackgroundGenerator:
         try:
             # This would load from the custom file
             # For now, return procedural nature sound as fallback
-            logger.warning(f"Custom background files not yet implemented, using nature sound")
+            logger.warning("Custom background files not yet implemented, using nature sound")
             return self._generate_procedural_background(
                 BackgroundConfig(type=BackgroundType.NATURE, volume=config.volume),
                 duration

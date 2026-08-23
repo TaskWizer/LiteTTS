@@ -179,7 +179,7 @@ def __check_shape_consistent_with_type(tensor: TensorLike):
     shape = __get_shape(tensor)
 
     block_size = lib.ggml_blck_size(type)
-    assert not (block_size == 0 and type in __k_quant_types), f"Can't quantize, native library was not compiled with USE_K_QUANTS!"
+    assert not (block_size == 0 and type in __k_quant_types), "Can't quantize, native library was not compiled with USE_K_QUANTS!"
     assert block_size > 0, f"Invalid block size {block_size} for type {__type_name(type)}"
     for i, d in enumerate(shape):
         assert d % block_size == 0, f"Dimension {i} of {__describe(tensor)} is not divisible by {block_size}, required for quantization."

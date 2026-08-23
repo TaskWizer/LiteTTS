@@ -274,9 +274,7 @@ class PerformanceStreamer:
         status = "healthy"
         if error_rate > 0.1:  # 10% error rate
             status = "error"
-        elif memory.percent > 90 or disk_usage_percent > 90:
-            status = "warning"
-        elif cpu_percent > 90:
+        elif memory.percent > 90 or disk_usage_percent > 90 or cpu_percent > 90:
             status = "warning"
 
         # WebSocket connections

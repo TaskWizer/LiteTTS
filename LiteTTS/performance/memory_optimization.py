@@ -469,7 +469,7 @@ class MemoryOptimizer:
             memory_monitoring_interval=2.0 if enable_aggressive_gc else 5.0
         )
 
-        logger.info(f"🎯 Optimal config calculated:")
+        logger.info("🎯 Optimal config calculated:")
         logger.info(f"   Pre-allocation: {pre_allocation_size}MB")
         logger.info(f"   Memory pooling: {pool_size}MB")
         logger.info(f"   Cache limit: {cache_size}MB")
@@ -599,7 +599,7 @@ def main():
         print(f"Memory Change: {improvement['memory_change_mb']:.2f} MB")
         print(f"Target Achieved: {'✅' if improvement['target_achieved'] else '❌'}")
 
-        print(f"\nOptimization Results:")
+        print("\nOptimization Results:")
         print(f"  Pre-allocation Success: {'✅' if results['pre_allocation_success'] else '❌'}")
         print(f"  Peak Memory: {final['peak_memory_mb']:.2f} MB")
         print(f"  Memory Growth: {final['memory_growth_mb']:.2f} MB")
@@ -610,11 +610,11 @@ def main():
             print(f"  Memory Variance: {monitoring['memory_variance']:.2f}")
 
         leak_analysis = results["leak_analysis"]
-        print(f"\nLeak Analysis:")
+        print("\nLeak Analysis:")
         print(f"  Memory Growth in Test: {leak_analysis['memory_growth_mb']:.2f} MB")
         print(f"  Potential Leaks: {len(leak_analysis['potential_leaks'])}")
 
-        print(f"\nRecommendations:")
+        print("\nRecommendations:")
         for i, rec in enumerate(results["recommendations"], 1):
             print(f"  {i}. {rec}")
 

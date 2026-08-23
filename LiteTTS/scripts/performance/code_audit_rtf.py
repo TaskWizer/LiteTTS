@@ -425,8 +425,8 @@ def main():
     auditor.save_audit_report()
 
     # Print summary
-    print(f"\n📊 AUDIT SUMMARY")
-    print(f"=" * 20)
+    print("\n📊 AUDIT SUMMARY")
+    print("=" * 20)
     print(f"Performance Issues: {len(results.get('performance_issues', []))}")
     print(f"Blocking Operations: {len(results.get('blocking_operations', []))}")
     print(f"Memory Patterns: {len(results.get('memory_patterns', []))}")

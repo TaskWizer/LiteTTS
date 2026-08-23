@@ -188,10 +188,7 @@ class TTSBenchmark:
         if format == "wav":
             # Uncompressed: ~24000 Hz * 2 bytes * 1 channel = 48000 bytes/second
             return audio_size / 48000
-        elif format == "mp3":
-            # Compressed: ~128 kbps = 16000 bytes/second
-            return audio_size / 16000
-        elif format == "ogg":
+        elif format == "mp3" or format == "ogg":
             # Compressed: ~128 kbps = 16000 bytes/second
             return audio_size / 16000
         else:
@@ -354,7 +351,7 @@ class TTSBenchmark:
         md_file = f"{output_dir}/benchmark_report_{timestamp}.md"
         self._generate_markdown_report(md_file)
 
-        print(f"\n📁 Results exported to:")
+        print("\n📁 Results exported to:")
         print(f"   JSON: {json_file}")
         print(f"   CSV: {csv_file}")
         print(f"   Report: {md_file}")
@@ -364,7 +361,7 @@ class TTSBenchmark:
         summary = self._generate_summary()
 
         with open(filename, 'w') as f:
-            f.write(f"# TTS Benchmark Report\n\n")
+            f.write("# TTS Benchmark Report\n\n")
             f.write(f"**Generated:** {self.start_time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             f.write(f"**Base URL:** {self.base_url}\n\n")
 
@@ -411,7 +408,7 @@ def main():
     else:
         base_url = "http://localhost:8354"
 
-    print(f"🎯 TTS Benchmark Tool")
+    print("🎯 TTS Benchmark Tool")
     print(f"📡 Target: {base_url}")
     print(f"⏰ Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print()
@@ -438,7 +435,7 @@ def main():
 
         benchmark.export_results()
 
-        print(f"\n🎉 Benchmark completed successfully!")
+        print("\n🎉 Benchmark completed successfully!")
         return 0
 
     except KeyboardInterrupt:

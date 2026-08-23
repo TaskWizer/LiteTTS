@@ -138,7 +138,7 @@ class AudioQualityTestRunner:
         report_path = self.results_dir / f"espeak_integration_report_{timestamp}.md"
         report_content = self.tester.generate_report(summary, report_path)
 
-        logger.info(f"📊 Test Results Summary:")
+        logger.info("📊 Test Results Summary:")
         logger.info(f"   Total Tests: {summary['total_tests']}")
         logger.info(f"   Passed: {summary['passed_tests']}")
         logger.info(f"   Failed: {summary['failed_tests']}")
@@ -322,7 +322,7 @@ class AudioQualityTestRunner:
             with open(results_path, 'w') as f:
                 json.dump(results, f, indent=2, default=str)
 
-            logger.info(f"\n🎉 Comprehensive Test Suite Completed!")
+            logger.info("\n🎉 Comprehensive Test Suite Completed!")
             logger.info(f"   Total Time: {total_time:.2f}s")
             logger.info(f"   Overall Assessment: {overall_assessment}")
             logger.info(f"   Results saved: {results_path}")

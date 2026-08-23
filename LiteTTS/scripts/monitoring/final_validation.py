@@ -363,7 +363,7 @@ def main():
 
     # Final results
     logger.info(f"\n{'='*60}")
-    logger.info(f"📊 FINAL VALIDATION RESULTS")
+    logger.info("📊 FINAL VALIDATION RESULTS")
     logger.info(f"{'='*60}")
     logger.info(f"Tests Passed: {passed_tests}/{total_tests}")
     logger.info(f"Success Rate: {(passed_tests/total_tests)*100:.1f}%")

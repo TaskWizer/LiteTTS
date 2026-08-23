@@ -17,7 +17,7 @@ def test_api():
     print("\n0. Checking if server is running...")
     try:
         response = requests.get(f"{base_url}/health", timeout=5)
-        print(f"✅ Server is running!")
+        print("✅ Server is running!")
     except Exception as e:
         print(f"❌ Server not responding: {e}")
         print("   Please start the server first: python start_server.py")
@@ -78,7 +78,7 @@ def test_api():
             # Save audio file
             with open("test_output.mp3", "wb") as f:
                 f.write(response.content)
-            print(f"   Audio saved to test_output.mp3")
+            print("   Audio saved to test_output.mp3")
             print(f"   Audio duration: {response.headers.get('X-Audio-Duration', 'unknown')}s")
             print(f"   Processing time: {response.headers.get('X-Processing-Time', 'unknown')}s")
         else:

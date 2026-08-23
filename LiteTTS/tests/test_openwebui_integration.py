@@ -154,7 +154,7 @@ class OpenWebUIIntegrationTester:
                 audio_size = len(audio_data)
 
                 print(f"   ✅ Compatibility route: {audio_size} bytes in {chunk_count} chunks over {request_time:.2f}s")
-                print(f"   🎯 This route handles OpenWebUI's malformed URL construction")
+                print("   🎯 This route handles OpenWebUI's malformed URL construction")
 
                 # Save test file
                 test_file = Path("test_openwebui_compat.mp3")

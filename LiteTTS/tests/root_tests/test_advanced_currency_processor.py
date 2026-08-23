@@ -253,7 +253,7 @@ def run_comprehensive_test():
             print(f"❌ ERROR: {e}")
             failed += 1
 
-    print(f"\n" + "=" * 60)
+    print("\n" + "=" * 60)
     print(f"📊 Test Results: {passed} passed, {failed} failed")
     print(f"Success rate: {passed/(passed+failed)*100:.1f}%")
 

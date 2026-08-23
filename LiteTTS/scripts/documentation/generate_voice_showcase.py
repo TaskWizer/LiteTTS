@@ -273,11 +273,11 @@ Welcome to the comprehensive showcase of all **{total_voices} voices** available
 """
 
     # Add navigation links
-    for category_name in categorized_voices.keys():
+    for category_name in categorized_voices:
         anchor = category_name.lower().replace(" ", "-")
         markdown += f"- [{category_name}](#{anchor}) ({len(categorized_voices[category_name]['voices'])} voices)\n"
 
-    markdown += f"""
+    markdown += """
 ## 🎯 How to Use
 
 Each voice can be used with the Kokoro ONNX TTS API by specifying the voice name:
@@ -285,11 +285,11 @@ Each voice can be used with the Kokoro ONNX TTS API by specifying the voice name
 ```bash
 curl -X POST "http://localhost:8354/v1/audio/speech" \\
   -H "Content-Type: application/json" \\
-  -d '{{
+  -d '{
     "input": "Your text here",
     "voice": "af_heart",
     "response_format": "mp3"
-  }}' \\
+  }' \\
   --output output.mp3
 ```
 
@@ -438,7 +438,7 @@ def update_main_readme():
             next_section = content.find("##", features_end + 1)
 
             if next_section != -1:
-                voice_showcase_section = f"""
+                voice_showcase_section = """
 ## 🎭 Voice Showcase
 
 Explore all **54+ available voices** with audio samples and detailed comparisons:

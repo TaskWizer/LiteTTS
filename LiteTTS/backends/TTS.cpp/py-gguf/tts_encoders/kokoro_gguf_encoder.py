@@ -240,10 +240,7 @@ class KokoroEncoder(TTSEncoder):
                 self.prepare_adain_res_block_tensor(f"{base}.decoder_blocks.{parts[1]}", ".".join(parts[2:]), param)
             elif parts[0] == "encode":
                 self.prepare_adain_res_block_tensor(f"{base}.encoder_block", ".".join(parts[1:]), param)
-            elif parts[0] == "F0_conv":
-                nn = "_".join(parts)
-                self.set_tensor(f"{base}.{nn.lower()}", param)
-            elif parts[0] == "N_conv":
+            elif parts[0] == "F0_conv" or parts[0] == "N_conv":
                 nn = "_".join(parts)
                 self.set_tensor(f"{base}.{nn.lower()}", param)
             elif parts[0] == "asr_res":

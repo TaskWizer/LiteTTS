@@ -26,8 +26,8 @@ def demo_chunked_vs_standard():
     print("🎯 Chunked Audio Generation Demo")
     print("=" * 50)
     print(f"📝 Text length: {len(long_text)} characters")
-    print(f"🎵 Voice: af_heart")
-    print(f"📊 Format: mp3")
+    print("🎵 Voice: af_heart")
+    print("📊 Format: mp3")
     print()
 
     # Test chunked generation (streaming endpoint)
@@ -132,16 +132,16 @@ def demo_chunked_vs_standard():
     time_improvement = ((standard_stats["first_byte_time"] - chunked_stats["first_byte_time"]) /
                        standard_stats["first_byte_time"]) * 100
 
-    print(f"⚡ Time to First Audio:")
+    print("⚡ Time to First Audio:")
     print(f"   Chunked:  {chunked_stats['first_byte_time']:.2f}s")
     print(f"   Standard: {standard_stats['first_byte_time']:.2f}s")
     print(f"   🚀 Improvement: {time_improvement:.1f}% faster to first audio!")
 
-    print(f"\n📊 Total Generation Time:")
+    print("\n📊 Total Generation Time:")
     print(f"   Chunked:  {chunked_stats['total_time']:.2f}s")
     print(f"   Standard: {standard_stats['total_time']:.2f}s")
 
-    print(f"\n📦 Audio Quality:")
+    print("\n📦 Audio Quality:")
     print(f"   Chunked:  {chunked_stats['total_size']:,} bytes")
     print(f"   Standard: {standard_stats['total_size']:,} bytes")
 
@@ -149,7 +149,7 @@ def demo_chunked_vs_standard():
     size_diff_percent = (size_diff / standard_stats['total_size']) * 100
     print(f"   📏 Size difference: {size_diff_percent:.1f}%")
 
-    print(f"\n🎯 User Experience:")
+    print("\n🎯 User Experience:")
     if time_improvement > 50:
         print("   🌟 EXCELLENT: Users will notice significantly faster response")
     elif time_improvement > 25:
@@ -159,11 +159,11 @@ def demo_chunked_vs_standard():
     else:
         print("   📝 MINIMAL: Improvement may not be noticeable for this text length")
 
-    print(f"\n💡 Key Benefits:")
+    print("\n💡 Key Benefits:")
     print(f"   • {time_improvement:.1f}% faster time to first audio")
     print(f"   • Progressive audio delivery in {chunked_stats['chunk_count']} chunks")
     print(f"   • Maintained audio quality (size difference: {size_diff_percent:.1f}%)")
-    print(f"   • Better perceived responsiveness for long texts")
+    print("   • Better perceived responsiveness for long texts")
 
     print("\n🎉 Chunked generation successfully improves user experience!")
 

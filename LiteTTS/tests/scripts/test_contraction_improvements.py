@@ -232,11 +232,7 @@ def test_html_entity_regression():
         print(f"HTML:   {html_changes}")
 
         # Verify HTML entities were decoded
-        if "&#x27;" in test_input and "&#x27;" not in result.processed_text:
-            print("✅ HTML entities properly decoded")
-        elif "&quot;" in test_input and "&quot;" not in result.processed_text:
-            print("✅ HTML entities properly decoded")
-        elif "&amp;" in test_input and "&amp;" not in result.processed_text:
+        if "&#x27;" in test_input and "&#x27;" not in result.processed_text or "&quot;" in test_input and "&quot;" not in result.processed_text or "&amp;" in test_input and "&amp;" not in result.processed_text:
             print("✅ HTML entities properly decoded")
         else:
             print("⚠️ Check HTML entity decoding")

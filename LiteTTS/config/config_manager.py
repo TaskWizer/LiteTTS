@@ -318,14 +318,14 @@ if __name__ == "__main__":
         print(f"  {section}: {type(settings).__name__}")
 
     # Show processing options
-    print(f"\n⚙️  Processing Options:")
+    print("\n⚙️  Processing Options:")
     options = config.get_processing_options()
     for option, enabled in options.items():
         status = "✅" if enabled else "❌"
         print(f"  {status} {option}")
 
     # Validate config
-    print(f"\n🔍 Configuration Validation:")
+    print("\n🔍 Configuration Validation:")
     validation = config.validate_config()
     print(f"  Valid: {validation['valid']}")
     if validation['errors']:
@@ -334,7 +334,7 @@ if __name__ == "__main__":
         print(f"  Warnings: {validation['warnings']}")
 
     # Test feature checks
-    print(f"\n🎛️  Feature Status:")
+    print("\n🎛️  Feature Status:")
     features = ['natural_speech', 'pronunciation_fixes', 'auto_optimize', 'cache_enabled']
     for feature in features:
         enabled = config.is_feature_enabled(feature)

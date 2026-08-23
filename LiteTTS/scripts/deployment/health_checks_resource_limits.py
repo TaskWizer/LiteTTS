@@ -846,7 +846,7 @@ spec:
         """Generate monitoring script"""
         logger.info("Generating monitoring script...")
 
-        monitoring_script = f'''#!/bin/bash
+        monitoring_script = '''#!/bin/bash
 # Kokoro TTS Health Monitoring Script
 # Generated automatically - do not edit manually
 
@@ -863,14 +863,14 @@ touch "$LOG_FILE"
 echo "$(date): Starting health monitoring check" >> "$LOG_FILE"
 
 # Function to send alert
-send_alert() {{
+send_alert() {
     local severity=$1
     local message=$2
     echo "$(date): ALERT [$severity] $message" >> "$LOG_FILE"
 
     # Add your alerting mechanism here (email, webhook, etc.)
-    # Example: curl -X POST "https://hooks.slack.com/..." -d "{{\\"text\\": \\"$message\\"}}"
-}}
+    # Example: curl -X POST "https://hooks.slack.com/..." -d "{\\"text\\": \\"$message\\"}"
+}
 
 # Check basic health
 echo "Checking basic health..."
@@ -889,7 +889,7 @@ fi
 
 # Check detailed metrics
 echo "Checking detailed metrics..."
-METRICS=$(curl -s "$API_BASE/health/detailed" 2>/dev/null || echo "{{}}")
+METRICS=$(curl -s "$API_BASE/health/detailed" 2>/dev/null || echo "{}")
 
 # Check memory usage
 MEMORY_STATUS=$(echo "$METRICS" | jq -r '.checks.memory_usage.status' 2>/dev/null || echo "unknown")
@@ -914,9 +914,9 @@ fi
 
 # Test API functionality
 echo "Testing API functionality..."
-TEST_RESPONSE=$(curl -s -w "%{{http_code}}" -X POST "$API_BASE/v1/audio/speech" \\
+TEST_RESPONSE=$(curl -s -w "%{http_code}" -X POST "$API_BASE/v1/audio/speech" \\
     -H "Content-Type: application/json" \\
-    -d '{{"model": "kokoro", "input": "test", "voice": "af_heart"}}' \\
+    -d '{"model": "kokoro", "input": "test", "voice": "af_heart"}' \\
     -o /dev/null 2>/dev/null || echo "000")
 
 if [ "$TEST_RESPONSE" != "200" ]; then
@@ -1070,29 +1070,29 @@ def main():
         print(f"Health Score: {health_summary['healthy_checks']}/{health_summary['total_checks']} ({health_summary['health_percentage']:.1f}%)")
         print(f"Average Response Time: {health_summary['average_response_time_ms']:.2f}ms")
 
-        print(f"\nHealth Check Results:")
+        print("\nHealth Check Results:")
         for status, count in summary["status_distribution"].items():
             emoji = {"healthy": "✅", "warning": "⚠️", "critical": "❌", "unknown": "❓"}.get(status, "❓")
             print(f"  {emoji} {status.title()}: {count}")
 
         if summary["critical_issues"]:
-            print(f"\nCritical Issues:")
+            print("\nCritical Issues:")
             for issue in summary["critical_issues"]:
                 print(f"  ❌ {issue}")
 
         if summary["warning_issues"]:
-            print(f"\nWarning Issues:")
+            print("\nWarning Issues:")
             for issue in summary["warning_issues"]:
                 print(f"  ⚠️  {issue}")
 
-        print(f"\nResource Limits:")
+        print("\nResource Limits:")
         limits = results["resource_limits"]
         print(f"  Memory: {limits['max_memory_mb']}MB")
         print(f"  CPU: {limits['max_cpu_percent']}%")
         print(f"  Disk: {limits['max_disk_usage_percent']}%")
         print(f"  Concurrent Requests: {limits['max_concurrent_requests']}")
 
-        print(f"\nGenerated Files:")
+        print("\nGenerated Files:")
         for file_type, filename in results["generated_files"].items():
             print(f"  {file_type}: {filename}")
 
@@ -1102,7 +1102,7 @@ def main():
 
         print(f"\nProduction Ready: {'✅' if summary['production_ready'] else '❌'}")
 
-        print(f"\nNext Steps:")
+        print("\nNext Steps:")
         for i, step in enumerate(results["next_steps"][:5], 1):
             print(f"  {i}. {step}")
 

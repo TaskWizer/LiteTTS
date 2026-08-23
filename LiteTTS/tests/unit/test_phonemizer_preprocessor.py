@@ -2068,11 +2068,10 @@ class TestPhonemizationPreprocessorGlobalConfig:
 
         # Mock Path.exists to return True and open to return valid JSON
         m = mock_open(read_data=json.dumps(valid_config))
-        with patch.object(Path, 'exists', return_value=True):
-            with patch('builtins.open', m):
-                config = pp_module._get_global_config()
-                assert config == valid_config
-                assert 'text_processing' in config
+        with patch.object(Path, 'exists', return_value=True), patch('builtins.open', m):
+            config = pp_module._get_global_config()
+            assert config == valid_config
+            assert 'text_processing' in config
 
     def test_get_global_config_exception_handler(self):
         """Test _get_global_config exception handler (lines 1438-1439)"""

@@ -53,20 +53,19 @@ class DeepgramASRClient(BaseASRClient):
             }
 
             # Make API request
-            async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    self.base_url,
-                    params=params,
-                    headers=headers,
-                    data=audio_data,
-                    timeout=aiohttp.ClientTimeout(total=self.timeout)
-                ) as response:
-                    if response.status == 200:
-                        result = await response.json()
-                        return self._extract_transcription(result)
-                    else:
-                        error_text = await response.text()
-                        raise Exception(f"Deepgram API error {response.status}: {error_text}")
+            async with aiohttp.ClientSession() as session, session.post(
+                self.base_url,
+                params=params,
+                headers=headers,
+                data=audio_data,
+                timeout=aiohttp.ClientTimeout(total=self.timeout)
+            ) as response:
+                if response.status == 200:
+                    result = await response.json()
+                    return self._extract_transcription(result)
+                else:
+                    error_text = await response.text()
+                    raise Exception(f"Deepgram API error {response.status}: {error_text}")
 
         except Exception as e:
             logger.error(f"Deepgram transcription error: {e}")

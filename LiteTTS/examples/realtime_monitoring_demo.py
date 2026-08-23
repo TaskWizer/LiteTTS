@@ -295,7 +295,7 @@ def demo_performance_monitoring():
 
         # Show final status
         final_status = monitor.get_current_status()
-        logger.info(f"\nMonitoring Summary:")
+        logger.info("\nMonitoring Summary:")
         logger.info(f"  Recent alerts: {final_status.get('recent_alerts', 0)}")
         logger.info(f"  Total alerts: {final_status.get('total_alerts', 0)}")
         logger.info(f"  Uptime: {final_status.get('uptime_minutes', 0):.1f} minutes")
@@ -351,7 +351,7 @@ def demo_filesystem_monitoring():
                 time.sleep(1)
 
             # Show events
-            logger.info(f"\nFile Events Summary:")
+            logger.info("\nFile Events Summary:")
             for event in watcher.file_events:
                 logger.info(f"  {event['timestamp'].strftime('%H:%M:%S')} - {event['event_type']}: {event['file_name']}")
         else:
@@ -420,7 +420,7 @@ def demo_integrated_monitoring():
             # Get monitoring data
             status = monitor.get_current_status()
 
-            logger.info(f"Processing Results:")
+            logger.info("Processing Results:")
             logger.info(f"  Success: {result.success}")
             logger.info(f"  Processing time: {processing_time:.3f}s")
             logger.info(f"  RTF: {result.rtf:.3f}")
@@ -428,7 +428,7 @@ def demo_integrated_monitoring():
 
             if status.get("latest_metrics"):
                 metrics = status["latest_metrics"]
-                logger.info(f"System Metrics:")
+                logger.info("System Metrics:")
                 logger.info(f"  CPU: {metrics.get('cpu_percent', 0):.1f}%")
                 logger.info(f"  Process Memory: {metrics.get('process_memory_mb', 0):.1f}MB")
 

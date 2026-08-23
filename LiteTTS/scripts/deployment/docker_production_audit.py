@@ -681,17 +681,17 @@ def main():
         print(f"Production Readiness Score: {result.production_readiness_score}/100")
         print(f"Total Issues Found: {result.total_issues}")
 
-        print(f"\nIssues by Severity:")
+        print("\nIssues by Severity:")
         print(f"  Critical: {result.critical_issues}")
         print(f"  High: {result.high_issues}")
         print(f"  Medium: {result.medium_issues}")
         print(f"  Low: {result.low_issues}")
 
-        print(f"\nIssues by Category:")
+        print("\nIssues by Category:")
         for category, count in result.issues_by_category.items():
             print(f"  {category}: {count}")
 
-        print(f"\nCritical Issues:")
+        print("\nCritical Issues:")
         critical_issues = [issue for issue in result.detailed_issues if issue.severity == "critical"]
         if critical_issues:
             for issue in critical_issues:
@@ -699,7 +699,7 @@ def main():
         else:
             print("  None found ✅")
 
-        print(f"\nRecommendations:")
+        print("\nRecommendations:")
         for i, rec in enumerate(result.recommendations, 1):
             print(f"  {i}. {rec}")
 

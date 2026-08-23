@@ -128,7 +128,7 @@ def test_voice_cloner_integration():
 
         suitability = router_instance._assess_suitability(test_analysis)
 
-        logger.info(f"Test suitability assessment:")
+        logger.info("Test suitability assessment:")
         logger.info(f"  Overall score: {suitability['overall_score']:.3f}")
         logger.info(f"  Duration OK: {suitability['duration_ok']}")
         logger.info(f"  Quality OK: {suitability['quality_ok']}")
@@ -181,7 +181,7 @@ def test_enhanced_features():
 
         suitability = router_instance._assess_suitability(long_analysis)
 
-        logger.info(f"120s audio suitability:")
+        logger.info("120s audio suitability:")
         logger.info(f"  Duration OK: {suitability['duration_ok']}")
         logger.info(f"  Recommended: {suitability['recommended']}")
 

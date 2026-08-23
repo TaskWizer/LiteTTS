@@ -50,10 +50,7 @@ class CodeQualityAnalyzer:
 
         # Collect imports
         for node in ast.walk(tree):
-            if isinstance(node, ast.Import):
-                for alias in node.names:
-                    imports.append(alias.name)
-            elif isinstance(node, ast.ImportFrom):
+            if isinstance(node, ast.Import) or isinstance(node, ast.ImportFrom):
                 for alias in node.names:
                     imports.append(alias.name)
             elif isinstance(node, ast.Name):
@@ -129,11 +126,7 @@ class CodeQualityAnalyzer:
         complexity = 1  # Base complexity
 
         for child in ast.walk(node):
-            if isinstance(child, (ast.If, ast.While, ast.For, ast.AsyncFor)):
-                complexity += 1
-            elif isinstance(child, ast.ExceptHandler):
-                complexity += 1
-            elif isinstance(child, (ast.And, ast.Or)):
+            if isinstance(child, (ast.If, ast.While, ast.For, ast.AsyncFor)) or isinstance(child, ast.ExceptHandler) or isinstance(child, (ast.And, ast.Or)):
                 complexity += 1
 
         return complexity
@@ -287,7 +280,7 @@ def main():
     analyzer = CodeQualityAnalyzer()
     results = analyzer.analyze_codebase()
 
-    print(f"\n📊 Analysis Results:")
+    print("\n📊 Analysis Results:")
     print(f"   Total files analyzed: {results['total_files']}")
 
     for issue_type, count in results['total_issues'].items():

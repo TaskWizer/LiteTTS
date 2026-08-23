@@ -663,34 +663,34 @@ def main():
         cpu_stats = results["cpu_utilization_stats"]
         analysis = results["performance_analysis"]
 
-        print(f"Pipeline Configuration:")
+        print("Pipeline Configuration:")
         print(f"  Total Stages: {len(config['stages'])}")
         print(f"  Total Workers: {sum(stage['worker_count'] for stage in config['stages'])}")
         print(f"  Target CPU Utilization: {config['target_cpu_utilization']:.1%}")
         print(f"  Max Concurrent Pipelines: {config['max_concurrent_pipelines']}")
 
-        print(f"\nWorkload Performance:")
+        print("\nWorkload Performance:")
         print(f"  Requests Processed: {workload['processed_requests']}")
         print(f"  Requests per Second: {workload['requests_per_second']:.2f}")
         print(f"  Average Request Time: {workload['avg_request_time']:.3f}s")
 
-        print(f"\nCPU Utilization:")
+        print("\nCPU Utilization:")
         print(f"  Average: {cpu_stats['avg_cpu_utilization']:.1f}%")
         print(f"  Maximum: {cpu_stats['max_cpu_utilization']:.1f}%")
         print(f"  Target Achieved: {'✅' if cpu_stats['target_achieved'] else '❌'}")
 
-        print(f"\nPerformance Analysis:")
+        print("\nPerformance Analysis:")
         print(f"  Performance Grade: {analysis['performance_grade']}")
         print(f"  CPU Efficiency: {analysis['cpu_efficiency']:.1%}")
         print(f"  Efficiency Ratio: {analysis['efficiency_ratio']:.1%}")
         print(f"  Pipeline Balance: {analysis['pipeline_balance']:.3f}")
         print(f"  Bottleneck Stage: {analysis['bottleneck_stage']}")
 
-        print(f"\nStage Performance:")
+        print("\nStage Performance:")
         for stage_name, metrics in results["stage_metrics"].items():
             print(f"  {stage_name}: {metrics['total_processed']} processed, {metrics['throughput_per_second']:.2f} req/s")
 
-        print(f"\nRecommendations:")
+        print("\nRecommendations:")
         for i, rec in enumerate(results["recommendations"], 1):
             print(f"  {i}. {rec}")
 

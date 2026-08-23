@@ -46,7 +46,7 @@ def test_endpoints():
             print(f"❌ {name}: Exception - {e}")
 
     # Test the actual TTS endpoints
-    print(f"\n🎤 Testing TTS Endpoints")
+    print("\n🎤 Testing TTS Endpoints")
     print("-" * 30)
 
     # Simple request data
@@ -115,7 +115,7 @@ def main():
 
     test_endpoints()
 
-    print(f"\n💡 Next Steps:")
+    print("\n💡 Next Steps:")
     print("1. Check your server console output for detailed errors")
     print("2. If model not loaded, check if kokoro_onnx is installed: uv run pip list | grep kokoro")
     print("3. If Docker/container issue, try running both services natively")

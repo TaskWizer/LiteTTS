@@ -216,7 +216,7 @@ class ParentheticalVoiceModulationTest:
         passed_tests = sum(1 for _, result, _ in test_results if result)
         total_tests = len(test_results)
 
-        logger.info(f"\n📊 Test Summary:")
+        logger.info("\n📊 Test Summary:")
         logger.info(f"   Passed: {passed_tests}/{total_tests}")
         logger.info(f"   Success Rate: {(passed_tests/total_tests*100):.1f}%")
 

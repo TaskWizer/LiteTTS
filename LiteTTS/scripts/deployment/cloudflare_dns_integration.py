@@ -671,11 +671,11 @@ echo "DNS verification completed!"
 
         ssl_features_enabled = sum(1 for key, value in ssl_results.items()
                                  if key != "errors" and value is True)
-        ssl_total_features = len([key for key in ssl_results.keys() if key != "errors"])
+        ssl_total_features = len([key for key in ssl_results if key != "errors"])
 
         security_features_enabled = sum(1 for key, value in security_results.items()
                                       if key != "errors" and value is True)
-        security_total_features = len([key for key in security_results.keys() if key != "errors"])
+        security_total_features = len([key for key in security_results if key != "errors"])
 
         summary = {
             "dns_records": {
@@ -753,35 +753,35 @@ def main():
         if not results["success"]:
             print(f"❌ Setup failed: {results.get('error', 'Unknown error')}")
             if "next_steps" in results:
-                print(f"\nNext Steps:")
+                print("\nNext Steps:")
                 for i, step in enumerate(results["next_steps"], 1):
                     print(f"  {i}. {step}")
             return
 
         summary = results["setup_summary"]
 
-        print(f"✅ Cloudflare setup completed successfully")
+        print("✅ Cloudflare setup completed successfully")
         print(f"Overall Success Rate: {summary['overall_success_rate']:.1f}%")
 
-        print(f"\nDNS Records:")
+        print("\nDNS Records:")
         dns = summary["dns_records"]
         print(f"  Created: {dns['successful']}/{dns['total']} ({dns['success_rate']:.1f}%)")
 
-        print(f"\nSSL Configuration:")
+        print("\nSSL Configuration:")
         ssl = summary["ssl_configuration"]
         print(f"  Features Enabled: {ssl['features_enabled']}/{ssl['total_features']} ({ssl['success_rate']:.1f}%)")
         print(f"  Errors: {ssl['errors']}")
 
-        print(f"\nSecurity Configuration:")
+        print("\nSecurity Configuration:")
         security = summary["security_configuration"]
         print(f"  Features Enabled: {security['features_enabled']}/{security['total_features']} ({security['success_rate']:.1f}%)")
         print(f"  Errors: {security['errors']}")
 
-        print(f"\nGenerated Files:")
+        print("\nGenerated Files:")
         for file_type, filename in results["generated_files"].items():
             print(f"  {file_type}: {filename}")
 
-        print(f"\nNext Steps:")
+        print("\nNext Steps:")
         for i, step in enumerate(results["next_steps"][:5], 1):
             print(f"  {i}. {step}")
 
