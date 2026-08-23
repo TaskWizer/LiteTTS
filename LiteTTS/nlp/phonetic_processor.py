@@ -12,7 +12,25 @@ logger = logging.getLogger(__name__)
 
 
 class PhoneticProcessor:
-    """Handles custom pronunciation markers and phonetic processing"""
+    """
+    Handles custom pronunciation markers and phonetic processing.
+
+    This processor enables:
+    - Phonetic alphabet pronunciations (A→"alpha", B→"bravo")
+    - IPA (International Phonetic Alphabet) input
+    - Custom dictionary pronunciations
+    - Homograph disambiguation (lead vs LED)
+
+    The processor uses a layered approach:
+    1. Check custom phonetic dictionary first
+    2. Apply IPA mappings if present
+    3. Use phonetic alphabet for single letters
+    4. Fall back to standard TTS pronunciation
+
+    Example:
+        "The A in API stands for Application" →
+        "The alpha in A-P-I stands for Application"
+    """
 
     def __init__(self, config: dict | None = None):
         self.config = config or {}

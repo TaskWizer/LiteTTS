@@ -34,7 +34,31 @@ class FinancialContext:
 
 
 class AdvancedCurrencyProcessor:
-    """Advanced currency and financial data processing system"""
+    """
+    Advanced currency and financial data processing system.
+
+    Handles currency amounts in TTS by converting symbolic notation to natural speech:
+    - "$5.99" → "five dollars and ninety-nine cents"
+    - "$1.5M" → "one point five million dollars"
+    - "€10K" → "ten thousand euros"
+    - "-$50" → "negative fifty dollars" (or "fifty dollars debt")
+
+    Processing Pipeline:
+    1. Detect currency symbols and codes ($, €, £, ¥, etc.)
+    2. Parse amount including suffixes (K, M, B, T)
+    3. Convert to words (123 → "one hundred twenty-three")
+    4. Apply natural language rules ("one dollar" vs "two dollars")
+
+    Context Awareness:
+    - Financial documents get different treatment than casual text
+    - Negative amounts can be "debt" or "negative"
+    - Approximate amounts ("about", "around")
+
+    Examples:
+        $5.99 → "five dollars and ninety-nine cents"
+        £1.5M → "one point five million pounds"
+        -$50 → "fifty dollars in debt" (financial context)
+    """
 
     def __init__(self):
         self.currency_symbols = self._load_currency_symbols()

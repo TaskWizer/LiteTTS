@@ -11,7 +11,24 @@ logger = logging.getLogger(__name__)
 
 
 class ContractionPronunciationFix:
-    """Processor to fix contraction pronunciation issues in TTS"""
+    """
+    Processor to fix contraction pronunciation issues in TTS.
+
+    Problem: Kokoro TTS mispronounces contractions like "I'm" as "im" instead of "I am".
+
+    Solution: This processor expands contractions before TTS processing:
+    - "I'm" → "I am" (not "im")
+    - "you'll" → "you will" (not "youl")
+    - "they've" → "they have" (not "theyv")
+
+    The processor uses a hybrid approach:
+    1. Standard expansion for clear cases ("I'm" → "I am")
+    2. Phonetic expansion for ambiguous cases ("I am" vs "im")
+    3. Apostrophe normalization to ensure clean text
+
+    This ensures contractions are pronounced correctly while maintaining
+    natural speech flow.
+    """
 
     def __init__(self):
         self.contraction_fixes = self._load_contraction_fixes()

@@ -18,7 +18,23 @@ logger = logging.getLogger(__name__)
 
 
 class TextNormalizer:
-    """Advanced text normalization for natural TTS output"""
+    """
+    Advanced text normalization for natural TTS output.
+
+    This processor handles:
+    - Number pronunciation (123 → "one hundred twenty-three")
+    - Currency formatting ($5.99 → "five dollars and ninety-nine cents")
+    - Abbreviation expansion (Dr. → Doctor)
+    - Contraction handling (can't → cannot)
+    - Symbol normalization (@ → "at")
+
+    The normalizer aims to preserve natural speech patterns while ensuring
+    consistent TTS output across different input formats.
+
+    Configuration:
+        expand_contractions: Expand contractions (False by default for natural speech)
+        preserve_natural_speech: Keep speech patterns natural (True by default)
+    """
 
     def __init__(self):
         self.number_patterns = self._compile_number_patterns()
