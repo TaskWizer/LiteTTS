@@ -248,7 +248,7 @@ class WindowsStartupValidator:
 
             # Test optional imports
             try:
-                from LiteTTS.audio.watermarking import WatermarkingManager
+                from LiteTTS.audio.watermarking import WatermarkingManager  # noqa: F401
                 self.log_step("Watermarking Module", True)
             except ImportError:
                 self.log_step("Watermarking Module", True, "Optional module not available")

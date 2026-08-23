@@ -22,19 +22,19 @@ def test_framework_imports():
 
     try:
         from LiteTTS.testing.audio_quality_tester import (
-            AudioQualityMetrics,
-            AudioQualityTester,
-            AudioTestCase,
+            AudioQualityMetrics,  # noqa: F401
+            AudioQualityTester,  # noqa: F401
+            AudioTestCase,  # noqa: F401
         )
         print("✅ AudioQualityTester imported successfully")
 
-        from LiteTTS.testing.espeak_integration_tests import EspeakIntegrationTestSuite
+        from LiteTTS.testing.espeak_integration_tests import EspeakIntegrationTestSuite  # noqa: F401
         print("✅ EspeakIntegrationTestSuite imported successfully")
 
-        from LiteTTS.testing.asr_integrations.base_asr_client import BaseASRClient
+        from LiteTTS.testing.asr_integrations.base_asr_client import BaseASRClient  # noqa: F401
         print("✅ BaseASRClient imported successfully")
 
-        from LiteTTS.testing.asr_integrations.deepgram_client import DeepgramASRClient
+        from LiteTTS.testing.asr_integrations.deepgram_client import DeepgramASRClient  # noqa: F401
         print("✅ DeepgramASRClient imported successfully")
 
         return True

@@ -147,25 +147,25 @@ def test_library_availability():
     libraries = []
 
     try:
-        import librosa
+        import librosa  # noqa: F401
         libraries.append("librosa ✅")
     except ImportError:
         libraries.append("librosa ❌")
 
     try:
-        import pyrubberband
+        import pyrubberband  # noqa: F401
         libraries.append("pyrubberband ✅")
     except ImportError:
         libraries.append("pyrubberband ❌")
 
     try:
-        import soundfile
+        import soundfile  # noqa: F401
         libraries.append("soundfile ✅")
     except ImportError:
         libraries.append("soundfile ❌")
 
     try:
-        import numpy
+        import numpy  # noqa: F401
         libraries.append("numpy ✅")
     except ImportError:
         libraries.append("numpy ❌")

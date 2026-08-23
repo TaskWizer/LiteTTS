@@ -25,15 +25,9 @@ sys.path.insert(0, '.')
 
 # Import LiteTTS components
 try:
-    from LiteTTS.config import config
-    from LiteTTS.models import TTSConfiguration
-    from LiteTTS.nlp.unified_text_processor import UnifiedTextProcessor
     from LiteTTS.performance.profiler import (
-        PerformanceProfiler,
         get_profiler,
-        profile_tts_operation,
     )
-    from LiteTTS.tts.synthesizer import TTSSynthesizer
 except ImportError as e:
     print(f"Error importing LiteTTS components: {e}")
     sys.exit(1)

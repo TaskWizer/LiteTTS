@@ -16,7 +16,7 @@ def test_phonetic_processor_import():
     print("=" * 50)
 
     try:
-        from LiteTTS.nlp.phonetic_processor import PhoneticProcessor
+        from LiteTTS.nlp.phonetic_processor import PhoneticProcessor  # noqa: F401
         print("✅ PhoneticProcessor imported successfully")
         return True
     except ImportError as e:

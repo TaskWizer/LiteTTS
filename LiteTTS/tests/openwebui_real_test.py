@@ -166,8 +166,8 @@ def test_openwebui_real_scenario():
 
     # Check if we can analyze the generated audio
     try:
-        import struct
-        import wave
+        import struct  # noqa: F401
+        import wave  # noqa: F401
 
         # Test the standard MP3 file
         if os.path.exists("openwebui_test_standard.mp3"):

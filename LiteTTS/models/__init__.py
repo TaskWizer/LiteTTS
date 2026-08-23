@@ -19,7 +19,6 @@ Available modules:
 # Import TTS models from the sibling models.py file
 # Note: models.py is at LiteTTS/models.py (sibling to this directory)
 import importlib.util
-import sys
 from pathlib import Path
 
 from .manager import DownloadProgress, ModelInfo, ModelManager

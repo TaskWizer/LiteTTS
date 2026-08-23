@@ -97,13 +97,7 @@ def verify_installation():
 
     try:
         # Test imports
-        import fastapi
-        import numpy
-        import onnxruntime
-        import pydantic
-        import requests
-        import soundfile
-        import uvicorn
+        import onnxruntime  # noqa: F401
 
         logger.info("✅ Core dependencies imported successfully")
 

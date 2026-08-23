@@ -14,11 +14,11 @@ logger = logging.getLogger(__name__)
 def test_core_imports():
     """Test core Python imports"""
     try:
-        import asyncio
-        import json
-        import os
-        import pathlib
-        import time
+        import asyncio  # noqa: F401
+        import json  # noqa: F401
+        import os  # noqa: F401
+        import pathlib  # noqa: F401
+        import time  # noqa: F401
         logger.info("✅ Core Python modules imported successfully")
         return True
     except ImportError as e:
@@ -28,9 +28,9 @@ def test_core_imports():
 def test_web_framework_imports():
     """Test web framework imports"""
     try:
-        import fastapi
-        import pydantic
-        import uvicorn
+        import fastapi  # noqa: F401
+        import pydantic  # noqa: F401
+        import uvicorn  # noqa: F401
         logger.info("✅ Web framework modules imported successfully")
         return True
     except ImportError as e:
@@ -40,8 +40,8 @@ def test_web_framework_imports():
 def test_audio_processing_imports():
     """Test audio processing imports"""
     try:
-        import numpy
-        import soundfile
+        import numpy  # noqa: F401
+        import soundfile  # noqa: F401
         logger.info("✅ Audio processing modules imported successfully")
         return True
     except ImportError as e:
@@ -51,12 +51,12 @@ def test_audio_processing_imports():
 def test_ml_framework_imports():
     """Test ML framework imports"""
     try:
-        import onnxruntime
+        import onnxruntime  # noqa: F401
         logger.info("✅ ONNX Runtime imported successfully")
 
         # Test optional imports
         try:
-            import torch
+            import torch  # noqa: F401
             logger.info("✅ PyTorch imported successfully")
         except ImportError:
             logger.info("ℹ️ PyTorch not available (optional)")
@@ -70,14 +70,14 @@ def test_litetts_imports():
     """Test LiteTTS module imports"""
     try:
         # Test basic LiteTTS imports
-        from LiteTTS.config import config
-        from LiteTTS.logging_config import setup_logging
+        from LiteTTS.config import config  # noqa: F401
+        from LiteTTS.logging_config import setup_logging  # noqa: F401
         logger.info("✅ LiteTTS core modules imported successfully")
 
         # Test performance modules
         try:
-            from LiteTTS.performance.cpu_optimizer import CPUOptimizer
-            from LiteTTS.performance.memory_optimization import MemoryOptimizer
+            from LiteTTS.performance.cpu_optimizer import CPUOptimizer  # noqa: F401
+            from LiteTTS.performance.memory_optimization import MemoryOptimizer  # noqa: F401
             logger.info("✅ LiteTTS performance modules imported successfully")
         except ImportError as e:
             logger.warning(f"⚠️ Some LiteTTS performance modules not available: {e}")

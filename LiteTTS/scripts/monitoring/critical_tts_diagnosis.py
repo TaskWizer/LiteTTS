@@ -49,7 +49,6 @@ def analyze_audio_file(filepath: str) -> dict[str, Any]:
             # For MP3/other formats, try to get actual duration using mutagen
             try:
                 from mutagen import File
-                from mutagen.mp3 import MP3
 
                 audio_file = File(filepath)
                 if audio_file is not None and hasattr(audio_file, 'info'):

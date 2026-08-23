@@ -14,7 +14,7 @@ from typing import Any
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 try:
-    from LiteTTS.config.internal_config import InternalConfig, get_internal_config
+    from LiteTTS.config.internal_config import get_internal_config
 except ImportError:
     # Fallback for direct execution
     from internal_config import get_internal_config

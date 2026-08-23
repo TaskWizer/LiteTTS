@@ -217,7 +217,7 @@ class WindowsCompatibilityTester:
 
             # Try to trigger pkg_resources warning (if perth is available)
             try:
-                import perth
+                import perth  # noqa: F401
                 # This should not generate warnings due to our suppression
             except ImportError:
                 # perth not available, that's fine
