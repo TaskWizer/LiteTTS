@@ -1427,8 +1427,8 @@ class TestPhonemizationPreprocessorEdgeCases2:
             # This should trigger the exception fallback
             proc = pp_module.PhonemizationPreprocessor(config=BadConfig())
             # If we get here, the fallback was used
-            assert proc.expand_all == False
-            assert proc.preserve_natural == True
+            assert proc.expand_all == False  # noqa: E712
+            assert proc.preserve_natural == True  # noqa: E712
         except Exception:
             # Some paths may still fail - that's OK for this test
             pass
@@ -1448,8 +1448,8 @@ class TestPhonemizationPreprocessorEdgeCases2:
             try:
                 proc = pp_module.PhonemizationPreprocessor()
                 # Should use fallback values
-                assert proc.expand_problematic_only == True
-                assert proc.filter_emojis == True
+                assert proc.expand_problematic_only == True  # noqa: E712
+                assert proc.filter_emojis == True  # noqa: E712
             except Exception:
                 pass  # May fail if patching doesn't work correctly
 
@@ -2199,9 +2199,9 @@ class TestPhonemizationPreprocessorGlobalConfig:
             # Creating a new preprocessor should trigger the exception handler at lines 93-97
             proc = PhonemizationPreprocessor()
             # Verify defaults were set by the exception handler
-            assert proc.expand_problematic_only == True
-            assert proc.filter_emojis == True
-            assert proc.preserve_word_count_config == True
+            assert proc.expand_problematic_only == True  # noqa: E712
+            assert proc.filter_emojis == True  # noqa: E712
+            assert proc.preserve_word_count_config == True  # noqa: E712
         finally:
             # Restore original performance
             config_obj.performance = original_performance

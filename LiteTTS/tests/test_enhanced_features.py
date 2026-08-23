@@ -31,11 +31,11 @@ def test_enhanced_configuration():
     # Test model configuration
     assert config.model.name == "LiteTTS"
     assert config.model.default_variant == "model_q4.onnx"
-    assert config.model.auto_discovery == True
+    assert config.model.auto_discovery == True  # noqa: E712
 
     # Test voice configuration
     assert config.voice.default_voice == "af_heart"
-    assert config.voice.auto_discovery == True
+    assert config.voice.auto_discovery == True  # noqa: E712
 
     # Test audio configuration
     assert config.audio.default_format == "mp3"
@@ -116,7 +116,7 @@ def test_model_manager():
 
         # Test model info methods
         assert manager.default_variant == "model_q8f16.onnx"
-        assert manager.auto_discovery == True
+        assert manager.auto_discovery == True  # noqa: E712
 
         # Test model path generation
         model_path = manager.get_model_path("test_model.onnx")
@@ -141,8 +141,8 @@ def test_voice_downloader():
         downloader = VoiceDownloader(temp_dir, mock_config)
 
         # Test configuration loading
-        assert downloader.auto_discovery == True
-        assert downloader.cache_discovery == True
+        assert downloader.auto_discovery == True  # noqa: E712
+        assert downloader.cache_discovery == True  # noqa: E712
         assert downloader.cache_expiry_hours == 24
 
 
@@ -177,7 +177,7 @@ def test_voice_discovery(mock_get):
 
         # Test voice discovery
         result = downloader.discover_voices_from_huggingface()
-        assert result == True
+        assert result == True  # noqa: E712
 
         # Verify discovered voices
         voices = downloader.get_available_voice_names()
@@ -202,13 +202,13 @@ def test_hot_reload_manager():
     manager = HotReloadManager(mock_config)
 
     # Test manager initialization
-    assert manager.enabled == True
+    assert manager.enabled == True  # noqa: E712
     assert len(manager.observers) == 0
     assert len(manager.reload_callbacks) == 0
 
     # Test status
     status = manager.get_status()
-    assert status["enabled"] == True
+    assert status["enabled"] == True  # noqa: E712
     assert status["active_watchers"] == 0
 
 
@@ -242,7 +242,7 @@ def test_fault_tolerance():
 
     health_checker.register_check("test", test_health_check, interval=1)
     result = health_checker.run_check("test")
-    assert result == True
+    assert result == True  # noqa: E712
 
 
 def test_performance_monitor():
@@ -304,7 +304,7 @@ def test_cpu_only_installation():
         # Mock no GPU packages found
         mock_run.return_value.returncode = 1
         result = check_gpu_packages()
-        assert result == True
+        assert result == True  # noqa: E712
 
     # Test installation verification
     with patch("importlib.import_module") as mock_import:
@@ -327,7 +327,7 @@ def test_configuration_save():
 
         # Save configuration
         result = config.save_to_json(str(config_file))
-        assert result == True
+        assert result == True  # noqa: E712
         assert config_file.exists()
 
         # Verify saved content
